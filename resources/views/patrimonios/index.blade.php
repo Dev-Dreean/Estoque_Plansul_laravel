@@ -5,84 +5,87 @@
         </h2>
     </x-slot>
     <div x-data="{
-        relatorioModalOpen: false,
-        termoModalOpen: false,
-        atribuirTermoModalOpen: false,
-        resultadosModalOpen: false,
-        isLoading: false,
-        reportData: [],
-        reportFilters: {},
-    
-        gerarRelatorio: function(event) {
-            this.isLoading = true;
-            const formData = new FormData(event.target);
-    
-            fetch('{{ route('relatorios.patrimonios.gerar') }}', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) { throw new Error('Erro na rede ou servidor'); }
-                    return response.json();
-                })
-                .then(data => {
-                    this.reportData = data.resultados;
-                    this.reportFilters = data.filtros;
-                    this.relatorioModalOpen = false;
-                    this.resultadosModalOpen = true;
-                })
-                .catch(error => {
-                    console.error('Erro ao gerar relatório:', error);
-                    alert('Ocorreu um erro ao gerar o relatório. Verifique o console para mais detalhes.');
-                })
-                .finally(() => {
-                    this.isLoading = false;
-                });
-        },
-    
-        exportarRelatorio: function(format) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-    
-            switch (format) {
-                case 'excel':
-                    form.action = '{{ route('relatorios.patrimonios.exportar.excel') }}';
-                    break;
-                case 'csv':
-                    form.action = '{{ route('relatorios.patrimonios.exportar.csv') }}';
-                    break;
-                case 'ods':
-                    form.action = '{{ route('relatorios.patrimonios.exportar.ods') }}';
-                    break;
-                case 'pdf':
-                    form.action = '{{ route('relatorios.patrimonios.exportar.pdf') }}';
-                    break;
-            }
-    
-            const csrf = document.createElement('input');
-            csrf.type = 'hidden';
-            csrf.name = '_token';
-            csrf.value = '{{ csrf_token() }}';
-            form.appendChild(csrf);
-    
-            for (const key in this.reportFilters) {
-                if (this.reportFilters[key] !== null) {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = key;
-                    input.value = this.reportFilters[key];
-                    form.appendChild(input);
+    relatorioModalOpen: false,
+    termoModalOpen: false,
+    atribuirTermoModalOpen: false,
+    resultadosModalOpen: false,
+    isLoading: false,
+    reportData: [],
+    reportFilters: {},
+    tipoRelatorio: 'numero', // <-- A variável agora vive aqui, no lugar certo.
+
+    gerarRelatorio: function(event) {
+        this.isLoading = true;
+        const formData = new FormData(event.target);
+
+        fetch('{{ route('relatorios.patrimonios.gerar') }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
                 }
-            }
-    
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
+            })
+            .then(response => {
+                if (!response.ok) { throw new Error('Erro na rede ou servidor'); }
+                return response.json();
+            })
+            .then(data => {
+                this.reportData = data.resultados;
+                this.reportFilters = data.filtros;
+                this.relatorioModalOpen = false;
+                this.$nextTick(() => {
+                    this.resultadosModalOpen = true;
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao gerar relatório:', error);
+                alert('Ocorreu um erro ao gerar o relatório. Verifique o console para mais detalhes.');
+            })
+            .finally(() => {
+                this.isLoading = false;
+            });
+    },
+
+    exportarRelatorio: function(format) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+
+        switch (format) {
+            case 'excel':
+                form.action = '{{ route('relatorios.patrimonios.exportar.excel') }}';
+                break;
+            case 'csv':
+                form.action = '{{ route('relatorios.patrimonios.exportar.csv') }}';
+                break;
+            case 'ods':
+                form.action = '{{ route('relatorios.patrimonios.exportar.ods') }}';
+                break;
+            case 'pdf':
+                form.action = '{{ route('relatorios.patrimonios.exportar.pdf') }}';
+                break;
         }
-    }">
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = '_token';
+        csrf.value = '{{ csrf_token() }}';
+        form.appendChild(csrf);
+
+        for (const key in this.reportFilters) {
+            if (this.reportFilters[key] !== null) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = this.reportFilters[key];
+                form.appendChild(input);
+            }
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+}">
         <div class="py-12">
             <div class="w-full sm:px-6 lg:px-8">
                 @if(session('success'))
@@ -275,7 +278,7 @@
             class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">
             <div @click.outside="relatorioModalOpen = false"
                 class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl p-6">
-                <div x-data="{ tipoRelatorio: 'numero' }">
+                <div>
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Relatório Geral de Bens
                     </h3>
                     <form @submit.prevent="gerarRelatorio">
@@ -510,18 +513,22 @@
 
         {{-- Modal: Atribuir Código de Termo (controlado por 'atribuirTermoModalOpen') --}}
         <div x-show="atribuirTermoModalOpen" x-transition class="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center" style="display: none;">
-            <div @click.outside="atribuirTermoModalOpen = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl p-6 max-h-[80vh] flex flex-col">
+            <div @click.outside="atribuirTermoModalOpen = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl p-6 max-h-[calc(100vh-80px)] flex flex-col">
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Atribuir Código de Termo</h3>
-                <form action="{{ route('termos.atribuir.store') }}" method="POST">
+                <form action="{{ route('termos.atribuir.store') }}" method="POST" class="flex-1 flex flex-col min-h-0">
                     @csrf
-                    <div class="flex-grow overflow-y-auto border-t border-b dark:border-gray-700 py-4">
-                        <div class="flex justify-between items-center mb-4 px-1">
-                            <p class="text-gray-600 dark:text-gray-400">Selecione os patrimônios para agrupar em um novo Termo.</p>
-                            <button type="submit" class="bg-plansul-blue hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded inline-flex items-center">
-                                <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
-                                <span>Gerar e Atribuir Termo</span>
-                            </button>
-                        </div>
+
+                    {{-- CABEÇALHO COM O BOTÃO GERAR --}}
+                    <div class="flex justify-between items-center mb-4 px-1">
+                        <p class="text-gray-600 dark:text-gray-400">Selecione os patrimônios para agrupar em um novo Termo.</p>
+                        <button type="submit" class="bg-plansul-blue hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                            <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
+                            <span>Gerar e Atribuir Termo</span>
+                        </button>
+                    </div>
+
+                    {{-- ÁREA DE CONTEÚDO COM ROLAGEM --}}
+                    <div class="flex-1 min-h-0 overflow-y-auto border-t border-b dark:border-gray-700">
                         <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0">
                                 <tr>
@@ -537,21 +544,25 @@
                                 <tr class="border-b dark:border-gray-700">
                                     <td class="p-4"><input type="checkbox" name="patrimonio_ids[]" value="{{ $patrimonio->NUSEQPATR }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"></td>
                                     <td class="px-2 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
+                                    <td class="px-2 py-2">{{ $patrimonio->DEPATRIMONIO }}</td>
                                     <td class="px-2 py-2 font-bold">{{ $patrimonio->NMPLANTA }}</td>
                                     <td class="px-2 py-2">{{ $patrimonio->MODELO }}</td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="py-4 text-center">Nenhum patrimônio disponível.</td>
+                                    <td colspan="5" class="py-4 text-center">Nenhum patrimônio disponível.</td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
+                        {{-- PAGINAÇÃO (AGORA DENTRO DA ÁREA DE ROLAGEM) --}}
+                        <div class="mt-4 px-1">
+                            {{ $patrimoniosDisponiveis->appends(request()->except('page', 'disponiveisPage'))->links('pagination::tailwind') }}
+                        </div>
                     </div>
-                    <div class="mt-4">
-                        {{ $patrimoniosDisponiveis->appends(request()->except('page', 'disponiveisPage'))->links('pagination::tailwind') }}
-                    </div>
-                    <div class="mt-6 flex justify-end">
+
+                    {{-- BOTÃO DE FECHAR (FORA DA ÁREA DE ROLAGEM, NO RODAPÉ) --}}
+                    <div class="mt-6 flex justify-end pt-4 border-t dark:border-gray-700">
                         <button type="button" @click="atribuirTermoModalOpen = false" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded">Fechar</button>
                     </div>
                 </form>
