@@ -107,7 +107,7 @@
                     <div class="p-6 text-gray-900 dark:text-gray-100">
 
                         {{-- Formulário de Filtro --}}
-                        <div x-data="{ open: {{ !empty(array_filter(request()->query())) ? 'true' : 'false' }} }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
+                        <div x-data="{ open: {{ !empty(array_filter(request()->except(['page', 'sort', 'direction']))) ? 'true' : 'false' }} }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
                             <div @click="open = !open" class="flex justify-between items-center cursor-pointer">
                                 <h3 class="font-semibold text-lg">Filtros de Busca</h3>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform"
