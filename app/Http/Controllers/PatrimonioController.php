@@ -34,43 +34,43 @@ class PatrimonioController extends Controller
                 'tipo'      => $registro->NUSEQTIPOPATR, // <- se quiser usar também
             ]);
         } catch (\Throwable $e) {
-            Log::error('Erro buscarCodigoObjeto: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Log::error('Erro buscarCodigoObjeto: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json(['found' => false, 'message' => 'Erro interno.'], 500);
         }
     }
 
-public function index(Request $request): View
-{
-    // Busca os patrimônios para a tabela principal
-    $query = $this->getPatrimoniosQuery($request);
-    $patrimonios = $query->paginate(10);
+    public function index(Request $request): View
+    {
+        // Busca os patrimônios para a tabela principal
+        $query = $this->getPatrimoniosQuery($request);
+        $patrimonios = $query->paginate(10);
 
-    // Busca os usuários para o filtro de admin
-    $cadastradores = [];
-    if (Auth::user()->PERFIL === 'ADM') {
-        $cadastradores = User::orderBy('NOMEUSER')->get(['CDMATRFUNCIONARIO', 'NOMEUSER']);
+        // Busca os usuários para o filtro de admin
+        $cadastradores = [];
+        if (Auth::user()->PERFIL === 'ADM') {
+            $cadastradores = User::orderBy('NOMEUSER')->get(['CDMATRFUNCIONARIO', 'NOMEUSER']);
+        }
+
+        // Busca os locais para o modal de relatório geral
+        $locais = Tabfant::select('id as codigo', 'LOCAL as descricao')
+            ->orderBy('descricao')
+            ->get();
+
+        // Busca os patrimônios disponíveis para o modal de atribuição de termo
+        $patrimoniosDisponiveis = \App\Models\Patrimonio::whereNull('NMPLANTA')
+            ->orderBy('DEPATRIMONIO')
+            ->paginate(10, ['*'], 'disponiveisPage');
+
+        // Return unificado e corrigido, enviando TODAS as variáveis necessárias
+        return view('patrimonios.index', [
+            'patrimonios' => $patrimonios,
+            'cadastradores' => $cadastradores,
+            'locais' => $locais,
+            'patrimoniosDisponiveis' => $patrimoniosDisponiveis,
+            'filters' => $request->only(['descricao', 'situacao', 'modelo', 'cadastrado_por']),
+            'sort' => ['column' => $request->input('sort', 'NUSEQPATR'), 'direction' => 'desc'],
+        ]);
     }
-
-    // Busca os locais para o modal de relatório geral
-    $locais = Tabfant::select('id as codigo', 'LOCAL as descricao')
-                     ->orderBy('descricao')
-                     ->get();
-
-    // Busca os patrimônios disponíveis para o modal de atribuição de termo
-    $patrimoniosDisponiveis = \App\Models\Patrimonio::whereNull('NMPLANTA')
-                                ->orderBy('DEPATRIMONIO')
-                                ->paginate(10, ['*'], 'disponiveisPage');
-
-    // Return unificado e corrigido, enviando TODAS as variáveis necessárias
-    return view('patrimonios.index', [
-        'patrimonios' => $patrimonios,
-        'cadastradores' => $cadastradores,
-        'locais' => $locais,
-        'patrimoniosDisponiveis' => $patrimoniosDisponiveis,
-        'filters' => $request->only(['descricao', 'situacao', 'modelo', 'cadastrado_por']),
-        'sort' => ['column' => $request->input('sort', 'NUSEQPATR'), 'direction' => 'desc'],
-    ]);
-}
 
     /**
      * Mostra o formulário de criação.
@@ -79,7 +79,7 @@ public function index(Request $request): View
     {
         // TODO: Substitua estes arrays pelas suas consultas reais ao banco de dados.
         $projetos = Tabfant::select('CDPROJETO', 'NOMEPROJETO')->distinct()->orderBy('NOMEPROJETO')->get();
-        
+
         return view('patrimonios.create', compact('projetos'));
     }
 
@@ -106,7 +106,7 @@ public function index(Request $request): View
     public function edit(Patrimonio $patrimonio): View
     {
         $this->authorize('update', $patrimonio);
-        
+
         // TODO: Substitua estes arrays pelas suas consultas reais ao banco de dados.
         $projetos = Tabfant::select('CDPROJETO', 'NOMEPROJETO')->distinct()->orderBy('NOMEPROJETO')->get();
 
@@ -133,13 +133,15 @@ public function index(Request $request): View
         $patrimonio->delete();
         return redirect()->route('patrimonios.index')->with('success', 'Patrimônio deletado com sucesso!');
     }
-    
+
     // --- MÉTODOS DE API PARA O FORMULÁRIO DINÂMICO ---
 
     public function buscarPorNumero($numero): JsonResponse
     {
         $patrimonio = Patrimonio::where('NUPATRIMONIO', $numero)->first();
-        if ($patrimonio) { return response()->json($patrimonio); }
+        if ($patrimonio) {
+            return response()->json($patrimonio);
+        }
         return response()->json(null, 404);
     }
 
@@ -160,15 +162,15 @@ public function index(Request $request): View
         return response()->json($projeto);
     }
 
-public function getLocaisPorProjeto($cdprojeto): JsonResponse
-{
-    $locais = Tabfant::where('CDPROJETO', $cdprojeto)
-                     ->select('id', 'LOCAL') // Seleciona o ID e o nome do local
-                     ->distinct()
-                     ->get();
+    public function getLocaisPorProjeto($cdprojeto): JsonResponse
+    {
+        $locais = Tabfant::where('CDPROJETO', $cdprojeto)
+            ->select('id', 'LOCAL') // Seleciona o ID e o nome do local
+            ->distinct()
+            ->get();
 
-    return response()->json($locais);
-}
+        return response()->json($locais);
+    }
 
     // --- MÉTODOS AUXILIARES ---
 
@@ -179,6 +181,12 @@ public function getLocaisPorProjeto($cdprojeto): JsonResponse
 
         if ($user->PERFIL !== 'ADM') {
             $query->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO);
+        }
+        if ($request->filled('nupatrimonio')) {
+            $query->where('NUPATRIMONIO', $request->nupatrimonio);
+        }
+        if ($request->filled('cdprojeto')) {
+            $query->where('CDPROJETO', $request->cdprojeto);
         }
         if ($request->filled('descricao')) {
             $query->where('DEPATRIMONIO', 'like', '%' . $request->descricao . '%');
@@ -195,7 +203,7 @@ public function getLocaisPorProjeto($cdprojeto): JsonResponse
         if ($request->filled('cadastrado_por') && $user->PERFIL === 'ADM') {
             $query->where('CDMATRFUNCIONARIO', $request->cadastrado_por);
         }
-        
+
         $sortableColumns = ['NUPATRIMONIO', 'MODELO', 'DEPATRIMONIO', 'SITUACAO'];
         $sortColumn = $request->input('sort', 'NUSEQPATR');
         $sortDirection = $request->input('direction', 'desc');

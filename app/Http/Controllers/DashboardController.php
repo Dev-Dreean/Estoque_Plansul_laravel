@@ -25,17 +25,82 @@ class DashboardController extends Controller
 
         $cadastrosSemanaLabels = [];
         $cadastrosSemanaData = [];
+        // Construir apenas os dias que tiveram movimentação (> 0)
         for ($i = 6; $i >= 0; $i--) {
             $data = Carbon::today()->subDays($i);
-            $cadastrosSemanaLabels[] = $data->format('d/m');
-            $cadastrosSemanaData[] = Patrimonio::whereDate('DTOPERACAO', $data)->count();
+            $count = Patrimonio::whereDate('DTOPERACAO', $data)->count();
+            if ($count > 0) {
+                $cadastrosSemanaLabels[] = $data->format('d/m');
+                $cadastrosSemanaData[] = $count;
+            }
         }
 
         return view('dashboard', [
             'cadastrosHoje' => $cadastrosHoje,
             'topCadastradores' => $topCadastradores,
-            'cadastrosSemanaLabels' => json_encode($cadastrosSemanaLabels),
-            'cadastrosSemanaData' => json_encode($cadastrosSemanaData),
+            'cadastrosSemanaLabels' => $cadastrosSemanaLabels,
+            'cadastrosSemanaData' => $cadastrosSemanaData,
+        ]);
+    }
+
+    /**
+     * Retorna JSON com labels e data para o gráfico conforme o período solicitado.
+     * Parâmetros aceitos via query: period = day|week|month|year (default: week)
+     */
+    public function data(Request $request)
+    {
+        $period = $request->query('period', 'week');
+
+        $labels = [];
+        $values = [];
+
+        if ($period === 'day') {
+            // últimas 24 horas por hora
+            for ($h = 0; $h < 24; $h++) {
+                $start = Carbon::today()->addHours($h);
+                $end = (clone $start)->addHour();
+                $count = Patrimonio::whereBetween('DTOPERACAO', [$start, $end])->count();
+                if ($count > 0) {
+                    $labels[] = $start->format('H:00');
+                    $values[] = $count;
+                }
+            }
+        } elseif ($period === 'month') {
+            // últimos 30 dias
+            for ($i = 29; $i >= 0; $i--) {
+                $d = Carbon::today()->subDays($i);
+                $count = Patrimonio::whereDate('DTOPERACAO', $d)->count();
+                if ($count > 0) {
+                    $labels[] = $d->format('d/m');
+                    $values[] = $count;
+                }
+            }
+        } elseif ($period === 'year') {
+            // últimos 12 meses
+            for ($m = 11; $m >= 0; $m--) {
+                $d = Carbon::now()->subMonths($m)->startOfMonth();
+                $count = Patrimonio::whereBetween('DTOPERACAO', [$d, (clone $d)->endOfMonth()])->count();
+                if ($count > 0) {
+                    $labels[] = $d->format('M/Y');
+                    $values[] = $count;
+                }
+            }
+        } else {
+            // semana (default) - últimos 7 dias
+            for ($i = 6; $i >= 0; $i--) {
+                $d = Carbon::today()->subDays($i);
+                $count = Patrimonio::whereDate('DTOPERACAO', $d)->count();
+                if ($count > 0) {
+                    $labels[] = $d->format('d/m');
+                    $values[] = $count;
+                }
+            }
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'data' => $values,
+            'period' => $period,
         ]);
     }
 }

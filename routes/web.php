@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PatrimonioController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjetoController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 /*
@@ -10,7 +11,6 @@ use Illuminate\Support\Facades\Route;
 | Web Routes
 |--------------------------------------------------------------------------
 */
-
 // Rota principal redireciona para o login
 Route::get('/', function () {
     return redirect()->route('login');
@@ -20,11 +20,17 @@ Route::get('/', function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
+// Endpoint que retorna dados agregados para o gráfico do dashboard
+Route::get('/dashboard/data', [DashboardController::class, 'data'])
+    ->middleware(['auth', 'verified'])->name('dashboard.data');
+
 Route::get('/api/codigos/buscar/{codigo}', [PatrimonioController::class, 'buscarCodigoObjeto'])
     ->name('api.codigos.buscar');
 
 // Grupo de rotas que exigem autenticação
 Route::middleware('auth')->group(function () {
+
+    Route::resource('projetos', ProjetoController::class)->middleware('admin');
 
     Route::get('/api/projetos/buscar/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'buscarProjeto'])->name('api.projetos.buscar');
     Route::get('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'getLocaisPorProjeto'])->name('api.locais');

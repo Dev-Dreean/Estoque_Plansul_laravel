@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-2xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Gerenciar Usuários') }}
+            {{ __('Usuários') }}
         </h2>
     </x-slot>
 
@@ -20,7 +20,7 @@
                             Criar Novo Usuário
                         </a>
                     </div>
-                    
+
                     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
                         <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">

@@ -1,9 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-2xl md:text-3xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Estoque de Patrimônios') }}
-        </h2>
-    </x-slot>
     <div x-data="{
     relatorioModalOpen: false,
     termoModalOpen: false,
@@ -122,20 +117,34 @@
                             </div>
                             <div x-show="open" x-transition class="mt-4" style="display: none;">
                                 <form method="GET" action="{{ route('patrimonios.index') }}">
-                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-4 lg:grid-cols-1 xl:grid-cols-1 gap-3">
+
+                                        {{-- FILTRO: Nº Patrimônio --}}
+                                        <input type="text" name="nupatrimonio" placeholder="Buscar por Nº Pat."
+                                            value="{{ request('nupatrimonio') }}"
+                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+
+                                        {{-- FILTRO: Cód. de Projeto --}}
+                                        <input type="text" name="cdprojeto" placeholder="Buscar por Cód. Projeto"
+                                            value="{{ request('cdprojeto') }}"
+                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+
+                                        {{-- FILTRO: Descrição --}}
                                         <input type="text" name="descricao" placeholder="Buscar por Descrição..."
                                             value="{{ request('descricao') }}"
-                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
                                         <input type="text" name="situacao" placeholder="Buscar por Situação..."
                                             value="{{ request('situacao') }}"
-                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
                                         <input type="text" name="modelo" placeholder="Buscar por Modelo..."
                                             value="{{ request('modelo') }}"
-                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                                        <input type="number" name="nmplanta" placeholder="Buscar por Cód. Termo..." value="{{ request('nmplanta') }}" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                                        <input type="number" name="nmplanta" placeholder="Buscar por Cód. Termo..."
+                                            value="{{ request('nmplanta') }}"
+                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
                                         @if (Auth::user()->PERFIL === 'ADM')
                                         <select name="cadastrado_por"
-                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
                                             <option value="">Todos os Usuários</option>
                                             @foreach ($cadastradores as $cadastrador)
                                             <option value="{{ $cadastrador->CDMATRFUNCIONARIO }}"
@@ -207,43 +216,48 @@
                                     @endphp
                                     <tr>
                                         <th class="px-4 py-3">Nº Pat.</th>
+                                        <th class="px-4 py-3">OF</th>
+                                        <th class="px-4 py-3">Cód. Objeto</th>
+                                        <th class="px-4 py-3">Cód. Termo</th>
+                                        <th class="px-4 py-3">Nº Série</th>
+                                        <th class="px-4 py-3">Cód. Projeto</th>
+                                        <th class="px-4 py-3">Modelo</th>
+                                        <th class="px-4 py-3">Marca</th>
+                                        <th class="px-4 py-3">Cor</th>
                                         <th class="px-4 py-3">Descrição</th>
                                         <th class="px-4 py-3">Situação</th>
-                                        <th class="px-4 py-3">Cód. Termo</th>
-                                        <th class="px-4 py-3">Marca</th>
-                                        <th class="px-4 py-3">Modelo</th>
-                                        <th class="px-4 py-3">Nº Série</th>
-                                        <th class="px-4 py-3">Cor</th>
-                                        <th class="px-4 py-3">Cód. Objeto</th>
-                                        <th class="px-4 py-3">OF</th>
                                         <th class="px-4 py-3">Dt. Aquisição</th>
-                                        <th class="px-4 py-3">Cadastrado Por</th>
                                         <th class="px-4 py-3">Dt. Cadastro</th>
+                                        <th class="px-4 py-3">Cadastrado Por</th>
                                         @if(Auth::user()->PERFIL === 'ADM')
                                         <th class="px-4 py-3">Ações</th>
                                         @endif
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    @forelse ($patrimonios as $patrimonio)
-                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm cursor-pointer"
-                                        @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
-                                        <td class="px-4 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
-                                        <td class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $patrimonio->DEPATRIMONIO }}</td>
-                                        <td class="px-4 py-2">{{ $patrimonio->SITUACAO }}</td>
-                                        <td class="px-4 py-2 font-bold">{{ $patrimonio->NMPLANTA }}</td>
-                                        <td class="px-4 py-2">{{ $patrimonio->MARCA }}</td>
-                                        <td class="px-4 py-2">{{ $patrimonio->MODELO }}</td>
-                                        <td class="px-4 py-2">{{ $patrimonio->NUSERIE }}</td>
-                                        <td class="px-4 py-2">{{ $patrimonio->COR }}</td>
-                                        <td class="px-4 py-2">{{ $patrimonio->CODOBJETO }}</td>
-                                        <td class="px-4 py-2">{{ $patrimonio->NUMOF }}</td>
-                                        <td class="px-4 py-2">{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : '' }}</td>
-                                        <td class="px-4 py-2">{{ $patrimonio->usuario?->NOMEUSER ?? 'Não informado' }}</td>
-                                        <td class="px-4 py-2">{{ $patrimonio->DTOPERACAO ? \Carbon\Carbon::parse($patrimonio->DTOPERACAO)->format('d/m/Y') : '' }}</td>
-                                        @if(Auth::user()->PERFIL === 'ADM')
-                                        <td class="px-6 py-4 flex items-center space-x-2">
-                                            @can('update', $patrimonio)
+                                @forelse ($patrimonios as $patrimonio)
+                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm cursor-pointer"
+                                    @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
+
+                                    {{-- A ordem agora está 100% correta para corresponder ao seu thead --}}
+                                    <td class="px-4 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
+                                    <td class="px-4 py-2">{{ $patrimonio->NUMOF }}</td>
+                                    <td class="px-4 py-2">{{ $patrimonio->CODOBJETO }}</td>
+                                    <td class="px-4 py-2 font-bold">{{ $patrimonio->NMPLANTA }}</td>
+                                    <td class="px-4 py-2">{{ $patrimonio->NUSERIE }}</td>
+                                    <td class="px-4 py-2">{{ $patrimonio->CDPROJETO }}</td>
+                                    <td class="px-4 py-2">{{ $patrimonio->MODELO }}</td>
+                                    <td class="px-4 py-2">{{ $patrimonio->MARCA }}</td>
+                                    <td class="px-4 py-2">{{ $patrimonio->COR }}</td>
+                                    <td class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $patrimonio->DEPATRIMONIO }}</td>
+                                    <td class="px-4 py-2">{{ $patrimonio->SITUACAO }}</td>
+                                    <td class="px-4 py-2">{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : '' }}</td>
+                                    <td class="px-4 py-2">{{ $patrimonio->DTOPERACAO ? \Carbon\Carbon::parse($patrimonio->DTOPERACAO)->format('d/m/Y') : '' }}</td>
+                                    <td class="px-4 py-2">{{ $patrimonio->usuario?->NOMEUSER ?? 'Não informado' }}</td>
+
+                                    @if(Auth::user()->PERFIL === 'ADM')
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center">
+                                            @can('delete', $patrimonio)
                                             <form method="POST"
                                                 action="{{ route('patrimonios.destroy', $patrimonio) }}"
                                                 onsubmit="return confirm('Tem certeza que deseja deletar este item?');"
@@ -254,17 +268,18 @@
                                                     class="font-medium text-red-600 dark:text-red-500 hover:underline">Deletar</button>
                                             </form>
                                             @endcan
-                                        </td>
-                                        @endif
-                                    </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 6 : 5 }}"
-                                            class="px-6 py-4 text-center">Nenhum patrimônio encontrado para os
-                                            filtros atuais.</td>
-                                    </tr>
-                                    @endforelse
-                                </tbody>
+                                        </div>
+                                    </td>
+                                    @endif
+                                </tr>
+                                @empty
+                                <tr>
+                                    {{-- Corrigindo o colspan para o número correto de colunas --}}
+                                    <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 15 : 14 }}"
+                                        class="px-6 py-4 text-center">Nenhum patrimônio encontrado para os
+                                        filtros atuais.</td>
+                                </tr>
+                                @endforelse
                             </table>
                         </div>
                         <div class="mt-4">
@@ -528,7 +543,7 @@
                     </div>
 
                     {{-- ÁREA DE CONTEÚDO COM ROLAGEM --}}
-                    <div class="flex-1 min-h-0 overflow-y-auto border-t border-b dark:border-gray-700">
+                    <div class="overflow-y-auto border-t border-b dark:border-gray-700 py-4" style="height: 400px;">
                         <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0">
                                 <tr>
