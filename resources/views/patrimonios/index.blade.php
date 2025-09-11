@@ -117,51 +117,46 @@
                             </div>
                             <div x-show="open" x-transition class="mt-4" style="display: none;">
                                 <form method="GET" action="{{ route('patrimonios.index') }}">
-                                    <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-4 lg:grid-cols-1 xl:grid-cols-1 gap-3">
-
+                                    <div class="flex flex-wrap items-center gap-3">
                                         {{-- FILTRO: Nº Patrimônio --}}
-                                        <input type="text" name="nupatrimonio" placeholder="Buscar por Nº Pat."
-                                            value="{{ request('nupatrimonio') }}"
-                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                                        <input type="text" name="nupatrimonio" placeholder="Nº Pat." value="{{ request('nupatrimonio') }}"
+                                            class="h-10 px-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm" />
 
                                         {{-- FILTRO: Cód. de Projeto --}}
-                                        <input type="text" name="cdprojeto" placeholder="Buscar por Cód. Projeto"
-                                            value="{{ request('cdprojeto') }}"
-                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                                        <input type="text" name="cdprojeto" placeholder="Cód. Projeto" value="{{ request('cdprojeto') }}"
+                                            class="h-10 px-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm" />
 
                                         {{-- FILTRO: Descrição --}}
-                                        <input type="text" name="descricao" placeholder="Buscar por Descrição..."
-                                            value="{{ request('descricao') }}"
-                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                                        <input type="text" name="situacao" placeholder="Buscar por Situação..."
-                                            value="{{ request('situacao') }}"
-                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                                        <input type="text" name="modelo" placeholder="Buscar por Modelo..."
-                                            value="{{ request('modelo') }}"
-                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                                        <input type="number" name="nmplanta" placeholder="Buscar por Cód. Termo..."
-                                            value="{{ request('nmplanta') }}"
-                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                                        <input type="text" name="descricao" placeholder="Descrição" value="{{ request('descricao') }}"
+                                            class="h-10 px-3 min-w-[220px] flex-1 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm" />
+
+                                        <input type="text" name="situacao" placeholder="Situação" value="{{ request('situacao') }}"
+                                            class="h-10 px-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm" />
+
+                                        <input type="text" name="modelo" placeholder="Modelo" value="{{ request('modelo') }}"
+                                            class="h-10 px-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm" />
+
+                                        <input type="number" name="nmplanta" placeholder="Cód. Termo" value="{{ request('nmplanta') }}"
+                                            class="h-10 px-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm" />
+
                                         @if (Auth::user()->PERFIL === 'ADM')
-                                        <select name="cadastrado_por"
-                                            class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                                        <select name="cadastrado_por" class="h-10 px-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
                                             <option value="">Todos os Usuários</option>
                                             @foreach ($cadastradores as $cadastrador)
-                                            <option value="{{ $cadastrador->CDMATRFUNCIONARIO }}"
-                                                @selected(request('cadastrado_por')==$cadastrador->CDMATRFUNCIONARIO)>
+                                            <option value="{{ $cadastrador->CDMATRFUNCIONARIO }}" @selected(request('cadastrado_por')==$cadastrador->CDMATRFUNCIONARIO)>
                                                 {{ $cadastrador->NOMEUSER }}
                                             </option>
                                             @endforeach
                                         </select>
                                         @endif
                                     </div>
-                                    <div class="flex items-center mt-4">
-                                        <x-primary-button>
+
+                                    <div class="flex justify-start items-center gap-3 mt-3">
+                                        <x-primary-button class="h-10 px-4">
                                             {{ __('Filtrar') }}
                                         </x-primary-button>
-                                        <a href="{{ route('patrimonios.index') }}"
-                                            class="ml-4 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">
-                                            Limpar Filtros
+                                        <a href="{{ route('patrimonios.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">
+                                            Limpar
                                         </a>
                                     </div>
                                 </form>
