@@ -1,8 +1,8 @@
 @props(['patrimonio' => null])
-<div x-data='patrimonioForm({ patrimonio: @json($patrimonio) })' @keydown.enter.prevent="focusNext($event.target)">
+<div x-data='patrimonioForm({ patrimonio: @json($patrimonio) })' @keydown.enter.prevent="focusNext($event.target)" class="space-y-6">
 
-    {{-- Primeira Linha --}}
-    <div class="grid grid-cols-3 gap-6">
+    {{-- GRUPO 1: N° Patrimônio, N° OC, Campo Vazio --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
             <x-input-label for="NUPATRIMONIO" value="Nº Patrimônio *" />
             <div class="relative mt-1">
@@ -13,7 +13,7 @@
                     id="NUPATRIMONIO"
                     name="NUPATRIMONIO"
                     type="number"
-                    class="block w-full pr-10" {{-- Padding para a lupa --}}
+                    class="block w-full pr-10"
                     required />
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                     <button @click="openSearchModal" type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none">
@@ -35,27 +35,27 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
+    {{-- GRUPO 2: Código e Descrição --}}
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div class="md:col-span-1">
             <x-input-label for="CODOBJETO" value="Código *" />
-            {{-- ADIÇÃO: @blur para a nova funcionalidade --}}
             <x-text-input data-index="4" @blur="buscarDescricaoCodigo()" @change="buscarDescricaoCodigo()" x-model="formData.CODOBJETO" id="CODOBJETO" name="CODOBJETO" type="number" class="mt-1 block w-full" required />
         </div>
         <div class="md:col-span-3">
             <x-input-label for="DEPATRIMONIO" value="Descrição do Código" />
-            {{-- ADIÇÃO: readonly e estilo para campo automático --}}
             <x-text-input data-index="5" x-model="formData.DEPATRIMONIO" id="DEPATRIMONIO" name="DEPATRIMONIO" type="text" class="mt-1 block w-full bg-gray-100 dark:bg-gray-900" readonly />
         </div>
     </div>
 
-    <div class="mt-4">
+    {{-- GRUPO 3: Observação --}}
+    <div>
         <x-input-label for="DEHISTORICO" value="Observação" />
         <textarea data-index="6" x-model="formData.DEHISTORICO" id="DEHISTORICO" name="DEHISTORICO" rows="2" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm"></textarea>
     </div>
 
-    {{-- Quarta Linha --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-        <div>
+    {{-- GRUPO 4: Projeto, Local e Cód. Termo --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2">
             <x-input-label for="CDPROJETO" value="Projeto" />
             <div class="flex items-center space-x-2">
                 <x-text-input @blur="buscarProjetoELocais" x-model="formData.CDPROJETO" data-index="7" id="CDPROJETO" name="CDPROJETO" type="number" class="mt-1 block w-1/3" />
@@ -63,6 +63,10 @@
             </div>
         </div>
         <div>
+            <x-input-label for="NMPLANTA" value="Cód Termo" />
+            <x-text-input data-index="8" x-model="formData.NMPLANTA" id="NMPLANTA" name="NMPLANTA" type="number" class="mt-1 block w-full" />
+        </div>
+        <div class="md:col-span-3">
             <x-input-label for="CDLOCAL" value="Local" />
             <select data-index="9" x-model="formData.CDLOCAL" id="CDLOCAL" name="CDLOCAL" class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" :disabled="locais.length === 0">
                 <option value="">Selecione um local...</option>
@@ -71,13 +75,10 @@
                 </template>
             </select>
         </div>
-        <div>
-            <x-input-label for="NMPLANTA" value="Cód Termo" />
-            <x-text-input data-index="9" x-model="formData.NMPLANTA" id="NMPLANTA" name="NMPLANTA" type="number" class="mt-1 block w-full" />
-        </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+    {{-- GRUPO 5: Marca, Modelo, Situação --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-gray-200 dark:border-gray-700">
         <div>
             <x-input-label for="MARCA" value="Marca" />
             <x-text-input data-index="11" x-model="formData.MARCA" id="MARCA" name="MARCA" type="text" class="mt-1 block w-full" />
@@ -97,8 +98,8 @@
         </div>
     </div>
 
-    {{-- Datas (última linha do formulário) --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+    {{-- GRUPO 6: Datas --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
             <x-input-label for="DTAQUISICAO" value="Data de Aquisição" />
             <x-text-input data-index="14" x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" class="mt-1 block w-full" />
@@ -109,6 +110,7 @@
         </div>
     </div>
 
+    {{-- MODAL DE PESQUISA (Não mexe na estrutura, fica no final) --}}
     <div x-show="searchModalOpen" @keydown.window.escape="closeSearchModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="display: none;">
         <div @click.away="closeSearchModal" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg p-6">
             <h3 class="text-lg font-semibold mb-4">Pesquisar Patrimônio</h3>
@@ -144,7 +146,7 @@
                 DEHISTORICO: config.patrimonio?.DEHISTORICO || '',
                 CDPROJETO: config.patrimonio?.CDPROJETO || '',
                 CDLOCAL: config.patrimonio?.CDLOCAL || '',
-                NMPLANTA: config.patrimonio?.NMPLANTA || '', // Adicionado para edição
+                NMPLANTA: config.patrimonio?.NMPLANTA || '',
                 MARCA: config.patrimonio?.MARCA || '',
                 MODELO: config.patrimonio?.MODELO || '',
                 SITUACAO: config.patrimonio?.SITUACAO || 'EM USO',
@@ -161,7 +163,6 @@
             locais: [],
 
             // == FUNÇÕES ==
-
             openSearchModal() {
                 this.searchModalOpen = true;
                 this.search();
@@ -171,7 +172,6 @@
                 this.searchTerm = '';
                 this.searchResults = [];
             },
-
             async search() {
                 this.loadingSearch = true;
                 try {
@@ -183,13 +183,11 @@
                     this.loadingSearch = false;
                 }
             },
-
             selectPatrimonio(item) {
                 this.formData.NUPATRIMONIO = item.NUPATRIMONIO;
                 this.buscarPatrimonio();
                 this.closeSearchModal();
             },
-
             async buscarPatrimonio() {
                 if (!this.formData.NUPATRIMONIO) return;
                 this.loading = true;
@@ -197,18 +195,15 @@
                     const response = await fetch(`/api/patrimonios/buscar/${this.formData.NUPATRIMONIO}`);
                     if (response.ok) {
                         const data = await response.json();
-                        const originalCdLocal = this.formData.CDLOCAL; // Guarda o valor original
-
                         Object.keys(this.formData).forEach(key => {
                             if (data.hasOwnProperty(key) && data[key] !== null) {
                                 if (key.startsWith('DT')) this.formData[key] = data[key].split(' ')[0];
                                 else this.formData[key] = data[key];
                             }
                         });
-
                         if (this.formData.CDPROJETO) {
-                            await this.buscarProjetoELocais(); // Espera a busca terminar
-                            this.formData.CDLOCAL = data.CDLOCAL; // Restaura o valor
+                            await this.buscarProjetoELocais();
+                            this.formData.CDLOCAL = data.CDLOCAL;
                         }
                     } else {
                         const numPatrimonio = this.formData.NUPATRIMONIO;
@@ -223,7 +218,6 @@
                     this.loading = false;
                 }
             },
-
             async buscarDescricaoCodigo() {
                 this.formData.DEPATRIMONIO = 'Buscando...';
                 if (!this.formData.CODOBJETO) {
@@ -242,23 +236,19 @@
                     this.formData.DEPATRIMONIO = 'Erro na busca.';
                 }
             },
-
             async buscarProjetoELocais() {
                 this.nomeProjeto = 'Buscando...';
                 this.locais = [];
-                // NÃO limpa o CDLOCAL aqui para permitir a restauração no modo de edição
                 if (!this.formData.CDPROJETO) {
                     this.nomeProjeto = '';
                     return;
                 }
-
                 try {
                     const projResponse = await fetch(`/api/projetos/buscar/${this.formData.CDPROJETO}`);
                     this.nomeProjeto = projResponse.ok ? (await projResponse.json()).NOMEPROJETO : 'Projeto não encontrado';
                 } catch (error) {
                     this.nomeProjeto = 'Erro na busca';
                 }
-
                 try {
                     const locaisResponse = await fetch(`/api/locais/${this.formData.CDPROJETO}`);
                     if (locaisResponse.ok) this.locais = await locaisResponse.json();
@@ -266,7 +256,6 @@
                     console.error('Erro ao buscar locais:', error);
                 }
             },
-
             focusNext(currentElement) {
                 const focusable = Array.from(currentElement.closest('form').querySelectorAll('input:not([readonly]):not([disabled]), select:not([readonly]):not([disabled]), textarea:not([readonly]):not([disabled])'));
                 const currentIndex = focusable.indexOf(currentElement);
@@ -277,17 +266,10 @@
                     currentElement.closest('form').querySelector('button[type="submit"]')?.focus();
                 }
             },
-
-            // Lógica de inicialização CORRIGIDA
             async init() {
                 if (config.patrimonio && config.patrimonio.CDPROJETO) {
-                    // Guarda o valor original do local que queremos selecionar
                     const targetCdLocal = config.patrimonio.CDLOCAL;
-
-                    // Busca o nome do projeto e a lista de locais
                     await this.buscarProjetoELocais();
-
-                    // Apenas DEPOIS que a busca terminar, nós definimos o valor do select
                     this.formData.CDLOCAL = targetCdLocal;
                 }
             }

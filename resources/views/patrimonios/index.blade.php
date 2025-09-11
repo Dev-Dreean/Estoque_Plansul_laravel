@@ -223,9 +223,8 @@
                                 </thead>
                                 <tbody>
                                     @forelse ($patrimonios as $patrimonio)
-                                    <tr
-                                        class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm">
+                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm cursor-pointer"
+                                        @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
                                         <td class="px-4 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
                                         <td class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $patrimonio->DEPATRIMONIO }}</td>
                                         <td class="px-4 py-2">{{ $patrimonio->SITUACAO }}</td>
@@ -242,13 +241,10 @@
                                         @if(Auth::user()->PERFIL === 'ADM')
                                         <td class="px-6 py-4 flex items-center space-x-2">
                                             @can('update', $patrimonio)
-                                            <a href="{{ route('patrimonios.edit', $patrimonio) }}"
-                                                class="font-medium text-plansul-orange dark:text-orange-400 hover:underline">Editar</a>
-                                            @endcan
-                                            @can('delete', $patrimonio)
                                             <form method="POST"
                                                 action="{{ route('patrimonios.destroy', $patrimonio) }}"
-                                                onsubmit="return confirm('Tem certeza que deseja deletar este item?');">
+                                                onsubmit="return confirm('Tem certeza que deseja deletar este item?');"
+                                                @click.stop>
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
@@ -347,24 +343,23 @@
                                     </div>
                                 </div>
                             </div>
-                            <div x-show="tipoRelatorio === 'projeto'"
-                                class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                            <div x-show="tipoRelatorio === 'numero'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                <div>
+                                    <label for="numero_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Número do Patrimônio</label>
+                                    <input type="number" id="numero_busca" name="numero_busca" placeholder="Digite o número" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                                </div>
+                            </div>
+
+                            <div x-show="tipoRelatorio === 'aquisicao'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display: none;">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div><label for="projeto_busca"
-                                            class="block font-medium text-sm text-gray-700 dark:text-gray-300">Projeto</label><input
-                                            type="text" id="projeto_busca" name="projeto_busca"
-                                            placeholder="Digite o número ou nome"
-                                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                                    <div>
+                                        <label for="data_inicio_aquisicao" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Data Início</label>
+                                        <input type="date" id="data_inicio_aquisicao" name="data_inicio_aquisicao" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
                                     </div>
-                                    <div><label for="local_id"
-                                            class="block font-medium text-sm text-gray-700 dark:text-gray-300">Local</label><select
-                                            id="local_id" name="local_id"
-                                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                                            <option value="">Selecione um local</option>
-                                            @foreach ($locais as $local)
-                                            <option value="{{ $local->codigo }}">{{ $local->descricao }}</option>
-                                            @endforeach
-                                        </select></div>
+                                    <div>
+                                        <label for="data_fim_aquisicao" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Data Fim</label>
+                                        <input type="date" id="data_fim_aquisicao" name="data_fim_aquisicao" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                                    </div>
                                 </div>
                             </div>
                             <div x-show="tipoRelatorio === 'oc'"
@@ -414,8 +409,7 @@
         {{-- INÍCIO DO NOVO MODAL DE RESULTADOS --}}
         <div x-show="resultadosModalOpen" x-transition
             class="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center" style="display: none;">
-            <div @click.outside="resultadosModalOpen = false"
-                class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl p-6 max-h-[90vh] flex flex-col">
+            <div @click.outside="resultadosModalOpen = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-7xl p-6 max-h-[90vh] flex flex-col">
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Resultado do Relatório</h3>
                 <div class="flex-grow overflow-y-auto">
                     <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
@@ -516,7 +510,7 @@
 
         {{-- Modal: Atribuir Código de Termo (controlado por 'atribuirTermoModalOpen') --}}
         <div x-show="atribuirTermoModalOpen" x-transition class="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center" style="display: none;">
-            <div @click.outside="atribuirTermoModalOpen = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl p-6 max-h-[90vh] flex flex-col">
+            <div @click.outside="atribuirTermoModalOpen = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl p-6 max-h-[80vh] flex flex-col">
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Atribuir Código de Termo</h3>
                 <form action="{{ route('termos.atribuir.store') }}" method="POST">
                     @csrf
@@ -534,6 +528,7 @@
                                     <th class="p-4 w-4"></th>
                                     <th class="px-2 py-3">Nº Pat.</th>
                                     <th class="px-2 py-3">Descrição</th>
+                                    <th class="px-2 py-3">Cód. Termo</th>
                                     <th class="px-2 py-3">Modelo</th>
                                 </tr>
                             </thead>
@@ -542,7 +537,7 @@
                                 <tr class="border-b dark:border-gray-700">
                                     <td class="p-4"><input type="checkbox" name="patrimonio_ids[]" value="{{ $patrimonio->NUSEQPATR }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"></td>
                                     <td class="px-2 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
-                                    <td class="px-2 py-2">{{ $patrimonio->DEPATRIMONIO }}</td>
+                                    <td class="px-2 py-2 font-bold">{{ $patrimonio->NMPLANTA }}</td>
                                     <td class="px-2 py-2">{{ $patrimonio->MODELO }}</td>
                                 </tr>
                                 @empty

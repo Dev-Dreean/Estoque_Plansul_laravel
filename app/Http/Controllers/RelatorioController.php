@@ -19,9 +19,9 @@ class RelatorioController extends Controller
     public function create(): View
     {
         $locais = Tabfant::where('TIPO', 'LOCAL')
-                        ->select('id as codigo', 'LOCAL as descricao')
-                        ->orderBy('descricao')
-                        ->get();
+            ->select('id as codigo', 'LOCAL as descricao')
+            ->orderBy('descricao')
+            ->get();
 
         return view('relatorios.patrimonios.create', compact('locais'));
     }
@@ -45,12 +45,30 @@ class RelatorioController extends Controller
         $query = Patrimonio::query()->with('usuario', 'local');
 
         switch ($validated['tipo_relatorio']) {
-            case 'numero': $query->orderBy('NUPATRIMONIO'); break;
-            case 'descricao': $query->orderBy('DEPATRIMONIO'); break;
-            case 'aquisicao': $query->whereBetween('DTAQUISICAO', [$validated['data_inicio_aquisicao'], $validated['data_fim_aquisicao']]); break;
-            case 'cadastro': $query->whereBetween('DTOPERACAO', [$validated['data_inicio_cadastro'], $validated['data_fim_cadastro']]); break;
-            case 'projeto': $query->where('CDLOCAL', $validated['local_id']); break;
-            case 'oc': $query->where('NUMOF', $validated['oc_busca']); break;
+            case 'numero':
+                // Adiciona esta validação primeiro
+                $validated = $request->validate(['numero_busca' => 'nullable|integer']);
+                // Adiciona a condição 'where' para filtrar
+                if (!empty($validated['numero_busca'])) {
+                    $query->where('NUPATRIMONIO', $validated['numero_busca']);
+                }
+                $query->orderBy('NUPATRIMONIO');
+                break;
+            case 'descricao':
+                $query->orderBy('DEPATRIMONIO');
+                break;
+            case 'aquisicao':
+                $query->whereBetween('DTAQUISICAO', [$validated['data_inicio_aquisicao'], $validated['data_fim_aquisicao']]);
+                break;
+            case 'cadastro':
+                $query->whereBetween('DTOPERACAO', [$validated['data_inicio_cadastro'], $validated['data_fim_cadastro']]);
+                break;
+            case 'projeto':
+                $query->where('CDLOCAL', $validated['local_id']);
+                break;
+            case 'oc':
+                $query->where('NUMOF', $validated['oc_busca']);
+                break;
         }
 
         $resultados = $query->get();
@@ -66,20 +84,35 @@ class RelatorioController extends Controller
     {
         $validated = $request->validate([
             'tipo_relatorio' => 'required|string|in:numero,descricao,aquisicao,cadastro,projeto,oc',
-            'data_inicio_aquisicao' => 'nullable|date', 'data_fim_aquisicao' => 'nullable|date',
-            'data_inicio_cadastro' => 'nullable|date', 'data_fim_cadastro' => 'nullable|date',
-            'projeto_busca' => 'nullable|string', 'local_id' => 'nullable|integer|exists:tabfant,id',
+            'data_inicio_aquisicao' => 'nullable|date',
+            'data_fim_aquisicao' => 'nullable|date',
+            'data_inicio_cadastro' => 'nullable|date',
+            'data_fim_cadastro' => 'nullable|date',
+            'projeto_busca' => 'nullable|string',
+            'local_id' => 'nullable|integer|exists:tabfant,id',
             'oc_busca' => 'nullable|string',
         ]);
 
         $query = Patrimonio::query()->with('usuario', 'local');
         switch ($validated['tipo_relatorio']) {
-            case 'numero': $query->orderBy('NUPATRIMONIO'); break;
-            case 'descricao': $query->orderBy('DEPATRIMONIO'); break;
-            case 'aquisicao': $query->whereBetween('DTAQUISICAO', [$validated['data_inicio_aquisicao'], $validated['data_fim_aquisicao']]); break;
-            case 'cadastro': $query->whereBetween('DTOPERACAO', [$validated['data_inicio_cadastro'], $validated['data_fim_cadastro']]); break;
-            case 'projeto': $query->where('CDLOCAL', $validated['local_id']); break;
-            case 'oc': $query->where('NUMOF', $validated['oc_busca']); break;
+            case 'numero':
+                $query->orderBy('NUPATRIMONIO');
+                break;
+            case 'descricao':
+                $query->orderBy('DEPATRIMONIO');
+                break;
+            case 'aquisicao':
+                $query->whereBetween('DTAQUISICAO', [$validated['data_inicio_aquisicao'], $validated['data_fim_aquisicao']]);
+                break;
+            case 'cadastro':
+                $query->whereBetween('DTOPERACAO', [$validated['data_inicio_cadastro'], $validated['data_fim_cadastro']]);
+                break;
+            case 'projeto':
+                $query->where('CDLOCAL', $validated['local_id']);
+                break;
+            case 'oc':
+                $query->where('NUMOF', $validated['oc_busca']);
+                break;
         }
         return $query;
     }
@@ -92,7 +125,26 @@ class RelatorioController extends Controller
 
         foreach ($query->cursor() as $patrimonio) {
             $writer->addRow([
-                'N° Patrimônio' => $patrimonio->NUPATRIMONIO, 'Descrição' => $patrimonio->DEPATRIMONIO, 'Situação' => $patrimonio->SITUACAO, 'Marca' => $patrimonio->MARCA, 'Modelo' => $patrimonio->MODELO, 'N° Série' => $patrimonio->NUSERIE, 'Cor' => $patrimonio->COR, 'Dimensão' => $patrimonio->DIMENSAO, 'Características' => $patrimonio->CARACTERISTICAS, 'Histórico' => $patrimonio->DEHISTORICO, 'Local (Nome)' => $patrimonio->local->LOCAL ?? 'N/A', 'Local Interno (Cód)' => $patrimonio->CDLOCALINTERNO, 'Projeto (Cód)' => $patrimonio->CDPROJETO, 'Data de Aquisição' => $patrimonio->DTAQUISICAO, 'Data de Baixa' => $patrimonio->DTBAIXA, 'Data de Garantia' => $patrimonio->DTGARANTIA, 'Cadastrado Por' => $patrimonio->usuario->NOMEUSER ?? 'N/A', 'Data de Cadastro' => $patrimonio->DTOPERACAO, 'OF' => $patrimonio->NUMOF, 'Cód. Objeto' => $patrimonio->CODOBJETO,
+                'N° Patrimônio' => $patrimonio->NUPATRIMONIO,
+                'Descrição' => $patrimonio->DEPATRIMONIO,
+                'Situação' => $patrimonio->SITUACAO,
+                'Marca' => $patrimonio->MARCA,
+                'Modelo' => $patrimonio->MODELO,
+                'N° Série' => $patrimonio->NUSERIE,
+                'Cor' => $patrimonio->COR,
+                'Dimensão' => $patrimonio->DIMENSAO,
+                'Características' => $patrimonio->CARACTERISTICAS,
+                'Histórico' => $patrimonio->DEHISTORICO,
+                'Local (Nome)' => $patrimonio->local->LOCAL ?? 'N/A',
+                'Local Interno (Cód)' => $patrimonio->CDLOCALINTERNO,
+                'Projeto (Cód)' => $patrimonio->CDPROJETO,
+                'Data de Aquisição' => $patrimonio->DTAQUISICAO,
+                'Data de Baixa' => $patrimonio->DTBAIXA,
+                'Data de Garantia' => $patrimonio->DTGARANTIA,
+                'Cadastrado Por' => $patrimonio->usuario->NOMEUSER ?? 'N/A',
+                'Data de Cadastro' => $patrimonio->DTOPERACAO,
+                'OF' => $patrimonio->NUMOF,
+                'Cód. Objeto' => $patrimonio->CODOBJETO,
             ]);
         }
         return response()->download($filePath)->deleteFileAfterSend(true);
@@ -106,7 +158,26 @@ class RelatorioController extends Controller
 
         foreach ($query->cursor() as $patrimonio) {
             $writer->addRow([
-                'N° Patrimônio' => $patrimonio->NUPATRIMONIO, 'Descrição' => $patrimonio->DEPATRIMONIO, 'Situação' => $patrimonio->SITUACAO, 'Marca' => $patrimonio->MARCA, 'Modelo' => $patrimonio->MODELO, 'N° Série' => $patrimonio->NUSERIE, 'Cor' => $patrimonio->COR, 'Dimensão' => $patrimonio->DIMENSAO, 'Características' => $patrimonio->CARACTERISTICAS, 'Histórico' => $patrimonio->DEHISTORICO, 'Local (Nome)' => $patrimonio->local->LOCAL ?? 'N/A', 'Local Interno (Cód)' => $patrimonio->CDLOCALINTERNO, 'Projeto (Cód)' => $patrimonio->CDPROJETO, 'Data de Aquisição' => $patrimonio->DTAQUISICAO, 'Data de Baixa' => $patrimonio->DTBAIXA, 'Data de Garantia' => $patrimonio->DTGARANTIA, 'Cadastrado Por' => $patrimonio->usuario->NOMEUSER ?? 'N/A', 'Data de Cadastro' => $patrimonio->DTOPERACAO, 'OF' => $patrimonio->NUMOF, 'Cód. Objeto' => $patrimonio->CODOBJETO,
+                'N° Patrimônio' => $patrimonio->NUPATRIMONIO,
+                'Descrição' => $patrimonio->DEPATRIMONIO,
+                'Situação' => $patrimonio->SITUACAO,
+                'Marca' => $patrimonio->MARCA,
+                'Modelo' => $patrimonio->MODELO,
+                'N° Série' => $patrimonio->NUSERIE,
+                'Cor' => $patrimonio->COR,
+                'Dimensão' => $patrimonio->DIMENSAO,
+                'Características' => $patrimonio->CARACTERISTICAS,
+                'Histórico' => $patrimonio->DEHISTORICO,
+                'Local (Nome)' => $patrimonio->local->LOCAL ?? 'N/A',
+                'Local Interno (Cód)' => $patrimonio->CDLOCALINTERNO,
+                'Projeto (Cód)' => $patrimonio->CDPROJETO,
+                'Data de Aquisição' => $patrimonio->DTAQUISICAO,
+                'Data de Baixa' => $patrimonio->DTBAIXA,
+                'Data de Garantia' => $patrimonio->DTGARANTIA,
+                'Cadastrado Por' => $patrimonio->usuario->NOMEUSER ?? 'N/A',
+                'Data de Cadastro' => $patrimonio->DTOPERACAO,
+                'OF' => $patrimonio->NUMOF,
+                'Cód. Objeto' => $patrimonio->CODOBJETO,
             ]);
         }
         return response()->download($filePath)->deleteFileAfterSend(true);
@@ -120,7 +191,26 @@ class RelatorioController extends Controller
 
         foreach ($query->cursor() as $patrimonio) {
             $writer->addRow([
-                'N° Patrimônio' => $patrimonio->NUPATRIMONIO, 'Descrição' => $patrimonio->DEPATRIMONIO, 'Situação' => $patrimonio->SITUACAO, 'Marca' => $patrimonio->MARCA, 'Modelo' => $patrimonio->MODELO, 'N° Série' => $patrimonio->NUSERIE, 'Cor' => $patrimonio->COR, 'Dimensão' => $patrimonio->DIMENSAO, 'Características' => $patrimonio->CARACTERISTICAS, 'Histórico' => $patrimonio->DEHISTORICO, 'Local (Nome)' => $patrimonio->local->LOCAL ?? 'N/A', 'Local Interno (Cód)' => $patrimonio->CDLOCALINTERNO, 'Projeto (Cód)' => $patrimonio->CDPROJETO, 'Data de Aquisição' => $patrimonio->DTAQUISICAO, 'Data de Baixa' => $patrimonio->DTBAIXA, 'Data de Garantia' => $patrimonio->DTGARANTIA, 'Cadastrado Por' => $patrimonio->usuario->NOMEUSER ?? 'N/A', 'Data de Cadastro' => $patrimonio->DTOPERACAO, 'OF' => $patrimonio->NUMOF, 'Cód. Objeto' => $patrimonio->CODOBJETO,
+                'N° Patrimônio' => $patrimonio->NUPATRIMONIO,
+                'Descrição' => $patrimonio->DEPATRIMONIO,
+                'Situação' => $patrimonio->SITUACAO,
+                'Marca' => $patrimonio->MARCA,
+                'Modelo' => $patrimonio->MODELO,
+                'N° Série' => $patrimonio->NUSERIE,
+                'Cor' => $patrimonio->COR,
+                'Dimensão' => $patrimonio->DIMENSAO,
+                'Características' => $patrimonio->CARACTERISTICAS,
+                'Histórico' => $patrimonio->DEHISTORICO,
+                'Local (Nome)' => $patrimonio->local->LOCAL ?? 'N/A',
+                'Local Interno (Cód)' => $patrimonio->CDLOCALINTERNO,
+                'Projeto (Cód)' => $patrimonio->CDPROJETO,
+                'Data de Aquisição' => $patrimonio->DTAQUISICAO,
+                'Data de Baixa' => $patrimonio->DTBAIXA,
+                'Data de Garantia' => $patrimonio->DTGARANTIA,
+                'Cadastrado Por' => $patrimonio->usuario->NOMEUSER ?? 'N/A',
+                'Data de Cadastro' => $patrimonio->DTOPERACAO,
+                'OF' => $patrimonio->NUMOF,
+                'Cód. Objeto' => $patrimonio->CODOBJETO,
             ]);
         }
         return response()->download($filePath)->deleteFileAfterSend(true);

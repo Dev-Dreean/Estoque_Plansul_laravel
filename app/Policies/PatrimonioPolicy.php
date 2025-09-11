@@ -49,7 +49,7 @@ class PatrimonioPolicy
      */
     public function update(User $user, Patrimonio $patrimonio): bool
     {
-        return false;
+        return $user->CDMATRFUNCIONARIO === $patrimonio->CDMATRFUNCIONARIO;
     }
 
     /**
