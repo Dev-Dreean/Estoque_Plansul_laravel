@@ -3,11 +3,22 @@
     relatorioModalOpen: false,
     termoModalOpen: false,
     atribuirTermoModalOpen: false,
+    desatribuirTermoModalOpen: false,
     resultadosModalOpen: false,
     isLoading: false,
     reportData: [],
     reportFilters: {},
     tipoRelatorio: 'numero', // <-- A variável agora vive aqui, no lugar certo.
+    viewMode: 'simple',
+    init() {
+        if (window.location.hash === '#atribuir-termo') {
+            this.atribuirTermoModalOpen = true;
+        }
+        this.$watch('atribuirTermoModalOpen', v => {
+            document.documentElement.classList.toggle('overflow-hidden', v);
+            document.body.classList.toggle('overflow-hidden', v);
+        });
+    },
 
     gerarRelatorio: function(event) {
         this.isLoading = true;
@@ -105,7 +116,7 @@
                     <div class="p-6 text-gray-900 dark:text-gray-100">
 
                         {{-- Formulário de Filtro --}}
-                        <div x-data="{ open: {{ !empty(array_filter(request()->except(['page', 'sort', 'direction']))) ? 'true' : 'false' }} }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
+                        <div x-data="{ open: false }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
                             <div @click="open = !open" class="flex justify-between items-center cursor-pointer">
                                 <h3 class="font-semibold text-lg">Filtros de Busca</h3>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform"
@@ -116,54 +127,70 @@
                                 </svg>
                             </div>
                             <div x-show="open" x-transition class="mt-4" style="display: none;">
-                                <form method="GET" action="{{ route('patrimonios.index') }}">
-                                    <div class="flex flex-wrap items-center gap-3">
-                                        {{-- FILTRO: Nº Patrimônio --}}
-                                        <input type="text" name="nupatrimonio" placeholder="Nº Pat." value="{{ request('nupatrimonio') }}"
-                                            class="h-10 px-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm" />
-
-                                        {{-- FILTRO: Cód. de Projeto --}}
-                                        <input type="text" name="cdprojeto" placeholder="Cód. Projeto" value="{{ request('cdprojeto') }}"
-                                            class="h-10 px-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm" />
-
-                                        {{-- FILTRO: Descrição --}}
-                                        <input type="text" name="descricao" placeholder="Descrição" value="{{ request('descricao') }}"
-                                            class="h-10 px-3 min-w-[220px] flex-1 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm" />
-
-                                        <input type="text" name="situacao" placeholder="Situação" value="{{ request('situacao') }}"
-                                            class="h-10 px-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm" />
-
-                                        <input type="text" name="modelo" placeholder="Modelo" value="{{ request('modelo') }}"
-                                            class="h-10 px-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm" />
-
-                                        <input type="number" name="nmplanta" placeholder="Cód. Termo" value="{{ request('nmplanta') }}"
-                                            class="h-10 px-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm" />
-
+                                <form method="GET" action="{{ route('patrimonios.index') }}" @submit="open=false">
+                                    <div class="grid gap-3 sm:gap-4" style="grid-template-columns: repeat(auto-fit,minmax(150px,1fr));">
+                                        <div>
+                                            <input type="text" name="nupatrimonio" placeholder="Nº Patr." value="{{ request('nupatrimonio') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                        </div>
+                                        <div>
+                                            <input type="text" name="cdprojeto" placeholder="Cód. Projeto" value="{{ request('cdprojeto') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                        </div>
+                                        <div class="col-span-full md:col-span-2">
+                                            <input type="text" name="descricao" placeholder="Descrição" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                        </div>
+                                        <div>
+                                            <input type="text" name="situacao" placeholder="Situação" value="{{ request('situacao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                        </div>
+                                        <div>
+                                            <input type="text" name="modelo" placeholder="Modelo" value="{{ request('modelo') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                        </div>
+                                        <div>
+                                            <input type="number" name="nmplanta" placeholder="Cód. Termo" value="{{ request('nmplanta') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                        </div>
                                         @if (Auth::user()->PERFIL === 'ADM')
-                                        <select name="cadastrado_por" class="h-10 px-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
-                                            <option value="">Todos os Usuários</option>
-                                            @foreach ($cadastradores as $cadastrador)
-                                            <option value="{{ $cadastrador->CDMATRFUNCIONARIO }}" @selected(request('cadastrado_por')==$cadastrador->CDMATRFUNCIONARIO)>
-                                                {{ $cadastrador->NOMEUSER }}
-                                            </option>
-                                            @endforeach
-                                        </select>
+                                        <div>
+                                            <select name="cadastrado_por" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
+                                                <option value="">Usuário</option>
+                                                <option value="SISTEMA" @selected(request('cadastrado_por')==='SISTEMA' )>Sistema</option>
+                                                @foreach ($cadastradores as $cadastrador)
+                                                <option value="{{ $cadastrador->CDMATRFUNCIONARIO }}" @selected(request('cadastrado_por')==$cadastrador->CDMATRFUNCIONARIO)>
+                                                    {{ Str::limit($cadastrador->NOMEUSER,18) }}
+                                                </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
                                         @endif
                                     </div>
 
-                                    <div class="flex justify-start items-center gap-3 mt-3">
-                                        <x-primary-button class="h-10 px-4">
-                                            {{ __('Filtrar') }}
-                                        </x-primary-button>
-                                        <a href="{{ route('patrimonios.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">
-                                            Limpar
-                                        </a>
+                                    <div class="flex flex-wrap items-center justify-between mt-4 gap-4">
+                                        <div class="flex items-center gap-3">
+                                            <x-primary-button class="h-10 px-4">
+                                                {{ __('Filtrar') }}
+                                            </x-primary-button>
+
+                                            <a href="{{ route('patrimonios.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">
+                                                Limpar
+                                            </a>
+                                        </div>
+
+                                        <label class="flex items-center gap-2 ml-auto shrink-0">
+                                            <span class="text-sm text-gray-700 dark:text-gray-300">Itens por página</span>
+                                            <select name="per_page" class="h-10 px-10 pr-8 w-20 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
+                                                @foreach([10,30,50,100,200] as $opt)
+                                                <option value="{{ $opt }}" @selected(request('per_page', 30)==$opt)>{{ $opt }}</option>
+                                                @endforeach
+                                            </select>
+                                        </label>
                                     </div>
                                 </form>
                             </div>
                         </div>
 
                         <div class="flex justify-end items-center mb-4 space-x-4">
+                            <button @click="desatribuirTermoModalOpen = true" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                                <x-heroicon-o-minus-circle class="w-5 h-5 mr-2" />
+                                <span>Desatribuir Cód. Termo</span>
+                            </button>
                             <button @click="atribuirTermoModalOpen = true" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
                                 <x-heroicon-o-document-plus class="w-5 h-5 mr-2" />
                                 <span>Atribuir Cód. Termo</span>
@@ -185,18 +212,107 @@
                             </a>
                         </div>
 
-                        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                            <table class="w-full text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                                <thead
-                                    class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                    @php
-                                    function sortable_link($column, $label)
-                                    {
-                                    $direction =
-                                    request('sort') === $column && request('direction') === 'asc'
-                                    ? 'desc'
-                                    : 'asc';
-                                    return '<a href="' .
+                        @php
+                        // Determina se cada coluna (entre as que podem ficar vazias com frequência) está vazia nesta página de resultados
+                        $colVazia = [
+                        'NUMOF' => $patrimonios->every(fn($p)=> blank($p->NUMOF)),
+                        'CODOBJETO' => $patrimonios->every(fn($p)=> blank($p->CODOBJETO)),
+                        'NMPLANTA' => $patrimonios->every(fn($p)=> blank($p->NMPLANTA)),
+                        'NUSERIE' => $patrimonios->every(fn($p)=> blank($p->NUSERIE)),
+                        'CDPROJETO' => $patrimonios->every(fn($p)=> blank($p->CDPROJETO)),
+                        'MODELO' => $patrimonios->every(fn($p)=> blank($p->MODELO)),
+                        'MARCA' => $patrimonios->every(fn($p)=> blank($p->MARCA)),
+                        'COR' => $patrimonios->every(fn($p)=> blank($p->COR)),
+                        'DTAQUISICAO' => $patrimonios->every(fn($p)=> blank($p->DTAQUISICAO)),
+                        'DTOPERACAO' => $patrimonios->every(fn($p)=> blank($p->DTOPERACAO)),
+                        'USUARIO' => $patrimonios->every(fn($p)=> blank($p->usuario?->NOMEUSER)),
+                        ];
+                        $shrink = fn($key) => $colVazia[$key] ? 'w-px px-0 text-[0] overflow-hidden' : 'px-4';
+                        @endphp
+                        <div class="mb-4 flex items-center gap-2">
+                            <span class="text-sm font-medium">Visualização:</span>
+                            <button type="button" @click="viewMode='simple'" :class="viewMode==='simple' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-200'" class="px-3 py-1 rounded text-sm">Simples</button>
+                            <button type="button" @click="viewMode='detailed'" :class="viewMode==='detailed' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-200'" class="px-3 py-1 rounded text-sm">Detalhada</button>
+                        </div>
+
+                        <!-- Tabela Simples -->
+                        <template x-if="viewMode==='simple'">
+                            <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                                <table class="w-full text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                        <tr>
+                                            <th class="px-4 py-3">Nº Pat.</th>
+                                            <th class="px-4 py-3">Cód. Objeto</th>
+                                            <th class="px-4 py-3">Cód. Projeto</th>
+                                            <th class="px-4 py-3">Modelo</th>
+                                            <th class="px-4 py-3">Descrição</th>
+                                            <th class="px-4 py-3">Situação</th>
+                                            <th class="px-4 py-3">Dt. Aquisição</th>
+                                            <th class="px-4 py-3">Dt. Cadastro</th>
+                                            <th class="px-4 py-3">Cadastrado Por</th>
+                                            @if(Auth::user()->PERFIL === 'ADM')
+                                            <th class="px-4 py-3">Ações</th>
+                                            @endif
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($patrimonios as $patrimonio)
+                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm cursor-pointer" @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
+                                            <td class="px-4 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
+                                            <td class="px-4 py-2">{{ $patrimonio->CODOBJETO ?? '' }}</td>
+                                            <td class="px-4 py-2">{{ $patrimonio->CDPROJETO ?? '' }}</td>
+                                            <td class="px-4 py-2">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,10,'...') : '' }}</td>
+                                            <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">{{ Str::limit($patrimonio->DEPATRIMONIO,10,'...') }}</td>
+                                            <td class="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO }}</td>
+                                            <td class="px-4 py-2">{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : '' }}</td>
+                                            <td class="px-4 py-2">{{ $patrimonio->DTOPERACAO ? \Carbon\Carbon::parse($patrimonio->DTOPERACAO)->format('d/m/Y') : '' }}</td>
+                                            <td class="px-4 py-2">{{ $patrimonio->usuario?->NOMEUSER ?? 'SISTEMA' }}</td>
+                                            @if(Auth::user()->PERFIL === 'ADM')
+                                            <td class="px-4 py-2" @click.stop>
+                                                <div class="flex items-center gap-2">
+                                                    @can('delete', $patrimonio)
+                                                    <form method="POST" action="{{ route('patrimonios.destroy', $patrimonio) }}" onsubmit="return confirm('Tem certeza que deseja deletar este item?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-red-600 dark:text-red-500 hover:text-red-700" title="Excluir" aria-label="Excluir patrimônio">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                                                                <polyline points="3 6 5 6 21 6" />
+                                                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                                                <path d="M10 11v6" />
+                                                                <path d="M14 11v6" />
+                                                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                    @endcan
+                                                </div>
+                                            </td>
+                                            @endif
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 10 : 9 }}" class="px-6 py-4 text-center">Nenhum patrimônio encontrado.</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
+
+                        <!-- Tabela Detalhada -->
+                        <template x-if="viewMode==='detailed'">
+                            <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0">
+                                <table class="w-full text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                    <thead
+                                        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                        @php
+                                        function sortable_link($column, $label)
+                                        {
+                                        $direction =
+                                        request('sort') === $column && request('direction') === 'asc'
+                                        ? 'desc'
+                                        : 'asc';
+                                        return '<a href="' .
                                                 route(
                                                     'patrimonios.index',
                                                     array_merge(request()->query(), [
@@ -205,78 +321,83 @@
                                                     ]),
                                                 ) .
                                                 '">' .
-                                        $label .
-                                        '</a>';
-                                    }
-                                    @endphp
-                                    <tr>
-                                        <th class="px-4 py-3">Nº Pat.</th>
-                                        <th class="px-4 py-3">OF</th>
-                                        <th class="px-4 py-3">Cód. Objeto</th>
-                                        <th class="px-4 py-3">Cód. Termo</th>
-                                        <th class="px-4 py-3">Nº Série</th>
-                                        <th class="px-4 py-3">Cód. Projeto</th>
-                                        <th class="px-4 py-3">Modelo</th>
-                                        <th class="px-4 py-3">Marca</th>
-                                        <th class="px-4 py-3">Cor</th>
-                                        <th class="px-4 py-3">Descrição</th>
-                                        <th class="px-4 py-3">Situação</th>
-                                        <th class="px-4 py-3">Dt. Aquisição</th>
-                                        <th class="px-4 py-3">Dt. Cadastro</th>
-                                        <th class="px-4 py-3">Cadastrado Por</th>
+                                            $label .
+                                            '</a>';
+                                        }
+                                        @endphp
+                                        <tr>
+                                            <th class="px-4 py-3">Nº Pat.</th>
+                                            <th class="{{ $shrink('NUMOF') }} py-3">OF</th>
+                                            <th class="{{ $shrink('CODOBJETO') }} py-3">Cód. Objeto</th>
+                                            <th class="{{ $shrink('NMPLANTA') }} py-3">Cód. Termo</th>
+                                            <th class="{{ $shrink('NUSERIE') }} py-3">Nº Série</th>
+                                            <th class="{{ $shrink('CDPROJETO') }} py-3">Cód. Projeto</th>
+                                            <th class="{{ $shrink('MODELO') }} py-3">Modelo</th>
+                                            <th class="{{ $shrink('MARCA') }} py-3">Marca</th>
+                                            <th class="{{ $shrink('COR') }} py-3">Cor</th>
+                                            <th class="px-4 py-3">Descrição</th>
+                                            <th class="px-4 py-3">Situação</th>
+                                            <th class="{{ $shrink('DTAQUISICAO') }} py-3">Dt. Aquisição</th>
+                                            <th class="{{ $shrink('DTOPERACAO') }} py-3">Dt. Cadastro</th>
+                                            <th class="{{ $shrink('USUARIO') }} py-3">Cadastrado Por</th>
+                                            @if(Auth::user()->PERFIL === 'ADM')
+                                            <th class="px-4 py-3">Ações</th>
+                                            @endif
+                                        </tr>
+                                    </thead>
+                                    @forelse ($patrimonios as $patrimonio)
+                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm cursor-pointer"
+                                        @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
+
+                                        {{-- A ordem agora está 100% correta para corresponder ao seu thead --}}
+                                        <td class="px-4 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
+                                        <td class="{{ $shrink('NUMOF') }} py-2">{{ $patrimonio->NUMOF ?? ($colVazia['NUMOF'] ? '' : '') }}</td>
+                                        <td class="{{ $shrink('CODOBJETO') }} py-2">{{ $patrimonio->CODOBJETO ?? ($colVazia['CODOBJETO'] ? '' : '') }}</td>
+                                        <td class="{{ $shrink('NMPLANTA') }} py-2 font-bold">{{ $patrimonio->NMPLANTA ?? ($colVazia['NMPLANTA'] ? '' : '') }}</td>
+                                        <td class="{{ $shrink('NUSERIE') }} py-2">{{ $patrimonio->NUSERIE ?? ($colVazia['NUSERIE'] ? '' : '') }}</td>
+                                        <td class="{{ $shrink('CDPROJETO') }} py-2">{{ $patrimonio->CDPROJETO ?? ($colVazia['CDPROJETO'] ? '' : '') }}</td>
+                                        <td class="{{ $shrink('MODELO') }} py-2">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,10,'...') : ($colVazia['MODELO'] ? '' : '') }}</td>
+                                        <td class="{{ $shrink('MARCA') }} py-2">{{ $patrimonio->MARCA ?? ($colVazia['MARCA'] ? '' : '') }}</td>
+                                        <td class="{{ $shrink('COR') }} py-2">{{ $patrimonio->COR ?? ($colVazia['COR'] ? '' : '') }}</td>
+                                        <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">{{ Str::limit($patrimonio->DEPATRIMONIO,10,'...') }}</td>
+                                        <td class="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO }}</td>
+                                        <td class="{{ $shrink('DTAQUISICAO') }} py-2">{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : ($colVazia['DTAQUISICAO'] ? '' : '') }}</td>
+                                        <td class="{{ $shrink('DTOPERACAO') }} py-2">{{ $patrimonio->DTOPERACAO ? \Carbon\Carbon::parse($patrimonio->DTOPERACAO)->format('d/m/Y') : ($colVazia['DTOPERACAO'] ? '' : '') }}</td>
+                                        <td class="{{ $shrink('USUARIO') }} py-2">{{ $patrimonio->usuario?->NOMEUSER ?? 'SISTEMA' }}</td>
+
                                         @if(Auth::user()->PERFIL === 'ADM')
-                                        <th class="px-4 py-3">Ações</th>
+                                        <td class="px-2 py-2">
+                                            <div class="flex items-center gap-2">
+                                                @can('delete', $patrimonio)
+                                                <form method="POST" action="{{ route('patrimonios.destroy', $patrimonio) }}" onsubmit="return confirm('Tem certeza que deseja deletar este item?');" @click.stop>
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 dark:text-red-500 hover:text-red-700" title="Excluir" aria-label="Excluir patrimônio">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                                                            <polyline points="3 6 5 6 21 6" />
+                                                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                                            <path d="M10 11v6" />
+                                                            <path d="M14 11v6" />
+                                                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                                @endcan
+                                            </div>
+                                        </td>
                                         @endif
                                     </tr>
-                                </thead>
-                                @forelse ($patrimonios as $patrimonio)
-                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm cursor-pointer"
-                                    @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
-
-                                    {{-- A ordem agora está 100% correta para corresponder ao seu thead --}}
-                                    <td class="px-4 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
-                                    <td class="px-4 py-2">{{ $patrimonio->NUMOF }}</td>
-                                    <td class="px-4 py-2">{{ $patrimonio->CODOBJETO }}</td>
-                                    <td class="px-4 py-2 font-bold">{{ $patrimonio->NMPLANTA }}</td>
-                                    <td class="px-4 py-2">{{ $patrimonio->NUSERIE }}</td>
-                                    <td class="px-4 py-2">{{ $patrimonio->CDPROJETO }}</td>
-                                    <td class="px-4 py-2">{{ $patrimonio->MODELO }}</td>
-                                    <td class="px-4 py-2">{{ $patrimonio->MARCA }}</td>
-                                    <td class="px-4 py-2">{{ $patrimonio->COR }}</td>
-                                    <td class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $patrimonio->DEPATRIMONIO }}</td>
-                                    <td class="px-4 py-2">{{ $patrimonio->SITUACAO }}</td>
-                                    <td class="px-4 py-2">{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : '' }}</td>
-                                    <td class="px-4 py-2">{{ $patrimonio->DTOPERACAO ? \Carbon\Carbon::parse($patrimonio->DTOPERACAO)->format('d/m/Y') : '' }}</td>
-                                    <td class="px-4 py-2">{{ $patrimonio->usuario?->NOMEUSER ?? 'Não informado' }}</td>
-
-                                    @if(Auth::user()->PERFIL === 'ADM')
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center">
-                                            @can('delete', $patrimonio)
-                                            <form method="POST"
-                                                action="{{ route('patrimonios.destroy', $patrimonio) }}"
-                                                onsubmit="return confirm('Tem certeza que deseja deletar este item?');"
-                                                @click.stop>
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                    class="font-medium text-red-600 dark:text-red-500 hover:underline">Deletar</button>
-                                            </form>
-                                            @endcan
-                                        </div>
-                                    </td>
-                                    @endif
-                                </tr>
-                                @empty
-                                <tr>
-                                    {{-- Corrigindo o colspan para o número correto de colunas --}}
-                                    <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 15 : 14 }}"
-                                        class="px-6 py-4 text-center">Nenhum patrimônio encontrado para os
-                                        filtros atuais.</td>
-                                </tr>
-                                @endforelse
-                            </table>
-                        </div>
+                                    @empty
+                                    <tr>
+                                        {{-- Corrigindo o colspan para o número correto de colunas --}}
+                                        <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 15 : 14 }}"
+                                            class="px-6 py-4 text-center">Nenhum patrimônio encontrado para os
+                                            filtros atuais.</td>
+                                    </tr>
+                                    @endforelse
+                                </table>
+                            </div>
+                        </template>
                         <div class="mt-4">
                             {{ $patrimonios->appends(request()->query())->links() }}
                         </div>
@@ -320,6 +441,38 @@
                                         name="tipo_relatorio" value="oc" x-model="tipoRelatorio"
                                         class="form-radio text-indigo-600"><span
                                         class="text-gray-700 dark:text-gray-300">Por OC</span></label>
+                            </div>
+                            <!-- Campo de busca de descrição quando tipo descricao -->
+                            <div x-show="tipoRelatorio === 'descricao'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="md:col-span-2">
+                                        <label for="descricao_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Descrição contém</label>
+                                        <input type="text" id="descricao_busca" name="descricao_busca" placeholder="Parte da descrição" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
+                                    </div>
+                                    <div>
+                                        <label for="sort_direction" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Ordem</label>
+                                        <select id="sort_direction" name="sort_direction" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                                            <option value="asc">Crescente (A-Z)</option>
+                                            <option value="desc">Decrescente (Z-A)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Campo projeto múltiplos códigos -->
+                            <div x-show="tipoRelatorio === 'projeto'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="md:col-span-2">
+                                        <label for="projeto_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Códigos de Projeto (separar por vírgula)</label>
+                                        <input type="text" id="projeto_busca" name="projeto_busca" placeholder="Ex: 101, 202, 303" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
+                                    </div>
+                                    <div>
+                                        <label for="sort_direction_proj" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Ordem Nº Patr.</label>
+                                        <select id="sort_direction_proj" name="sort_direction" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                                            <option value="asc">Crescente</option>
+                                            <option value="desc">Decrescente</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                             <hr class="dark:border-gray-600 my-4">
                             <div x-show="tipoRelatorio === 'aquisicao'"
@@ -454,9 +607,9 @@
                                     <td class="px-6 py-4" x-text="patrimonio.MODELO"></td>
                                     <td class="px-6 py-4" x-text="patrimonio.SITUACAO"></td>
                                     <td class="px-6 py-4"
-                                        x-text="patrimonio.local ? patrimonio.local.LOCAL : 'Não informado'"></td>
+                                        x-text="patrimonio.local ? patrimonio.local.LOCAL : 'SISTEMA'"></td>
                                     <td class="px-6 py-4"
-                                        x-text="patrimonio.usuario ? patrimonio.usuario.NOMEUSER : 'Não informado'">
+                                        x-text="patrimonio.usuario ? patrimonio.usuario.NOMEUSER : 'SISTEMA'">
                                     </td>
                                 </tr>
                             </template>
@@ -522,62 +675,124 @@
         </div>
 
         {{-- Modal: Atribuir Código de Termo (controlado por 'atribuirTermoModalOpen') --}}
-        <div x-show="atribuirTermoModalOpen" x-transition class="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center" style="display: none;">
-            <div @click.outside="atribuirTermoModalOpen = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl p-6 max-h-[calc(100vh-80px)] flex flex-col">
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Atribuir Código de Termo</h3>
-                <form action="{{ route('termos.atribuir.store') }}" method="POST" class="flex-1 flex flex-col min-h-0">
-                    @csrf
+        <template x-teleport="body">
+            <div x-show="atribuirTermoModalOpen" x-cloak>
+                <!-- Overlay separado para garantir escurecimento imediato -->
+                <div x-show="atribuirTermoModalOpen" x-transition.opacity class="fixed inset-0 bg-black/80 z-[2147483600]" aria-hidden="true" @click="atribuirTermoModalOpen=false; history.replaceState(null,'',window.location.pathname+window.location.search)"></div>
+                <!-- Wrapper de posicionamento do modal -->
+                <div class="fixed inset-0 z-[2147483647] flex items-center justify-center pointer-events-none">
+                    <div x-show="atribuirTermoModalOpen" x-transition.opacity.scale @click.outside="atribuirTermoModalOpen = false" class="relative pointer-events-auto bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full max-w-4xl p-6 max-h-[calc(100vh-80px)] flex flex-col border border-gray-300 dark:border-gray-700 overflow-hidden focus:outline-none" role="dialog" aria-modal="true" aria-label="Atribuir Código de Termo" tabindex="-1">
+                        <button type="button" @click="atribuirTermoModalOpen=false; history.replaceState(null,'',window.location.pathname+window.location.search)" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200" aria-label="Fechar">✕</button>
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Atribuir Código de Termo</h3>
+                        <form action="{{ route('termos.atribuir.store') }}" method="POST" class="flex-1 flex flex-col min-h-0">
+                            @csrf
 
-                    {{-- CABEÇALHO COM O BOTÃO GERAR --}}
-                    <div class="flex justify-between items-center mb-4 px-1">
-                        <p class="text-gray-600 dark:text-gray-400">Selecione os patrimônios para agrupar em um novo Termo.</p>
-                        <button type="submit" class="bg-plansul-blue hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded inline-flex items-center">
-                            <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
-                            <span>Gerar e Atribuir Termo</span>
-                        </button>
-                    </div>
+                            {{-- CABEÇALHO COM O BOTÃO GERAR --}}
+                            <div class="flex justify-between items-center mb-4 px-1">
+                                <p class="text-gray-600 dark:text-gray-400">Selecione os patrimônios para agrupar em um novo Termo.</p>
+                                <button type="submit" class="bg-plansul-blue hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                                    <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
+                                    <span>Gerar e Atribuir Termo</span>
+                                </button>
+                            </div>
 
-                    {{-- ÁREA DE CONTEÚDO COM ROLAGEM --}}
-                    <div class="overflow-y-auto border-t border-b dark:border-gray-700 py-4" style="height: 400px;">
-                        <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0">
-                                <tr>
-                                    <th class="p-4 w-4"></th>
-                                    <th class="px-2 py-3">Nº Pat.</th>
-                                    <th class="px-2 py-3">Descrição</th>
-                                    <th class="px-2 py-3">Cód. Termo</th>
-                                    <th class="px-2 py-3">Modelo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($patrimoniosDisponiveis as $patrimonio)
-                                <tr class="border-b dark:border-gray-700">
-                                    <td class="p-4"><input type="checkbox" name="patrimonio_ids[]" value="{{ $patrimonio->NUSEQPATR }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"></td>
-                                    <td class="px-2 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
-                                    <td class="px-2 py-2">{{ $patrimonio->DEPATRIMONIO }}</td>
-                                    <td class="px-2 py-2 font-bold">{{ $patrimonio->NMPLANTA }}</td>
-                                    <td class="px-2 py-2">{{ $patrimonio->MODELO }}</td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="5" class="py-4 text-center">Nenhum patrimônio disponível.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                        {{-- PAGINAÇÃO (AGORA DENTRO DA ÁREA DE ROLAGEM) --}}
-                        <div class="mt-4 px-1">
-                            {{ $patrimoniosDisponiveis->appends(request()->except('page', 'disponiveisPage'))->links('pagination::tailwind') }}
-                        </div>
+                            {{-- TABELA SIMPLIFICADA MESMO ESTILO DO MODAL GERAR PLANILHA --}}
+                            <div class="overflow-y-auto border dark:border-gray-700 rounded mb-4" style="max-height:400px;">
+                                <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                        <tr>
+                                            <th class="p-4 w-4"></th>
+                                            <th class="px-2 py-3">Nº Pat.</th>
+                                            <th class="px-2 py-3">Descrição</th>
+                                            <th class="px-2 py-3">Cód. Termo</th>
+                                            <th class="px-2 py-3">Modelo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($patrimoniosDisponiveis as $patrimonio)
+                                        <tr class="border-b dark:border-gray-700">
+                                            <td class="p-4"><input type="checkbox" name="patrimonio_ids[]" value="{{ $patrimonio->NUSEQPATR }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"></td>
+                                            <td class="px-2 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
+                                            <td class="px-2 py-2">{{ $patrimonio->DEPATRIMONIO }}</td>
+                                            <td class="px-2 py-2 font-bold">{{ $patrimonio->NMPLANTA }}</td>
+                                            <td class="px-2 py-2">{{ $patrimonio->MODELO }}</td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="5" class="py-4 text-center">Nenhum patrimônio disponível.</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-4">
+                                {{ $patrimoniosDisponiveis->appends(request()->except('page', 'disponiveisPage'))->links('pagination::tailwind') }}
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 border-t border-gray-200 dark:border-gray-700 pt-6">
+                                <button type="button" @click="atribuirTermoModalOpen=false; history.replaceState(null,'',window.location.pathname+window.location.search)" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Fechar</button>
+                                <button type="submit" class="px-4 py-2 bg-plansul-blue text-white rounded-md hover:bg-opacity-90 flex items-center">
+                                    <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
+                                    <span>Gerar e Atribuir Termo</span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
-
-                    {{-- BOTÃO DE FECHAR (FORA DA ÁREA DE ROLAGEM, NO RODAPÉ) --}}
-                    <div class="mt-6 flex justify-end pt-4 border-t dark:border-gray-700">
-                        <button type="button" @click="atribuirTermoModalOpen = false" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded">Fechar</button>
-                    </div>
-                </form>
+                </div>
             </div>
-        </div>
+        </template>
+
+        {{-- Modal: Desatribuir Código de Termo --}}
+        <template x-teleport="body">
+            <div x-show="desatribuirTermoModalOpen" x-cloak>
+                <div x-show="desatribuirTermoModalOpen" x-transition.opacity class="fixed inset-0 bg-black/70 z-[2147483600]" aria-hidden="true" @click="desatribuirTermoModalOpen=false"></div>
+                <div class="fixed inset-0 z-[2147483647] flex items-center justify-center pointer-events-none">
+                    <div x-show="desatribuirTermoModalOpen" x-transition.opacity.scale @click.outside="desatribuirTermoModalOpen = false" class="relative pointer-events-auto bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full max-w-3xl p-6 max-h-[calc(100vh-80px)] flex flex-col border border-gray-300 dark:border-gray-700 overflow-hidden" role="dialog" aria-modal="true" aria-label="Desatribuir Código de Termo">
+                        <button type="button" @click="desatribuirTermoModalOpen=false" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200" aria-label="Fechar">✕</button>
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Desatribuir Código de Termo</h3>
+                        <form action="{{ route('termos.desatribuir') }}" method="POST" class="flex-1 flex flex-col min-h-0">
+                            @csrf
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Selecione os patrimônios que terão o código de termo removido. Apenas itens com código atribuído são listados.</p>
+                            <div class="overflow-y-auto border dark:border-gray-700 rounded mb-4" style="max-height:400px;">
+                                <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                        <tr>
+                                            <th class="p-3 w-4"></th>
+                                            <th class="px-2 py-3">Nº Pat.</th>
+                                            <th class="px-2 py-3">Descrição</th>
+                                            <th class="px-2 py-3">Cód. Termo</th>
+                                            <th class="px-2 py-3">Modelo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php $patrimoniosComTermo = $patrimonios->filter(fn($p)=> !blank($p->NMPLANTA)); @endphp
+                                        @forelse ($patrimoniosComTermo as $pat)
+                                        <tr class="border-b dark:border-gray-700">
+                                            <td class="p-3"><input type="checkbox" name="patrimonio_ids[]" value="{{ $pat->NUSEQPATR }}" class="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500"></td>
+                                            <td class="px-2 py-2">{{ $pat->NUPATRIMONIO ?? 'N/A' }}</td>
+                                            <td class="px-2 py-2">{{ $pat->DEPATRIMONIO }}</td>
+                                            <td class="px-2 py-2 font-bold">{{ $pat->NMPLANTA }}</td>
+                                            <td class="px-2 py-2">{{ $pat->MODELO }}</td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="5" class="py-4 text-center">Nenhum patrimônio com código de termo nesta página.</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-6 flex justify-end space-x-4 border-t border-gray-200 dark:border-gray-700 pt-6">
+                                <button type="button" @click="desatribuirTermoModalOpen=false" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Fechar</button>
+                                <button type="submit" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md font-semibold flex items-center">
+                                    <x-heroicon-o-minus-circle class="w-5 h-5 mr-2" />
+                                    <span>Remover Códigos Selecionados</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
     </div>
 </x-app-layout>

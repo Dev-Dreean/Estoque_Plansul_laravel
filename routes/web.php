@@ -69,6 +69,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('termos')->name('termos.')->group(function () {
         Route::post('/atribuir', [\App\Http\Controllers\TermoController::class, 'store'])->name('atribuir.store');
         Route::post('/exportar/excel', [\App\Http\Controllers\TermoController::class, 'exportarExcel'])->name('exportar.excel');
+        Route::post('/desatribuir', [\App\Http\Controllers\TermoController::class, 'desatribuir'])->name('desatribuir');
     });
 });
 

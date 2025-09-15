@@ -43,7 +43,13 @@ class PatrimonioController extends Controller
     {
         // Busca os patrimônios para a tabela principal
         $query = $this->getPatrimoniosQuery($request);
-        $patrimonios = $query->paginate(10);
+
+        // per_page opcional via querystring, padrão 30, mínimo 10, máximo 500
+        $perPage = (int) $request->input('per_page', 30);
+        if ($perPage < 10) $perPage = 10;
+        if ($perPage > 500) $perPage = 500;
+
+        $patrimonios = $query->paginate($perPage)->withQueryString();
 
         // Busca os usuários para o filtro de admin
         $cadastradores = [];
@@ -59,7 +65,7 @@ class PatrimonioController extends Controller
         // Busca os patrimônios disponíveis para o modal de atribuição de termo
         $patrimoniosDisponiveis = \App\Models\Patrimonio::whereNull('NMPLANTA')
             ->orderBy('DEPATRIMONIO')
-            ->paginate(10, ['*'], 'disponiveisPage');
+            ->paginate($perPage, ['*'], 'disponiveisPage')->withQueryString();
 
         // Return unificado e corrigido, enviando TODAS as variáveis necessárias
         return view('patrimonios.index', [
@@ -201,7 +207,12 @@ class PatrimonioController extends Controller
             $query->where('NMPLANTA', $request->nmplanta);
         }
         if ($request->filled('cadastrado_por') && $user->PERFIL === 'ADM') {
-            $query->where('CDMATRFUNCIONARIO', $request->cadastrado_por);
+            if ($request->cadastrado_por === 'SISTEMA') {
+                // Registros importados / sem vínculo direto de usuário
+                $query->whereNull('CDMATRFUNCIONARIO');
+            } else {
+                $query->where('CDMATRFUNCIONARIO', $request->cadastrado_por);
+            }
         }
 
         $sortableColumns = ['NUPATRIMONIO', 'MODELO', 'DEPATRIMONIO', 'SITUACAO'];
