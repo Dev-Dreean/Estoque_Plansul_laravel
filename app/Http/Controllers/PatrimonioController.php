@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Models\HistoricoMovimentacao;
 
 class PatrimonioController extends Controller
 {
@@ -126,7 +127,55 @@ class PatrimonioController extends Controller
     {
         $this->authorize('update', $patrimonio);
         $validatedData = $this->validatePatrimonio($request);
+
+        // Detectar alterações relevantes
+        $oldProjeto = $patrimonio->CDPROJETO;
+        $oldSituacao = $patrimonio->SITUACAO;
         $patrimonio->update($validatedData);
+        $newProjeto = $patrimonio->CDPROJETO;
+        $newSituacao = $patrimonio->SITUACAO;
+
+        // Registrar histórico quando o Projeto mudar
+        if ($newProjeto != $oldProjeto) {
+            try {
+                HistoricoMovimentacao::create([
+                    'TIPO' => 'projeto',
+                    'CAMPO' => 'CDPROJETO',
+                    'VALOR_ANTIGO' => $oldProjeto,
+                    'VALOR_NOVO' => $newProjeto,
+                    'NUPATR' => $patrimonio->NUPATRIMONIO,
+                    'CODPROJ' => $newProjeto,
+                    'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+                    'DTOPERACAO' => now(),
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('Falha ao gravar histórico de projeto', [
+                    'patrimonio' => $patrimonio->NUSEQPATR,
+                    'erro' => $e->getMessage()
+                ]);
+            }
+        }
+
+        // Registrar histórico quando a Situação mudar
+        if ($newSituacao !== $oldSituacao) {
+            try {
+                HistoricoMovimentacao::create([
+                    'TIPO' => 'situacao',
+                    'CAMPO' => 'SITUACAO',
+                    'VALOR_ANTIGO' => $oldSituacao,
+                    'VALOR_NOVO' => $newSituacao,
+                    'NUPATR' => $patrimonio->NUPATRIMONIO,
+                    'CODPROJ' => $newProjeto,
+                    'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+                    'DTOPERACAO' => now(),
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('Falha ao gravar histórico (situação)', [
+                    'patrimonio' => $patrimonio->NUSEQPATR,
+                    'erro' => $e->getMessage()
+                ]);
+            }
+        }
         return redirect()->route('patrimonios.index')->with('success', 'Patrimônio atualizado com sucesso!');
     }
 
@@ -178,6 +227,173 @@ class PatrimonioController extends Controller
         return response()->json($locais);
     }
 
+    /**
+     * Página dedicada para atribuição de códigos de termo
+     */
+    public function atribuir(Request $request): View
+    {
+        // Query base para patrimônios
+        $query = Patrimonio::query();
+
+        // Filtro por status - default volta a 'disponivel'
+        $status = $request->get('status', 'disponivel');
+
+        if ($status === 'disponivel') {
+            // Patrimônios sem código de termo (campo integer => apenas null significa "sem")
+            $query->whereNull('NMPLANTA');
+        } elseif ($status === 'indisponivel') {
+            // Patrimônios com código de termo
+            $query->whereNotNull('NMPLANTA');
+        }
+        // Se status for vazio ou 'todos', não aplica filtro de status
+
+        // Aplicar filtros se fornecidos
+        if ($request->filled('filtro_numero')) {
+            $query->where('NUPATRIMONIO', 'like', '%' . $request->filtro_numero . '%');
+        }
+
+        if ($request->filled('filtro_descricao')) {
+            $query->where('DEPATRIMONIO', 'like', '%' . $request->filtro_descricao . '%');
+        }
+
+        if ($request->filled('filtro_modelo')) {
+            $query->where('MODELO', 'like', '%' . $request->filtro_modelo . '%');
+        }
+
+        // Ordenação
+        $query->orderBy('NUPATRIMONIO', 'asc');
+
+        // Paginação configurável
+        $perPage = (int) $request->input('per_page', 15);
+        if ($perPage < 10) $perPage = 10;
+        if ($perPage > 100) $perPage = 100;
+
+        $patrimonios = $query->paginate($perPage);
+
+        return view('patrimonios.atribuir', compact('patrimonios'));
+    }
+
+    /**
+     * Processar a atribuição/desatribuição de códigos de termo
+     */
+    public function processarAtribuicao(Request $request): RedirectResponse
+    {
+        // Verificar se é uma operação de desatribuição
+        if ($request->filled('desatribuir')) {
+            return $this->processarDesatribuicao($request);
+        }
+
+        // Validação para atribuição
+        $request->validate([
+            'codigo_termo' => 'required|integer|min:1',
+            'patrimonios' => 'required|array|min:1',
+            'patrimonios.*' => 'integer|exists:PATR,NUSEQPATR'
+        ]);
+
+        try {
+            $codigoTermo = $request->codigo_termo;
+            $patrimoniosIds = $request->patrimonios;
+
+            // Verificar quais patrimônios já estão atribuídos
+            $jaAtribuidos = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)
+                ->whereNotNull('NMPLANTA')
+                ->count();
+
+            // Atualizar apenas os patrimônios disponíveis
+            $updated = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)
+                ->whereNull('NMPLANTA')
+                ->update(['NMPLANTA' => $codigoTermo]);
+
+            $message = "Código de termo {$codigoTermo} atribuído a {$updated} patrimônio(s) com sucesso!";
+
+            // Histórico de atribuição de termo
+            if ($updated > 0) {
+                try {
+                    $patrimoniosAlterados = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)->get(['NUPATRIMONIO']);
+                    foreach ($patrimoniosAlterados as $p) {
+                        HistoricoMovimentacao::create([
+                            'TIPO' => 'termo',
+                            'CAMPO' => 'NMPLANTA',
+                            'VALOR_ANTIGO' => null,
+                            'VALOR_NOVO' => $codigoTermo,
+                            'NUPATR' => $p->NUPATRIMONIO,
+                            'CODPROJ' => null,
+                            'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+                            'DTOPERACAO' => now(),
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('Falha ao gravar histórico atribuição de termo', ['erro' => $e->getMessage()]);
+                }
+            }
+
+            if ($jaAtribuidos > 0) {
+                $message .= " ({$jaAtribuidos} patrimônio(s) já estavam atribuídos e foram ignorados)";
+            }
+
+            return redirect()->route('patrimonios.atribuir')
+                ->with('success', $message);
+        } catch (\Exception $e) {
+            Log::error('Erro ao processar atribuição de termo: ' . $e->getMessage());
+            return redirect()->route('patrimonios.atribuir')
+                ->with('error', 'Erro ao processar atribuição. Tente novamente.');
+        }
+    }
+
+    /**
+     * Processar desatribuição de códigos de termo
+     */
+    private function processarDesatribuicao(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'patrimonios' => 'required|array|min:1',
+            'patrimonios.*' => 'integer|exists:PATR,NUSEQPATR'
+        ]);
+
+        try {
+            $patrimoniosIds = $request->patrimonios;
+
+            // Buscar informações antes da desatribuição para feedback
+            $patrimonio = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)->first();
+            $codigoAnterior = $patrimonio ? $patrimonio->NMPLANTA : 'N/A';
+
+            // Desatribuir (limpar campo NMPLANTA)
+            $updated = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)
+                ->whereNotNull('NMPLANTA')
+                ->update(['NMPLANTA' => null]);
+
+            if ($updated > 0) {
+                // Histórico de desatribuição de termo
+                try {
+                    $patrimoniosAlterados = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)->get(['NUPATRIMONIO']);
+                    foreach ($patrimoniosAlterados as $p) {
+                        HistoricoMovimentacao::create([
+                            'TIPO' => 'termo',
+                            'CAMPO' => 'NMPLANTA',
+                            'VALOR_ANTIGO' => $codigoAnterior,
+                            'VALOR_NOVO' => null,
+                            'NUPATR' => $p->NUPATRIMONIO,
+                            'CODPROJ' => null,
+                            'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+                            'DTOPERACAO' => now(),
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('Falha ao gravar histórico desatribuição de termo', ['erro' => $e->getMessage()]);
+                }
+                return redirect()->route('patrimonios.atribuir')
+                    ->with('success', "Código de termo {$codigoAnterior} removido de {$updated} patrimônio(s) com sucesso!");
+            } else {
+                return redirect()->route('patrimonios.atribuir')
+                    ->with('warning', 'Nenhum patrimônio foi desatribuído. Verifique se os patrimônios selecionados possuem código de termo.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Erro ao processar desatribuição de termo: ' . $e->getMessage());
+            return redirect()->route('patrimonios.atribuir')
+                ->with('error', 'Erro ao processar desatribuição. Tente novamente.');
+        }
+    }
+
     // --- MÉTODOS AUXILIARES ---
 
     private function getPatrimoniosQuery(Request $request)
@@ -224,6 +440,48 @@ class PatrimonioController extends Controller
             $query->latest('NUSEQPATR');
         }
         return $query;
+    }
+
+    /**
+     * API endpoint dedicado para modal de atribuir termo
+     * Retorna apenas JSON sem afetar URL principal
+     */
+    public function getPatrimoniosDisponiveis(Request $request): JsonResponse
+    {
+        try {
+            $page = max(1, (int) $request->input('page', 1));
+            $perPage = 30; // Fixo para modal
+
+            // Query para patrimônios disponíveis (sem termo atribuído ou conforme regra de negócio)
+            $query = Patrimonio::with(['usuario'])
+                ->whereNull('NMPLANTA') // Sem código de termo
+                ->orWhere('NMPLANTA', '') // Ou código vazio
+                ->orderBy('NUPATRIMONIO', 'asc');
+
+            // Paginar manualmente
+            $total = $query->count();
+            $patrimonios = $query->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->get();
+
+            return response()->json([
+                'data' => $patrimonios->map(function ($p) {
+                    return [
+                        'NUSEQPATR' => $p->NUSEQPATR,
+                        'NUPATRIMONIO' => $p->NUPATRIMONIO,
+                        'DEPATRIMONIO' => $p->DEPATRIMONIO,
+                        'NMPLANTA' => $p->NMPLANTA,
+                        'MODELO' => $p->MODELO,
+                    ];
+                }),
+                'current_page' => $page,
+                'last_page' => ceil($total / $perPage),
+                'per_page' => $perPage,
+                'total' => $total,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao carregar dados'], 500);
+        }
     }
 
     private function validatePatrimonio(Request $request): array

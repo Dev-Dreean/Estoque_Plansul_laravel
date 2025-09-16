@@ -31,6 +31,10 @@ Route::get('/api/codigos/buscar/{codigo}', [PatrimonioController::class, 'buscar
 Route::middleware('auth')->group(function () {
 
     Route::resource('projetos', ProjetoController::class)->middleware('admin');
+    Route::get('/api/projetos/nome/{codigo}', function ($codigo) {
+        $p = \App\Models\Tabfant::where('CDPROJETO', $codigo)->first();
+        return $p ? response()->json(['exists' => true, 'nome' => $p->NOMEPROJETO]) : response()->json(['exists' => false]);
+    })->middleware('auth');
 
     Route::get('/api/projetos/buscar/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'buscarProjeto'])->name('api.projetos.buscar');
     Route::get('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'getLocaisPorProjeto'])->name('api.locais');
@@ -42,6 +46,16 @@ Route::middleware('auth')->group(function () {
 
     // Rotas do CRUD de Patrimônios (index, create, store, etc.)
     Route::resource('patrimonios', PatrimonioController::class);
+
+    // Rotas para página dedicada de atribuição de códigos de termo
+    Route::get('/patrimonios/atribuir/termo', [PatrimonioController::class, 'atribuir'])
+        ->name('patrimonios.atribuir');
+    Route::post('/patrimonios/atribuir/processar', [PatrimonioController::class, 'processarAtribuicao'])
+        ->name('patrimonios.atribuir.processar');
+
+    // API específica para modal de atribuir termo - não afeta URL principal
+    Route::get('/api/patrimonios/disponiveis', [PatrimonioController::class, 'getPatrimoniosDisponiveis'])
+        ->name('api.patrimonios.disponiveis');
 
     // Rotas de API para funcionalidades dinâmicas do formulário de patrimônio
     Route::get('/api/patrimonios/buscar/{numero}', [PatrimonioController::class, 'buscarPorNumero'])->name('api.patrimonios.buscar');
@@ -71,6 +85,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/exportar/excel', [\App\Http\Controllers\TermoController::class, 'exportarExcel'])->name('exportar.excel');
         Route::post('/desatribuir', [\App\Http\Controllers\TermoController::class, 'desatribuir'])->name('desatribuir');
     });
+
+    // Histórico de movimentações
+    Route::get('/historico', [\App\Http\Controllers\HistoricoController::class, 'index'])->name('historico.index');
 });
 
 // Inclui as rotas de autenticação (login, logout, etc.)

@@ -3,19 +3,28 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest; // << aqui
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        commands: __DIR__.'/../routes/console.php',
+        web: __DIR__ . '/../routes/web.php',
+        commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // CORREÇÃO: O alias do middleware 'admin' vai aqui dentro
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
+
+        // Confiar nos proxies da hospedagem (KingHost)
+        $middleware->trustProxies(
+            at: '*',
+            headers: SymfonyRequest::HEADER_X_FORWARDED_FOR  |
+                SymfonyRequest::HEADER_X_FORWARDED_HOST |
+                SymfonyRequest::HEADER_X_FORWARDED_PORT |
+                SymfonyRequest::HEADER_X_FORWARDED_PROTO
+        );
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })->create(); // O ->create() é sempre o último comando.
+    })->create();

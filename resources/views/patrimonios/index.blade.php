@@ -18,6 +18,12 @@
             document.documentElement.classList.toggle('overflow-hidden', v);
             document.body.classList.toggle('overflow-hidden', v);
         });
+        // Reabrir modal de atribuir termo se a paginação foi clicada mantendo hash
+        window.addEventListener('hashchange', () => {
+            if(window.location.hash === '#atribuir-termo') {
+                this.atribuirTermoModalOpen = true;
+            }
+        });
     },
 
     gerarRelatorio: function(event) {
@@ -128,27 +134,27 @@
                             </div>
                             <div x-show="open" x-transition class="mt-4" style="display: none;">
                                 <form method="GET" action="{{ route('patrimonios.index') }}" @submit="open=false">
-                                    <div class="grid gap-3 sm:gap-4" style="grid-template-columns: repeat(auto-fit,minmax(150px,1fr));">
-                                        <div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
+                                        <div class="min-w-0">
                                             <input type="text" name="nupatrimonio" placeholder="Nº Patr." value="{{ request('nupatrimonio') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                         </div>
-                                        <div>
+                                        <div class="min-w-0">
                                             <input type="text" name="cdprojeto" placeholder="Cód. Projeto" value="{{ request('cdprojeto') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                         </div>
-                                        <div class="col-span-full md:col-span-2">
+                                        <div class="min-w-0 sm:col-span-2 md:col-span-3 lg:col-span-4 xl:col-span-6">
                                             <input type="text" name="descricao" placeholder="Descrição" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                         </div>
-                                        <div>
+                                        <div class="min-w-0">
                                             <input type="text" name="situacao" placeholder="Situação" value="{{ request('situacao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                         </div>
-                                        <div>
+                                        <div class="min-w-0">
                                             <input type="text" name="modelo" placeholder="Modelo" value="{{ request('modelo') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                         </div>
-                                        <div>
+                                        <div class="min-w-0">
                                             <input type="number" name="nmplanta" placeholder="Cód. Termo" value="{{ request('nmplanta') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                         </div>
                                         @if (Auth::user()->PERFIL === 'ADM')
-                                        <div>
+                                        <div class="min-w-0">
                                             <select name="cadastrado_por" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
                                                 <option value="">Usuário</option>
                                                 <option value="SISTEMA" @selected(request('cadastrado_por')==='SISTEMA' )>Sistema</option>
@@ -173,9 +179,9 @@
                                             </a>
                                         </div>
 
-                                        <label class="flex items-center gap-2 ml-auto shrink-0">
+                                        <label class="flex items-center gap-2 ml-auto shrink-0 w-full sm:w-auto sm:justify-end">
                                             <span class="text-sm text-gray-700 dark:text-gray-300">Itens por página</span>
-                                            <select name="per_page" class="h-10 px-10 pr-8 w-20 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
+                                            <select name="per_page" class="h-10 pl-3 pr-8 w-24 text-center text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
                                                 @foreach([10,30,50,100,200] as $opt)
                                                 <option value="{{ $opt }}" @selected(request('per_page', 30)==$opt)>{{ $opt }}</option>
                                                 @endforeach
@@ -186,30 +192,34 @@
                             </div>
                         </div>
 
-                        <div class="flex justify-end items-center mb-4 space-x-4">
-                            <button @click="desatribuirTermoModalOpen = true" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
-                                <x-heroicon-o-minus-circle class="w-5 h-5 mr-2" />
-                                <span>Desatribuir Cód. Termo</span>
-                            </button>
-                            <button @click="atribuirTermoModalOpen = true" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
-                                <x-heroicon-o-document-plus class="w-5 h-5 mr-2" />
-                                <span>Atribuir Cód. Termo</span>
-                            </button>
-
-                            <button @click="termoModalOpen = true" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
-                                <x-heroicon-o-printer class="w-5 h-5 mr-2" />
-                                <span>Gerar Planilha do Termo</span>
-                            </button>
-
-                            <button @click="relatorioModalOpen = true" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
-                                <x-heroicon-o-chart-bar class="w-5 h-5 mr-2" />
-                                <span>Gerar Relatório</span>
-                            </button>
-
-                            <a href="{{ route('patrimonios.create') }}" class="bg-plansul-blue hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded inline-flex items-center">
-                                <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
-                                <span>Cadastrar Novo</span>
-                            </a>
+                        <div class="flex flex-wrap items-center mb-4 gap-3 w-full">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <a href="{{ route('patrimonios.create') }}" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+                                    <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
+                                    <span>Cadastrar Patrimonio</span>
+                                </a>
+                                <button @click="relatorioModalOpen = true" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+                                    <x-heroicon-o-chart-bar class="w-5 h-5 mr-2" />
+                                    <span>Gerar Relatório</span>
+                                </button>
+                                <button @click="termoModalOpen = true" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+                                    <x-heroicon-o-printer class="w-5 h-5 mr-2" />
+                                    <span>Gerar Planilha Termo</span>
+                                </button>
+                                <a href="{{ route('patrimonios.atribuir') }}" class="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+                                    <x-heroicon-o-document-plus class="w-5 h-5 mr-2" />
+                                    <span>Atribuir Cód. Termo</span>
+                                </a>
+                                <a href="{{ route('historico.index') }}" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold py-2 px-4 rounded inline-flex items-center border border-gray-300 dark:border-gray-600">
+                                    <x-heroicon-o-clock class="w-5 h-5 mr-2" />
+                                    <span>Histórico</span>
+                                </a>
+                            </div>
+                            <div class="flex items-center gap-2 ml-auto">
+                                <span class="text-sm font-medium">Visualização:</span>
+                                <button type="button" @click="viewMode='simple'" :class="viewMode==='simple' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-200'" class="px-3 py-1 rounded text-sm">Simples</button>
+                                <button type="button" @click="viewMode='detailed'" :class="viewMode==='detailed' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-200'" class="px-3 py-1 rounded text-sm">Detalhada</button>
+                            </div>
                         </div>
 
                         @php
@@ -229,11 +239,7 @@
                         ];
                         $shrink = fn($key) => $colVazia[$key] ? 'w-px px-0 text-[0] overflow-hidden' : 'px-4';
                         @endphp
-                        <div class="mb-4 flex items-center gap-2">
-                            <span class="text-sm font-medium">Visualização:</span>
-                            <button type="button" @click="viewMode='simple'" :class="viewMode==='simple' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-200'" class="px-3 py-1 rounded text-sm">Simples</button>
-                            <button type="button" @click="viewMode='detailed'" :class="viewMode==='detailed' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-200'" class="px-3 py-1 rounded text-sm">Detalhada</button>
-                        </div>
+                        <!-- Visualização controls movidos para a barra principal -->
 
                         <!-- Tabela Simples -->
                         <template x-if="viewMode==='simple'">
@@ -688,16 +694,22 @@
                             @csrf
 
                             {{-- CABEÇALHO COM O BOTÃO GERAR --}}
-                            <div class="flex justify-between items-center mb-4 px-1">
-                                <p class="text-gray-600 dark:text-gray-400">Selecione os patrimônios para agrupar em um novo Termo.</p>
-                                <button type="submit" class="bg-plansul-blue hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded inline-flex items-center">
-                                    <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
-                                    <span>Gerar e Atribuir Termo</span>
-                                </button>
+                            <div class="flex flex-wrap gap-3 justify-between items-center mb-4 px-1">
+                                <p class="text-gray-600 dark:text-gray-400 flex-1 min-w-[220px]">Selecione os patrimônios para agrupar em um novo Termo.</p>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" @click="desatribuirTermoModalOpen = true; atribuirTermoModalOpen=false;" class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center" title="Desatribuir códigos de termo">
+                                        <x-heroicon-o-minus-circle class="w-5 h-5 mr-2" />
+                                        <span>Desatribuir</span>
+                                    </button>
+                                    <button type="submit" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+                                        <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
+                                        <span>Gerar e Atribuir</span>
+                                    </button>
+                                </div>
                             </div>
 
                             {{-- TABELA SIMPLIFICADA MESMO ESTILO DO MODAL GERAR PLANILHA --}}
-                            <div class="overflow-y-auto border dark:border-gray-700 rounded mb-4" style="max-height:400px;">
+                            <div class="overflow-y-auto border dark:border-gray-700 rounded mb-4" style="max-height:400px;" id="atribuir-modal-content">
                                 <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                         <tr>
@@ -708,7 +720,7 @@
                                             <th class="px-2 py-3">Modelo</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="atribuir-table-body">
                                         @forelse ($patrimoniosDisponiveis as $patrimonio)
                                         <tr class="border-b dark:border-gray-700">
                                             <td class="p-4"><input type="checkbox" name="patrimonio_ids[]" value="{{ $patrimonio->NUSEQPATR }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"></td>
@@ -725,7 +737,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="mt-4">
+                            <div class="mt-4" id="atribuir-pagination">
                                 {{ $patrimoniosDisponiveis->appends(request()->except('page', 'disponiveisPage'))->links('pagination::tailwind') }}
                             </div>
                             <div class="mt-6 flex justify-end space-x-4 border-t border-gray-200 dark:border-gray-700 pt-6">
@@ -796,3 +808,143 @@
     </div>
     </div>
 </x-app-layout>
+@push('scripts')
+<script>
+    (function() {
+        let selectedPatrimonios = new Set(); // Mantém selecionados entre páginas
+        let currentAtribuirPage = 1; // Página interna independente
+        let totalPages = 1; // Total de páginas disponíveis
+        let patrimoniosData = []; // Cache local dos dados
+        let isLoading = false;
+
+        function preserveSelections() {
+            // Salva seleções atuais
+            document.querySelectorAll('#atribuir-table-body input[type="checkbox"]:checked').forEach(input => {
+                selectedPatrimonios.add(input.value);
+            });
+        }
+
+        function restoreSelections() {
+            // Restaura seleções após carregar nova página
+            document.querySelectorAll('#atribuir-table-body input[type="checkbox"]').forEach(input => {
+                if (selectedPatrimonios.has(input.value)) {
+                    input.checked = true;
+                }
+            });
+        }
+
+        function generateTableRows(patrimonios) {
+            if (!patrimonios || patrimonios.length === 0) {
+                return '<tr><td colspan="5" class="py-4 text-center">Nenhum patrimônio disponível.</td></tr>';
+            }
+
+            return patrimonios.map(patrimonio => `
+                <tr class="border-b dark:border-gray-700">
+                    <td class="p-4">
+                        <input type="checkbox" name="patrimonio_ids[]" value="${patrimonio.NUSEQPATR}" 
+                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                    </td>
+                    <td class="px-2 py-2">${patrimonio.NUPATRIMONIO || 'N/A'}</td>
+                    <td class="px-2 py-2">${patrimonio.DEPATRIMONIO || ''}</td>
+                    <td class="px-2 py-2 font-bold">${patrimonio.NMPLANTA || ''}</td>
+                    <td class="px-2 py-2">${patrimonio.MODELO || ''}</td>
+                </tr>
+            `).join('');
+        }
+
+        function generatePagination(currentPage, total) {
+            if (total <= 1) return '';
+
+            let pagination = '<nav class="flex items-center justify-between"><div class="flex-1 flex justify-between sm:hidden">';
+
+            // Previous button
+            if (currentPage > 1) {
+                pagination += `<a href="#" data-page="${currentPage - 1}" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Previous</a>`;
+            }
+
+            // Next button  
+            if (currentPage < total) {
+                pagination += `<a href="#" data-page="${currentPage + 1}" class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Next</a>`;
+            }
+
+            pagination += '</div><div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"><div><p class="text-sm text-gray-700">Showing <span class="font-medium">' + ((currentPage - 1) * 30 + 1) + '</span> to <span class="font-medium">' + Math.min(currentPage * 30, total * 30) + '</span></p></div><div><nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">';
+
+            // Page numbers
+            for (let i = Math.max(1, currentPage - 2); i <= Math.min(total, currentPage + 2); i++) {
+                const isActive = i === currentPage;
+                pagination += `<a href="#" data-page="${i}" class="relative inline-flex items-center px-4 py-2 text-sm font-medium ${isActive ? 'bg-blue-600 text-white' : 'text-gray-500 bg-white hover:bg-gray-50'} border border-gray-300">${i}</a>`;
+            }
+
+            pagination += '</nav></div></div></nav>';
+            return pagination;
+        }
+
+        function loadAtribuirPageAPI(page) {
+            if (isLoading) return;
+            isLoading = true;
+
+            preserveSelections();
+
+            // Criar rota API específica para buscar patrimônios
+            fetch(`{{ route('patrimonios.index') }}/api/disponiveis?page=${page}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    currentAtribuirPage = page;
+                    totalPages = data.last_page || 1;
+
+                    // Atualiza tabela
+                    document.getElementById('atribuir-table-body').innerHTML = generateTableRows(data.data);
+
+                    // Atualiza paginação
+                    document.getElementById('atribuir-pagination').innerHTML = generatePagination(currentAtribuirPage, totalPages);
+
+                    restoreSelections();
+                    handleAtribuirPagination(); // Re-bind eventos
+                    isLoading = false;
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar página:', error);
+                    isLoading = false;
+                });
+        }
+
+        function handleAtribuirPagination() {
+            const paginationContainer = document.getElementById('atribuir-pagination');
+            if (!paginationContainer) return;
+
+            paginationContainer.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A' && e.target.dataset.page) {
+                    e.preventDefault();
+                    const targetPage = parseInt(e.target.dataset.page);
+                    if (targetPage && targetPage !== currentAtribuirPage) {
+                        loadAtribuirPageAPI(targetPage);
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            handleAtribuirPagination();
+
+            // Bind ao abrir modal
+            const observer = new MutationObserver(() => {
+                if (document.querySelector('#atribuir-modal-content')) {
+                    handleAtribuirPagination();
+                    restoreSelections();
+                }
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    })();
+</script>
+@endpush

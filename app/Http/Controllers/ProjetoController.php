@@ -15,18 +15,36 @@ class ProjetoController extends Controller
 
     public function create()
     {
-        return view('projetos.create');
+        // Permite pré-preencher código (ex: ao clicar "Incluir Filial")
+        $codigo = request('codigo');
+        $nome = null;
+        if ($codigo) {
+            $existente = Tabfant::where('CDPROJETO', $codigo)->first();
+            if ($existente) {
+                $nome = $existente->NOMEPROJETO;
+            }
+        }
+        return view('projetos.create', compact('codigo', 'nome'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'CDPROJETO' => 'required|integer|unique:tabfant,CDPROJETO',
+            'CDPROJETO' => 'required|integer',
             'NOMEPROJETO' => 'required|string|max:255',
             'LOCAL' => 'required|string|max:255',
         ]);
 
-        Tabfant::create($request->all());
+        $existente = Tabfant::where('CDPROJETO', $request->CDPROJETO)->first();
+        if ($existente && strcasecmp(trim($existente->NOMEPROJETO), trim($request->NOMEPROJETO)) !== 0) {
+            return back()->withInput()->withErrors(['NOMEPROJETO' => 'Nome inválido para este código. Deve ser exatamente: ' . $existente->NOMEPROJETO]);
+        }
+
+        Tabfant::create([
+            'CDPROJETO' => $request->CDPROJETO,
+            'NOMEPROJETO' => $existente?->NOMEPROJETO ?? trim($request->NOMEPROJETO),
+            'LOCAL' => trim($request->LOCAL),
+        ]);
 
         return redirect()->route('projetos.index')->with('success', 'Projeto cadastrado com sucesso.');
     }
@@ -39,12 +57,20 @@ class ProjetoController extends Controller
     public function update(Request $request, Tabfant $projeto)
     {
         $request->validate([
-            'CDPROJETO' => 'required|integer|unique:tabfant,CDPROJETO,' . $projeto->id,
+            'CDPROJETO' => 'required|integer',
             'NOMEPROJETO' => 'required|string|max:255',
             'LOCAL' => 'required|string|max:255',
         ]);
 
-        $projeto->update($request->all());
+        $outro = Tabfant::where('CDPROJETO', $request->CDPROJETO)->where('id', '!=', $projeto->id)->first();
+        if ($outro && strcasecmp(trim($outro->NOMEPROJETO), trim($request->NOMEPROJETO)) !== 0) {
+            return back()->withInput()->withErrors(['NOMEPROJETO' => 'Nome inválido: código pertence a ' . $outro->NOMEPROJETO]);
+        }
+        $projeto->update([
+            'CDPROJETO' => $request->CDPROJETO,
+            'NOMEPROJETO' => trim($request->NOMEPROJETO),
+            'LOCAL' => trim($request->LOCAL),
+        ]);
 
         return redirect()->route('projetos.index')->with('success', 'Projeto atualizado com sucesso.');
     }
