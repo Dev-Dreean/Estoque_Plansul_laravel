@@ -29,9 +29,9 @@ class TermoController extends Controller
         Patrimonio::whereIn('NUSEQPATR', $validated['patrimonio_ids'])
                 ->update(['NMPLANTA' => $novoCodTermo]);
 
-        // Sintaxe do redirect corrigida e apontando para o lugar certo
-        return redirect()->route('patrimonios.index')
-                        ->with('success', "Código de Termo Nº {$novoCodTermo} gerado e atribuído com sucesso a ". count($validated['patrimonio_ids']) ." itens!");
+    // Redireciona de volta para a página de atribuição para continuidade do fluxo
+    return redirect()->route('patrimonios.atribuir', ['status' => 'indisponivel'])
+            ->with('success', "Código de Termo Nº {$novoCodTermo} gerado e atribuído com sucesso a ". count($validated['patrimonio_ids']) ." itens!");
     }
 
     /**
@@ -39,9 +39,15 @@ class TermoController extends Controller
      */
     public function exportarExcel(Request $request)
     {
-        $validated = $request->validate(['cod_termo' => 'required|integer']);
+        $validated = $request->validate([
+            'cod_termo' => 'required|integer',
+            'cdprojeto' => 'nullable|integer',
+        ]);
         $codTermo = $validated['cod_termo'];
         $query = Patrimonio::query()->where('NMPLANTA', $codTermo);
+        if (!empty($validated['cdprojeto'])) {
+            $query->where('CDPROJETO', $validated['cdprojeto']);
+        }
 
         if ($query->count() === 0) {
             return back()->with('error', 'Nenhum patrimônio encontrado para o Cód. Termo informado.');
@@ -51,6 +57,9 @@ class TermoController extends Controller
         $writer = SimpleExcelWriter::create($filePath);
 
         $writer->addRow(["TERMO DE TRANSFERÊNCIA Nº", $codTermo]);
+        if (!empty($validated['cdprojeto'])) {
+            $writer->addRow(["Projeto:", $validated['cdprojeto']]);
+        }
         $writer->addRow([]);
         $writer->addRow(['Projeto Nº', 'Patr.', 'Descrição']);
 

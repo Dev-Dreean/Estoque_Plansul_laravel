@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
             {{ __('Atribuir Código de Termo') }}
         </h2>
     </x-slot>
@@ -11,25 +11,25 @@
         <div class="w-full px-2 sm:px-4 lg:px-8 2xl:px-12" x-data="atribuirPage()" x-init="init()">
             <!-- Mensagens de Feedback -->
             @if(session('success'))
-            <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+            <div class="mb-4 bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded relative" role="alert">
                 <strong class="font-bold">Sucesso!</strong>
                 <span class="block sm:inline">{{ session('success') }}</span>
             </div>
             @endif
             @if(session('error'))
-            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <div class="mb-4 bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded relative" role="alert">
                 <strong class="font-bold">Erro!</strong>
                 <span class="block sm:inline">{{ session('error') }}</span>
             </div>
             @endif
             @if(session('warning'))
-            <div class="mb-4 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
+            <div class="mb-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded relative" role="alert">
                 <strong class="font-bold">Atenção!</strong>
                 <span class="block sm:inline">{{ session('warning') }}</span>
             </div>
             @endif
             @if($errors->any())
-            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <div class="mb-4 bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded relative" role="alert">
                 <strong class="font-bold">Erro de Validação!</strong>
                 <span class="block sm:inline">{{ $errors->first() }}</span>
             </div>
@@ -40,7 +40,7 @@
                     <!-- Filtros no mesmo padrão da página de Patrimônios -->
                     <div x-data="{ open: true }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
                         <div @click="open = !open" class="flex justify-between items-center cursor-pointer">
-                            <h3 class="font-semibold text-lg">Filtros de Busca</h3>
+                            <h3 class="font-semibold text-lg text-gray-900 dark:text-gray-100">Filtros de Busca</h3>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
@@ -57,6 +57,9 @@
                                     <input type="text" id="filtro_modelo" name="filtro_modelo" value="{{ request('filtro_modelo') }}" placeholder="Modelo" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                 </div>
                                 <div>
+                                    <input type="number" id="filtro_projeto" name="filtro_projeto" value="{{ request('filtro_projeto') }}" placeholder="Cód. Projeto" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                </div>
+                                <div>
                                     <select id="status" name="status" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
                                         <option value="">Todos</option>
                                         <option value="disponivel" {{ request('status') == 'disponivel' ? 'selected' : '' }}>Disponíveis</option>
@@ -67,10 +70,10 @@
                             <div class="flex flex-wrap items-center justify-between mt-4 gap-4">
                                 <div class="flex items-center gap-3">
                                     <x-primary-button type="button" class="h-10 px-4" @click="aplicarFiltros()">{{ __('Filtrar') }}</x-primary-button>
-                                    <a href="{{ route('patrimonios.atribuir') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">Limpar</a>
+                                    <a href="{{ route('patrimonios.atribuir') }}" class="text-sm text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">Limpar</a>
                                 </div>
                                 <label class="flex items-center gap-2 ml-auto shrink-0">
-                                    <span class="text-sm text-gray-700 dark:text-gray-300">Itens por página</span>
+                                    <span class="text-sm text-gray-900 dark:text-gray-300">Itens por página</span>
                                     <select id="per_page" name="per_page" class="h-10 px-10 pr-8 w-20 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
                                         @foreach([15,30,50,100] as $opt)
                                         <option value="{{ $opt }}" @selected(request('per_page',15)==$opt)>{{ $opt }}</option>
@@ -93,7 +96,7 @@
                                 <div class="flex flex-col gap-2">
                                     @if(!request('status') || request('status')=='disponivel')
                                     <div class="flex items-center gap-2">
-                                        <label for="codigo_termo_header" class="text-sm font-medium text-gray-200 dark:text-gray-300">Código</label>
+                                        <label for="codigo_termo_header" class="text-sm font-medium text-white dark:text-gray-300">Código</label>
                                         <input type="number" id="codigo_termo_header" x-model="codigoTermo" placeholder="Termo" class="w-32 border-gray-600 dark:border-gray-700 bg-gray-700 dark:bg-gray-900 text-gray-200 dark:text-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" />
                                         <button type="button" @click="confirmarAtribuicao()" :disabled="selectedPatrimonios.length===0" :class="selectedPatrimonios.length===0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-green-700'" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md text-xs font-semibold tracking-widest focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,10 +104,16 @@
                                             </svg>
                                             Atribuir
                                         </button>
+                                        <button type="button" @click="processarGerarCodigo()" :disabled="selectedPatrimonios.length===0" :class="selectedPatrimonios.length===0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-indigo-700'" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md text-xs font-semibold tracking-widest focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                            </svg>
+                                            Gerar Código
+                                        </button>
                                     </div>
-                                    <span id="contador-selecionados-header" class="text-xs text-gray-300 dark:text-gray-400">Selecionados: 0</span>
+                                    <span id="contador-selecionados-header" class="text-xs text-gray-100 dark:text-gray-400">Selecionados: 0</span>
                                     @else
-                                    <span class="text-xs text-gray-300 dark:text-gray-400">Lista de patrimônios atribuídos</span>
+                                    <span class="text-xs text-gray-100 dark:text-gray-400">Lista de patrimônios atribuídos</span>
                                     @endif
                                 </div>
                                 <!-- Direita: Toggle -->
@@ -132,8 +141,8 @@
                             <div x-ref="tableWrapper"
                                 class="overflow-y-auto overflow-x-auto w-full border border-gray-200 dark:border-gray-700 rounded-lg"
                                 x-bind:style="tableHeight ? 'max-height:'+tableHeight+'px' : ''">
-                                <table class="min-w-full w-full text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-10">
+                                <table class="min-w-full w-full text-base text-left rtl:text-right text-gray-700 dark:text-gray-400">
+                                    <thead class="text-xs text-gray-900 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-200 sticky top-0 z-10">
                                         <tr>
                                             <th class="px-4 py-3 bg-gray-50 dark:bg-gray-700">
                                                 @if(!request('status') || request('status')=='disponivel')
@@ -199,12 +208,12 @@
                                         @empty
                                         <tr>
                                             <td colspan="{{ request('status') == 'indisponivel' ? '7' : '5' }}" class="px-6 py-8 text-center">
-                                                <div class="text-gray-500 dark:text-gray-400">
-                                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                <div class="text-gray-700 dark:text-gray-400">
+                                                    <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                                         <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
                                                     </svg>
                                                     <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Nenhum patrimônio encontrado</h3>
-                                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                                    <p class="mt-1 text-sm text-gray-700 dark:text-gray-400">
                                                         @if(request('status') == 'indisponivel')
                                                         Não há patrimônios atribuídos ou nenhum atende aos filtros aplicados.
                                                         @else
@@ -237,7 +246,7 @@
                                 </div>
                                 <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                                     <div>
-                                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                                        <p class="text-sm text-gray-900 dark:text-gray-300">
                                             Mostrando
                                             <span class="font-medium">{{ $patrimonios->firstItem() ?? 0 }}</span>
                                             a
@@ -378,11 +387,13 @@
                     const numero = document.getElementById('filtro_numero')?.value;
                     const descricao = document.getElementById('filtro_descricao')?.value;
                     const modelo = document.getElementById('filtro_modelo')?.value;
+                    const projeto = document.getElementById('filtro_projeto')?.value;
                     const status = document.getElementById('status')?.value;
                     const perPage = document.getElementById('per_page')?.value;
                     if (numero) params.append('filtro_numero', numero);
                     if (descricao) params.append('filtro_descricao', descricao);
                     if (modelo) params.append('filtro_modelo', modelo);
+                    if (projeto) params.append('filtro_projeto', projeto);
                     if (status) params.append('status', status);
                     if (perPage) params.append('per_page', perPage);
                     window.location.href = '{{ route("patrimonios.atribuir") }}?' + params.toString();
@@ -442,6 +453,30 @@
                     hiddenInput.name = 'codigo_termo';
                     hiddenInput.value = this.codigoTermo;
                     form.appendChild(hiddenInput);
+                    form.submit();
+                },
+                processarGerarCodigo() {
+                    const checkboxes = document.querySelectorAll('.patrimonio-checkbox:checked');
+                    if (checkboxes.length === 0) {
+                        alert('Selecione pelo menos um patrimônio para gerar o código.');
+                        return;
+                    }
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = "{{ route('termos.atribuir.store') }}";
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+                    Array.from(checkboxes).forEach(cb => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'patrimonio_ids[]';
+                        input.value = cb.value;
+                        form.appendChild(input);
+                    });
+                    document.body.appendChild(form);
                     form.submit();
                 },
                 processarDesatribuicao() {

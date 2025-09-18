@@ -274,6 +274,11 @@ class PatrimonioController extends Controller
             $query->where('MODELO', 'like', '%' . $request->filtro_modelo . '%');
         }
 
+        // Filtro por projeto para atribuição/termo
+        if ($request->filled('filtro_projeto')) {
+            $query->where('CDPROJETO', $request->filtro_projeto);
+        }
+
         // Ordenação
         $query->orderBy('NUPATRIMONIO', 'asc');
 

@@ -6,23 +6,26 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('historico_movimentacoes', function (Blueprint $table) {
             $table->id();
-            // Campos solicitados
-            $table->integer('NUPATR'); // Número do patrimônio (NUPATRIMONIO)
-            $table->integer('CODPROJ')->nullable(); // Código do projeto (CDPROJETO)
-            $table->string('USUARIO', 100)->nullable(); // Login do usuário
-            $table->timestamp('DTOPERACAO'); // Data/hora da operação
+            $table->string('NUPATR');
+            $table->string('CODPROJ')->nullable();
+            $table->string('USUARIO');
+            $table->timestamp('DTOPERACAO');
 
             // Índices úteis para busca
             $table->index(['NUPATR']);
-            $table->index(['CODPROJ']);
-            $table->index(['DTOPERACAO']);
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('historico_movimentacoes');

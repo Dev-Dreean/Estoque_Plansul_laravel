@@ -77,8 +77,8 @@
         </div>
     </div>
 
-    {{-- GRUPO 5: Marca, Modelo, Situação --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+    {{-- GRUPO 5: Marca, Modelo, Situação, Matrícula --}}
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 pt-6 border-t border-gray-200 dark:border-gray-700">
         <div>
             <x-input-label for="MARCA" value="Marca" />
             <x-text-input data-index="11" x-model="formData.MARCA" id="MARCA" name="MARCA" type="text" class="mt-1 block w-full" />
@@ -96,6 +96,10 @@
                 <option value="À DISPOSIÇÃO">À DISPOSIÇÃO</option>
             </select>
             <x-input-error class="mt-2" :messages="$errors->get('SITUACAO')" />
+        </div>
+        <div>
+            <x-input-label for="CDMATRFUNCIONARIO" value="Matrícula" />
+            <x-text-input id="CDMATRFUNCIONARIO" name="CDMATRFUNCIONARIO" type="text" class="mt-1 block w-full bg-gray-100 dark:bg-gray-900" value="{{ auth()->user()->CDMATRFUNCIONARIO ?? '' }}" readonly />
         </div>
     </div>
 
