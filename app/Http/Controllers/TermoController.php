@@ -182,4 +182,64 @@ class TermoController extends Controller
         $sugestao = max($maxRegistrado, $maxUsado) + 1;
         return response()->json(['sugestao' => $sugestao]);
     }
+
+    /**
+     * Página para gerenciar códigos (server-rendered, sem dependência de modal).
+     */
+    public function gerenciarCodigos(Request $request)
+    {
+        $q = trim((string) $request->input('q', ''));
+        // Registrados
+        $registrados = TermoCodigo::query()
+            ->when($q !== '', fn($qq) => $qq->where('codigo', 'like', "%$q%"))
+            ->get(['codigo', 'created_at'])
+            ->keyBy('codigo');
+        // Usados
+        $usados = Patrimonio::query()
+            ->whereNotNull('NMPLANTA')
+            ->when($q !== '', fn($qq) => $qq->where('NMPLANTA', 'like', "%$q%"))
+            ->selectRaw('NMPLANTA as codigo, COUNT(*) as qtd')
+            ->groupBy('NMPLANTA')
+            ->get()
+            ->keyBy('codigo');
+        $codigos = collect(array_unique(array_merge(array_keys($registrados->all()), array_keys($usados->all()))))
+            ->sort()
+            ->values()
+            ->map(function ($codigo) use ($registrados, $usados) {
+                $qtd = $usados->get($codigo)->qtd ?? 0;
+                return [
+                    'codigo' => (int) $codigo,
+                    'usado' => $qtd > 0,
+                    'qtd' => $qtd,
+                    'registrado' => $registrados->has($codigo),
+                ];
+            });
+        $sugestao = max((int) TermoCodigo::max('codigo'), (int) Patrimonio::max('NMPLANTA')) + 1;
+        return view('termos.codigos.index', [
+            'codigos' => $codigos,
+            'sugestao' => $sugestao,
+            'q' => $q,
+        ]);
+    }
+
+    /**
+     * Salva código via formulário web.
+     */
+    public function salvarCodigoWeb(Request $request)
+    {
+        $validated = $request->validate([
+            'codigo' => 'required|integer|min:1',
+        ]);
+        $codigo = (int) $validated['codigo'];
+        $jaExiste = TermoCodigo::where('codigo', $codigo)->exists()
+            || Patrimonio::where('NMPLANTA', $codigo)->exists();
+        if ($jaExiste) {
+            return back()->withErrors(['codigo' => 'Código já existe (registrado ou em uso).'])->withInput();
+        }
+        TermoCodigo::create([
+            'codigo' => $codigo,
+            'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+        ]);
+        return back()->with('success', 'Código cadastrado com sucesso.');
+    }
 }

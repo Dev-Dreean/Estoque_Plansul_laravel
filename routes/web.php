@@ -88,6 +88,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/codigos', [\App\Http\Controllers\TermoController::class, 'listarCodigos'])->name('codigos.index');
         Route::post('/codigos', [\App\Http\Controllers\TermoController::class, 'criarCodigo'])->name('codigos.store');
         Route::get('/codigos/sugestao', [\App\Http\Controllers\TermoController::class, 'sugestaoCodigo'])->name('codigos.sugestao');
+        // Página server-rendered para gerenciar códigos
+        Route::get('/gerenciar-codigos', [\App\Http\Controllers\TermoController::class, 'gerenciarCodigos'])->name('codigos.gerenciar');
+        Route::post('/gerenciar-codigos', [\App\Http\Controllers\TermoController::class, 'salvarCodigoWeb'])->name('codigos.salvar');
     });
 
     // Histórico de movimentações
