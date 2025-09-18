@@ -6,39 +6,59 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class LocaisProjetoSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        // Desativa a checagem, limpa a tabela, e reativa.
+        Schema::disableForeignKeyConstraints();
         DB::table('locais_projeto')->truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
 
+        // 1. Mapeia os projetos existentes: CDPROJETO => ID da tabela
         $projetosMap = DB::table('tabfant')->pluck('id', 'CDPROJETO');
 
+        // 2. Lê o arquivo de locais
         $locaisPath = database_path('seeders/data/localProjeto.TXT');
+        if (!file_exists($locaisPath)) {
+            $this->command->error("Arquivo de dados não encontrado em: {$locaisPath}");
+            return;
+        }
         $locaisLines = file($locaisPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        array_splice($locaisLines, 0, 3);
+        array_splice($locaisLines, 0, 3); // Remove cabeçalho
 
         $fullLines = $this->parseIrregularLines($locaisLines);
         $dataToInsert = [];
 
         foreach ($fullLines as $line) {
-            $cdFantasiaDoLocal = (int)trim(substr($line, 129, 13));
-            $tabfantForeignKey = $projetosMap->get($cdFantasiaDoLocal);
+            // Usa Expressão Regular para extrair os dados de forma robusta
+            if (preg_match('/^\s*(\d+)\s+(\d+)\s+(.+?)\s+(\d+)\s+(.*)/', $line, $matches)) {
 
-            $dataToInsert[] = [
-                'cdlocal' => (int)trim(substr($line, 18, 11)),
-                // ===== CORREÇÃO ESTÁ NESTA LINHA =====
-                'delocal' => mb_convert_encoding(trim(substr($line, 29, 100)), 'UTF-8', 'ISO-8859-1'),
-                'flativo' => (bool)trim(substr($line, 142, 10)),
-                'tabfant_id' => $tabfantForeignKey,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+                $cdlocal = (int)$matches[2];
+                $delocal = trim($matches[3]);
+                $cdFantasiaDoLocal = (int)$matches[4];
+                $flativoStr = trim($matches[5]);
+
+                // Busca no mapa o ID do projeto correspondente usando a chave correta
+                $tabfantId = $projetosMap->get($cdFantasiaDoLocal);
+
+                $dataToInsert[] = [
+                    'cdlocal' => $cdlocal,
+                    'delocal' => mb_convert_encoding($delocal, 'UTF-8', 'ISO-8859-1'),
+                    'flativo' => ($flativoStr !== '<null>' && is_numeric($flativoStr)) ? (bool)$flativoStr : false,
+                    'tabfant_id' => $tabfantId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
         }
 
+        // Insere os dados em blocos
         foreach (array_chunk($dataToInsert, 200) as $chunk) {
             DB::table('locais_projeto')->insert($chunk);
         }
@@ -46,6 +66,9 @@ class LocaisProjetoSeeder extends Seeder
         $this->command->info('Tabela locais_projeto populada e relacionada com sucesso!');
     }
 
+    /**
+     * Helper para tratar a quebra de linha irregular no arquivo de locais.
+     */
     private function parseIrregularLines(array $lines): array
     {
         $fullLines = [];
