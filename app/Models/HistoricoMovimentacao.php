@@ -20,6 +20,7 @@ class HistoricoMovimentacao extends Model
         'NUPATR',
         'CODPROJ',
         'USUARIO',
+        'CO_AUTOR',
         'DTOPERACAO',
     ];
 }

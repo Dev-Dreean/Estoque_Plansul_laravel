@@ -138,6 +138,12 @@ class PatrimonioController extends Controller
         // Registrar histórico quando o Projeto mudar
         if ($newProjeto != $oldProjeto) {
             try {
+                $coAutor = null;
+                $actorMat = Auth::user()->CDMATRFUNCIONARIO ?? null;
+                $ownerMat = $patrimonio->CDMATRFUNCIONARIO;
+                if (!empty($actorMat) && !empty($ownerMat) && $actorMat != $ownerMat) {
+                    $coAutor = User::where('CDMATRFUNCIONARIO', $ownerMat)->value('NMLOGIN'); // registra dono como co-autor
+                }
                 HistoricoMovimentacao::create([
                     'TIPO' => 'projeto',
                     'CAMPO' => 'CDPROJETO',
@@ -146,6 +152,7 @@ class PatrimonioController extends Controller
                     'NUPATR' => $patrimonio->NUPATRIMONIO,
                     'CODPROJ' => $newProjeto,
                     'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+                    'CO_AUTOR' => $coAutor,
                     'DTOPERACAO' => now(),
                 ]);
             } catch (\Throwable $e) {
@@ -159,6 +166,12 @@ class PatrimonioController extends Controller
         // Registrar histórico quando a Situação mudar
         if ($newSituacao !== $oldSituacao) {
             try {
+                $coAutor = null;
+                $actorMat = Auth::user()->CDMATRFUNCIONARIO ?? null;
+                $ownerMat = $patrimonio->CDMATRFUNCIONARIO;
+                if (!empty($actorMat) && !empty($ownerMat) && $actorMat != $ownerMat) {
+                    $coAutor = User::where('CDMATRFUNCIONARIO', $ownerMat)->value('NMLOGIN');
+                }
                 HistoricoMovimentacao::create([
                     'TIPO' => 'situacao',
                     'CAMPO' => 'SITUACAO',
@@ -167,6 +180,7 @@ class PatrimonioController extends Controller
                     'NUPATR' => $patrimonio->NUPATRIMONIO,
                     'CODPROJ' => $newProjeto,
                     'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+                    'CO_AUTOR' => $coAutor,
                     'DTOPERACAO' => now(),
                 ]);
             } catch (\Throwable $e) {
@@ -311,6 +325,13 @@ class PatrimonioController extends Controller
                 try {
                     $patrimoniosAlterados = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)->get(['NUPATRIMONIO']);
                     foreach ($patrimoniosAlterados as $p) {
+                        $coAutor = null;
+                        $actorMat = Auth::user()->CDMATRFUNCIONARIO ?? null;
+                        // Aqui não temos o dono do patrimônio carregado; buscar rapidamente
+                        $ownerMat = Patrimonio::where('NUPATRIMONIO', $p->NUPATRIMONIO)->value('CDMATRFUNCIONARIO');
+                        if (!empty($actorMat) && !empty($ownerMat) && $actorMat != $ownerMat) {
+                            $coAutor = User::where('CDMATRFUNCIONARIO', $ownerMat)->value('NMLOGIN');
+                        }
                         HistoricoMovimentacao::create([
                             'TIPO' => 'termo',
                             'CAMPO' => 'NMPLANTA',
@@ -319,6 +340,7 @@ class PatrimonioController extends Controller
                             'NUPATR' => $p->NUPATRIMONIO,
                             'CODPROJ' => null,
                             'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+                            'CO_AUTOR' => $coAutor,
                             'DTOPERACAO' => now(),
                         ]);
                     }
@@ -367,6 +389,12 @@ class PatrimonioController extends Controller
                 try {
                     $patrimoniosAlterados = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)->get(['NUPATRIMONIO']);
                     foreach ($patrimoniosAlterados as $p) {
+                        $coAutor = null;
+                        $actorMat = Auth::user()->CDMATRFUNCIONARIO ?? null;
+                        $ownerMat = Patrimonio::where('NUPATRIMONIO', $p->NUPATRIMONIO)->value('CDMATRFUNCIONARIO');
+                        if (!empty($actorMat) && !empty($ownerMat) && $actorMat != $ownerMat) {
+                            $coAutor = User::where('CDMATRFUNCIONARIO', $ownerMat)->value('NMLOGIN');
+                        }
                         HistoricoMovimentacao::create([
                             'TIPO' => 'termo',
                             'CAMPO' => 'NMPLANTA',
@@ -375,6 +403,7 @@ class PatrimonioController extends Controller
                             'NUPATR' => $p->NUPATRIMONIO,
                             'CODPROJ' => null,
                             'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+                            'CO_AUTOR' => $coAutor,
                             'DTOPERACAO' => now(),
                         ]);
                     }

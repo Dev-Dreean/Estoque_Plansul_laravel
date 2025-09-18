@@ -255,6 +255,7 @@
                                             <th class="px-4 py-3">Situação</th>
                                             <th class="px-4 py-3">Dt. Aquisição</th>
                                             <th class="px-4 py-3">Dt. Cadastro</th>
+                                            <th class="px-4 py-3">Matrícula</th>
                                             <th class="px-4 py-3">Cadastrado Por</th>
                                             @if(Auth::user()->PERFIL === 'ADM')
                                             <th class="px-4 py-3">Ações</th>
@@ -272,6 +273,7 @@
                                             <td class="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO }}</td>
                                             <td class="px-4 py-2">{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : '' }}</td>
                                             <td class="px-4 py-2">{{ $patrimonio->DTOPERACAO ? \Carbon\Carbon::parse($patrimonio->DTOPERACAO)->format('d/m/Y') : '' }}</td>
+                                            <td class="px-4 py-2">{{ $patrimonio->CDMATRFUNCIONARIO ?? '' }}</td>
                                             <td class="px-4 py-2">{{ $patrimonio->usuario?->NOMEUSER ?? 'SISTEMA' }}</td>
                                             @if(Auth::user()->PERFIL === 'ADM')
                                             <td class="px-4 py-2" @click.stop>
@@ -297,7 +299,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 10 : 9 }}" class="px-6 py-4 text-center">Nenhum patrimônio encontrado.</td>
+                                            <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 11 : 10 }}" class="px-6 py-4 text-center">Nenhum patrimônio encontrado.</td>
                                         </tr>
                                         @endforelse
                                     </tbody>
@@ -346,6 +348,7 @@
                                             <th class="px-4 py-3">Situação</th>
                                             <th class="{{ $shrink('DTAQUISICAO') }} py-3">Dt. Aquisição</th>
                                             <th class="{{ $shrink('DTOPERACAO') }} py-3">Dt. Cadastro</th>
+                                            <th class="px-4 py-3">Matrícula</th>
                                             <th class="{{ $shrink('USUARIO') }} py-3">Cadastrado Por</th>
                                             @if(Auth::user()->PERFIL === 'ADM')
                                             <th class="px-4 py-3">Ações</th>
@@ -371,6 +374,7 @@
                                         <td class="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO }}</td>
                                         <td class="{{ $shrink('DTAQUISICAO') }} py-2">{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : ($colVazia['DTAQUISICAO'] ? '' : '') }}</td>
                                         <td class="{{ $shrink('DTOPERACAO') }} py-2">{{ $patrimonio->DTOPERACAO ? \Carbon\Carbon::parse($patrimonio->DTOPERACAO)->format('d/m/Y') : ($colVazia['DTOPERACAO'] ? '' : '') }}</td>
+                                        <td class="px-4 py-2">{{ $patrimonio->CDMATRFUNCIONARIO ?? '' }}</td>
                                         <td class="{{ $shrink('USUARIO') }} py-2">{{ $patrimonio->usuario?->NOMEUSER ?? 'SISTEMA' }}</td>
 
                                         @if(Auth::user()->PERFIL === 'ADM')
@@ -398,7 +402,7 @@
                                     @empty
                                     <tr>
                                         {{-- Corrigindo o colspan para o número correto de colunas --}}
-                                        <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 16 : 15 }}"
+                                        <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 17 : 16 }}"
                                             class="px-6 py-4 text-center">Nenhum patrimônio encontrado para os
                                             filtros atuais.</td>
                                     </tr>

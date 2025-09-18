@@ -18,10 +18,6 @@
                     </x-nav-link>
 
                     @if(Auth::user()->PERFIL === 'ADM')
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Gráficos') }}
-                    </x-nav-link>
-
                     <x-nav-link :href="route('projetos.index')" :active="request()->routeIs('projetos.*')">
                         {{ __('Cadastro de Projetos') }}
                     </x-nav-link>

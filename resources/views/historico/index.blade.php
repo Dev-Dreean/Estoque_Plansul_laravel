@@ -80,7 +80,7 @@
                                     <th class="px-4 py-3">Nº Pat.</th>
                                     <th class="px-4 py-3">Cód. Projeto</th>
                                     <th class="px-4 py-3">Detalhe</th>
-                                    <th class="px-4 py-3">Usuário</th>
+                                    <th class="px-4 py-3 text-center">Usuário</th>
                                     <th class="px-4 py-3">Data Operação</th>
                                 </tr>
                             </thead>
@@ -141,7 +141,22 @@
                                         —
                                         @endif
                                     </td>
-                                    <td class="px-4 py-2 text-gray-800 dark:text-gray-200">{{ $h->USUARIO }}</td>
+                                    <td class="px-4 py-2 text-gray-800 dark:text-gray-200 text-center">
+                                        <div class="leading-tight">
+                                            <div class="font-semibold">{{ $h->NM_USUARIO ?? $h->USUARIO }}</div>
+                                            @if(!empty($h->MAT_USUARIO))
+                                                <div class="text-[11px] text-gray-500">Matrícula: {{ $h->MAT_USUARIO }}</div>
+                                            @endif
+                                        </div>
+                                        @if(!empty($h->CO_AUTOR) && $h->CO_AUTOR !== $h->USUARIO)
+                                            <div class="mt-1 leading-tight">
+                                                <div class="text-[12px] text-gray-700 dark:text-gray-300">Co-autor: {{ $h->NM_CO_AUTOR ?? $h->CO_AUTOR }}</div>
+                                                @if(!empty($h->MAT_CO_AUTOR))
+                                                    <div class="text-[11px] text-gray-500">Matrícula: {{ $h->MAT_CO_AUTOR }}</div>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-2 font-semibold">{{ \Carbon\Carbon::parse($h->DTOPERACAO)->timezone(config('app.timezone'))->format('d/m/Y H:i') }}</td>
                                 </tr>
                                 @empty
