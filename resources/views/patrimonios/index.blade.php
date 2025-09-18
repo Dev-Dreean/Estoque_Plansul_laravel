@@ -134,27 +134,27 @@
                             </div>
                             <div x-show="open" x-transition class="mt-4" style="display: none;">
                                 <form method="GET" action="{{ route('patrimonios.index') }}" @submit="open=false">
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
-                                        <div class="min-w-0">
+                                    <div class="grid gap-3 sm:gap-4" style="grid-template-columns: repeat(auto-fit,minmax(150px,1fr));">
+                                        <div>
                                             <input type="text" name="nupatrimonio" placeholder="Nº Patr." value="{{ request('nupatrimonio') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                         </div>
-                                        <div class="min-w-0">
+                                        <div>
                                             <input type="text" name="cdprojeto" placeholder="Cód. Projeto" value="{{ request('cdprojeto') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                         </div>
-                                        <div class="min-w-0 sm:col-span-2 md:col-span-3 lg:col-span-4 xl:col-span-6">
+                                        <div class="col-span-full md:col-span-2">
                                             <input type="text" name="descricao" placeholder="Descrição" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                         </div>
-                                        <div class="min-w-0">
+                                        <div>
                                             <input type="text" name="situacao" placeholder="Situação" value="{{ request('situacao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                         </div>
-                                        <div class="min-w-0">
+                                        <div>
                                             <input type="text" name="modelo" placeholder="Modelo" value="{{ request('modelo') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                         </div>
-                                        <div class="min-w-0">
+                                        <div>
                                             <input type="number" name="nmplanta" placeholder="Cód. Termo" value="{{ request('nmplanta') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                         </div>
                                         @if (Auth::user()->PERFIL === 'ADM')
-                                        <div class="min-w-0">
+                                        <div>
                                             <select name="cadastrado_por" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
                                                 <option value="">Usuário</option>
                                                 <option value="SISTEMA" @selected(request('cadastrado_por')==='SISTEMA' )>Sistema</option>
@@ -179,9 +179,9 @@
                                             </a>
                                         </div>
 
-                                        <label class="flex items-center gap-2 ml-auto shrink-0 w-full sm:w-auto sm:justify-end">
+                                        <label class="flex items-center gap-2 ml-auto shrink-0">
                                             <span class="text-sm text-gray-700 dark:text-gray-300">Itens por página</span>
-                                            <select name="per_page" class="h-10 pl-3 pr-8 w-24 text-center text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
+                                            <select name="per_page" class="h-10 px-10 pr-8 w-20 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
                                                 @foreach([10,30,50,100,200] as $opt)
                                                 <option value="{{ $opt }}" @selected(request('per_page', 30)==$opt)>{{ $opt }}</option>
                                                 @endforeach
@@ -338,6 +338,7 @@
                                             <th class="{{ $shrink('NMPLANTA') }} py-3">Cód. Termo</th>
                                             <th class="{{ $shrink('NUSERIE') }} py-3">Nº Série</th>
                                             <th class="{{ $shrink('CDPROJETO') }} py-3">Cód. Projeto</th>
+                                            <th class="px-4 py-3">Local</th>
                                             <th class="{{ $shrink('MODELO') }} py-3">Modelo</th>
                                             <th class="{{ $shrink('MARCA') }} py-3">Marca</th>
                                             <th class="{{ $shrink('COR') }} py-3">Cor</th>
@@ -362,6 +363,7 @@
                                         <td class="{{ $shrink('NMPLANTA') }} py-2 font-bold">{{ $patrimonio->NMPLANTA ?? ($colVazia['NMPLANTA'] ? '' : '') }}</td>
                                         <td class="{{ $shrink('NUSERIE') }} py-2">{{ $patrimonio->NUSERIE ?? ($colVazia['NUSERIE'] ? '' : '') }}</td>
                                         <td class="{{ $shrink('CDPROJETO') }} py-2">{{ $patrimonio->CDPROJETO ?? ($colVazia['CDPROJETO'] ? '' : '') }}</td>
+                                        <td class="px-4 py-2">{{ $patrimonio->local?->LOCAL ?? '' }}</td>
                                         <td class="{{ $shrink('MODELO') }} py-2">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,10,'...') : ($colVazia['MODELO'] ? '' : '') }}</td>
                                         <td class="{{ $shrink('MARCA') }} py-2">{{ $patrimonio->MARCA ?? ($colVazia['MARCA'] ? '' : '') }}</td>
                                         <td class="{{ $shrink('COR') }} py-2">{{ $patrimonio->COR ?? ($colVazia['COR'] ? '' : '') }}</td>
@@ -396,7 +398,7 @@
                                     @empty
                                     <tr>
                                         {{-- Corrigindo o colspan para o número correto de colunas --}}
-                                        <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 15 : 14 }}"
+                                        <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 16 : 15 }}"
                                             class="px-6 py-4 text-center">Nenhum patrimônio encontrado para os
                                             filtros atuais.</td>
                                     </tr>

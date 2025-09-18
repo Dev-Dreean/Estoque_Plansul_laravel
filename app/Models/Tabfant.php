@@ -3,15 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tabfant extends Model
 {
     protected $table = 'tabfant';
-    public $timestamps = false;
-    protected $fillable = ['CDPROJETO', 'NOMEPROJETO', 'LOCAL'];
 
-    public function filiais()
+    /**
+     * Um Projeto (Tabfant) tem muitos Locais.
+     */
+    public function locais(): HasMany
     {
-        return $this->hasMany(\App\Models\ProjetoFilial::class, 'tabfant_id');
+        return $this->hasMany(LocalProjeto::class, 'tabfant_id', 'id');
     }
 }

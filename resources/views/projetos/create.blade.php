@@ -1,7 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Cadastrar Novo Projeto') }}
+            {{-- ALTERADO: Texto do cabeçalho --}}
+            {{ __('Cadastrar Novo Local') }}
         </h2>
     </x-slot>
 
@@ -11,11 +12,14 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <form method="POST" action="{{ route('projetos.store') }}">
                         @csrf
+                        {{-- O arquivo _form conterá os campos corretos --}}
                         @include('projetos._form')
+
                         <div class="flex items-center justify-end mt-4">
-                            <a href="{{ route('projetos.index') }}" class="mr-4">Cancelar</a>
+                            <a href="{{ route('projetos.index') }}" class="mr-4 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900">Cancelar</a>
                             <x-primary-button>
-                                {{ __('Salvar Projeto') }}
+                                {{-- ALTERADO: Texto do botão --}}
+                                {{ __('Salvar Local') }}
                             </x-primary-button>
                         </div>
                     </form>
@@ -24,4 +28,3 @@
         </div>
     </div>
 </x-app-layout>
-@stack('scripts')

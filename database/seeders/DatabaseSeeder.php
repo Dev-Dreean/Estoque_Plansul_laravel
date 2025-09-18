@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -11,10 +9,14 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-public function run(): void {
-    $this->call([
-        ObjpatrSeeder::class, // O que já tínhamos
-        TabfantSeeder::class, // O novo seeder
-    ]);
-}
+    public function run(): void
+    {
+        $this->call([
+            // PRIMEIRO, popula a tabela de projetos 'tabfant'
+            TabfantSeeder::class,
+
+            // DEPOIS, popula a tabela de locais e cria a relação
+            LocaisProjetoSeeder::class,
+        ]);
+    }
 }

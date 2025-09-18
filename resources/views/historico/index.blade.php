@@ -27,38 +27,30 @@
                         </div>
                         <div x-show="open" x-transition class="mt-4" style="display: none;">
                             <form method="GET" action="{{ route('historico.index') }}">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-                                    <div class="min-w-0">
-                                        <input type="number" name="nupatr" value="{{ request('nupatr') }}" placeholder="Nº Patr." class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                <div class="grid gap-3 sm:gap-4" style="grid-template-columns: repeat(auto-fit,minmax(150px,1fr));">
+                                    <div class="flex gap-2">
+                                        <input type="number" name="nupatr" value="{{ request('nupatr') }}" placeholder="Nº Patr." class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                        <input type="number" name="codproj" value="{{ request('codproj') }}" placeholder="Cód. Projeto" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                     </div>
-                                    <div class="min-w-0">
-                                        <input type="number" name="codproj" value="{{ request('codproj') }}" placeholder="Cód. Projeto" class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
-                                    </div>
-                                    <div class="min-w-0">
-                                        <select name="tipo" class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
+                                    <div>
+                                        <select name="tipo" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
                                             <option value="">Tipo de evento</option>
                                             @foreach(['projeto','situacao','termo'] as $tp)
                                             <option value="{{ $tp }}" @selected(request('tipo')==$tp)>{{ ucfirst($tp) }}</option>
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div x-data="{query: '{{ request('usuario') }}', open: false, items: @js($usuarios), get filtered(){ const q=this.query?.toLowerCase()||''; return this.items.filter(u=>u.toLowerCase().includes(q)).slice(0,10); }, select(v){ this.query=v; this.open=false; }}" class="relative min-w-0">
-                                        <input type="text" name="usuario" x-model="query" @focus="open=true" @input="open=true" @keydown.escape.prevent="open=false" placeholder="Usuário" class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" autocomplete="off" />
-                                        <div x-show="open && filtered.length" @mousedown.prevent class="absolute z-20 mt-1 w-full max-h-60 overflow-y-auto rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
-                                            <ul class="py-1 text-sm text-gray-700 dark:text-gray-200">
-                                                <template x-for="item in filtered" :key="item">
-                                                    <li>
-                                                        <button type="button" class="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700" @click="select(item)" x-text="item"></button>
-                                                    </li>
-                                                </template>
-                                            </ul>
-                                        </div>
+                                    <div>
+                                        <input list="usuariosList" name="usuario" value="{{ request('usuario') }}" placeholder="Usuário" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                        <datalist id="usuariosList">
+                                            @foreach($usuarios as $u)
+                                            <option value="{{ $u }}" />
+                                            @endforeach
+                                        </datalist>
                                     </div>
-                                    <div class="min-w-0">
-                                        <input type="date" name="data_inicio" value="{{ request('data_inicio') }}" class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
-                                    </div>
-                                    <div class="min-w-0">
-                                        <input type="date" name="data_fim" value="{{ request('data_fim') }}" class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                    <div class="flex gap-2">
+                                        <input type="date" name="data_inicio" value="{{ request('data_inicio') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                        <input type="date" name="data_fim" value="{{ request('data_fim') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                     </div>
                                 </div>
 
@@ -68,9 +60,9 @@
                                         <a href="{{ route('historico.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">Limpar</a>
                                     </div>
 
-                                    <label class="flex items-center gap-2 ml-auto shrink-0 w-full sm:w-auto">
+                                    <label class="flex items-center gap-2 ml-auto shrink-0">
                                         <span class="text-sm text-gray-700 dark:text-gray-300">Itens por página</span>
-                                        <select name="per_page" class="h-10 pl-3 pr-8 w-24 text-center border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
+                                        <select name="per_page" class="h-10 px-10 pr-8 w-20 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
                                             @foreach([10,30,50,100,200] as $opt)
                                             <option value="{{ $opt }}" @selected(request('per_page', 30)==$opt)>{{ $opt }}</option>
                                             @endforeach
@@ -142,9 +134,9 @@
                                         $deFmt = $tipo==='situacao' ? $deU : ($de ?? '—');
                                         $paraFmt = $tipo==='situacao' ? $paraU : ($para ?? '—');
                                         @endphp
-                                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-200">{{ $deFmt }}</span>
-                                            <x-heroicon-o-arrow-right class="w-4 h-4 mx-2 inline text-gray-400" />
-                                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-800 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-200">{{ $paraFmt }}</span>
+                                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset {{ $badge($de) }}">{{ $deFmt }}</span>
+                                        <x-heroicon-o-arrow-right class="w-4 h-4 mx-2 inline text-gray-400" />
+                                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset {{ $badge($para) }}">{{ $paraFmt }}</span>
                                         @else
                                         —
                                         @endif

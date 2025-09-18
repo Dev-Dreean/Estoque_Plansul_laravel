@@ -39,11 +39,9 @@ class User extends Authenticatable
     protected $fillable = [
         'NOMEUSER',
         'NMLOGIN',
-        'CDMATRFUNCIONARIO', // <-- Adicione esta linha
-        'PERFIL',            // <-- Adicione esta linha
         'SENHA',
         'LGATIVO',
-        // Adicione 'email' se você tiver essa coluna
+        // Adicione outras colunas da tabela 'usuario' que você queira gerenciar via Laravel
     ];
 
     /**

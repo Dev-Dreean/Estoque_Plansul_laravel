@@ -1,5 +1,5 @@
 @props(['patrimonio' => null])
-<div x-data='patrimonioForm({ patrimonio: @json($patrimonio) })' @keydown.enter.prevent="focusNext($event.target)" class="space-y-6">
+<div x-data='patrimonioForm({ patrimonio: @json($patrimonio), old: @json(old()) })' @keydown.enter.prevent="focusNext($event.target)" class="space-y-6">
 
     {{-- GRUPO 1: N° Patrimônio, N° OC, Campo Vazio --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -95,6 +95,7 @@
                 <option value="BAIXA">BAIXA</option>
                 <option value="À DISPOSIÇÃO">À DISPOSIÇÃO</option>
             </select>
+            <x-input-error class="mt-2" :messages="$errors->get('SITUACAO')" />
         </div>
     </div>
 
@@ -107,6 +108,7 @@
         <div>
             <x-input-label for="DTBAIXA" value="Data de Baixa" />
             <x-text-input data-index="15" x-model="formData.DTBAIXA" id="DTBAIXA" name="DTBAIXA" type="date" class="mt-1 block w-full" />
+            <x-input-error class="mt-2" :messages="$errors->get('DTBAIXA')" />
         </div>
     </div>
 
@@ -139,19 +141,19 @@
         return {
             // == DADOS DO FORMULÁRIO ==
             formData: {
-                NUPATRIMONIO: config.patrimonio?.NUPATRIMONIO || '',
-                NUMOF: config.patrimonio?.NUMOF || '',
-                CODOBJETO: config.patrimonio?.CODOBJETO || '',
-                DEPATRIMONIO: config.patrimonio?.DEPATRIMONIO || '',
-                DEHISTORICO: config.patrimonio?.DEHISTORICO || '',
-                CDPROJETO: config.patrimonio?.CDPROJETO || '',
-                CDLOCAL: config.patrimonio?.CDLOCAL || '',
-                NMPLANTA: config.patrimonio?.NMPLANTA || '',
-                MARCA: config.patrimonio?.MARCA || '',
-                MODELO: config.patrimonio?.MODELO || '',
-                SITUACAO: config.patrimonio?.SITUACAO || 'EM USO',
-                DTAQUISICAO: config.patrimonio?.DTAQUISICAO ? config.patrimonio.DTAQUISICAO.split(' ')[0] : '',
-                DTBAIXA: config.patrimonio?.DTBAIXA ? config.patrimonio.DTBAIXA.split(' ')[0] : '',
+                NUPATRIMONIO: (config.old?.NUPATRIMONIO ?? config.patrimonio?.NUPATRIMONIO) || '',
+                NUMOF: (config.old?.NUMOF ?? config.patrimonio?.NUMOF) || '',
+                CODOBJETO: (config.old?.CODOBJETO ?? config.patrimonio?.CODOBJETO) || '',
+                DEPATRIMONIO: (config.old?.DEPATRIMONIO ?? config.patrimonio?.DEPATRIMONIO) || '',
+                DEHISTORICO: (config.old?.DEHISTORICO ?? config.patrimonio?.DEHISTORICO) || '',
+                CDPROJETO: (config.old?.CDPROJETO ?? config.patrimonio?.CDPROJETO) || '',
+                CDLOCAL: (config.old?.CDLOCAL ?? config.patrimonio?.CDLOCAL) || '',
+                NMPLANTA: (config.old?.NMPLANTA ?? config.patrimonio?.NMPLANTA) || '',
+                MARCA: (config.old?.MARCA ?? config.patrimonio?.MARCA) || '',
+                MODELO: (config.old?.MODELO ?? config.patrimonio?.MODELO) || '',
+                SITUACAO: (config.old?.SITUACAO ?? config.patrimonio?.SITUACAO) || 'EM USO',
+                DTAQUISICAO: (config.old?.DTAQUISICAO ?? (config.patrimonio?.DTAQUISICAO ? config.patrimonio.DTAQUISICAO.split(' ')[0] : '')),
+                DTBAIXA: (config.old?.DTBAIXA ?? (config.patrimonio?.DTBAIXA ? config.patrimonio.DTBAIXA.split(' ')[0] : '')),
             },
             // == ESTADO DA UI ==
             loading: false,
@@ -267,11 +269,29 @@
                 }
             },
             async init() {
-                if (config.patrimonio && config.patrimonio.CDPROJETO) {
-                    const targetCdLocal = config.patrimonio.CDLOCAL;
+                // Se já existe projeto nos dados atuais (inclusive old()), carrega nome do projeto e locais
+                if (this.formData.CDPROJETO) {
+                    const targetCdLocal = this.formData.CDLOCAL;
                     await this.buscarProjetoELocais();
-                    this.formData.CDLOCAL = targetCdLocal;
+                    if (targetCdLocal) this.formData.CDLOCAL = targetCdLocal;
                 }
+                // Se situação for BAIXA e não houver data, sugere hoje (apenas UX; ainda valida no backend)
+                this.$watch('formData.SITUACAO', (val) => {
+                    const dt = document.getElementById('DTBAIXA');
+                    if (val === 'BAIXA') {
+                        dt?.setAttribute('required', 'required');
+                        // Se vazio, preenche com a data de hoje (YYYY-MM-DD)
+                        if (!this.formData.DTBAIXA) {
+                            const today = new Date();
+                            const yyyy = today.getFullYear();
+                            const mm = String(today.getMonth() + 1).padStart(2, '0');
+                            const dd = String(today.getDate()).padStart(2, '0');
+                            this.formData.DTBAIXA = `${yyyy}-${mm}-${dd}`;
+                        }
+                    } else {
+                        dt?.removeAttribute('required');
+                    }
+                });
             }
         }
     }

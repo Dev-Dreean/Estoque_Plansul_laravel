@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
-    <meta charset="utf-t8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -31,6 +31,40 @@
         </main>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Anti-autocomplete/autofill across the app (except login forms)
+        (function() {
+            const isLogin = /login|entrar/i.test(window.location.pathname);
+            if (isLogin) return; // allow browser to remember login if desired
+
+            // Set autocomplete off on all forms and inputs
+            document.querySelectorAll('form').forEach(f => {
+                f.setAttribute('autocomplete', 'off');
+            });
+            document.querySelectorAll('input, textarea, select').forEach(el => {
+                el.setAttribute('autocomplete', 'off');
+                el.setAttribute('autocapitalize', 'off');
+                el.setAttribute('autocorrect', 'off');
+                el.setAttribute('spellcheck', 'false');
+            });
+
+            // For Chromium-based browsers that ignore autocomplete off in some cases,
+            // periodically reset input values if the browser tries to restore them on bfcache.
+            window.addEventListener('pageshow', (e) => {
+                if (e.persisted) {
+                    document.querySelectorAll('input:not([type="hidden"]), textarea').forEach(el => {
+                        if (el.defaultValue && el.value !== '') {
+                            // clear only if it looks like browser restored the value
+                            el.value = '';
+                        }
+                    });
+                }
+            });
+
+            // Prevent back-forward cache from restoring form values in some browsers
+            window.addEventListener('unload', function() {});
+        })();
+    </script>
     @stack('scripts')
 </body>
 
