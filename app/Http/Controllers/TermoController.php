@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Patrimonio;
+use App\Models\HistoricoMovimentacao;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
@@ -28,6 +31,32 @@ class TermoController extends Controller
         // Atualiza todos os patrimônios selecionados com o novo código
         Patrimonio::whereIn('NUSEQPATR', $validated['patrimonio_ids'])
                 ->update(['NMPLANTA' => $novoCodTermo]);
+
+        // Registrar histórico de atribuição de termo para cada patrimônio
+        try {
+            $patrimonios = Patrimonio::whereIn('NUSEQPATR', $validated['patrimonio_ids'])->get(['NUPATRIMONIO', 'CDMATRFUNCIONARIO']);
+            foreach ($patrimonios as $p) {
+                $coAutor = null;
+                $actorMat = Auth::user()->CDMATRFUNCIONARIO ?? null;
+                $ownerMat = $p->CDMATRFUNCIONARIO;
+                if (!empty($actorMat) && !empty($ownerMat) && $actorMat != $ownerMat) {
+                    $coAutor = User::where('CDMATRFUNCIONARIO', $ownerMat)->value('NMLOGIN');
+                }
+                HistoricoMovimentacao::create([
+                    'TIPO' => 'termo',
+                    'CAMPO' => 'NMPLANTA',
+                    'VALOR_ANTIGO' => null,
+                    'VALOR_NOVO' => $novoCodTermo,
+                    'NUPATR' => $p->NUPATRIMONIO,
+                    'CODPROJ' => null,
+                    'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+                    'CO_AUTOR' => $coAutor,
+                    'DTOPERACAO' => now(),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // não interromper o fluxo por falha no histórico
+        }
 
     // Redireciona de volta para a página de atribuição para continuidade do fluxo
     return redirect()->route('patrimonios.atribuir', ['status' => 'indisponivel'])
