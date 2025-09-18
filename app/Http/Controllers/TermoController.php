@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Patrimonio;
 use App\Models\HistoricoMovimentacao;
+use App\Models\TermoCodigo;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -104,5 +105,81 @@ class TermoController extends Controller
         $writer->addRow(['--- FIM ---']);
 
         return response()->download($filePath)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Lista códigos existentes (registrados e/ou usados) em JSON.
+     */
+    public function listarCodigos(Request $request)
+    {
+        $q = trim((string) $request->input('q', ''));
+
+        // Códigos registrados manualmente
+        $registrados = TermoCodigo::query()
+            ->when($q !== '', fn($qq) => $qq->where('codigo', 'like', "%$q%"))
+            ->get(['codigo', 'created_at'])
+            ->keyBy('codigo');
+
+        // Códigos usados na tabela patr
+        $usados = Patrimonio::query()
+            ->whereNotNull('NMPLANTA')
+            ->when($q !== '', fn($qq) => $qq->where('NMPLANTA', 'like', "%$q%"))
+            ->selectRaw('NMPLANTA as codigo, COUNT(*) as qtd')
+            ->groupBy('NMPLANTA')
+            ->get()
+            ->keyBy('codigo');
+
+        // União das chaves
+        $codigos = collect(array_unique(array_merge(array_keys($registrados->all()), array_keys($usados->all()))))
+            ->sort()
+            ->values()
+            ->map(function ($codigo) use ($registrados, $usados) {
+                $qtd = $usados->get($codigo)->qtd ?? 0;
+                $usado = $qtd > 0;
+                return [
+                    'codigo' => (int) $codigo,
+                    'usado' => $usado,
+                    'qtd' => $qtd,
+                    'registrado' => $registrados->has($codigo),
+                ];
+            });
+
+        return response()->json(['data' => $codigos]);
+    }
+
+    /**
+     * Cria (registra) um novo código, se ainda não existir.
+     */
+    public function criarCodigo(Request $request)
+    {
+        $validated = $request->validate([
+            'codigo' => 'required|integer|min:1',
+        ]);
+        $codigo = (int) $validated['codigo'];
+
+        $jaExiste = TermoCodigo::where('codigo', $codigo)->exists()
+            || Patrimonio::where('NMPLANTA', $codigo)->exists();
+
+        if ($jaExiste) {
+            return response()->json(['error' => 'Código já existe (registrado ou em uso).'], 422);
+        }
+
+        $criado = TermoCodigo::create([
+            'codigo' => $codigo,
+            'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+        ]);
+
+        return response()->json(['data' => $criado], 201);
+    }
+
+    /**
+     * Sugere o próximo código (max + 1) considerando registrados e usados.
+     */
+    public function sugestaoCodigo()
+    {
+        $maxRegistrado = (int) TermoCodigo::max('codigo');
+        $maxUsado = (int) Patrimonio::max('NMPLANTA');
+        $sugestao = max($maxRegistrado, $maxUsado) + 1;
+        return response()->json(['sugestao' => $sugestao]);
     }
 }

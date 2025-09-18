@@ -19,7 +19,7 @@
 
                     @if(Auth::user()->PERFIL === 'ADM')
                     <x-nav-link :href="route('projetos.index')" :active="request()->routeIs('projetos.*')">
-                        {{ __('Cadastro de Projetos') }}
+                        {{ __('Cadastro de Locais') }}
                     </x-nav-link>
 
                     <x-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')">

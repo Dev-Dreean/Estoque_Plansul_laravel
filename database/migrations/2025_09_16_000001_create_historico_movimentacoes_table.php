@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
-{ // <-- A CHAVE { QUE FALTAVA FOI ADICIONADA AQUI
-
+{
     /**
      * Run the migrations.
      */
@@ -18,8 +17,6 @@ return new class extends Migration
             $table->string('CODPROJ')->nullable();
             $table->string('USUARIO');
             $table->timestamp('DTOPERACAO');
-
-            // Índices úteis para busca
             $table->index(['NUPATR']);
         });
     }

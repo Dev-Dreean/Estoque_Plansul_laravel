@@ -38,7 +38,7 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <!-- Filtros no mesmo padrão da página de Patrimônios -->
-                    <div x-data="{ open: true }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
+                    <div x-data="{ open: false }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
                         <div @click="open = !open" class="flex justify-between items-center cursor-pointer">
                             <h3 class="font-semibold text-lg text-gray-900 dark:text-gray-100">Filtros de Busca</h3>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,7 +61,6 @@
                                 </div>
                                 <div>
                                     <select id="status" name="status" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
-                                        <option value="">Todos</option>
                                         <option value="disponivel" {{ request('status') == 'disponivel' ? 'selected' : '' }}>Disponíveis</option>
                                         <option value="indisponivel" {{ request('status') == 'indisponivel' ? 'selected' : '' }}>Indisponíveis</option>
                                     </select>
@@ -104,7 +103,7 @@
                                             </svg>
                                             Atribuir
                                         </button>
-                                        <button type="button" @click="processarGerarCodigo()" :disabled="selectedPatrimonios.length===0" :class="selectedPatrimonios.length===0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-indigo-700'" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md text-xs font-semibold tracking-widest focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
+                                        <button type="button" @click="abrirCodesModal()" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md text-xs font-semibold tracking-widest focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition hover:bg-indigo-700">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                             </svg>
@@ -350,6 +349,73 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Modal Gerenciar Códigos de Termo -->
+            <div x-show="showCodesModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div x-show="showCodesModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                    <div x-show="showCodesModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <div class="sm:flex sm:items-start">
+                                <div class="mt-3 text-left w-full">
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900">Gerenciar Códigos de Termo</h3>
+                                    <div class="mt-4 space-y-3">
+                                        <div class="flex items-end gap-2">
+                                            <div>
+                                                <label class="text-sm text-gray-700">Novo código</label>
+                                                <input type="number" x-model="novoCodigo" class="w-40 h-10 px-2 border border-gray-300 rounded-md" placeholder="Ex: 1024" />
+                                            </div>
+                                            <button type="button" @click="gerarSugestao()" class="h-10 px-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md text-xs font-semibold">Sugerir Próximo</button>
+                                            <button type="button" @click="cadastrarCodigo()" class="h-10 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-semibold">Cadastrar Código</button>
+                                            <div class="ml-auto">
+                                                <button type="button" @click="showCodesModal = false" class="h-10 px-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 rounded-md text-xs font-semibold">Fechar</button>
+                                            </div>
+                                        </div>
+                                        <div class="border rounded-md">
+                                            <div class="overflow-x-auto max-h-[55vh]">
+                                                <table class="min-w-full text-sm">
+                                                    <thead class="bg-gray-50">
+                                                        <tr>
+                                                            <th class="px-4 py-2 text-left text-gray-700">Código</th>
+                                                            <th class="px-4 py-2 text-left text-gray-700">Situação</th>
+                                                            <th class="px-4 py-2 text-left text-gray-700">Qtd. Itens</th>
+                                                            <th class="px-4 py-2"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <template x-if="codesLoading">
+                                                            <tr><td colspan="4" class="px-4 py-6 text-center text-gray-500">Carregando...</td></tr>
+                                                        </template>
+                                                        <template x-if="!codesLoading && codes.length === 0">
+                                                            <tr><td colspan="4" class="px-4 py-6 text-center text-gray-500">Nenhum código encontrado.</td></tr>
+                                                        </template>
+                                                        <template x-for="c in codes" :key="c.codigo">
+                                                            <tr class="border-t">
+                                                                <td class="px-4 py-2 font-mono" x-text="c.codigo"></td>
+                                                                <td class="px-4 py-2">
+                                                                    <span x-show="c.usado" class="inline-flex items-center rounded-full bg-yellow-50 px-2 py-0.5 text-[11px] font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Usado</span>
+                                                                    <span x-show="!c.usado" class="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-800 ring-1 ring-inset ring-green-600/20">Livre</span>
+                                                                </td>
+                                                                <td class="px-4 py-2" x-text="c.qtd"></td>
+                                                                <td class="px-4 py-2 text-right">
+                                                                    <button type="button" @click="usarCodigo(c.codigo)" class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700">Usar este código</button>
+                                                                </td>
+                                                            </tr>
+                                                        </template>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -455,29 +521,55 @@
                     form.appendChild(hiddenInput);
                     form.submit();
                 },
-                processarGerarCodigo() {
-                    const checkboxes = document.querySelectorAll('.patrimonio-checkbox:checked');
-                    if (checkboxes.length === 0) {
-                        alert('Selecione pelo menos um patrimônio para gerar o código.');
-                        return;
-                    }
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = "{{ route('termos.atribuir.store') }}";
-                    const csrfToken = document.createElement('input');
-                    csrfToken.type = 'hidden';
-                    csrfToken.name = '_token';
-                    csrfToken.value = '{{ csrf_token() }}';
-                    form.appendChild(csrfToken);
-                    Array.from(checkboxes).forEach(cb => {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'patrimonio_ids[]';
-                        input.value = cb.value;
-                        form.appendChild(input);
-                    });
-                    document.body.appendChild(form);
-                    form.submit();
+                // === Modal Gerenciar Códigos ===
+                showCodesModal: false,
+                codes: [],
+                codesLoading: false,
+                novoCodigo: '',
+                abrirCodesModal() {
+                    this.showCodesModal = true;
+                    this.carregarCodigos();
+                },
+                async carregarCodigos() {
+                    this.codesLoading = true;
+                    try {
+                        const res = await fetch("{{ route('termos.codigos.index') }}");
+                        if (res.ok) {
+                            const json = await res.json();
+                            this.codes = json.data;
+                        }
+                    } catch (e) {}
+                    this.codesLoading = false;
+                },
+                async cadastrarCodigo() {
+                    if (!this.novoCodigo) return;
+                    try {
+                        const res = await fetch("{{ route('termos.codigos.store') }}", {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                            body: JSON.stringify({ codigo: parseInt(this.novoCodigo, 10) })
+                        });
+                        if (res.ok) {
+                            this.novoCodigo = '';
+                            await this.carregarCodigos();
+                        } else {
+                            const err = await res.json();
+                            alert(err.error ?? 'Falha ao criar código.');
+                        }
+                    } catch (e) { alert('Erro ao criar código.'); }
+                },
+                async gerarSugestao() {
+                    try {
+                        const res = await fetch("{{ route('termos.codigos.sugestao') }}");
+                        if (res.ok) {
+                            const json = await res.json();
+                            this.novoCodigo = json.sugestao;
+                        }
+                    } catch (e) {}
+                },
+                usarCodigo(codigo) {
+                    this.codigoTermo = codigo;
+                    this.showCodesModal = false;
                 },
                 processarDesatribuicao() {
                     if (!this.desatribuirItem) return;

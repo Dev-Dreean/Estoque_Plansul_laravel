@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use App\Models\HistoricoMovimentacao;
+use App\Models\TermoCodigo;
 
 class PatrimonioController extends Controller
 {
@@ -312,6 +313,14 @@ class PatrimonioController extends Controller
         try {
             $codigoTermo = $request->codigo_termo;
             $patrimoniosIds = $request->patrimonios;
+
+            // Verificar se o código existe (registrado ou já usado)
+            $codigoExiste = TermoCodigo::where('codigo', $codigoTermo)->exists()
+                || Patrimonio::where('NMPLANTA', $codigoTermo)->exists();
+            if (!$codigoExiste) {
+                return redirect()->route('patrimonios.atribuir')
+                    ->with('error', 'Código de termo inexistente. Gere/registre o código antes de atribuir.');
+            }
 
             // Verificar quais patrimônios já estão atribuídos
             $jaAtribuidos = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)
