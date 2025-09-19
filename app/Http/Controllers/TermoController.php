@@ -31,7 +31,7 @@ class TermoController extends Controller
 
         // Atualiza todos os patrimônios selecionados com o novo código
         Patrimonio::whereIn('NUSEQPATR', $validated['patrimonio_ids'])
-                ->update(['NMPLANTA' => $novoCodTermo]);
+            ->update(['NMPLANTA' => $novoCodTermo]);
 
         // Registrar histórico de atribuição de termo para cada patrimônio
         try {
@@ -59,9 +59,9 @@ class TermoController extends Controller
             // não interromper o fluxo por falha no histórico
         }
 
-    // Redireciona de volta para a página de atribuição para continuidade do fluxo
-    return redirect()->route('patrimonios.atribuir', ['status' => 'indisponivel'])
-            ->with('success', "Código de Termo Nº {$novoCodTermo} gerado e atribuído com sucesso a ". count($validated['patrimonio_ids']) ." itens!");
+        // Redireciona de volta para a página de atribuição para continuidade do fluxo
+        return redirect()->route('patrimonios.atribuir', ['status' => 'indisponivel'])
+            ->with('success', "Código de Termo Nº {$novoCodTermo} gerado e atribuído com sucesso a " . count($validated['patrimonio_ids']) . " itens!");
     }
 
     /**

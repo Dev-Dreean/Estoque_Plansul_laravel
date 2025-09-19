@@ -441,8 +441,8 @@ class PatrimonioController extends Controller
 
     private function getPatrimoniosQuery(Request $request)
     {
-    $user = Auth::user();
-    $query = Patrimonio::with(['usuario', 'local']);
+        $user = Auth::user();
+        $query = Patrimonio::with(['usuario', 'local']);
 
         if ($user->PERFIL !== 'ADM') {
             $query->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO);

@@ -18,7 +18,7 @@ class UserController extends Controller
 
         if ($request->filled('busca')) {
             $query->where('NOMEUSER', 'like', '%' . $request->busca . '%')
-                  ->orWhere('NMLOGIN', 'like', '%' . $request->busca . '%');
+                ->orWhere('NMLOGIN', 'like', '%' . $request->busca . '%');
         }
 
         $usuarios = $query->orderBy('NOMEUSER')->paginate(10);
@@ -30,28 +30,30 @@ class UserController extends Controller
         return view('usuarios.create');
     }
 
-public function store(Request $request): RedirectResponse
-{
-    $request->validate([
-        'NOMEUSER' => ['required', 'string', 'max:80'],
-        'NMLOGIN' => ['required', 'string', 'max:30', 'unique:usuario,NMLOGIN'],
-        'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', 'unique:usuario,CDMATRFUNCIONARIO'],
-        'PERFIL' => ['required', \Illuminate\Validation\Rule::in(['ADM', 'USR'])],
-        'SENHA' => ['required', 'string', 'min:8'],
-    ]);
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'NOMEUSER' => ['required', 'string', 'max:80'],
+            'NMLOGIN' => ['required', 'string', 'max:30', 'unique:usuario,NMLOGIN'],
+            'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', 'unique:usuario,CDMATRFUNCIONARIO'],
+            'PERFIL' => ['required', \Illuminate\Validation\Rule::in(['ADM', 'USR'])],
+        ]);
 
-    // O importante é garantir que CDMATRFUNCIONARIO e PERFIL estão aqui
-    User::create([
-        'NOMEUSER' => $request->NOMEUSER,
-        'NMLOGIN' => $request->NMLOGIN,
-        'CDMATRFUNCIONARIO' => $request->CDMATRFUNCIONARIO,
-        'PERFIL' => $request->PERFIL,
-        'SENHA' => $request->SENHA,
-        'LGATIVO' => 'S',
-    ]);
+        // Senha padrão provisória para primeiro acesso
+        $senhaProvisoria = 'Plansul@123';
 
-    return redirect()->route('usuarios.index')->with('success', 'Usuário criado com sucesso!');
-}
+        User::create([
+            'NOMEUSER' => $request->NOMEUSER,
+            'NMLOGIN' => $request->NMLOGIN,
+            'CDMATRFUNCIONARIO' => $request->CDMATRFUNCIONARIO,
+            'PERFIL' => $request->PERFIL,
+            'SENHA' => $senhaProvisoria,
+            'LGATIVO' => 'S',
+            'must_change_password' => true,
+        ]);
+
+        return redirect()->route('usuarios.index')->with('success', 'Usuário criado com sucesso! Senha provisória: ' . $senhaProvisoria);
+    }
 
     public function edit(User $usuario): View
     {
@@ -88,7 +90,7 @@ public function store(Request $request): RedirectResponse
         if ($usuario->id === Auth::id()) {
             return redirect()->route('usuarios.index')->with('error', 'Você não pode deletar seu próprio usuário.');
         }
-        
+
         $usuario->delete();
         return redirect()->route('usuarios.index')->with('success', 'Usuário deletado com sucesso!');
     }

@@ -41,7 +41,15 @@ class User extends Authenticatable
         'NMLOGIN',
         'SENHA',
         'LGATIVO',
-        // Adicione outras colunas da tabela 'usuario' que você queira gerenciar via Laravel
+        'CDMATRFUNCIONARIO',
+        'UF',
+        'must_change_password',
+        'password_policy_version',
+    ];
+
+    protected $casts = [
+        'must_change_password' => 'boolean',
+        'password_policy_version' => 'integer',
     ];
 
     /**

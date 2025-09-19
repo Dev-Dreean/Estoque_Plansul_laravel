@@ -57,4 +57,50 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+    public function showCompletionForm()
+    {
+        return view('profile.complete');
+    }
+
+    /**
+     * Salva as informações de perfil que faltam.
+     */
+    public function storeCompletionForm(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $rules = [
+            'UF' => ['required', 'string', 'size:2'],
+        ];
+
+        $changingPassword = $user && ($user->must_change_password ?? false);
+
+        if ($changingPassword) {
+            $rules['password'] = [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/',
+                'confirmed',
+            ];
+        }
+
+        $validated = $request->validate($rules, [
+            'password.regex' => 'A senha deve conter ao menos: 1 letra maiúscula, 1 letra minúscula, 1 número e 1 caractere especial.',
+        ]);
+
+        $user->UF = strtoupper($validated['UF']);
+
+        if ($changingPassword) {
+            // Ajustar campo de senha (coluna SENHA)
+            $user->SENHA = $validated['password'];
+            $user->must_change_password = false;
+            $user->password_policy_version = 1; // marca que cumpre a política atual
+        }
+
+        $user->save();
+
+        return redirect()->route('patrimonios.index')->with('status', 'Perfil atualizado com sucesso!');
+    }
 }

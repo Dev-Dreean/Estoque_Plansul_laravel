@@ -28,6 +28,7 @@
                                     <th scope="col" class="px-6 py-3">Nome</th>
                                     <th scope="col" class="px-6 py-3">Login</th>
                                     <th scope="col" class="px-6 py-3">Matrícula</th>
+                                    <th scope="col" class="px-6 py-3">UF</th>
                                     <th scope="col" class="px-6 py-3">Perfil</th>
                                     <th scope="col" class="px-6 py-3">Ações</th>
                                 </tr>
@@ -38,6 +39,7 @@
                                     <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ $usuario->NOMEUSER }}</td>
                                     <td class="px-6 py-4">{{ $usuario->NMLOGIN }}</td>
                                     <td class="px-6 py-4">{{ $usuario->CDMATRFUNCIONARIO }}</td>
+                                    <td class="px-6 py-4">{{ $usuario->UF ?? '—' }}</td>
                                     <td class="px-6 py-4">
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $usuario->PERFIL === 'ADM' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
                                             {{ $usuario->PERFIL }}
@@ -56,7 +58,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-4 text-center">Nenhum usuário encontrado.</td>
+                                    <td colspan="6" class="px-6 py-4 text-center">Nenhum usuário encontrado.</td>
                                 </tr>
                                 @endforelse
                             </tbody>

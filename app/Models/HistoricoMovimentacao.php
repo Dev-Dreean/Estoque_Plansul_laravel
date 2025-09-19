@@ -1,4 +1,5 @@
 <?php
+// DENTRO DE app/Models/HistoricoMovimentacao.php
 
 namespace App\Models;
 
@@ -9,18 +10,20 @@ class HistoricoMovimentacao extends Model
 {
     use HasFactory;
 
-    protected $table = 'historico_movimentacoes';
+    // A MUDANÇA É AQUI:
+    protected $table = 'movpartr'; // Antes era 'historico_movimentacoes'
+
     public $timestamps = false;
 
     protected $fillable = [
+        'NUPATR',
+        'CODPROJ',
+        'USUARIO',
+        'DTOPERACAO',
         'TIPO',
         'CAMPO',
         'VALOR_ANTIGO',
         'VALOR_NOVO',
-        'NUPATR',
-        'CODPROJ',
-        'USUARIO',
         'CO_AUTOR',
-        'DTOPERACAO',
     ];
 }
