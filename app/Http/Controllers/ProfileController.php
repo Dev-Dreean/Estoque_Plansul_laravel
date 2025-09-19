@@ -97,6 +97,11 @@ class ProfileController extends Controller
             $user->SENHA = $validated['password'];
             $user->must_change_password = false;
             $user->password_policy_version = 1; // marca que cumpre a política atual
+        } else {
+            // Mesmo sem troca de senha, se ainda não marcou a versão da política, marcar para não ficar em loop no middleware
+            if (($user->password_policy_version ?? 0) < 1) {
+                $user->password_policy_version = 1;
+            }
         }
 
         $user->save();
