@@ -68,12 +68,40 @@
         </div>
         <div class="md:col-span-3">
             <x-input-label for="CDLOCAL" value="Local" />
-            <select data-index="9" x-model="formData.CDLOCAL" id="CDLOCAL" name="CDLOCAL" class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" :disabled="locais.length === 0">
-                <option value="">Selecione um local...</option>
-                <template x-for="local in locais" :key="local.id">
-                    <option :value="local.id" x-text="local.LOCAL"></option>
-                </template>
-            </select>
+            <div class="flex gap-2 items-start">
+                <div class="flex-1">
+                    <select data-index="9" x-model="formData.CDLOCAL" id="CDLOCAL" name="CDLOCAL" class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" :disabled="locais.length === 0">
+                        <option value="">Selecione um local...</option>
+                        <template x-for="local in locais" :key="local.id">
+                            <option :value="local.id" x-text="local.LOCAL"></option>
+                        </template>
+                    </select>
+                </div>
+                <button type="button" @click="abrirNovoLocal()" class="mt-1 inline-flex items-center justify-center w-10 h-10 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" title="Cadastrar novo local" aria-label="Cadastrar novo local">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                </button>
+            </div>
+            <!-- Mini modal / popover cadastro local -->
+            <div x-show="novoLocalOpen" x-transition @keydown.escape.window="fecharNovoLocal" class="relative">
+                <div class="absolute z-50 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Novo Local</h4>
+                        <button type="button" class="text-gray-400 hover:text-gray-600" @click="fecharNovoLocal">✕</button>
+                    </div>
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Nome do Local *</label>
+                    <input type="text" x-model="novoLocalNome" @keydown.enter.prevent="salvarNovoLocal" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md text-sm" placeholder="Ex: Almoxarifado" />
+                    <p class="text-xs text-red-500 mt-1" x-text="novoLocalErro"></p>
+                    <div class="mt-3 flex justify-end gap-2">
+                        <button type="button" @click="fecharNovoLocal" class="px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancelar</button>
+                        <button type="button" @click="salvarNovoLocal" class="px-3 py-1 text-xs rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50" :disabled="salvandoNovoLocal">
+                            <span x-show="!salvandoNovoLocal">Salvar</span>
+                            <span x-show="salvandoNovoLocal">Salvando...</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -167,6 +195,11 @@
             loadingSearch: false,
             nomeProjeto: '',
             locais: [],
+            // Novo Local
+            novoLocalOpen: false,
+            novoLocalNome: '',
+            novoLocalErro: '',
+            salvandoNovoLocal: false,
 
             // == FUNÇÕES ==
             openSearchModal() {
@@ -260,6 +293,50 @@
                     if (locaisResponse.ok) this.locais = await locaisResponse.json();
                 } catch (error) {
                     console.error('Erro ao buscar locais:', error);
+                }
+            },
+            abrirNovoLocal() {
+                if(!this.formData.CDPROJETO) {
+                    alert('Informe um projeto antes de cadastrar o local.');
+                    return;
+                }
+                this.novoLocalOpen = true;
+                this.novoLocalNome = '';
+                this.novoLocalErro = '';
+                this.$nextTick(()=>{
+                    const el = document.querySelector('input[x-model="novoLocalNome"]');
+                    el?.focus();
+                });
+            },
+            fecharNovoLocal() {
+                this.novoLocalOpen = false;
+            },
+            async salvarNovoLocal() {
+                if(!this.novoLocalNome.trim()) {
+                    this.novoLocalErro = 'Digite o nome do local';
+                    return;
+                }
+                this.salvandoNovoLocal = true;
+                this.novoLocalErro = '';
+                try {
+                    const resp = await fetch(`/api/locais/${this.formData.CDPROJETO}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify({ delocal: this.novoLocalNome })
+                    });
+                    if(resp.ok) {
+                        const novo = await resp.json();
+                        this.locais.push(novo);
+                        this.formData.CDLOCAL = novo.id;
+                        this.fecharNovoLocal();
+                    } else {
+                        const err = await resp.json().catch(()=>({}));
+                        this.novoLocalErro = err.error || 'Erro ao salvar.';
+                    }
+                } catch(e){
+                    this.novoLocalErro = 'Falha na requisição.';
+                } finally {
+                    this.salvandoNovoLocal = false;
                 }
             },
             focusNext(currentElement) {

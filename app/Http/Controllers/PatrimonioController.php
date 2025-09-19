@@ -7,6 +7,7 @@ use App\Models\Patrimonio;
 use App\Models\User;
 use App\Models\Objpatr;
 use App\Models\Tabfant;
+use App\Models\LocalProjeto;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -234,12 +235,48 @@ class PatrimonioController extends Controller
 
     public function getLocaisPorProjeto($cdprojeto): JsonResponse
     {
-        $locais = Tabfant::where('CDPROJETO', $cdprojeto)
-            ->select('id', 'LOCAL') // Seleciona o ID e o nome do local
-            ->distinct()
-            ->get();
-
+        $projeto = Tabfant::where('CDPROJETO', $cdprojeto)->first(['id']);
+        if(!$projeto) {
+            return response()->json([]); // projeto não encontrado => sem locais
+        }
+        $locais = LocalProjeto::where('tabfant_id', $projeto->id)
+            ->orderBy('delocal')
+            ->get(['id','delocal as LOCAL','cdlocal']);
         return response()->json($locais);
+    }
+
+    /**
+     * Cria um novo local para o projeto (filial) informado.
+     */
+    public function criarLocal(Request $request, $cdprojeto): JsonResponse
+    {
+        $request->validate([
+            'delocal' => 'required|string|max:120',
+        ], [
+            'delocal.required' => 'Informe o nome do local.'
+        ]);
+
+        $projeto = Tabfant::where('CDPROJETO', $cdprojeto)->first(['id']);
+        if(!$projeto) {
+            return response()->json(['error' => 'Projeto não encontrado.'], 404);
+        }
+
+        // Gera código sequencial simples dentro do projeto (ou global se preferir)
+        $nextCdLocal = (int) LocalProjeto::where('tabfant_id', $projeto->id)->max('cdlocal');
+        $nextCdLocal = $nextCdLocal ? $nextCdLocal + 1 : 1;
+
+        $local = LocalProjeto::create([
+            'tabfant_id' => $projeto->id,
+            'cdlocal' => $nextCdLocal,
+            'delocal' => $request->delocal,
+            'flativo' => true,
+        ]);
+
+        return response()->json([
+            'id' => $local->id,
+            'LOCAL' => $local->delocal,
+            'cdlocal' => $local->cdlocal,
+        ], 201);
     }
 
     /**
