@@ -31,57 +31,106 @@ class RelatorioController extends Controller
      */
     public function gerar(Request $request)
     {
-        // Garante default quando o rádio não veio (ex: falha JS ou nenhum selecionado visualmente)
-        if (!$request->filled('tipo_relatorio')) {
-            $request->merge(['tipo_relatorio' => 'numero']);
-        }
-        $validated = $request->validate([
-            'tipo_relatorio' => 'required|string|in:numero,descricao,aquisicao,cadastro,projeto,oc',
-            'data_inicio_aquisicao' => 'nullable|required_if:tipo_relatorio,aquisicao|date',
-            'data_fim_aquisicao' => 'nullable|required_if:tipo_relatorio,aquisicao|date|after_or_equal:data_inicio_aquisicao',
-            'data_inicio_cadastro' => 'nullable|required_if:tipo_relatorio,cadastro|date',
-            'data_fim_cadastro' => 'nullable|required_if:tipo_relatorio,cadastro|date|after_or_equal:data_inicio_cadastro',
-            'projeto_busca' => 'nullable|string',
-            'local_id' => 'nullable|required_if:tipo_relatorio,projeto|integer|exists:tabfant,id',
-            'oc_busca' => 'nullable|required_if:tipo_relatorio,oc|string',
-        ]);
+        try {
+            if (!$request->filled('tipo_relatorio')) {
+                $request->merge(['tipo_relatorio' => 'numero']);
+            }
 
-        $query = Patrimonio::query()->with('usuario', 'local');
+            // Validação base (não força campos condicionais aqui para permitir mensagens personalizadas)
+            $base = $request->validate([
+                'tipo_relatorio' => 'required|string|in:numero,descricao,aquisicao,cadastro,projeto,oc',
+                'numero_busca' => 'nullable|integer',
+                'descricao_busca' => 'nullable|string',
+                'sort_direction' => 'nullable|in:asc,desc',
+                'projeto_busca' => 'nullable|string', // lista de códigos separados por vírgula
+                'oc_busca' => 'nullable|string',
+                'data_inicio_aquisicao' => 'nullable|date',
+                'data_fim_aquisicao' => 'nullable|date',
+                'data_inicio_cadastro' => 'nullable|date',
+                'data_fim_cadastro' => 'nullable|date',
+            ]);
 
-        switch ($validated['tipo_relatorio']) {
-            case 'numero':
-                // Adiciona esta validação primeiro
-                $validated = $request->validate(['numero_busca' => 'nullable|integer']);
-                // Adiciona a condição 'where' para filtrar
-                if (!empty($validated['numero_busca'])) {
-                    $query->where('NUPATRIMONIO', $validated['numero_busca']);
+            $tipo = $base['tipo_relatorio'];
+
+            // Validações condicionais manuais para respostas 422 claras
+            $erros = [];
+            if ($tipo === 'aquisicao') {
+                if (!$request->filled('data_inicio_aquisicao') || !$request->filled('data_fim_aquisicao')) {
+                    $erros['periodo'] = 'Informe Data Início e Data Fim de Aquisição.';
+                } elseif ($request->date('data_fim_aquisicao') < $request->date('data_inicio_aquisicao')) {
+                    $erros['periodo'] = 'Data fim não pode ser menor que data início (Aquisição).';
                 }
-                $query->orderBy('NUPATRIMONIO');
-                break;
-            case 'descricao':
-                $query->orderBy('DEPATRIMONIO');
-                break;
-            case 'aquisicao':
-                $query->whereBetween('DTAQUISICAO', [$validated['data_inicio_aquisicao'], $validated['data_fim_aquisicao']]);
-                break;
-            case 'cadastro':
-                $query->whereBetween('DTOPERACAO', [$validated['data_inicio_cadastro'], $validated['data_fim_cadastro']]);
-                break;
-            case 'projeto':
-                $query->where('CDLOCAL', $validated['local_id']);
-                break;
-            case 'oc':
-                $query->where('NUMOF', $validated['oc_busca']);
-                break;
+            }
+            if ($tipo === 'cadastro') {
+                if (!$request->filled('data_inicio_cadastro') || !$request->filled('data_fim_cadastro')) {
+                    $erros['periodo'] = 'Informe Data Início e Data Fim de Cadastro.';
+                } elseif ($request->date('data_fim_cadastro') < $request->date('data_inicio_cadastro')) {
+                    $erros['periodo'] = 'Data fim não pode ser menor que data início (Cadastro).';
+                }
+            }
+            if ($tipo === 'oc' && !$request->filled('oc_busca')) {
+                $erros['oc_busca'] = 'Informe o número da OC.';
+            }
+            if ($tipo === 'projeto' && !$request->filled('projeto_busca')) {
+                $erros['projeto_busca'] = 'Informe ao menos um código de projeto.';
+            }
+            if ($tipo === 'numero' && $request->filled('numero_busca') && !is_numeric($request->input('numero_busca'))) {
+                $erros['numero_busca'] = 'Número inválido.';
+            }
+            if ($erros) {
+                return response()->json(['message' => 'Validação falhou', 'errors' => $erros], 422);
+            }
+
+            $query = Patrimonio::query()->with('usuario', 'local');
+            switch ($tipo) {
+                case 'numero':
+                    if ($request->filled('numero_busca')) {
+                        $query->where('NUPATRIMONIO', $request->input('numero_busca'));
+                    }
+                    $query->orderBy('NUPATRIMONIO');
+                    break;
+                case 'descricao':
+                    if ($request->filled('descricao_busca')) {
+                        $dir = $request->input('sort_direction', 'asc');
+                        $query->where('DEPATRIMONIO', 'like', '%' . $request->input('descricao_busca') . '%')
+                            ->orderBy('DEPATRIMONIO', $dir === 'desc' ? 'desc' : 'asc');
+                    } else {
+                        $query->orderBy('DEPATRIMONIO');
+                    }
+                    break;
+                case 'aquisicao':
+                    $query->whereBetween('DTAQUISICAO', [$request->input('data_inicio_aquisicao'), $request->input('data_fim_aquisicao')]);
+                    break;
+                case 'cadastro':
+                    $query->whereBetween('DTOPERACAO', [$request->input('data_inicio_cadastro'), $request->input('data_fim_cadastro')]);
+                    break;
+                case 'projeto':
+                    $codes = collect(explode(',', $request->input('projeto_busca')))
+                        ->map(fn($c) => trim($c))
+                        ->filter()
+                        ->unique()
+                        ->values()
+                        ->all();
+                    if ($codes) {
+                        $query->whereIn('CDPROJETO', $codes);
+                    }
+                    break;
+                case 'oc':
+                    $query->where('NUMOF', $request->input('oc_busca'));
+                    break;
+            }
+
+            $resultados = $query->get();
+            return response()->json([
+                'resultados' => $resultados,
+                'filtros' => $request->only(array_keys($base))
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Erro interno ao gerar relatório',
+                'exception' => app()->environment('local') ? $e->getMessage() : null
+            ], 500);
         }
-
-        $resultados = $query->get();
-        $filtros = $validated;
-
-        return response()->json([
-            'resultados' => $resultados,
-            'filtros' => $filtros
-        ]);
     }
 
     private function getQueryFromRequest(Request $request)

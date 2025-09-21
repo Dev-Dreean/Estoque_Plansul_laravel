@@ -9,6 +9,8 @@
     reportData: [],
     reportFilters: {},
     tipoRelatorio: 'numero', // <-- A variável agora vive aqui, no lugar certo.
+    relatorioErrors: {},
+    relatorioGlobalError: null,
     viewMode: 'simple',
     init() {
         if (window.location.hash === '#atribuir-termo') {
@@ -18,6 +20,8 @@
             document.documentElement.classList.toggle('overflow-hidden', v);
             document.body.classList.toggle('overflow-hidden', v);
         });
+    // Limpa erros quando usuário troca o tipo de relatório
+    this.$watch('tipoRelatorio', () => { this.relatorioErrors = {}; this.relatorioGlobalError = null; });
         // Reabrir modal de atribuir termo se a paginação foi clicada mantendo hash
         window.addEventListener('hashchange', () => {
             if(window.location.hash === '#atribuir-termo') {
@@ -26,37 +30,52 @@
         });
     },
 
-    gerarRelatorio: function(event) {
+  gerarRelatorio: function(event) {
         this.isLoading = true;
+    this.relatorioErrors = {};
+    this.relatorioGlobalError = null;
         const formData = new FormData(event.target);
-
-        fetch('{{ route('relatorios.patrimonios.gerar') }}', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
-                }
-            })
-            .then(response => {
-                if (!response.ok) { throw new Error('Erro na rede ou servidor'); }
-                return response.json();
-            })
-            .then(data => {
-                this.reportData = data.resultados;
-                this.reportFilters = data.filtros;
-                this.relatorioModalOpen = false;
-                this.$nextTick(() => {
-                    this.resultadosModalOpen = true;
-                });
-            })
-            .catch(error => {
-                console.error('Erro ao gerar relatório:', error);
-                alert('Ocorreu um erro ao gerar o relatório. Verifique o console para mais detalhes.');
-            })
-            .finally(() => {
-                this.isLoading = false;
-            });
+    fetch('{{ route('relatorios.patrimonios.gerar') }}', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
+        'Accept': 'application/json'
+      }
+    })
+    .then(async response => {
+      const data = await response.json().catch(()=>({}));
+      if (!response.ok) {
+        if (response.status === 422 && data.errors) {
+          console.warn('Detalhes validação relatório:', data.errors);
+          this.relatorioErrors = data.errors;
+          this.relatorioGlobalError = data.message || 'Erros de validação.';
+          throw new Error('validation');
+        }
+        this.relatorioGlobalError = data.message || 'Falha inesperada ao gerar relatório.';
+        throw new Error(data.message || 'erro');
+      }
+      return data;
+    })
+    .then(data => {
+      this.reportData = data.resultados;
+      this.reportFilters = data.filtros;
+      this.relatorioModalOpen = false;
+      this.$nextTick(() => {
+        this.resultadosModalOpen = true;
+      });
+    })
+    .catch(error => {
+      if (error.message === 'validation') return; // erros já exibidos inline
+      console.error('Erro ao gerar relatório:', error);
+    })
+    .finally(() => {
+      this.isLoading = false;
+    });
     },
+  limparErrosAoMudarTipo() {
+    this.$watch('tipoRelatorio', () => { this.relatorioErrors = {}; this.relatorioGlobalError = null; });
+  },
 
     exportarRelatorio: function(format) {
         const form = document.createElement('form');
@@ -424,6 +443,12 @@
         <div>
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Relatório Geral de Bens
           </h3>
+          <template x-if="relatorioGlobalError">
+            <div class="mb-4 p-3 rounded-md bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-sm text-red-800 dark:text-red-300">
+              <strong class="font-semibold" x-text="relatorioGlobalError"></strong>
+              <ul class="list-disc ml-5 mt-1 space-y-0.5" x-html="Object.values(relatorioErrors).map(e=>`<li>${e}</li>`).join('')"></ul>
+            </div>
+          </template>
           <form @submit.prevent="gerarRelatorio">
             @csrf
             <div class="space-y-4">
@@ -495,6 +520,7 @@
                       Início</label><input type="date" id="data_inicio_aquisicao"
                       name="data_inicio_aquisicao"
                       class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                    <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.periodo && tipoRelatorio==='aquisicao'" x-text="relatorioErrors.periodo"></p>
                   </div>
                   <div><label for="data_fim_aquisicao"
                       class="block font-medium text-sm text-gray-700 dark:text-gray-300">Data
@@ -512,6 +538,7 @@
                       Início</label><input type="date" id="data_inicio_cadastro"
                       name="data_inicio_cadastro"
                       class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                    <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.periodo && tipoRelatorio==='cadastro'" x-text="relatorioErrors.periodo"></p>
                   </div>
                   <div><label for="data_fim_cadastro"
                       class="block font-medium text-sm text-gray-700 dark:text-gray-300">Data
@@ -525,6 +552,7 @@
                 <div>
                   <label for="numero_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Número do Patrimônio</label>
                   <input type="number" id="numero_busca" name="numero_busca" placeholder="Digite o número" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                  <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.numero_busca" x-text="relatorioErrors.numero_busca"></p>
                 </div>
               </div>
 
@@ -547,6 +575,7 @@
                       class="block font-medium text-sm text-gray-700 dark:text-gray-300">OC</label><input
                       type="text" id="oc_busca" name="oc_busca" placeholder="Digite a OC"
                       class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                    <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.oc_busca" x-text="relatorioErrors.oc_busca"></p>
                   </div>
                   <div><label
                       class="block font-medium text-sm text-gray-700 dark:text-gray-300">Combo

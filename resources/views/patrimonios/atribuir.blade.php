@@ -217,9 +217,8 @@
     </div><!-- /w-full wrapper -->
   </div><!-- /py-12 wrapper -->
 
-  <!-- Modal de Confirmação de Atribuição (mantido caso necessário futuramente) -->
-  <!-- Modal de Confirmação de Atribuição -->
-  <div x-show="showConfirmModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <!-- Modal de Confirmação de Atribuição (encapsulado em x-data isolado para não gerar erros se não usado) -->
+  <div x-data="{showConfirmModal:false, selectedPatrimonios:[], codigoTermo:''}" x-show="showConfirmModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
       <div x-show="showConfirmModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-surface-alt0 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
 
@@ -238,9 +237,7 @@
                 Confirmar Atribuição
               </h3>
               <div class="mt-2">
-                <p class="text-sm text-muted">
-                  Você tem certeza que deseja atribuir <span x-text="selectedPatrimonios.length" class="font-semibold"></span> patrimônio(s) ao código de termo <span x-text="codigoTermo" class="font-mono font-semibold"></span>?
-                </p>
+                <p class="text-sm text-muted">(Modal legado inativo)</p>
                 <p class="text-xs text-muted mt-1">
                   Esta ação não pode ser desfeita facilmente.
                 </p>
@@ -249,8 +246,8 @@
           </div>
         </div>
         <div class="bg-surface-alt px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-          <button type="button" @click="processarAtribuicao()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
-            Sim, Atribuir
+          <button type="button" @click="showConfirmModal=false" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+            Fechar
           </button>
           <button type="button" @click="showConfirmModal = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
             Cancelar
@@ -376,6 +373,9 @@
               })
             });
             if (res.ok) {
+              const json = await res.json().catch(() => ({
+                updated_ids: this.selectedPatrimonios
+              }));
               // Atualiza linhas afetadas inline
               this.selectedPatrimonios.forEach(id => {
                 const row = document.querySelector(`tr[data-row-id='${id}']`);
@@ -401,8 +401,8 @@
                 detail: {
                   type: 'success',
                   message: 'Código atribuído com sucesso',
-                  code: this.generatedCode,
-                  count: json.updated_ids.length
+                  code: this.codigoTermo,
+                  count: (json.updated_ids || this.selectedPatrimonios).length
                 }
               }));
               this.updatedIds = [...this.selectedPatrimonios];
@@ -537,9 +537,14 @@
   @if(request('status')=='indisponivel')
   <div x-data="footerDesatribuir()" x-init="init()" class="flex items-center justify-end gap-4">
     <div class="flex items-center gap-3 flex-wrap">
-      <button type="button" @click="executar()" class="btn-red" :disabled="qtdSelecionados===0 || state==='processing'">
+      <button type="button" @click="executar()" class="btn-red flex items-center gap-2" :disabled="qtdSelecionados===0 || state==='processing'">
         <span x-show="state==='idle'">Desatribuir</span>
-        Processando...
+        <span x-show="state==='processing'" class="inline-flex items-center gap-2">
+          <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+          </svg>
+          Processando...
         </span>
       </button>
       <p class="text-xs text-gray-300" x-show="state==='idle'">Selecione os patrimônios e clique em Desatribuir.</p>
@@ -698,6 +703,17 @@
                   input.name = 'ids[]';
                   input.value = id;
                   cbCell.appendChild(input);
+                }
+                // Se estamos na aba de itens atribuídos (indisponivel) removemos a linha para que suma imediatamente
+                if (new URLSearchParams(window.location.search).get('status') === 'indisponivel') {
+                  const tbody = row.parentElement;
+                  row.remove();
+                  // Se ficou vazio, insere linha de "nenhum"
+                  if (tbody && tbody.children.length === 0) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = '<td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-300">Nenhum patrimônio atribuído restante.</td>';
+                    tbody.appendChild(tr);
+                  }
                 }
               }
             });

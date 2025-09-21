@@ -693,6 +693,60 @@ class PatrimonioController extends Controller
         }
     }
 
+    /**
+     * Desatribui (remove) o código de termo de uma lista de patrimônios (API JSON usada na página de atribuição)
+     */
+    public function desatribuirCodigo(Request $request): JsonResponse
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer'
+        ]);
+        try {
+            $ids = $request->input('ids', []);
+            // Seleciona patrimônios que realmente têm código para evitar updates desnecessários
+            $patrimonios = Patrimonio::whereIn('NUSEQPATR', $ids)->whereNotNull('NMPLANTA')->get(['NUSEQPATR', 'NUPATRIMONIO', 'NMPLANTA', 'CDMATRFUNCIONARIO']);
+            if ($patrimonios->isEmpty()) {
+                return response()->json(['message' => 'Nenhum patrimônio elegível para desatribuir', 'updated_ids' => []], 200);
+            }
+            $idsParaUpdate = $patrimonios->pluck('NUSEQPATR')->all();
+            Patrimonio::whereIn('NUSEQPATR', $idsParaUpdate)->update(['NMPLANTA' => null]);
+
+            // Histórico
+            foreach ($patrimonios as $p) {
+                try {
+                    $coAutor = null;
+                    $actorMat = Auth::user()->CDMATRFUNCIONARIO ?? null;
+                    $ownerMat = $p->CDMATRFUNCIONARIO;
+                    if (!empty($actorMat) && !empty($ownerMat) && $actorMat != $ownerMat) {
+                        $coAutor = User::where('CDMATRFUNCIONARIO', $ownerMat)->value('NMLOGIN');
+                    }
+                    HistoricoMovimentacao::create([
+                        'TIPO' => 'termo',
+                        'CAMPO' => 'NMPLANTA',
+                        'VALOR_ANTIGO' => $p->NMPLANTA,
+                        'VALOR_NOVO' => null,
+                        'NUPATR' => $p->NUPATRIMONIO,
+                        'CODPROJ' => null,
+                        'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+                        'CO_AUTOR' => $coAutor,
+                        'DTOPERACAO' => now(),
+                    ]);
+                } catch (\Throwable $e) {
+                    Log::warning('Falha histórico desatribuirCodigo', ['id' => $p->NUSEQPATR, 'erro' => $e->getMessage()]);
+                }
+            }
+
+            return response()->json([
+                'message' => 'Desatribuição concluída',
+                'updated_ids' => $idsParaUpdate,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Falha desatribuirCodigo', ['erro' => $e->getMessage()]);
+            return response()->json(['message' => 'Erro ao desatribuir código'], 500);
+        }
+    }
+
     private function parseIds(Request $request): array
     {
         if ($request->has('ids') && is_string($request->input('ids'))) {
