@@ -2,6 +2,327 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===================== THEME TOKENS VIA data-theme ===================== */
+:root,
+html[data-theme='light'] {
+    /* Ajustado conforme orientação do usuário (tema claro não pode ter fundo escuro) */
+    --bg: #ffffff;
+    --surface: #f6f7f9;
+    --surface-2: #eef2f6;
+    --text: #1f242d;
+    --text-soft: #5b6470;
+    --border: #d9dde2;
+    --ring: #6366f1;
+    --accent-500: #6366f1;
+    --accent-600: #4f46e5;
+    --danger: #dc2626;
+    --warn: #d97706;
+    --ok: #059669;
+}
+
+html[data-theme='dark'] {
+    --bg: #0b1220;
+    /* mais profundo para contraste */
+    --surface: #121a2b;
+    --surface-2: #182236;
+    --text: #e6edf6;
+    --text-soft: #9aa4b2;
+    --border: #263043;
+    --ring: #6366f1;
+    --accent-500: #6366f1;
+    --accent-600: #4f46e5;
+    --danger: #f87171;
+    --warn: #fbbf24;
+    --ok: #34d399;
+}
+
+html[data-theme='brown'] {
+    --bg: #2e241c;
+    --surface: #3a2d23;
+    --surface-2: #443429;
+    --text: #efe7dd;
+    --text-soft: #ccbfb4;
+    --border: #5a4639;
+    --ring: #a87954;
+    --accent-500: #b07a52;
+    --accent-600: #955f3b;
+    --danger: #f87171;
+    --warn: #f59e0b;
+    --ok: #10b981;
+}
+
+html[data-theme='beige'] {
+    --bg: #f5efe6;
+    --surface: #efe7dd;
+    --surface-2: #e6ded4;
+    --text: #2a2320;
+    --text-soft: #6d6158;
+    --border: #d6cfc6;
+    --ring: #a78b69;
+    --accent-500: #d2a86a;
+    --accent-600: #b78848;
+    --danger: #b91c1c;
+    --warn: #b7791f;
+    --ok: #047857;
+}
+
+/* Utility tokens bridging to Tailwind via arbitrary values */
+.bg-base {
+    background: var(--bg);
+}
+
+.bg-surface {
+    background: var(--surface);
+}
+
+.bg-surface-2 {
+    background: var(--surface-2);
+}
+
+.text-base-color {
+    color: var(--text);
+}
+
+.text-soft {
+    color: var(--text-soft);
+}
+
+.border-base {
+    border-color: var(--border);
+}
+
+.ring-accent {
+    --tw-ring-color: var(--ring);
+}
+
+.btn-accent-var {
+    background: var(--accent-500);
+}
+
+.btn-accent-var:hover {
+    background: var(--accent-600);
+}
+
+.accent-border {
+    border-color: var(--accent-500);
+}
+
+.accent-text {
+    color: var(--accent-500);
+}
+
+.accent-text-hover:hover {
+    color: var(--accent-600);
+}
+
+.accent-bg {
+    background: var(--accent-500);
+}
+
+.accent-bg-hover:hover {
+    background: var(--accent-600);
+}
+
+/* Base atomic replacements (usar diretamente em views para remoção massiva) */
+.bg-app {
+    background: var(--bg);
+}
+
+.bg-panel {
+    background: var(--surface);
+}
+
+.bg-panel-alt {
+    background: var(--surface-2);
+}
+
+.text-app {
+    color: var(--text);
+}
+
+.text-muted {
+    color: var(--text-soft);
+}
+
+.border-app {
+    border-color: var(--border);
+}
+
+.ring-app {
+    --tw-ring-color: var(--ring);
+}
+
+/* Botões normalizados */
+.btn {
+    @apply inline-flex items-center justify-center gap-2 font-medium rounded-md px-4 py-2 text-sm transition outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn:hover {
+    background: var(--surface);
+}
+
+.btn-accent {
+    background: var(--accent-500);
+    color: #fff;
+    border: 1px solid var(--accent-500);
+}
+
+.btn-accent:hover {
+    background: var(--accent-600);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: #fff;
+    border: 1px solid var(--danger);
+}
+
+.btn-danger:hover {
+    filter: brightness(.92);
+}
+
+.btn-neutral {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+.btn-neutral:hover {
+    background: var(--surface);
+}
+
+.btn-outlined {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.btn-outlined:hover {
+    background: var(--surface-2);
+}
+
+/* Inputs base */
+.input-base {
+    @apply w-full rounded-md text-sm px-3 py-2 transition outline-none;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.input-base:focus {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px var(--ring)22;
+}
+
+.input-sm {
+    @apply text-xs py-1 px-2;
+}
+
+/* Links */
+.link {
+    color: var(--accent-500);
+}
+
+.link:hover {
+    color: var(--accent-600);
+}
+
+.link-muted {
+    color: var(--text-soft);
+}
+
+.link-muted:hover {
+    color: var(--text);
+}
+
+/* Badges */
+.badge {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium;
+    background: var(--surface-2);
+    color: var(--text-soft);
+}
+
+.badge-accent {
+    background: var(--accent-500);
+    color: #fff;
+}
+
+.badge-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+}
+
+/* Panels / Cards / Modal */
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: .75rem;
+}
+
+.panel-header {
+    background: var(--surface-2);
+}
+
+.modal-surface {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+/* Tables normalization incremental (legacy .table-var já existente) */
+.table-clean {
+    width: 100%;
+    border-spacing: 0;
+}
+
+.table-clean thead th {
+    background: var(--surface-2);
+    color: var(--text-soft);
+    font-size: 11px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    padding: .65rem .85rem;
+}
+
+.table-clean tbody td {
+    padding: .5rem .85rem;
+    font-size: .8125rem;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+}
+
+.table-clean tbody tr:hover {
+    background: var(--surface-2);
+}
+
+/* Utility para remover totalmente dark: dependências antigas */
+/* Removido seletor placeholder '[class*="dark:"]' para evitar regra vazia quebrando lint. Realizar busca por 'dark:' via grep para garantir eliminação. */
+
+/* Semantic helpers adicionais */
+.border-ring {
+    border-color: var(--ring);
+}
+
+.bg-surface-alt {
+    background: var(--surface-2);
+}
+
+.text-accent {
+    color: var(--accent-500);
+}
+
+.text-accent-hover:hover {
+    color: var(--accent-600);
+}
+
+.focus-ring-accent:focus {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+}
+
+
 /* Camadas customizadas */
 @layer utilities {
     [x-cloak] {
@@ -42,11 +363,13 @@
     }
 
     .table-base {
-        @apply text-base text-left rtl:text-right text-gray-500 dark:text-gray-400;
+        @apply text-base text-left rtl:text-right text-soft;
     }
 
     .th {
-        @apply px-4 py-3 text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 font-semibold tracking-wide;
+        @apply px-4 py-3 text-xs uppercase font-semibold tracking-wide;
+        background: var(--surface-2);
+        color: var(--text-soft);
     }
 
     .td {
@@ -54,7 +377,96 @@
     }
 
     .tr-hover {
-        @apply bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        transition: background .18s;
+    }
+
+    .tr-hover:hover {
+        background: var(--surface-2);
+    }
+
+    /* Novo: tabela temática unificada */
+    .table-var {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        color: var(--text-soft);
+    }
+
+    .table-var thead th {
+        background: var(--surface-2);
+        color: var(--text-soft);
+        font-weight: 600;
+        font-size: 11px;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        padding: .75rem 1rem;
+    }
+
+    .table-var tbody tr {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        transition: background .15s;
+    }
+
+    .table-var tbody tr:hover {
+        background: var(--surface-2);
+    }
+
+    .table-var td {
+        padding: .5rem 1rem;
+        font-size: .8125rem;
+        color: var(--text);
+    }
+
+    .table-var td .muted {
+        color: var(--text-soft);
+    }
+
+    /* Botões temáticos genéricos */
+    .btn-base {
+        @apply inline-flex items-center gap-2 font-semibold rounded-md px-4 py-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+        background: var(--surface-2);
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+    .btn-base:hover {
+        background: var(--surface);
+    }
+
+    .btn-accent {
+        background: var(--accent-500);
+        color: #fff;
+        border: 1px solid var(--accent-500);
+    }
+
+    .btn-accent:hover {
+        background: var(--accent-600);
+    }
+
+    .btn-neutral {
+        background: var(--surface-2);
+        color: var(--text);
+    }
+
+    .btn-neutral:hover {
+        background: var(--surface);
+    }
+
+    .btn-danger {
+        background: var(--danger);
+        color: #fff;
+    }
+
+    .btn-danger:hover {
+        filter: brightness(.9);
+    }
+
+    .badge-accent {
+        background: var(--accent-500);
+        color: #fff;
     }
 
     .btn-accent {

@@ -38,6 +38,9 @@ Route::middleware('auth')->group(function () {
 // GRUPO 2: Rotas principais que EXIGEM perfil completo. NOTE A MUDANÇA AQUI!
 // NOTE: Adicionamos 'profile.complete' a este grupo.
 Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])->group(function () {
+    // Configuração de Tema
+    Route::get('/settings/theme', [\App\Http\Controllers\ThemeController::class, 'index'])->name('settings.theme');
+    Route::post('/settings/theme', [\App\Http\Controllers\ThemeController::class, 'update'])->name('settings.theme.update');
 
     // MOVI TODAS AS SUAS ROTAS PRINCIPAIS PARA DENTRO DESTE GRUPO
 
@@ -108,4 +111,21 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
 
     // Rota de Histórico
     Route::get('/historico', [\App\Http\Controllers\HistoricoController::class, 'index'])->name('historico.index');
+
+    // Debug do tema (apenas em ambiente local ou se user for admin)
+    Route::get('/debug/theme', function (\Illuminate\Http\Request $request) {
+        /** @var \App\Models\User|null $user */
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if (!app()->environment('local') && optional($user)->PERFIL !== 'ADM') {
+            abort(403);
+        }
+        $shared = \Illuminate\Support\Facades\View::getShared();
+        return response()->json([
+            'activeThemeShared' => $shared['activeTheme'] ?? null,
+            'session' => session('theme'),
+            'user' => $user?->theme,
+            'cookie' => $request->cookie('theme'),
+            'html_data_theme' => null,
+        ]);
+    })->name('debug.theme');
 });

@@ -118,8 +118,8 @@
           <span class="block sm:inline">{{ $errors->first() }}</span>
         </div>
         @endif
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-          <div class="p-6 text-gray-900 dark:text-gray-100">
+        <div class="section">
+          <div class="section-body">
 
             {{-- Formulário de Filtro --}}
             <div x-data="{ open: false }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6" x-id="['filtro-patrimonios']" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimonios')">
@@ -243,9 +243,9 @@
 
             <!-- Tabela Simples -->
             <template x-if="viewMode==='simple'">
-              <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                <table class="w-full text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                  <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+              <div class="table-wrap">
+                <table class="table-var">
+                  <thead>
                     <tr>
                       <th class="px-4 py-3">Nº Pat.</th>
                       <th class="px-4 py-3">Cód. Objeto</th>
@@ -264,19 +264,19 @@
                   </thead>
                   <tbody>
                     @forelse($patrimonios as $patrimonio)
-                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm cursor-pointer" @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
-                      <td class="px-4 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
-                      <td class="px-4 py-2">{{ $patrimonio->CODOBJETO ?? '' }}</td>
-                      <td class="px-4 py-2">{{ $patrimonio->CDPROJETO ?? '' }}</td>
-                      <td class="px-4 py-2">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,10,'...') : '' }}</td>
-                      <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">{{ Str::limit($patrimonio->DEPATRIMONIO,10,'...') }}</td>
-                      <td class="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO }}</td>
-                      <td class="px-4 py-2">{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : '' }}</td>
-                      <td class="px-4 py-2">{{ $patrimonio->DTOPERACAO ? \Carbon\Carbon::parse($patrimonio->DTOPERACAO)->format('d/m/Y') : '' }}</td>
-                      <td class="px-4 py-2">{{ $patrimonio->CDMATRFUNCIONARIO ?? '' }}</td>
-                      <td class="px-4 py-2">{{ $patrimonio->usuario?->NOMEUSER ?? 'SISTEMA' }}</td>
+                    <tr class="tr-hover text-sm cursor-pointer" @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
+                      <td class="td">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
+                      <td class="td">{{ $patrimonio->CODOBJETO ?? '' }}</td>
+                      <td class="td">{{ $patrimonio->CDPROJETO ?? '' }}</td>
+                      <td class="td">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,10,'...') : '' }}</td>
+                      <td class="td font-medium">{{ Str::limit($patrimonio->DEPATRIMONIO,10,'...') }}</td>
+                      <td class="td whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO }}</td>
+                      <td class="td">{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : '' }}</td>
+                      <td class="td">{{ $patrimonio->DTOPERACAO ? \Carbon\Carbon::parse($patrimonio->DTOPERACAO)->format('d/m/Y') : '' }}</td>
+                      <td class="td">{{ $patrimonio->CDMATRFUNCIONARIO ?? '' }}</td>
+                      <td class="td">{{ $patrimonio->usuario?->NOMEUSER ?? 'SISTEMA' }}</td>
                       @if(Auth::user()->PERFIL === 'ADM')
-                      <td class="px-4 py-2" @click.stop>
+                      <td class="td" @click.stop>
                         <div class="flex items-center gap-2">
                           @can('delete', $patrimonio)
                           <form method="POST" action="{{ route('patrimonios.destroy', $patrimonio) }}" onsubmit="return confirm('Tem certeza que deseja deletar este item?');">
@@ -299,7 +299,7 @@
                     </tr>
                     @empty
                     <tr>
-                      <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 11 : 10 }}" class="px-6 py-4 text-center">Nenhum patrimônio encontrado.</td>
+                      <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 11 : 10 }}" class="td text-center">Nenhum patrimônio encontrado.</td>
                     </tr>
                     @endforelse
                   </tbody>

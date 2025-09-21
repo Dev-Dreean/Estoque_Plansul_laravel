@@ -8,6 +8,12 @@ export default {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
     ],
+    safelist: [
+        'bg-[var(--bg)]','bg-[var(--surface)]','bg-[var(--surface-2)]',
+        'text-[var(--text)]','text-[var(--muted)]',
+        'border-[var(--border)]','ring-[var(--ring)]',
+        'bg-[var(--accent-500)]','bg-[var(--accent-600)]'
+    ],
 
 theme: {
     extend: {

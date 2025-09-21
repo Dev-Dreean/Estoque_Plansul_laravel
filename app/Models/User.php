@@ -45,6 +45,7 @@ class User extends Authenticatable
         'UF',
         'must_change_password',
         'password_policy_version',
+        'theme',
     ];
 
     protected $casts = [
