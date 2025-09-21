@@ -297,8 +297,7 @@ html[data-theme='beige'] {
     background: var(--surface-2);
 }
 
-/* Utility para remover totalmente dark: dependências antigas */
-/* Removido seletor placeholder '[class*="dark:"]' para evitar regra vazia quebrando lint. Realizar busca por 'dark:' via grep para garantir eliminação. */
+/* Removido conjunto de regras vazio [class*='dark:'] para evitar erro de lint "Não usar conjuntos de regras vazios". */
 
 /* Semantic helpers adicionais */
 .border-ring {
