@@ -1,0 +1,90 @@
+﻿/*
+  Refatorado: agora usamos apenas Tailwind (@apply) para estilização.
+  Mantemos as mesmas classes utilitárias usadas nas views, mas sem tokens CSS custom.
+  Ajuste de cores pode ser feito via tailwind.config.js (extend.colors) ou substituindo @apply.
+*/
+
+@layer utilities {
+  .bg-page {
+    @apply bg-gray-900 text-gray-100 dark:bg-gray-900;
+  }
+
+  .bg-surface {
+    @apply bg-gray-800;
+  }
+
+  .bg-surface-alt {
+    @apply bg-gray-700/60;
+  }
+
+  .bg-surface-soft {
+    @apply bg-gray-800/70;
+  }
+
+  .bg-surface-muted {
+    @apply bg-gray-700/40;
+  }
+
+  .text-on-surface {
+    @apply text-gray-100;
+  }
+
+  .text-on-base {
+    @apply text-gray-200;
+  }
+
+  .text-muted {
+    @apply text-gray-400;
+  }
+
+  .bd-theme {
+    @apply border border-gray-600;
+  }
+
+  .hover-surface-alt:hover {
+    @apply bg-gray-700/50;
+  }
+
+  .ring-focus {
+    @apply outline outline-2 outline-indigo-500 outline-offset-2;
+  }
+
+  .btn-token {
+    @apply inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-md border border-indigo-500/60 transition;
+  }
+
+  .form-token {
+    @apply bg-gray-800 text-gray-100 placeholder-gray-500 border border-gray-600 rounded-md;
+  }
+
+  .form-token:focus {
+    @apply outline-none ring-2 ring-indigo-500/40 border-indigo-500;
+  }
+
+  .card-token {
+    @apply bg-gray-800 text-gray-100 border border-gray-600 rounded-lg;
+  }
+
+  .table-token th,
+  .table-token td {
+    @apply text-gray-200 border-gray-600;
+  }
+
+  .table-token tr:hover {
+    @apply bg-gray-700/40;
+  }
+
+  .tooltip-token {
+    @apply bg-gray-700 text-gray-100 border border-gray-500 text-xs;
+  }
+
+  .chip-token {
+    @apply inline-flex items-center rounded bg-indigo-600/30 text-indigo-300 text-xs px-2 py-0.5 font-medium border border-indigo-500/30;
+  }
+}
+
+/* Layout base */
+body,
+.app-root {
+  @apply bg-gray-900 text-gray-100;
+}

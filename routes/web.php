@@ -48,7 +48,13 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // Rotas do CRUD de Patrimônios e suas APIs
     Route::resource('patrimonios', PatrimonioController::class);
     Route::get('/patrimonios/atribuir/termo', [PatrimonioController::class, 'atribuir'])->name('patrimonios.atribuir');
+    // Alias / nova rota para listagem/atribuição via filtros (referenciada em views e redirects)
+    // Mantemos a rota original acima para retrocompatibilidade; esta atende chamadas a route('patrimonios.atribuir.codigos')
+    Route::get('/patrimonios/atribuir/codigos', [PatrimonioController::class, 'atribuir'])->name('patrimonios.atribuir.codigos');
     Route::post('/patrimonios/atribuir/processar', [PatrimonioController::class, 'processarAtribuicao'])->name('patrimonios.atribuir.processar');
+    Route::post('/patrimonios/gerar-codigo', [PatrimonioController::class, 'gerarCodigo'])->name('patrimonios.gerarCodigo');
+    Route::post('/patrimonios/atribuir-codigo', [PatrimonioController::class, 'atribuirCodigo'])->name('patrimonios.atribuirCodigo');
+    Route::post('/patrimonios/desatribuir-codigo', [PatrimonioController::class, 'desatribuirCodigo'])->name('patrimonios.desatribuirCodigo');
     Route::get('/api/patrimonios/disponiveis', [PatrimonioController::class, 'getPatrimoniosDisponiveis'])->name('api.patrimonios.disponiveis');
     Route::get('/api/patrimonios/buscar/{numero}', [PatrimonioController::class, 'buscarPorNumero'])->name('api.patrimonios.buscar');
     Route::get('/api/patrimonios/pesquisar', [PatrimonioController::class, 'pesquisar'])->name('api.patrimonios.pesquisar');
@@ -79,12 +85,15 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
 
     // Rotas de Relatórios
     Route::prefix('relatorios')->name('relatorios.')->group(function () {
-        Route::get('/patrimonios', [\App\Http\Controllers\RelatorioController::class, 'create'])->name('patrimonios.create');
-        Route::post('/patrimonios', [\App\Http\Controllers\RelatorioController::class, 'gerar'])->name('patrimonios.gerar');
+        // Fluxo original: gerar => retorna JSON para modal de pré-visualização
+        Route::post('/patrimonios/gerar', [\App\Http\Controllers\RelatorioController::class, 'gerar'])->name('patrimonios.gerar');
+        // Download direto (novo método unificado permanece disponível)
+        Route::post('/patrimonios/download', [\App\Http\Controllers\RelatorioController::class, 'download'])->name('patrimonios.download');
+        // Rotas legacy usadas pelo modal/JS (mantidas para não quebrar fluxo existente)
         Route::post('/patrimonios/exportar/excel', [\App\Http\Controllers\RelatorioController::class, 'exportarExcel'])->name('patrimonios.exportar.excel');
         Route::post('/patrimonios/exportar/csv', [\App\Http\Controllers\RelatorioController::class, 'exportarCsv'])->name('patrimonios.exportar.csv');
-        Route::post('/patrimonios/exportar/ods', [\App\Http\Controllers\RelatorioController::class, 'exportarOds'])->name('patrimonios.exportar.ods');
         Route::post('/patrimonios/exportar/pdf', [\App\Http\Controllers\RelatorioController::class, 'exportarPdf'])->name('patrimonios.exportar.pdf');
+        Route::post('/patrimonios/exportar/ods', [\App\Http\Controllers\RelatorioController::class, 'exportarOds'])->name('patrimonios.exportar.ods');
     });
 
     // Rotas de Termos

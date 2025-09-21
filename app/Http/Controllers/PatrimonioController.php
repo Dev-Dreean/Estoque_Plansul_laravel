@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use App\Models\HistoricoMovimentacao;
 use App\Models\TermoCodigo;
+use App\Services\CodigoService;
 
 class PatrimonioController extends Controller
 {
@@ -236,12 +237,12 @@ class PatrimonioController extends Controller
     public function getLocaisPorProjeto($cdprojeto): JsonResponse
     {
         $projeto = Tabfant::where('CDPROJETO', $cdprojeto)->first(['id']);
-        if(!$projeto) {
+        if (!$projeto) {
             return response()->json([]); // projeto não encontrado => sem locais
         }
         $locais = LocalProjeto::where('tabfant_id', $projeto->id)
             ->orderBy('delocal')
-            ->get(['id','delocal as LOCAL','cdlocal']);
+            ->get(['id', 'delocal as LOCAL', 'cdlocal']);
         return response()->json($locais);
     }
 
@@ -257,7 +258,7 @@ class PatrimonioController extends Controller
         ]);
 
         $projeto = Tabfant::where('CDPROJETO', $cdprojeto)->first(['id']);
-        if(!$projeto) {
+        if (!$projeto) {
             return response()->json(['error' => 'Projeto não encontrado.'], 404);
         }
 
@@ -331,6 +332,46 @@ class PatrimonioController extends Controller
     }
 
     /**
+     * Página isolada (clonada) para atribuição de códigos de termo.
+     * Reaproveita a mesma lógica de filtragem da página principal para manter consistência.
+     */
+    public function atribuirCodigos(Request $request): View
+    {
+        // Reutilizamos a lógica do método atribuir sem duplicar demasiadamente
+        // (poderíamos extrair para método privado, mas mantemos simples para clareza)
+        $query = Patrimonio::query();
+
+        $status = $request->get('status', 'disponivel');
+        if ($status === 'disponivel') {
+            $query->whereNull('NMPLANTA');
+        } elseif ($status === 'indisponivel') {
+            $query->whereNotNull('NMPLANTA');
+        }
+
+        if ($request->filled('filtro_numero')) {
+            $query->where('NUPATRIMONIO', 'like', '%' . $request->filtro_numero . '%');
+        }
+        if ($request->filled('filtro_descricao')) {
+            $query->where('DEPATRIMONIO', 'like', '%' . $request->filtro_descricao . '%');
+        }
+        if ($request->filled('filtro_modelo')) {
+            $query->where('MODELO', 'like', '%' . $request->filtro_modelo . '%');
+        }
+        if ($request->filled('filtro_projeto')) {
+            $query->where('CDPROJETO', $request->filtro_projeto);
+        }
+
+        $query->orderBy('NUPATRIMONIO', 'asc');
+        $perPage = (int) $request->input('per_page', 15);
+        if ($perPage < 10) $perPage = 10;
+        if ($perPage > 100) $perPage = 100;
+        $patrimonios = $query->paginate($perPage);
+
+        // Reutiliza a mesma view principal de atribuição; evita duplicação e problemas de alias
+        return view('patrimonios.atribuir', compact('patrimonios'));
+    }
+
+    /**
      * Processar a atribuição/desatribuição de códigos de termo
      */
     public function processarAtribuicao(Request $request): RedirectResponse
@@ -339,24 +380,52 @@ class PatrimonioController extends Controller
         if ($request->filled('desatribuir')) {
             return $this->processarDesatribuicao($request);
         }
-
-        // Validação para atribuição
-        $request->validate([
-            'codigo_termo' => 'required|integer|min:1',
+        // Validação condicional (caso envie código manualmente ainda funciona, mas não é mais o fluxo principal)
+        $rules = [
             'patrimonios' => 'required|array|min:1',
             'patrimonios.*' => 'integer|exists:PATR,NUSEQPATR'
-        ]);
+        ];
+        if ($request->filled('codigo_termo')) {
+            $rules['codigo_termo'] = 'required|integer|min:1';
+        }
+        $request->validate($rules);
 
         try {
-            $codigoTermo = $request->codigo_termo;
             $patrimoniosIds = $request->patrimonios;
 
-            // Verificar se o código existe (registrado ou já usado)
-            $codigoExiste = TermoCodigo::where('codigo', $codigoTermo)->exists()
-                || Patrimonio::where('NMPLANTA', $codigoTermo)->exists();
-            if (!$codigoExiste) {
-                return redirect()->route('patrimonios.atribuir')
-                    ->with('error', 'Código de termo inexistente. Gere/registre o código antes de atribuir.');
+            // Novo fluxo: se não veio um código explícito, o sistema determina automaticamente.
+            if ($request->filled('codigo_termo')) {
+                $codigoTermo = (int) $request->codigo_termo;
+                $codigoExiste = TermoCodigo::where('codigo', $codigoTermo)->exists() || Patrimonio::where('NMPLANTA', $codigoTermo)->exists();
+                if (!$codigoExiste) {
+                    // Caso o código tenha sido "gerado" no front mas ainda não registrado, registramos agora
+                    TermoCodigo::firstOrCreate([
+                        'codigo' => $codigoTermo
+                    ], [
+                        'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA')
+                    ]);
+                }
+            } else {
+                // Fluxo inteligente: reutilizar menor código registrado sem uso ou gerar próximo sequencial
+                $unusedCodigo = TermoCodigo::whereNotIn('codigo', function ($q) {
+                    $q->select('NMPLANTA')->from('patr')->whereNotNull('NMPLANTA');
+                })
+                    ->orderBy('codigo')
+                    ->first();
+
+                if ($unusedCodigo) {
+                    $codigoTermo = (int) $unusedCodigo->codigo; // reutiliza código "vago"
+                } else {
+                    $maxRegistrado = (int) TermoCodigo::max('codigo');
+                    $maxUsado = (int) Patrimonio::max('NMPLANTA');
+                    $codigoTermo = max($maxRegistrado, $maxUsado) + 1; // próximo sequencial
+                    // registra para manter histórico de códigos gerados
+                    TermoCodigo::firstOrCreate([
+                        'codigo' => $codigoTermo
+                    ], [
+                        'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA')
+                    ]);
+                }
             }
 
             // Verificar quais patrimônios já estão atribuídos
@@ -404,11 +473,11 @@ class PatrimonioController extends Controller
                 $message .= " ({$jaAtribuidos} patrimônio(s) já estavam atribuídos e foram ignorados)";
             }
 
-            return redirect()->route('patrimonios.atribuir')
+            return redirect()->route('patrimonios.atribuir.codigos', ['status' => 'indisponivel'])
                 ->with('success', $message);
         } catch (\Exception $e) {
             Log::error('Erro ao processar atribuição de termo: ' . $e->getMessage());
-            return redirect()->route('patrimonios.atribuir')
+            return redirect()->route('patrimonios.atribuir.codigos')
                 ->with('error', 'Erro ao processar atribuição. Tente novamente.');
         }
     }
@@ -582,5 +651,54 @@ class PatrimonioController extends Controller
             'DTAQUISICAO' => 'nullable|date',
             'DTBAIXA' => 'required_if:SITUACAO,BAIXA|nullable|date',
         ]);
+    }
+
+    /* === Rotas solicitadas para geração e atribuição direta de códigos (fluxo simplificado) === */
+    public function gerarCodigo(Request $request, CodigoService $service): JsonResponse
+    {
+        try {
+            [$code, $reused] = $service->gerarOuReaproveitar();
+            return response()->json(['code' => $code, 'reused' => $reused]);
+        } catch (\Throwable $e) {
+            Log::error('Falha gerarCodigo', ['erro' => $e->getMessage()]);
+            return response()->json(['message' => 'Erro ao gerar código'], 500);
+        }
+    }
+
+    public function atribuirCodigo(Request $request, CodigoService $service): JsonResponse
+    {
+        // Aceita código numérico vindo como number ou string
+        $request->validate([
+            'code' => 'required', // pode vir number no JSON, então não restringimos a string
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer'
+        ]);
+        try {
+            $codigo = (int) $request->input('code');
+            if ($codigo <= 0) {
+                return response()->json(['message' => 'Código inválido'], 422);
+            }
+            $resultado = $service->atribuirCodigo($codigo, $request->ids);
+            if ($resultado['already_used']) {
+                return response()->json(['message' => 'Código já utilizado'], 422);
+            }
+            return response()->json([
+                'code' => $resultado['code'],
+                'updated_ids' => $resultado['updated'],
+                'message' => 'Atribuído.'
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Falha atribuirCodigo', ['erro' => $e->getMessage()]);
+            return response()->json(['message' => 'Erro ao atribuir código'], 500);
+        }
+    }
+
+    private function parseIds(Request $request): array
+    {
+        if ($request->has('ids') && is_string($request->input('ids'))) {
+            return collect(explode(',', (string) $request->input('ids')))->map('trim')->filter()->values()->all();
+        }
+        $arr = $request->input('ids', []);
+        return is_array($arr) ? array_values(array_filter($arr)) : [];
     }
 }

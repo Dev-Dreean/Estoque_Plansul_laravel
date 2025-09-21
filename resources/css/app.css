@@ -1,3 +1,197 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Camadas customizadas */
+@layer utilities {
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@layer components {
+
+    /* Layout / Page structure helpers (espelhando index) */
+    .page-shell {
+        @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 footer-spacer;
+    }
+
+    .page-title {
+        @apply text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6;
+    }
+
+    .section {
+        @apply bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg;
+    }
+
+    .section-body {
+        @apply p-6 text-gray-900 dark:text-gray-100;
+    }
+
+    .card {
+        @apply bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg;
+    }
+
+    .footer-spacer {
+        @apply pb-10;
+    }
+
+    /* Table standardization */
+    .table-wrap {
+        @apply relative overflow-x-auto shadow-md sm:rounded-lg;
+    }
+
+    .table-base {
+        @apply text-base text-left rtl:text-right text-gray-500 dark:text-gray-400;
+    }
+
+    .th {
+        @apply px-4 py-3 text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 font-semibold tracking-wide;
+    }
+
+    .td {
+        @apply px-4 py-2 align-top text-sm;
+    }
+
+    .tr-hover {
+        @apply bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors;
+    }
+
+    .btn-accent {
+        @apply inline-flex items-center gap-2 font-semibold rounded-md px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition;
+    }
+
+    .btn-green {
+        @apply inline-flex items-center gap-2 font-semibold rounded-md px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition disabled:bg-emerald-600/40 disabled:text-white disabled:cursor-not-allowed disabled:hover:bg-emerald-600/40;
+    }
+
+    .btn-red {
+        @apply inline-flex items-center gap-2 font-semibold rounded-md px-4 py-2 bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition disabled:bg-red-600/40 disabled:text-white disabled:cursor-not-allowed disabled:hover:bg-red-600/40;
+    }
+
+    .codigo-popover {
+        @apply bg-gray-900 text-gray-100 text-xs rounded px-2 py-1 shadow;
+    }
+
+    .badge {
+        @apply inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium;
+    }
+
+    .badge-green {
+        @apply badge bg-emerald-600 text-white;
+    }
+
+    .badge-red {
+        @apply badge bg-red-600 text-white;
+    }
+
+    .badge-indigo {
+        @apply badge bg-indigo-600 text-white;
+    }
+
+    .table-head-cell {
+        @apply px-4 py-3 bg-surface-alt text-left font-semibold text-xs uppercase tracking-wide;
+    }
+
+    .table-cell {
+        @apply px-4 py-2 align-top;
+    }
+
+    /* ===== PDF Export Styles (extraídas de pdf.blade.php) ===== */
+    .pdf-body {
+        @apply font-sans text-[10px] text-gray-800;
+    }
+
+    .pdf-header {
+        @apply text-center mb-5;
+    }
+
+    .pdf-header h1 {
+        @apply m-0 text-lg font-bold;
+    }
+
+    .pdf-header p {
+        @apply my-1 text-xs;
+    }
+
+    .pdf-table {
+        @apply w-full border-collapse;
+    }
+
+    .pdf-table th,
+    .pdf-table td {
+        @apply border border-gray-300 p-1.5 text-left align-top;
+    }
+
+    .pdf-table thead {
+        @apply bg-gray-100;
+    }
+
+    .pdf-footer {
+        @apply text-center text-[9px] mt-4;
+    }
+
+    /* ===== Fixed Action Bar (atribuir) ===== */
+    .actionbar {
+        @apply fixed bottom-0 inset-x-0 z-40 border-t border-white/10 bg-gray-900/80 backdrop-blur supports-[backdrop-filter]:bg-gray-900/60;
+    }
+
+    .actionbar-inner {
+        @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+    }
+
+    .actionbar-content {
+        @apply flex items-center justify-between gap-4 py-3;
+    }
+
+    .actionbar-count {
+        @apply text-sm text-gray-300;
+    }
+
+    .actionbar-sticky-spacer {
+        @apply pb-24;
+    }
+
+    /* Footer fixo oficial */
+    .site-footer {
+        @apply fixed bottom-0 inset-x-0 z-50 border-t border-white/10 bg-gray-900/80 backdrop-blur supports-[backdrop-filter]:bg-gray-900/60;
+    }
+
+    .site-footer-inner {
+        @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+    }
+
+    .site-footer-bar {
+        @apply flex items-center justify-between gap-4 py-3;
+    }
+
+    .footer-actions {
+        @apply flex items-center gap-2;
+    }
+
+    .footer-counter {
+        @apply text-sm text-gray-300;
+    }
+
+    .with-fixed-footer {
+        @apply pb-24;
+    }
+
+    .footer-actions-help {
+        @apply text-xs text-gray-400;
+    }
+
+    .code-badge {
+        @apply inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-indigo-600 text-white shadow;
+    }
+
+    /* Destaque temporário pós-atribuição */
+    .row-just-updated {
+        @apply bg-emerald-900/30 ring-2 ring-emerald-500/40 transition;
+    }
+
+    /* Destaque temporário pós-desatribuição (neutro) */
+    .row-just-cleared {
+        @apply bg-amber-900/20 ring-2 ring-amber-500/30 transition;
+    }
+}

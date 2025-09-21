@@ -31,6 +31,10 @@ class RelatorioController extends Controller
      */
     public function gerar(Request $request)
     {
+        // Garante default quando o rádio não veio (ex: falha JS ou nenhum selecionado visualmente)
+        if (!$request->filled('tipo_relatorio')) {
+            $request->merge(['tipo_relatorio' => 'numero']);
+        }
         $validated = $request->validate([
             'tipo_relatorio' => 'required|string|in:numero,descricao,aquisicao,cadastro,projeto,oc',
             'data_inicio_aquisicao' => 'nullable|required_if:tipo_relatorio,aquisicao|date',
@@ -82,6 +86,9 @@ class RelatorioController extends Controller
 
     private function getQueryFromRequest(Request $request)
     {
+        if (!$request->filled('tipo_relatorio')) {
+            $request->merge(['tipo_relatorio' => 'numero']);
+        }
         $validated = $request->validate([
             'tipo_relatorio' => 'required|string|in:numero,descricao,aquisicao,cadastro,projeto,oc',
             'data_inicio_aquisicao' => 'nullable|date',
@@ -91,15 +98,27 @@ class RelatorioController extends Controller
             'projeto_busca' => 'nullable|string',
             'local_id' => 'nullable|integer|exists:tabfant,id',
             'oc_busca' => 'nullable|string',
+            'numero_busca' => 'nullable|integer',
+            'descricao_busca' => 'nullable|string',
+            'sort_direction' => 'nullable|in:asc,desc'
         ]);
 
         $query = Patrimonio::query()->with('usuario', 'local');
         switch ($validated['tipo_relatorio']) {
             case 'numero':
+                if ($request->filled('numero_busca')) {
+                    $query->where('NUPATRIMONIO', $request->input('numero_busca'));
+                }
                 $query->orderBy('NUPATRIMONIO');
                 break;
             case 'descricao':
-                $query->orderBy('DEPATRIMONIO');
+                if ($request->filled('descricao_busca')) {
+                    $dir = $request->input('sort_direction', 'asc');
+                    $query->where('DEPATRIMONIO', 'like', '%' . $request->input('descricao_busca') . '%')
+                        ->orderBy('DEPATRIMONIO', $dir === 'desc' ? 'desc' : 'asc');
+                } else {
+                    $query->orderBy('DEPATRIMONIO');
+                }
                 break;
             case 'aquisicao':
                 $query->whereBetween('DTAQUISICAO', [$validated['data_inicio_aquisicao'], $validated['data_fim_aquisicao']]);
@@ -108,7 +127,20 @@ class RelatorioController extends Controller
                 $query->whereBetween('DTOPERACAO', [$validated['data_inicio_cadastro'], $validated['data_fim_cadastro']]);
                 break;
             case 'projeto':
-                $query->where('CDLOCAL', $validated['local_id']);
+                // Mantém compatibilidade: se veio local_id usa; se veio projeto_busca (lista) prioriza whereIn em CDPROJETO
+                if ($request->filled('projeto_busca')) {
+                    $codes = collect(explode(',', $request->input('projeto_busca')))
+                        ->map(fn($c) => trim($c))
+                        ->filter()
+                        ->unique()
+                        ->values()
+                        ->all();
+                    if ($codes) {
+                        $query->whereIn('CDPROJETO', $codes);
+                    }
+                } else {
+                    $query->where('CDLOCAL', $validated['local_id']);
+                }
                 break;
             case 'oc':
                 $query->where('NUMOF', $validated['oc_busca']);
@@ -186,9 +218,37 @@ class RelatorioController extends Controller
     public function exportarOds(Request $request)
     {
         $query = $this->getQueryFromRequest($request);
-        $filePath = storage_path('app/temp_relatorio.ods');
-        $writer = SimpleExcelWriter::create($filePath);
 
+        // Proteção simples contra PDFs gigantes (melhor experiência / evita timeout Dompdf)
+        $total = (clone $query)->count();
+        if ($total > 5000) {
+            return back()->withErrors('O PDF excederia 5000 registros (' . $total . '). Refine os filtros antes de exportar.');
+        }
+
+        // Seleção básica de colunas (mantém leve). Pode ajustar conforme necessidade.
+        $cols = [
+            'NUPATRIMONIO',
+            'DEPATRIMONIO',
+            'SITUACAO',
+            'MODELO',
+            'MARCA',
+            'NUSERIE',
+            'CDPROJETO',
+            'NUMOF',
+            'CODOBJETO',
+            'DTAQUISICAO',
+            'DTOPERACAO'
+        ];
+        $registros = $query->orderBy('NUPATRIMONIO')->get($cols);
+
+        // Usa template simplificado já existente
+        $modelo = 'simple';
+        $pdf = PDF::loadView('relatorios.patrimonios.pdf-simples', [
+            'modelo' => $modelo,
+            'cols' => $cols,
+            'registros' => $registros,
+        ])->setPaper('a4', 'portrait');
+        return $pdf->stream('relatorio_patrimonios.pdf');
         foreach ($query->cursor() as $patrimonio) {
             $writer->addRow([
                 'N° Patrimônio' => $patrimonio->NUPATRIMONIO,
@@ -222,5 +282,132 @@ class RelatorioController extends Controller
         $resultados = $query->get();
         $pdf = PDF::loadView('patrimonios.pdf', compact('resultados'));
         return $pdf->stream('relatorio_patrimonios.pdf');
+    }
+
+    /**
+     * Nova rota unificada para geração e download de relatórios (PDF / XLSX / CSV) usando
+     * os filtros já presentes na listagem principal de patrimônios. (Fluxo simplificado).
+     *
+     * Campos aceitos:
+     * - modelo: 'simple' (default) | 'detailed'
+     * - tipo_relatorio: 'pdf' | 'xlsx' | 'csv'
+     * - filtros opcionais: nupatrimonio, cdprojeto, descricao, situacao, modelo_filtro, nmplanta, cadastrado_por
+     */
+    public function download(Request $request)
+    {
+        $validated = $request->validate([
+            'modelo' => 'nullable|in:simple,detailed',
+            'tipo_relatorio' => 'required|in:pdf,xlsx,csv',
+            'nupatrimonio' => 'nullable|string',
+            'cdprojeto' => 'nullable|string',
+            'descricao' => 'nullable|string',
+            'situacao' => 'nullable|string',
+            'modelo_filtro' => 'nullable|string',
+            'nmplanta' => 'nullable|string',
+            'cadastrado_por' => 'nullable|string',
+        ]);
+
+        $modelo = $validated['modelo'] ?? 'simple';
+
+        $query = Patrimonio::query();
+
+        // Relações úteis (ajuste se necessário ligar nomes de usuário / local depois)
+        $query->with('usuario');
+
+        // Aplica filtros se presentes (ignora campos vazios / null)
+        if (filled($validated['nupatrimonio'] ?? null)) {
+            $query->where('NUPATRIMONIO', $validated['nupatrimonio']);
+        }
+        if (filled($validated['cdprojeto'] ?? null)) {
+            $query->where('CDPROJETO', $validated['cdprojeto']);
+        }
+        if (filled($validated['descricao'] ?? null)) {
+            $query->where('DEPATRIMONIO', 'like', '%' . $validated['descricao'] . '%');
+        }
+        if (filled($validated['situacao'] ?? null)) {
+            $query->where('SITUACAO', 'like', '%' . $validated['situacao'] . '%');
+        }
+        if (filled($validated['modelo_filtro'] ?? null)) {
+            $query->where('MODELO', 'like', '%' . $validated['modelo_filtro'] . '%');
+        }
+        if (filled($validated['nmplanta'] ?? null)) {
+            $query->where('NMPLANTA', $validated['nmplanta']);
+        }
+        if (filled($validated['cadastrado_por'] ?? null)) {
+            $query->where('CDMATRFUNCIONARIO', $validated['cadastrado_por']);
+        }
+
+        // Colunas (ajuste se quiser mais / menos no modo simple vs detailed)
+        $colsSimple = [
+            'NUPATRIMONIO',
+            'CODOBJETO',
+            'CDPROJETO',
+            'MODELO',
+            'DEPATRIMONIO',
+            'SITUACAO',
+            'DTAQUISICAO',
+            'DTOPERACAO',
+            'NMPLANTA'
+        ];
+        $colsDetailed = [
+            'NUPATRIMONIO',
+            'DEPATRIMONIO',
+            'SITUACAO',
+            'MARCA',
+            'MODELO',
+            'NUSERIE',
+            'COR',
+            'DIMENSAO',
+            'CARACTERISTICAS',
+            'DEHISTORICO',
+            'CDPROJETO',
+            'NUMOF',
+            'CODOBJETO',
+            'DTAQUISICAO',
+            'DTOPERACAO',
+            'DTGARANTIA',
+            'DTBAIXA',
+            'NMPLANTA'
+        ];
+
+        $cols = $modelo === 'detailed' ? $colsDetailed : $colsSimple;
+
+        $registros = $query->orderBy('NUPATRIMONIO')->get($cols);
+
+        // Se não houver registros, ainda assim gerar saída vazia coerente.
+        $tipo = $validated['tipo_relatorio'];
+
+        if ($tipo === 'pdf') {
+            $pdf = Pdf::loadView('relatorios.patrimonios.pdf-simples', [
+                'modelo' => $modelo,
+                'cols' => $cols,
+                'registros' => $registros,
+            ])->setPaper('a4', 'portrait');
+            return $pdf->stream('patrimonios_' . $modelo . '_' . now()->format('Ymd_His') . '.pdf');
+        }
+
+        // Gera planilha (xlsx/csv)
+        $ext = $tipo === 'xlsx' ? 'xlsx' : 'csv';
+        $fileName = 'patrimonios_' . $modelo . '_' . now()->format('Ymd_His') . '.' . $ext;
+        $tempPath = storage_path('app/' . $fileName);
+        $writer = SimpleExcelWriter::create($tempPath);
+
+        foreach ($registros as $r) {
+            $row = [];
+            foreach ($cols as $c) {
+                $valor = $r->$c;
+                if ($valor instanceof \DateTimeInterface) {
+                    $valor = $valor->format('Y-m-d');
+                }
+                $row[$c] = $valor;
+            }
+            // Acrescenta nome do usuário se carregado (apenas detailed?)
+            if ($modelo === 'detailed') {
+                $row['USUARIO'] = $r->usuario->NOMEUSER ?? null;
+            }
+            $writer->addRow($row);
+        }
+
+        return response()->download($tempPath)->deleteFileAfterSend(true);
     }
 }
