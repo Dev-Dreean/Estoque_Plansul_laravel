@@ -18,8 +18,16 @@ class TabfantSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         $path = database_path('seeders/data/tabtansaia.TXT');
-        $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        array_splice($lines, 0, 2);
+        if (!file_exists($path)) {
+            $this->command->error('Arquivo de dados não encontrado: ' . $path);
+            return;
+        }
+        // Conversão para UTF-8 do conteúdo inteiro
+        $rawContent = file_get_contents($path);
+        $utf8Content = mb_convert_encoding($rawContent, 'UTF-8', 'ISO-8859-1');
+        $lines = explode(PHP_EOL, $utf8Content);
+        $lines = array_filter($lines);
+        array_splice($lines, 0, 2); // remove cabeçalho
 
         $dataToInsert = [];
         foreach ($lines as $line) {

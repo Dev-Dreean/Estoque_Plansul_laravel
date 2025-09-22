@@ -20,7 +20,11 @@ class FuncionarioSeeder extends Seeder
             return;
         }
 
-        $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        // Conversão para UTF-8 para evitar erros de charset
+        $rawContent = File::get($path);
+        $utf8Content = mb_convert_encoding($rawContent, 'UTF-8', 'ISO-8859-1');
+        $lines = explode(PHP_EOL, $utf8Content);
+        $lines = array_filter($lines);
         $dataLines = array_slice($lines, 2);
 
         $this->command->info("Iniciando importação/atualização de funcionários...");

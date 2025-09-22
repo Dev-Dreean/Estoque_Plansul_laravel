@@ -22,7 +22,11 @@ class TipoPatrSeeder extends Seeder
         // Limpa a tabela antes de começar
         DB::table('TIPOPATR')->delete();
 
-        $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        // Conversão para UTF-8 evitando problemas de caracteres especiais
+        $rawContent = File::get($path);
+        $utf8Content = mb_convert_encoding($rawContent, 'UTF-8', 'ISO-8859-1');
+        $lines = explode(PHP_EOL, $utf8Content);
+        $lines = array_filter($lines);
         $dataLines = array_slice($lines, 2);
 
         $this->command->info('Iniciando importação de TIPOPATR (um por um)...');

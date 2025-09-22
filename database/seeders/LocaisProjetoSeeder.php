@@ -29,7 +29,11 @@ class LocaisProjetoSeeder extends Seeder
             $this->command->error("Arquivo de dados não encontrado em: {$locaisPath}");
             return;
         }
-        $locaisLines = file($locaisPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        // Conversão UTF-8 do arquivo completo
+        $rawContent = file_get_contents($locaisPath);
+        $utf8Content = mb_convert_encoding($rawContent, 'UTF-8', 'ISO-8859-1');
+        $locaisLines = explode(PHP_EOL, $utf8Content);
+        $locaisLines = array_filter($locaisLines);
         array_splice($locaisLines, 0, 3); // Remove cabeçalho
 
         $fullLines = $this->parseIrregularLines($locaisLines);
