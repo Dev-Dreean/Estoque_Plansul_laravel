@@ -117,4 +117,24 @@ class ProjetoController extends Controller
         $projeto->delete();
         return redirect()->route('projetos.index')->with('success', 'Local apagado com sucesso.');
     }
+
+    /**
+     * Abre o formulário de criação já preenchido com dados do projeto existente
+     * (nome e código do projeto original) mas limpa os campos específicos do local
+     * para permitir adicionar um novo local rapidamente.
+     */
+    public function duplicate(LocalProjeto $projeto)
+    {
+        // Prefill mantendo nome / código originais e limpando projeto associado
+        $prefill = [
+            'delocal' => $projeto->delocal,
+            'cdlocal' => $projeto->cdlocal,
+            'tabfant_id' => '' // usuário deve escolher novo projeto
+        ];
+        return redirect()
+            ->route('projetos.create')
+            ->withInput($prefill)
+            ->with('duplicating_from', $projeto->id)
+            ->with('duplicating_mode', true);
+    }
 }

@@ -12,15 +12,21 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div>
-        <label for="delocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Nome do Local</label>
-        <input id="delocal" name="delocal" type="text" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm"
-            value="{{ old('delocal', $local->delocal ?? '') }}" required autofocus>
+        <label for="cdlocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Código do Local</label>
+        <input id="cdlocal" name="cdlocal" type="number" @if(session('duplicating_mode')) readonly class="opacity-70 cursor-not-allowed mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 rounded-md shadow-sm" @else class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" @endif
+            value="{{ old('cdlocal', $local->cdlocal ?? '') }}" required>
+        @if(session('duplicating_mode'))
+        <p class="text-xs text-gray-500 mt-1">Código bloqueado durante duplicação.</p>
+        @endif
     </div>
 
     <div>
-        <label for="cdlocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Código do Local</label>
-        <input id="cdlocal" name="cdlocal" type="number" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm"
-            value="{{ old('cdlocal', $local->cdlocal ?? '') }}" required>
+        <label for="delocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Nome do Local</label>
+        <input id="delocal" name="delocal" type="text" @if(session('duplicating_mode')) readonly class="opacity-70 cursor-not-allowed mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 rounded-md shadow-sm" @else class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" @endif
+            value="{{ old('delocal', $local->delocal ?? '') }}" required>
+        @if(session('duplicating_mode'))
+        <p class="text-xs text-gray-500 mt-1">Nome bloqueado durante duplicação.</p>
+        @endif
     </div>
 
     <div class="md:col-span-2">
@@ -37,5 +43,8 @@
             </option>
             @endforeach
         </select>
+        @if(session('duplicating_mode'))
+        <p class="text-xs text-blue-500 mt-1">Selecione agora o novo Projeto para associar este local duplicado.</p>
+        @endif
     </div>
 </div>

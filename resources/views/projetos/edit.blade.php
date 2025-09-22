@@ -19,19 +19,19 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="delocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Nome do Local</label>
-                                <input id="delocal" name="delocal" type="text" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                                    value="{{ old('delocal', $local->delocal) }}" required autofocus>
-                                @error('delocal')
+                                <label for="cdlocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Código do Local</label>
+                                <input id="cdlocal" name="cdlocal" type="number" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                    value="{{ old('cdlocal', $local->cdlocal) }}" required autofocus>
+                                @error('cdlocal')
                                 <p class="text-sm text-red-600 mt-2">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <div>
-                                <label for="cdlocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Código do Local</label>
-                                <input id="cdlocal" name="cdlocal" type="number" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                                    value="{{ old('cdlocal', $local->cdlocal) }}" required>
-                                @error('cdlocal')
+                                <label for="delocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Nome do Local</label>
+                                <input id="delocal" name="delocal" type="text" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                    value="{{ old('delocal', $local->delocal) }}" required>
+                                @error('delocal')
                                 <p class="text-sm text-red-600 mt-2">{{ $message }}</p>
                                 @enderror
                             </div>

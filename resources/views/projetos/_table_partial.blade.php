@@ -20,6 +20,9 @@
                 </td>
                 <td class="px-4 py-2" @click.stop>
                     <div class="flex items-center space-x-4">
+                        <a href="{{ route('projetos.duplicate', $local) }}" title="Duplicar para novo local" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" onclick="event.stopPropagation();">
+                            <x-heroicon-o-document-duplicate class="w-5 h-5" />
+                        </a>
                         <form action="{{ route('projetos.destroy', $local) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja apagar este local?');" onclick="event.stopPropagation();">
                             @csrf
                             @method('DELETE')

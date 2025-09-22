@@ -64,6 +64,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
 
     // Rotas de Projetos e suas APIs
     Route::resource('projetos', ProjetoController::class)->middleware('admin');
+    Route::get('projetos/{projeto}/duplicar', [ProjetoController::class, 'duplicate'])->name('projetos.duplicate')->middleware('admin');
     Route::get('/api/projetos/nome/{codigo}', function ($codigo) {
         $p = \App\Models\Tabfant::where('CDPROJETO', $codigo)->first();
         return $p ? response()->json(['exists' => true, 'nome' => $p->NOMEPROJETO]) : response()->json(['exists' => false]);
