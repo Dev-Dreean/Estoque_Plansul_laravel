@@ -30,84 +30,74 @@
 
         <div class="section">
           <div class="section-body">
-            <!-- Filtros -->
-            <div x-data="{ open: false }" class="card mb-3">
-              <div class="flex items-center w-full">
-                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Filtros</h4>
-                <div class="flex-1"></div>
-                <button type="button" @click="open = !open" class="inline-flex items-center justify-center w-7 h-7 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
-              <div x-show="open" x-transition class="mt-4" x-cloak>
-                <div class="grid gap-3 sm:gap-4 grid-[repeat(auto-fit,minmax(150px,1fr))]">
-                  <div><input type="text" id="filtro_numero" name="filtro_numero" value="{{ request('filtro_numero') }}" placeholder="Nº Patr." class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" /></div>
-                  <div><input type="text" id="filtro_descricao" name="filtro_descricao" value="{{ request('filtro_descricao') }}" placeholder="Descrição" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" /></div>
-                  <div><input type="text" id="filtro_modelo" name="filtro_modelo" value="{{ request('filtro_modelo') }}" placeholder="Modelo" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" /></div>
-                  <div><input type="number" id="filtro_projeto" name="filtro_projeto" value="{{ request('filtro_projeto') }}" placeholder="Cód. Projeto" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" /></div>
+            <div class="space-y-6">
+              <!-- Filtros (layout replicado do index) -->
+              <div x-data="{ open: false }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6" x-id="['filtro-atribuir']" :aria-expanded="open.toString()" :aria-controls="$id('filtro-atribuir')">
+                <div @click="open = !open" class="flex justify-between items-center cursor-pointer">
+                  <h3 class="font-semibold text-lg">Filtros de Busca</h3>
+                  <button type="button" @click="open = !open" class="inline-flex items-center justify-center w-7 h-7 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
                 </div>
-                <div class="flex flex-wrap items-center justify-between mt-4 gap-4">
-                  <div class="flex items-center gap-3">
-                    <button type="button" @click="aplicarFiltros()" class="btn-accent h-10">Filtrar</button>
-                    <a href="{{ route('patrimonios.atribuir.codigos') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">Ir para nova página</a>
+                <div x-show="open" x-transition class="mt-4" x-cloak :id="$id('filtro-atribuir')">
+                  <div class="grid gap-3 sm:gap-4 grid-[repeat(auto-fit,minmax(150px,1fr))]">
+                    <div><input type="text" id="filtro_numero" name="filtro_numero" value="{{ request('filtro_numero') }}" placeholder="Nº Patr." class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" /></div>
+                    <div><input type="text" id="filtro_descricao" name="filtro_descricao" value="{{ request('filtro_descricao') }}" placeholder="Descrição" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" /></div>
+                    <div><input type="text" id="filtro_modelo" name="filtro_modelo" value="{{ request('filtro_modelo') }}" placeholder="Modelo" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" /></div>
+                    <div><input type="number" id="filtro_projeto" name="filtro_projeto" value="{{ request('filtro_projeto') }}" placeholder="Cód. Projeto" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" /></div>
                   </div>
-                  <label class="flex items-center gap-2 ml-auto shrink-0">
-                    <span class="text-sm text-gray-700 dark:text-gray-300">Itens por página</span>
-                    <select id="per_page" name="per_page" class="h-10 px-2 pr-8 w-24 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
-                      @foreach([15,30,50,100] as $opt)
-                      <option value="{{ $opt }}" @selected(request('per_page',15)==$opt)>{{ $opt }}</option>
-                      @endforeach
-                    </select>
-                  </label>
+                  <div class="flex flex-wrap items-center justify-between mt-4 gap-4">
+                    <div class="flex items-center gap-3">
+                      <button type="button" @click="aplicarFiltros()" class="btn-accent h-10">Filtrar</button>
+                      <a href="{{ route('patrimonios.atribuir.codigos') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">Ir para nova página</a>
+                    </div>
+                    <label class="flex items-center gap-2 ml-auto shrink-0">
+                      <span class="text-sm text-gray-700 dark:text-gray-300">Itens por página</span>
+                      <select id="per_page" name="per_page" class="h-10 px-2 pr-8 w-24 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
+                        @foreach([15,30,50,100] as $opt)
+                        <option value="{{ $opt }}" @selected(request('per_page',15)==$opt)>{{ $opt }}</option>
+                        @endforeach
+                      </select>
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
-            <!-- Tabs abaixo do card de filtros -->
-            <div class="flex items-center gap-3 mb-6 mt-2" x-data="{ }">
-              <div class="flex items-center gap-2">
-                <a href="{{ route('patrimonios.atribuir.codigos', array_merge(request()->except('page','status'), ['status'=>'disponivel'])) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status','disponivel')=='disponivel' ? 'bg-green-600 text-white border-green-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-green-600/10' }}">Disponíveis</a>
-                <a href="{{ route('patrimonios.atribuir.codigos', array_merge(request()->except('page','status'), ['status'=>'indisponivel'])) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status')=='indisponivel' ? 'bg-red-600 text-white border-red-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-red-600/10' }}">Atribuídos</a>
+              <!-- Barra de ações (paridade com index: flex flex-wrap items-center mb-4 gap-3 w-full) -->
+              <div class="flex flex-wrap items-center mb-4 gap-3 w-full" x-data="{ }">
+                <div class="flex flex-wrap items-center gap-3">
+                  <a href="{{ route('patrimonios.atribuir.codigos', array_merge(request()->except('page','status'), ['status'=>'disponivel'])) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status','disponivel')=='disponivel' ? 'bg-green-600 text-white border-green-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-green-600/10' }}">Disponíveis</a>
+                  <a href="{{ route('patrimonios.atribuir.codigos', array_merge(request()->except('page','status'), ['status'=>'indisponivel'])) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status')=='indisponivel' ? 'bg-red-600 text-white border-red-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-red-600/10' }}">Atribuídos</a>
+                </div>
+                <div class="flex-1"></div>
+                <template x-if="selectedPatrimonios.length > 0">
+                  <span id="contador-selecionados-tabs" class="text-[11px] text-muted" x-text="contadorTexto"></span>
+                </template>
               </div>
-              <div class="flex-1"></div>
-              <template x-if="selectedPatrimonios.length > 0">
-                <span id="contador-selecionados-tabs" class="text-[11px] text-muted" x-text="contadorTexto"></span>
-              </template>
+
+              <!-- Forms para geração e atribuição direta de códigos -->
+              <form id="form-gerar-codigo" method="POST" action="{{ route('patrimonios.gerarCodigo') }}" class="hidden">
+                @csrf
+              </form>
+              <form id="form-atribuir-codigo" method="POST" action="{{ route('patrimonios.atribuirCodigo') }}" class="hidden">
+                @csrf
+                <input type="hidden" name="codigo" x-model="codigoTermo">
+              </form>
+              <form method="POST" action="{{ route('patrimonios.atribuir.processar') }}" id="form-atribuir-lote">
+                @csrf
             </div>
 
-            <!-- Forms para geração e atribuição direta de códigos -->
-            <form id="form-gerar-codigo" method="POST" action="{{ route('patrimonios.gerarCodigo') }}" class="hidden">
-              @csrf
-            </form>
-            <form id="form-atribuir-codigo" method="POST" action="{{ route('patrimonios.atribuirCodigo') }}" class="hidden">
-              @csrf
-              <input type="hidden" name="codigo" x-model="codigoTermo">
-            </form>
-            <form method="POST" action="{{ route('patrimonios.atribuir.processar') }}" id="form-atribuir-lote">
-              @csrf
-          </div>
-
-          <!-- Tabela de Patrimônios -->
-          <div class="mb-6">
-            <h3 class="text-lg font-medium mb-4 text-gray-900 dark:text-gray-100">
-              Patrimônios
-              @if(request('status') == 'disponivel')
-              Disponíveis
-              @elseif(request('status') == 'indisponivel')
-              Indisponíveis (Atribuídos)
-              @endif
-            </h3>
-
-            <!-- Container com scroll dinÃ¢mico -->
-            <div x-ref="tableWrapper" class="overflow-y-auto overflow-x-auto w-full border border-gray-200 dark:border-gray-700 rounded-lg max-h-[var(--table-max-h,70vh)]" :style="tableHeight ? '--table-max-h:'+tableHeight+'px' : ''">
+            <!-- Tabela (estrutura idêntica ao index) -->
+            <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0">
               <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-10">
                   <tr>
                     <th class="px-4 py-3">
                       @if(!request('status') || request('status')=='disponivel')
-                      <input type="checkbox" id="selectAll" @change="toggleAll($event)"
-                        class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600">
+                      <input type="checkbox" id="selectAll" @change="toggleAll($event)" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600">
+                      @elseif(request('status')=='indisponivel')
+                      <span class="sr-only">Selecionar</span>
                       @endif
                     </th>
                     <th class="px-4 py-3">Nº Pat.</th>
@@ -119,8 +109,8 @@
                 </thead>
                 <tbody>
                   @forelse($patrimonios as $patrimonio)
-                  <tr data-row-id="{{ $patrimonio->NUSEQPATR }}" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm cursor-pointer transition-colors" :class="{'!border-green-500 bg-green-50 dark:bg-gray-700/40': selectedPatrimonios.includes('{{ $patrimonio->NUSEQPATR }}')}">
-                    <td class="px-4 py-3">
+                  <tr data-row-id="{{ $patrimonio->NUSEQPATR }}" class="tr-hover text-sm cursor-pointer transition-colors" :class="{'!border-green-500 bg-green-50 dark:bg-gray-700/40': selectedPatrimonios.includes('{{ $patrimonio->NUSEQPATR }}')}">
+                    <td class="td px-4 py-3">
                       @if((!request('status') || request('status')=='disponivel') && empty($patrimonio->NMPLANTA))
                       <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
                         type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
@@ -129,23 +119,23 @@
                         type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
                       @endif
                     </td>
-                    <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                    <td class="td font-medium text-gray-900 dark:text-white">
                       {{ $patrimonio->NUPATRIMONIO }}
                     </td>
-                    <td class="px-4 py-3">
+                    <td class="td">
                       {{ Str::limit($patrimonio->DEPATRIMONIO, 50) }}
                     </td>
-                    <td class="px-4 py-3">
+                    <td class="td">
                       {{ $patrimonio->MODELO ?? 'N/A' }}
                     </td>
-                    <td class="px-4 py-3">
+                    <td class="td">
                       @if(empty($patrimonio->NMPLANTA))
                       <span class="badge-green">Disponível</span>
                       @else
                       <span class="badge-red">Atribuído</span>
                       @endif
                     </td>
-                    <td class="px-4 py-3" data-col="codigo-termo">
+                    <td class="td" data-col="codigo-termo">
                       @if($patrimonio->NMPLANTA)
                       <span class="badge-indigo font-mono">{{ $patrimonio->NMPLANTA }}</span>
                       @else
@@ -175,46 +165,15 @@
                 </tbody>
               </table>
             </div>
-
-            <!-- InformaÃ§Ãµes de PaginaÃ§Ã£o (Fora do scroll) -->
-            @if($patrimonios->hasPages())
-            <div class="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6 mt-4 rounded-b-lg">
-              <div class="flex flex-1 justify-between sm:hidden">
-                @if($patrimonios->onFirstPage())
-                <span class="relative inline-flex items-center rounded-md border bd-theme bg-surface px-4 py-2 text-sm font-medium text-muted">Anterior</span>
-                @else
-                <a href="{{ $patrimonios->previousPageUrl() }}" class="relative inline-flex items-center rounded-md border bd-theme bg-surface px-4 py-2 text-sm font-medium text-on-surface hover-surface-alt">Anterior</a>
-                @endif
-
-                @if($patrimonios->hasMorePages())
-                <a href="{{ $patrimonios->nextPageUrl() }}" class="relative ml-3 inline-flex items-center rounded-md border bd-theme bg-surface px-4 py-2 text-sm font-medium text-on-surface hover-surface-alt">Próximo</a>
-                @else
-                <span class="relative ml-3 inline-flex items-center rounded-md border bd-theme bg-surface px-4 py-2 text-sm font-medium text-muted">Próximo</span>
-                @endif
-              </div>
-              <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                <div>
-                  <p class="text-sm text-gray-700 dark:text-gray-300">
-                    Mostrando
-                    <span class="font-medium">{{ $patrimonios->firstItem() ?? 0 }}</span>
-                    a
-                    <span class="font-medium">{{ $patrimonios->lastItem() ?? 0 }}</span>
-                    de
-                    <span class="font-medium">{{ $patrimonios->total() }}</span>
-                    resultados
-                  </p>
-                </div>
-                <div>
-                  {{ $patrimonios->appends(request()->query())->links() }}
-                </div>
-              </div>
+            <div class="mt-4">
+              {{ $patrimonios->appends(request()->query())->links() }}
             </div>
-            @endif
-          </div>
-          </form>
-        </div>
+          </div> <!-- /mb-6 flex flex-col gap-6 -->
+        </div> <!-- /space-y-6 -->
+        </form>
       </div>
-    </div><!-- /w-full wrapper -->
+    </div>
+  </div><!-- /w-full wrapper -->
   </div><!-- /py-12 wrapper -->
 
   <!-- Modal de Confirmação de Atribuição (encapsulado em x-data isolado para não gerar erros se não usado) -->
@@ -278,31 +237,17 @@
         codigoTermo: '',
         termoFiltro: '',
         desatribuirItem: null,
-        tableHeight: null,
         atribuindo: false,
         erroCodigo: false,
         gerandoCodigo: false,
         // Estados de listagem de cÃ³digos removidos (modal removido)
         init() {
           this.updateCounter();
-          this.calcTableHeight();
-          window.addEventListener('resize', () => this.calcTableHeight());
           // ESC para fechar popover e modais leves
           window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
               if (this.showCodigosModal) this.showCodigosModal = false;
             }
-          });
-        },
-        calcTableHeight() {
-          this.$nextTick(() => {
-            const wrapper = this.$refs.tableWrapper;
-            if (!wrapper) return;
-            const rect = wrapper.getBoundingClientRect();
-            // EspaÃ§o inferior reservado (paginaÃ§Ã£o + padding da pÃ¡gina)
-            const bottomPadding = 160; // ajuste fino se necessÃ¡rio
-            const available = window.innerHeight - rect.top - bottomPadding;
-            this.tableHeight = available > 300 ? available : 300; // mÃ­nimo seguro
           });
         },
         syncCodigoTermo(value) {
