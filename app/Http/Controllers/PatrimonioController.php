@@ -43,6 +43,26 @@ class PatrimonioController extends Controller
         }
     }
 
+    /**
+     * Autocomplete de códigos de objeto (CODOBJETO). Busca por número parcial ou parte da descrição.
+     */
+    public function pesquisarCodigos(Request $request): JsonResponse
+    {
+        $termo = trim((string) $request->input('q', ''));
+        if ($termo === '') return response()->json([]);
+        $q = Objpatr::query();
+        if (is_numeric($termo)) {
+            $q->where('NUSEQOBJ', 'like', "%{$termo}%");
+        } else {
+            $q->where('DEOBJETO', 'like', "%{$termo}%");
+        }
+        $registros = $q->orderBy('DEOBJETO')
+            ->select(['NUSEQOBJ as CODOBJETO', 'DEOBJETO as DESCRICAO'])
+            ->limit(10)
+            ->get();
+        return response()->json($registros);
+    }
+
     public function index(Request $request): View
     {
         // Busca os patrimônios para a tabela principal
@@ -99,11 +119,11 @@ class PatrimonioController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validatedData = $this->validatePatrimonio($request);
-        $user = Auth::user();
+        $authUser = Auth::user();
 
+        // Garantir que matrícula selecionada exista (regra já na validação) e registrar criador
         Patrimonio::create(array_merge($validatedData, [
-            'CDMATRFUNCIONARIO' => $user->CDMATRFUNCIONARIO,
-            'USUARIO' => $user->NMLOGIN,
+            'USUARIO' => $authUser->NMLOGIN,
             'DTOPERACAO' => now(),
         ]));
 
@@ -228,10 +248,56 @@ class PatrimonioController extends Controller
         return response()->json($patrimonios);
     }
 
+    /**
+     * Autocomplete de usuários para seleção por nome ou matrícula.
+     * Retorna até 10 resultados contendo matrícula e nome.
+     */
+    public function pesquisarUsuarios(Request $request): JsonResponse
+    {
+        $termo = trim((string) $request->input('q', ''));
+        if ($termo === '') {
+            return response()->json([]);
+        }
+        $usuarios = User::query()
+            ->when(is_numeric($termo), function ($q) use ($termo) {
+                $q->where('CDMATRFUNCIONARIO', 'like', "%{$termo}%");
+            }, function ($q) use ($termo) {
+                $q->where('NOMEUSER', 'like', "%{$termo}%");
+            })
+            ->orderBy('NOMEUSER')
+            ->select(['CDMATRFUNCIONARIO', 'NOMEUSER'])
+            ->limit(10)
+            ->get();
+        return response()->json($usuarios);
+    }
+
     public function buscarProjeto($cdprojeto): JsonResponse
     {
         $projeto = Tabfant::where('CDPROJETO', $cdprojeto)->first(['NOMEPROJETO']);
         return response()->json($projeto);
+    }
+
+    /**
+     * Autocomplete de projetos. Busca por código numérico parcial ou parte do nome.
+     * Limite: 10 resultados para performance.
+     */
+    public function pesquisarProjetos(Request $request): JsonResponse
+    {
+        $termo = trim((string) $request->input('q', ''));
+        if ($termo === '') {
+            return response()->json([]);
+        }
+        $query = Tabfant::query();
+        if (is_numeric($termo)) {
+            $query->where('CDPROJETO', 'like', "%{$termo}%");
+        } else {
+            $query->where('NOMEPROJETO', 'like', "%{$termo}%");
+        }
+        $projetos = $query->orderBy('NOMEPROJETO')
+            ->select(['CDPROJETO', 'NOMEPROJETO'])
+            ->limit(10)
+            ->get();
+        return response()->json($projetos);
     }
 
     public function getLocaisPorProjeto($cdprojeto): JsonResponse
@@ -240,8 +306,13 @@ class PatrimonioController extends Controller
         if (!$projeto) {
             return response()->json([]); // projeto não encontrado => sem locais
         }
+        $term = trim(request()->query('q', ''));
         $locais = LocalProjeto::where('tabfant_id', $projeto->id)
+            ->when($term !== '', function ($q) use ($term) {
+                $q->where('delocal', 'like', "%{$term}%");
+            })
             ->orderBy('delocal')
+            ->limit(30)
             ->get(['id', 'delocal as LOCAL', 'cdlocal']);
         return response()->json($locais);
     }
@@ -650,6 +721,7 @@ class PatrimonioController extends Controller
             'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,À DISPOSIÇÃO',
             'DTAQUISICAO' => 'nullable|date',
             'DTBAIXA' => 'required_if:SITUACAO,BAIXA|nullable|date',
+            'CDMATRFUNCIONARIO' => 'required|integer|exists:usuario,CDMATRFUNCIONARIO',
         ]);
     }
 

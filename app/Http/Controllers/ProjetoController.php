@@ -125,16 +125,43 @@ class ProjetoController extends Controller
      */
     public function duplicate(LocalProjeto $projeto)
     {
-        // Prefill mantendo nome / código originais e limpando projeto associado
+        // Prefill mantendo somente o código; nome e projeto ficam em branco para novo preenchimento
         $prefill = [
-            'delocal' => $projeto->delocal,
+            'delocal' => '',
             'cdlocal' => $projeto->cdlocal,
-            'tabfant_id' => '' // usuário deve escolher novo projeto
+            'tabfant_id' => ''
         ];
         return redirect()
             ->route('projetos.create')
             ->withInput($prefill)
             ->with('duplicating_from', $projeto->id)
             ->with('duplicating_mode', true);
+    }
+
+    /**
+     * Lookup AJAX: dado um cdlocal retorna se já existe local ativo e seus dados
+     */
+    public function lookup(Request $request)
+    {
+        $codigo = $request->query('cdlocal');
+        if (!$codigo) {
+            return response()->json(['found' => false]);
+        }
+        $local = LocalProjeto::with('projeto')
+            ->where('cdlocal', $codigo)
+            ->first(); // removido filtro estrito flativo para garantir retorno
+        if (!$local) {
+            return response()->json(['found' => false]);
+        }
+        return response()->json([
+            'found' => true,
+            'local' => [
+                'delocal' => $local->delocal,
+                'cdlocal' => $local->cdlocal,
+                'tabfant_id' => $local->tabfant_id,
+                'projeto_nome' => $local->projeto->NOMEPROJETO ?? null,
+                'projeto_codigo' => $local->projeto->CDPROJETO ?? null,
+            ]
+        ]);
     }
 }

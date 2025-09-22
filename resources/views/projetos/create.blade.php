@@ -12,7 +12,7 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     @if(session('duplicating_from'))
                     <div class="mb-4 p-3 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm">
-                        Duplicando a partir do local ID #{{ session('duplicating_from') }}. Código e Nome foram mantidos (apenas leitura). Escolha o <strong>novo Projeto Associado</strong> e salve.
+                        Clonando local ID #{{ session('duplicating_from') }}. <strong>Código bloqueado</strong>; preencha agora <strong>Nome do Local</strong> e selecione o <strong>Projeto Associado</strong> para o novo registro.
                     </div>
                     @endif
                     <form method="POST" action="{{ route('projetos.store') }}">

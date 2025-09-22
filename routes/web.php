@@ -61,20 +61,25 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::get('/api/patrimonios/disponiveis', [PatrimonioController::class, 'getPatrimoniosDisponiveis'])->name('api.patrimonios.disponiveis');
     Route::get('/api/patrimonios/buscar/{numero}', [PatrimonioController::class, 'buscarPorNumero'])->name('api.patrimonios.buscar');
     Route::get('/api/patrimonios/pesquisar', [PatrimonioController::class, 'pesquisar'])->name('api.patrimonios.pesquisar');
+    // Autocomplete Usuários
+    Route::get('/api/usuarios/pesquisar', [PatrimonioController::class, 'pesquisarUsuarios'])->name('api.usuarios.pesquisar');
 
     // Rotas de Projetos e suas APIs
     Route::resource('projetos', ProjetoController::class)->middleware('admin');
     Route::get('projetos/{projeto}/duplicar', [ProjetoController::class, 'duplicate'])->name('projetos.duplicate')->middleware('admin');
+    Route::get('/api/locais/lookup', [ProjetoController::class, 'lookup'])->name('projetos.lookup')->middleware('admin');
     Route::get('/api/projetos/nome/{codigo}', function ($codigo) {
         $p = \App\Models\Tabfant::where('CDPROJETO', $codigo)->first();
         return $p ? response()->json(['exists' => true, 'nome' => $p->NOMEPROJETO]) : response()->json(['exists' => false]);
     });
     Route::get('/api/projetos/buscar/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'buscarProjeto'])->name('api.projetos.buscar');
+    Route::get('/api/projetos/pesquisar', [App\Http\Controllers\PatrimonioController::class, 'pesquisarProjetos'])->name('api.projetos.pesquisar');
     Route::get('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'getLocaisPorProjeto'])->name('api.locais');
     Route::post('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'criarLocal'])->name('api.locais.criar');
 
     // Rotas de Códigos (API)
     Route::get('/api/codigos/buscar/{codigo}', [PatrimonioController::class, 'buscarCodigoObjeto'])->name('api.codigos.buscar');
+    Route::get('/api/codigos/pesquisar', [PatrimonioController::class, 'pesquisarCodigos'])->name('api.codigos.pesquisar');
     Route::get('/api/codigos/{tipo}', [PatrimonioController::class, 'getCodigosPorTipo'])->name('api.codigos');
 
     // Rotas de Perfil (editar, atualizar, deletar)

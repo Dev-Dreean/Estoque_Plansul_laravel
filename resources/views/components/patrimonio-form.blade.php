@@ -5,22 +5,44 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <div>
       <x-input-label for="NUPATRIMONIO" value="Nº Patrimônio *" />
-      <div class="relative mt-1">
-        <x-text-input
-          x-model="formData.NUPATRIMONIO"
-          @blur="buscarPatrimonio"
-          data-index="1"
-          id="NUPATRIMONIO"
+      <div class="relative mt-1" @click.away="showPatDropdown=false">
+        <input id="NUPATRIMONIO"
+          x-model="patSearch"
+          @focus="abrirDropdownPatrimonios()"
+          @input.debounce.300ms="buscarPatrimonios"
+          @keydown.down.prevent="navegarPatrimonios(1)"
+          @keydown.up.prevent="navegarPatrimonios(-1)"
+          @keydown.enter.prevent="selecionarPatrimonioEnter()"
+          @keydown.escape.prevent="showPatDropdown=false"
           name="NUPATRIMONIO"
-          type="number"
-          class="block w-full pr-10"
+          type="text"
+          inputmode="numeric"
+          class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10"
+          placeholder="Digite número ou descrição"
           required />
         <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-          <button @click="openSearchModal" type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-            </svg>
-          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" x-show="formData.NUPATRIMONIO" @click="limparPatrimonio" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none" title="Limpar seleção" aria-label="Limpar seleção">✕</button>
+            <button type="button" @click="abrirDropdownPatrimonios(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" aria-label="Abrir lista">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div x-show="showPatDropdown" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm">
+          <template x-if="loadingPatrimonios">
+            <div class="p-2 text-gray-500">Buscando...</div>
+          </template>
+          <template x-if="!loadingPatrimonios && patrimoniosLista.length === 0">
+            <div class="p-2 text-gray-500" x-text="patSearch.trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
+          </template>
+          <template x-for="(p, i) in patrimoniosLista" :key="p.NUPATRIMONIO">
+            <div data-pat-item @click="selecionarPatrimonio(p)" @mouseover="highlightedPatIndex = i" :class="['px-3 py-2 cursor-pointer', highlightedPatIndex === i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+              <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="p.NUPATRIMONIO"></span>
+              <span class="ml-2" x-text="' - ' + p.DEPATRIMONIO"></span>
+            </div>
+          </template>
         </div>
       </div>
       <span x-show="loading" class="text-sm text-gray-500">Buscando...</span>
@@ -39,7 +61,45 @@
   <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
     <div class="md:col-span-1">
       <x-input-label for="CODOBJETO" value="Código *" />
-      <x-text-input data-index="4" @blur="buscarDescricaoCodigo()" @change="buscarDescricaoCodigo()" x-model="formData.CODOBJETO" id="CODOBJETO" name="CODOBJETO" type="number" class="mt-1 block w-full" required />
+      <div class="relative mt-1" @click.away="showCodigoDropdown=false">
+        <input id="CODOBJETO"
+          x-model="codigoSearch"
+          @focus="abrirDropdownCodigos()"
+          @input.debounce.300ms="buscarCodigos"
+          @keydown.down.prevent="navegarCodigos(1)"
+          @keydown.up.prevent="navegarCodigos(-1)"
+          @keydown.enter.prevent="selecionarCodigoEnter()"
+          @keydown.escape.prevent="showCodigoDropdown=false"
+          name="CODOBJETO"
+          type="text"
+          inputmode="numeric"
+          class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10"
+          placeholder="Digite nº ou descrição" required />
+        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+          <div class="flex items-center gap-2">
+            <button type="button" x-show="formData.CODOBJETO" @click="limparCodigo" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none" title="Limpar seleção" aria-label="Limpar seleção">✕</button>
+            <button type="button" @click="abrirDropdownCodigos(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" aria-label="Abrir lista">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div x-show="showCodigoDropdown" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm">
+          <template x-if="loadingCodigos">
+            <div class="p-2 text-gray-500">Buscando...</div>
+          </template>
+          <template x-if="!loadingCodigos && codigosLista.length === 0">
+            <div class="p-2 text-gray-500" x-text="codigoSearch.trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
+          </template>
+          <template x-for="(c,i) in codigosLista" :key="c.CODOBJETO">
+            <div data-cod-item @click="selecionarCodigo(c)" @mouseover="highlightedCodigoIndex=i" :class="['px-3 py-2 cursor-pointer', highlightedCodigoIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+              <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="c.CODOBJETO"></span>
+              <span class="ml-2" x-text="' - ' + c.DESCRICAO"></span>
+            </div>
+          </template>
+        </div>
+      </div>
     </div>
     <div class="md:col-span-3">
       <x-input-label for="DEPATRIMONIO" value="Descrição do Código" />
@@ -57,8 +117,43 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <div class="md:col-span-2">
       <x-input-label for="CDPROJETO" value="Projeto" />
-      <div class="flex items-center space-x-2">
-        <x-text-input @blur="buscarProjetoELocais" x-model="formData.CDPROJETO" data-index="7" id="CDPROJETO" name="CDPROJETO" type="number" class="mt-1 block w-1/3" />
+      <div class="flex items-center space-x-2 relative" @click.away="showProjetoDropdown=false">
+        <div class="relative w-1/3 mt-1">
+          <input id="CDPROJETO" name="CDPROJETO" x-model="projetoSearch"
+            @focus="abrirDropdownProjetos()"
+            @input.debounce.300ms="buscarProjetos"
+            @keydown.down.prevent="navegarProjetos(1)"
+            @keydown.up.prevent="navegarProjetos(-1)"
+            @keydown.enter.prevent="selecionarProjetoEnter()"
+            @keydown.escape.prevent="showProjetoDropdown=false"
+            type="text" inputmode="numeric"
+            class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10"
+            placeholder="Código" />
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+            <div class="flex items-center gap-2">
+              <button type="button" x-show="formData.CDPROJETO" @click="limparProjeto" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Limpar seleção">✕</button>
+              <button type="button" @click="abrirDropdownProjetos(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="Abrir lista" aria-label="Abrir lista">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div x-show="showProjetoDropdown" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-sm">
+            <template x-if="loadingProjetos">
+              <div class="p-2 text-gray-500">Buscando...</div>
+            </template>
+            <template x-if="!loadingProjetos && projetosLista.length===0">
+              <div class="p-2 text-gray-500" x-text="projetoSearch.trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
+            </template>
+            <template x-for="(pr,i) in projetosLista" :key="pr.CDPROJETO">
+              <div data-proj-item @click="selecionarProjeto(pr)" @mouseover="highlightedProjetoIndex=i" :class="['px-3 py-2 cursor-pointer', highlightedProjetoIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+                <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="pr.CDPROJETO"></span>
+                <span class="ml-2" x-text="' - ' + pr.NOMEPROJETO"></span>
+              </div>
+            </template>
+          </div>
+        </div>
         <x-text-input x-model="nomeProjeto" type="text" class="mt-1 block w-2/3 bg-gray-100 dark:bg-gray-900" placeholder="Nome do Projeto" readonly />
       </div>
     </div>
@@ -69,13 +164,38 @@
     <div class="md:col-span-3">
       <x-input-label for="CDLOCAL" value="Local" />
       <div class="flex gap-2 items-start">
-        <div class="flex-1">
-          <select data-index="9" x-model="formData.CDLOCAL" id="CDLOCAL" name="CDLOCAL" class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" :disabled="locais.length === 0">
-            <option value="">Selecione um local...</option>
-            <template x-for="local in locais" :key="local.id">
-              <option :value="local.id" x-text="local.LOCAL"></option>
+        <div class="flex-1 relative mt-1" @click.away="showLocalDropdown=false">
+          <input id="CDLOCAL" name="CDLOCAL" x-model="localSearch"
+            @focus="abrirDropdownLocais()"
+            @input.debounce.300ms="filtrarLocais"
+            @keydown.down.prevent="navegarLocais(1)"
+            @keydown.up.prevent="navegarLocais(-1)"
+            @keydown.enter.prevent="selecionarLocalEnter()"
+            @keydown.escape.prevent="showLocalDropdown=false"
+            :disabled="locais.length===0"
+            class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 disabled:opacity-60"
+            placeholder="Local" />
+          <input type="hidden" :value="formData.CDLOCAL" />
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+            <div class="flex items-center gap-2">
+              <button type="button" x-show="formData.CDLOCAL" @click="limparLocal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Limpar seleção">✕</button>
+              <button type="button" @click="abrirDropdownLocais(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="Abrir lista" aria-label="Abrir lista">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div x-show="showLocalDropdown" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-sm">
+            <template x-if="locaisFiltrados.length===0">
+              <div class="p-2 text-gray-500" x-text="localSearch.trim()==='' ? (locais.length===0 ? 'Carregue um projeto' : 'Digite para filtrar') : 'Nenhum resultado'"></div>
             </template>
-          </select>
+            <template x-for="(l,i) in locaisFiltrados" :key="l.id">
+              <div data-local-item @click="selecionarLocal(l)" @mouseover="highlightedLocalIndex=i" :class="['px-3 py-2 cursor-pointer', highlightedLocalIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+                <span class="text-xs text-indigo-600 dark:text-indigo-400" x-text="l.LOCAL"></span>
+              </div>
+            </template>
+          </div>
         </div>
         <button type="button" @click="abrirNovoLocal()" class="mt-1 inline-flex items-center justify-center w-10 h-10 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" title="Cadastrar novo local" aria-label="Cadastrar novo local">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -105,7 +225,7 @@
     </div>
   </div>
 
-  {{-- GRUPO 5: Marca, Modelo, Situação, Matrícula --}}
+  {{-- GRUPO 5: Marca, Modelo, Situação, Matrícula / Usuário --}}
   <div class="grid grid-cols-1 md:grid-cols-4 gap-6 pt-6 border-t border-gray-200 dark:border-gray-700">
     <div>
       <x-input-label for="MARCA" value="Marca" />
@@ -125,9 +245,51 @@
       </select>
       <x-input-error class="mt-2" :messages="$errors->get('SITUACAO')" />
     </div>
-    <div>
-      <x-input-label for="CDMATRFUNCIONARIO" value="Matrícula" />
-      <x-text-input id="CDMATRFUNCIONARIO" name="CDMATRFUNCIONARIO" type="text" class="mt-1 block w-full bg-gray-100 dark:bg-gray-900" value="{{ auth()->user()->CDMATRFUNCIONARIO ?? '' }}" readonly />
+    <div class="relative" @click.away="showUserDropdown=false">
+      <x-input-label for="matricula_busca" value="Matrícula Responsável *" />
+      <div class="relative mt-1">
+        <input id="matricula_busca"
+          x-model="userSearch"
+          @focus="abrirDropdownUsuarios()"
+          @input.debounce.300ms="buscarUsuarios"
+          @keydown.down.prevent="navegarUsuarios(1)"
+          @keydown.up.prevent="navegarUsuarios(-1)"
+          @keydown.enter.prevent="selecionarUsuarioEnter()"
+          @keydown.escape.prevent="showUserDropdown=false"
+          type="text"
+          placeholder="Digite matrícula ou nome"
+          class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10"
+          autocomplete="off" />
+        <input type="hidden" name="CDMATRFUNCIONARIO" :value="formData.CDMATRFUNCIONARIO" />
+        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+          <div class="flex items-center gap-2">
+            <button type="button" x-show="formData.CDMATRFUNCIONARIO" @click="limparUsuario" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none" title="Limpar seleção" aria-label="Limpar seleção">✕</button>
+            <button type="button" @click="abrirDropdownUsuarios(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" aria-label="Abrir lista">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div x-show="showUserDropdown" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm">
+        <template x-if="loadingUsers">
+          <div class="p-2 text-gray-500">Buscando...</div>
+        </template>
+        <template x-if="!loadingUsers && usuarios.length === 0">
+          <div class="p-2 text-gray-500" x-text="userSearch.trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
+        </template>
+        <template x-for="(u, i) in usuarios" :key="u.CDMATRFUNCIONARIO">
+          <div data-user-item @click="selecionarUsuario(u)"
+            @mouseover="highlightedUserIndex = i"
+            :class="['px-3 py-2 cursor-pointer', highlightedUserIndex === i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+            <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="u.CDMATRFUNCIONARIO"></span>
+            <span class="ml-2" x-text="' - ' + u.NOMEUSER"></span>
+          </div>
+        </template>
+      </div>
+      <p class="mt-1 text-xs text-gray-500" x-show="formData.CDMATRFUNCIONARIO && userSelectedName">Selecionado: <span class="font-semibold" x-text="userSelectedName"></span></p>
+      <x-input-error class="mt-2" :messages="$errors->get('CDMATRFUNCIONARIO')" />
     </div>
   </div>
 
@@ -186,6 +348,7 @@
         SITUACAO: (config.old?.SITUACAO ?? config.patrimonio?.SITUACAO) || 'EM USO',
         DTAQUISICAO: (config.old?.DTAQUISICAO ?? (config.patrimonio?.DTAQUISICAO ? config.patrimonio.DTAQUISICAO.split(' ')[0] : '')),
         DTBAIXA: (config.old?.DTBAIXA ?? (config.patrimonio?.DTBAIXA ? config.patrimonio.DTBAIXA.split(' ')[0] : '')),
+        CDMATRFUNCIONARIO: (config.old?.CDMATRFUNCIONARIO ?? config.patrimonio?.CDMATRFUNCIONARIO) || '',
       },
       // == ESTADO DA UI ==
       loading: false,
@@ -195,6 +358,36 @@
       loadingSearch: false,
       nomeProjeto: '',
       locais: [],
+      // Autocomplete Usuário
+      userSearch: '',
+      usuarios: [],
+      highlightedUserIndex: -1,
+      loadingUsers: false,
+      showUserDropdown: false,
+      userSelectedName: '',
+      // Autocomplete Código
+      codigoSearch: (config.old?.CODOBJETO ?? config.patrimonio?.CODOBJETO) || '',
+      codigosLista: [],
+      loadingCodigos: false,
+      showCodigoDropdown: false,
+      highlightedCodigoIndex: -1,
+      // Autocomplete Projeto
+      projetoSearch: (config.old?.CDPROJETO ?? config.patrimonio?.CDPROJETO) || '',
+      projetosLista: [],
+      loadingProjetos: false,
+      showProjetoDropdown: false,
+      highlightedProjetoIndex: -1,
+      // Autocomplete Local
+      localSearch: '',
+      locaisFiltrados: [],
+      showLocalDropdown: false,
+      highlightedLocalIndex: -1,
+      // Autocomplete Patrimônio
+      patSearch: (config.old?.NUPATRIMONIO ?? config.patrimonio?.NUPATRIMONIO) || '',
+      patrimoniosLista: [],
+      loadingPatrimonios: false,
+      showPatDropdown: false,
+      highlightedPatIndex: -1,
       // Novo Local
       novoLocalOpen: false,
       novoLocalNome: '',
@@ -295,6 +488,333 @@
           console.error('Erro ao buscar locais:', error);
         }
       },
+      async buscarUsuarios() {
+        const termo = this.userSearch.trim();
+        if (termo === '') {
+          this.usuarios = [];
+          this.highlightedUserIndex = -1;
+          return;
+        }
+        this.loadingUsers = true;
+        try {
+          const resp = await fetch(`/api/usuarios/pesquisar?q=${encodeURIComponent(termo)}`);
+          if (resp.ok) {
+            this.usuarios = await resp.json();
+            this.highlightedUserIndex = this.usuarios.length > 0 ? 0 : -1;
+          }
+        } catch (e) {
+          console.error('Falha busca usuários', e);
+        } finally {
+          this.loadingUsers = false;
+        }
+      },
+      abrirDropdownUsuarios(force = false) {
+        this.showUserDropdown = true;
+        // Se já tem texto, busca. Se vazio e for forçado (clique na lupa), não busca mas mostra mensagem.
+        if (this.userSearch.trim() !== '') {
+          this.buscarUsuarios();
+        }
+      },
+      selecionarUsuario(u) {
+        this.formData.CDMATRFUNCIONARIO = u.CDMATRFUNCIONARIO;
+        this.userSelectedName = `${u.CDMATRFUNCIONARIO} - ${u.NOMEUSER}`;
+        this.userSearch = this.userSelectedName;
+        this.showUserDropdown = false;
+      },
+      selecionarUsuarioEnter() {
+        if (!this.showUserDropdown) return;
+        if (this.highlightedUserIndex < 0 || this.highlightedUserIndex >= this.usuarios.length) return;
+        this.selecionarUsuario(this.usuarios[this.highlightedUserIndex]);
+      },
+      limparUsuario() {
+        this.formData.CDMATRFUNCIONARIO = '';
+        this.userSelectedName = '';
+        this.userSearch = '';
+        this.usuarios = [];
+        this.showUserDropdown = true;
+        this.highlightedUserIndex = -1;
+      },
+      navegarUsuarios(delta) {
+        if (!this.showUserDropdown || this.usuarios.length === 0) return;
+        const max = this.usuarios.length - 1;
+        if (this.highlightedUserIndex === -1) {
+          this.highlightedUserIndex = 0;
+        } else {
+          this.highlightedUserIndex = Math.min(max, Math.max(0, this.highlightedUserIndex + delta));
+        }
+        // Scroll into view
+        this.$nextTick(() => {
+          const list = this.$root.querySelector('[x-show="showUserDropdown"]');
+          if (!list) return;
+          const items = list.querySelectorAll('[data-user-item]');
+          const el = items[this.highlightedUserIndex];
+          if (el && typeof el.scrollIntoView === 'function') {
+            const parentRect = list.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            if (elRect.top < parentRect.top || elRect.bottom > parentRect.bottom) {
+              el.scrollIntoView({
+                block: 'nearest'
+              });
+            }
+          }
+        });
+      },
+      // === Autocomplete Patrimônio ===
+      async buscarPatrimonios() {
+        const termo = this.patSearch.trim();
+        if (termo === '') {
+          this.patrimoniosLista = [];
+          this.highlightedPatIndex = -1;
+          return;
+        }
+        this.loadingPatrimonios = true;
+        try {
+          const resp = await fetch(`/api/patrimonios/pesquisar?q=${encodeURIComponent(termo)}`);
+          if (resp.ok) {
+            this.patrimoniosLista = await resp.json();
+            this.highlightedPatIndex = this.patrimoniosLista.length > 0 ? 0 : -1;
+          }
+        } catch (e) {
+          console.error('Falha busca patrimonios', e);
+        } finally {
+          this.loadingPatrimonios = false;
+        }
+      },
+      // === Autocomplete Código ===
+      async buscarCodigos() {
+        const termo = this.codigoSearch.trim();
+        if (termo === '') {
+          this.codigosLista = [];
+          this.highlightedCodigoIndex = -1;
+          return;
+        }
+        this.loadingCodigos = true;
+        try {
+          const resp = await fetch(`/api/codigos/pesquisar?q=${encodeURIComponent(termo)}`);
+          if (resp.ok) {
+            this.codigosLista = await resp.json();
+            this.highlightedCodigoIndex = this.codigosLista.length > 0 ? 0 : -1;
+          }
+        } catch (e) {
+          console.error('Falha busca codigos', e);
+        } finally {
+          this.loadingCodigos = false;
+        }
+      },
+      abrirDropdownCodigos(force = false) {
+        this.showCodigoDropdown = true;
+        if (this.codigoSearch.trim() !== '') this.buscarCodigos();
+      },
+      selecionarCodigo(c) {
+        this.formData.CODOBJETO = c.CODOBJETO;
+        this.codigoSearch = c.CODOBJETO;
+        this.formData.DEPATRIMONIO = c.DESCRICAO;
+        this.showCodigoDropdown = false;
+      },
+      selecionarCodigoEnter() {
+        if (!this.showCodigoDropdown) return;
+        if (this.highlightedCodigoIndex < 0 || this.highlightedCodigoIndex >= this.codigosLista.length) return;
+        this.selecionarCodigo(this.codigosLista[this.highlightedCodigoIndex]);
+      },
+      limparCodigo() {
+        this.formData.CODOBJETO = '';
+        this.codigoSearch = '';
+        this.formData.DEPATRIMONIO = '';
+        this.codigosLista = [];
+        this.highlightedCodigoIndex = -1;
+        this.showCodigoDropdown = true;
+      },
+      navegarCodigos(delta) {
+        if (!this.showCodigoDropdown || this.codigosLista.length === 0) return;
+        const max = this.codigosLista.length - 1;
+        if (this.highlightedCodigoIndex === -1) this.highlightedCodigoIndex = 0;
+        else this.highlightedCodigoIndex = Math.min(max, Math.max(0, this.highlightedCodigoIndex + delta));
+        this.$nextTick(() => {
+          const list = this.$root.querySelector('[x-show="showCodigoDropdown"]');
+          if (!list) return;
+          const items = list.querySelectorAll('[data-cod-item]');
+          const el = items[this.highlightedCodigoIndex];
+          if (el && el.scrollIntoView) {
+            const parentRect = list.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            if (elRect.top < parentRect.top || elRect.bottom > parentRect.bottom) {
+              el.scrollIntoView({
+                block: 'nearest'
+              });
+            }
+          }
+        });
+      },
+      // === Autocomplete Projeto ===
+      async buscarProjetos() {
+        const termo = this.projetoSearch.trim();
+        if (termo === '') {
+          this.projetosLista = [];
+          this.highlightedProjetoIndex = -1;
+          return;
+        }
+        this.loadingProjetos = true;
+        try {
+          const resp = await fetch(`/api/projetos/pesquisar?q=${encodeURIComponent(termo)}`);
+          if (resp.ok) {
+            this.projetosLista = await resp.json();
+            this.highlightedProjetoIndex = this.projetosLista.length > 0 ? 0 : -1;
+          }
+        } catch (e) {
+          console.error('Falha busca projetos', e);
+        } finally {
+          this.loadingProjetos = false;
+        }
+      },
+      abrirDropdownProjetos(force = false) {
+        this.showProjetoDropdown = true;
+        if (this.projetoSearch.trim() !== '') this.buscarProjetos();
+      },
+      async selecionarProjeto(p) {
+        this.formData.CDPROJETO = p.CDPROJETO;
+        this.projetoSearch = p.CDPROJETO;
+        this.nomeProjeto = p.NOMEPROJETO;
+        this.showProjetoDropdown = false;
+        await this.buscarProjetoELocais();
+        this.localSearch = '';
+        this.locaisFiltrados = this.locais.slice(0, 50);
+      },
+      selecionarProjetoEnter() {
+        if (!this.showProjetoDropdown) return;
+        if (this.highlightedProjetoIndex < 0 || this.highlightedProjetoIndex >= this.projetosLista.length) return;
+        this.selecionarProjeto(this.projetosLista[this.highlightedProjetoIndex]);
+      },
+      limparProjeto() {
+        this.formData.CDPROJETO = '';
+        this.projetoSearch = '';
+        this.nomeProjeto = '';
+        this.locais = [];
+        this.locaisFiltrados = [];
+        this.highlightedProjetoIndex = -1;
+        this.showProjetoDropdown = true;
+      },
+      navegarProjetos(delta) {
+        if (!this.showProjetoDropdown || this.projetosLista.length === 0) return;
+        const max = this.projetosLista.length - 1;
+        if (this.highlightedProjetoIndex === -1) this.highlightedProjetoIndex = 0;
+        else this.highlightedProjetoIndex = Math.min(max, Math.max(0, this.highlightedProjetoIndex + delta));
+        this.$nextTick(() => {
+          const list = this.$root.querySelector('[x-show="showProjetoDropdown"]');
+          if (!list) return;
+          const items = list.querySelectorAll('[data-proj-item]');
+          const el = items[this.highlightedProjetoIndex];
+          if (el && el.scrollIntoView) {
+            const pr = list.getBoundingClientRect();
+            const er = el.getBoundingClientRect();
+            if (er.top < pr.top || er.bottom > pr.bottom) {
+              el.scrollIntoView({
+                block: 'nearest'
+              });
+            }
+          }
+        });
+      },
+      // === Autocomplete Local ===
+      abrirDropdownLocais(force = false) {
+        if (this.locais.length === 0) return;
+        this.showLocalDropdown = true;
+        this.filtrarLocais();
+      },
+      filtrarLocais() {
+        const termo = this.localSearch.trim().toLowerCase();
+        if (termo === '') {
+          this.locaisFiltrados = this.locais.slice(0, 100);
+        } else {
+          this.locaisFiltrados = this.locais.filter(l => l.LOCAL.toLowerCase().includes(termo)).slice(0, 100);
+        }
+        this.highlightedLocalIndex = this.locaisFiltrados.length > 0 ? 0 : -1;
+      },
+      selecionarLocal(l) {
+        this.formData.CDLOCAL = l.id;
+        this.localSearch = l.LOCAL;
+        this.showLocalDropdown = false;
+      },
+      selecionarLocalEnter() {
+        if (!this.showLocalDropdown) return;
+        if (this.highlightedLocalIndex < 0 || this.highlightedLocalIndex >= this.locaisFiltrados.length) return;
+        this.selecionarLocal(this.locaisFiltrados[this.highlightedLocalIndex]);
+      },
+      limparLocal() {
+        this.formData.CDLOCAL = '';
+        this.localSearch = '';
+        this.locaisFiltrados = this.locais.slice(0, 100);
+        this.highlightedLocalIndex = -1;
+        this.showLocalDropdown = true;
+      },
+      navegarLocais(delta) {
+        if (!this.showLocalDropdown || this.locaisFiltrados.length === 0) return;
+        const max = this.locaisFiltrados.length - 1;
+        if (this.highlightedLocalIndex === -1) this.highlightedLocalIndex = 0;
+        else this.highlightedLocalIndex = Math.min(max, Math.max(0, this.highlightedLocalIndex + delta));
+        this.$nextTick(() => {
+          const list = this.$root.querySelector('[x-show="showLocalDropdown"]');
+          if (!list) return;
+          const items = list.querySelectorAll('[data-local-item]');
+          const el = items[this.highlightedLocalIndex];
+          if (el && el.scrollIntoView) {
+            const pr = list.getBoundingClientRect();
+            const er = el.getBoundingClientRect();
+            if (er.top < pr.top || er.bottom > pr.bottom) {
+              el.scrollIntoView({
+                block: 'nearest'
+              });
+            }
+          }
+        });
+      },
+      abrirDropdownPatrimonios(force = false) {
+        this.showPatDropdown = true;
+        if (this.patSearch.trim() !== '') {
+          this.buscarPatrimonios();
+        }
+      },
+      selecionarPatrimonio(p) {
+        this.formData.NUPATRIMONIO = p.NUPATRIMONIO;
+        this.patSearch = p.NUPATRIMONIO;
+        this.showPatDropdown = false;
+        this.buscarPatrimonio();
+      },
+      selecionarPatrimonioEnter() {
+        if (!this.showPatDropdown) return;
+        if (this.highlightedPatIndex < 0 || this.highlightedPatIndex >= this.patrimoniosLista.length) return;
+        this.selecionarPatrimonio(this.patrimoniosLista[this.highlightedPatIndex]);
+      },
+      limparPatrimonio() {
+        this.formData.NUPATRIMONIO = '';
+        this.patSearch = '';
+        this.patrimoniosLista = [];
+        this.highlightedPatIndex = -1;
+        this.showPatDropdown = true;
+      },
+      navegarPatrimonios(delta) {
+        if (!this.showPatDropdown || this.patrimoniosLista.length === 0) return;
+        const max = this.patrimoniosLista.length - 1;
+        if (this.highlightedPatIndex === -1) {
+          this.highlightedPatIndex = 0;
+        } else {
+          this.highlightedPatIndex = Math.min(max, Math.max(0, this.highlightedPatIndex + delta));
+        }
+        this.$nextTick(() => {
+          const list = this.$root.querySelector('[x-show="showPatDropdown"]');
+          if (!list) return;
+          const items = list.querySelectorAll('[data-pat-item]');
+          const el = items[this.highlightedPatIndex];
+          if (el && typeof el.scrollIntoView === 'function') {
+            const parentRect = list.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            if (elRect.top < parentRect.top || elRect.bottom > parentRect.bottom) {
+              el.scrollIntoView({
+                block: 'nearest'
+              });
+            }
+          }
+        });
+      },
       abrirNovoLocal() {
         if (!this.formData.CDPROJETO) {
           alert('Informe um projeto antes de cadastrar o local.');
@@ -360,6 +880,22 @@
           const targetCdLocal = this.formData.CDLOCAL;
           await this.buscarProjetoELocais();
           if (targetCdLocal) this.formData.CDLOCAL = targetCdLocal;
+        }
+        // Pré-carregar nome do usuário se edição
+        if (this.formData.CDMATRFUNCIONARIO) {
+          try {
+            const r = await fetch(`/api/usuarios/pesquisar?q=${this.formData.CDMATRFUNCIONARIO}`);
+            if (r.ok) {
+              const lista = await r.json();
+              const u = lista.find(x => String(x.CDMATRFUNCIONARIO) === String(this.formData.CDMATRFUNCIONARIO));
+              if (u) {
+                this.userSelectedName = `${u.CDMATRFUNCIONARIO} - ${u.NOMEUSER}`;
+                this.userSearch = this.userSelectedName;
+              }
+            }
+          } catch (e) {
+            /* silencioso */
+          }
         }
         // Se situação for BAIXA e não houver data, sugere hoje (apenas UX; ainda valida no backend)
         this.$watch('formData.SITUACAO', (val) => {

@@ -50,7 +50,14 @@ class Patrimonio extends Model
 
     public function local()
     {
-    return $this->belongsTo(Tabfant::class, 'CDLOCAL', 'id');
+        return $this->belongsTo(Tabfant::class, 'CDLOCAL', 'id');
     }
 
+    /**
+     * Usuário criador (campo USUARIO guarda NMLOGIN do usuário).
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'USUARIO', 'NMLOGIN');
+    }
 }

@@ -254,7 +254,8 @@
             'COR' => $patrimonios->every(fn($p)=> blank($p->COR)),
             'DTAQUISICAO' => $patrimonios->every(fn($p)=> blank($p->DTAQUISICAO)),
             'DTOPERACAO' => $patrimonios->every(fn($p)=> blank($p->DTOPERACAO)),
-            'USUARIO' => $patrimonios->every(fn($p)=> blank($p->usuario?->NOMEUSER)),
+            // Coluna USUARIO agora reflete quem CADASTROU (campo USUARIO texto) e não o responsável.
+            'USUARIO' => $patrimonios->every(fn($p)=> blank($p->USUARIO)),
             ];
             $shrink = fn($key) => $colVazia[$key] ? 'w-px px-0 text-[0] overflow-hidden' : 'px-4';
             @endphp
@@ -274,7 +275,7 @@
                       <th class="px-4 py-3">Situação</th>
                       <th class="px-4 py-3">Dt. Aquisição</th>
                       <th class="px-4 py-3">Dt. Cadastro</th>
-                      <th class="px-4 py-3">Matrícula</th>
+                      <th class="px-4 py-3">Matrícula (Responsável)</th>
                       <th class="px-4 py-3">Cadastrado Por</th>
                       @if(Auth::user()->PERFIL === 'ADM')
                       <th class="px-4 py-3">Ações</th>
@@ -292,8 +293,17 @@
                       <td class="td whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO }}</td>
                       <td class="td">{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : '' }}</td>
                       <td class="td">{{ $patrimonio->DTOPERACAO ? \Carbon\Carbon::parse($patrimonio->DTOPERACAO)->format('d/m/Y') : '' }}</td>
-                      <td class="td">{{ $patrimonio->CDMATRFUNCIONARIO ?? '' }}</td>
-                      <td class="td">{{ $patrimonio->usuario?->NOMEUSER ?? 'SISTEMA' }}</td>
+                      <td class="td">
+                        @if($patrimonio->CDMATRFUNCIONARIO)
+                        <div class="leading-tight">
+                          <span class="font-mono text-sm">{{ $patrimonio->CDMATRFUNCIONARIO }}</span>
+                          <div class="text-[11px] text-gray-500 dark:text-gray-400 truncate max-w-[140px]">{{ $patrimonio->usuario?->NOMEUSER }}</div>
+                        </div>
+                        @else
+                        <span class="text-gray-400 text-xs">—</span>
+                        @endif
+                      </td>
+                      <td class="td">{{ $patrimonio->creator?->NOMEUSER ?? ($patrimonio->USUARIO ?? 'SISTEMA') }}</td>
                       @if(Auth::user()->PERFIL === 'ADM')
                       <td class="td" @click.stop>
                         <div class="flex items-center gap-2">
@@ -318,7 +328,7 @@
                     </tr>
                     @empty
                     <tr>
-                      <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 11 : 10 }}" class="td text-center">Nenhum patrimônio encontrado.</td>
+                      <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 10 : 9 }}" class="td text-center">Nenhum patrimônio encontrado.</td>
                     </tr>
                     @endforelse
                   </tbody>
@@ -367,7 +377,7 @@
                       <th class="px-4 py-3">Situação</th>
                       <th class="{{ $shrink('DTAQUISICAO') }} py-3">Dt. Aquisição</th>
                       <th class="{{ $shrink('DTOPERACAO') }} py-3">Dt. Cadastro</th>
-                      <th class="px-4 py-3">Matrícula</th>
+                      <th class="px-4 py-3">Matrícula (Responsável)</th>
                       <th class="{{ $shrink('USUARIO') }} py-3">Cadastrado Por</th>
                       @if(Auth::user()->PERFIL === 'ADM')
                       <th class="px-4 py-3">Ações</th>
@@ -375,7 +385,7 @@
                     </tr>
                   </thead>
                   @forelse ($patrimonios as $patrimonio)
-                  <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm cursor-pointer"
+                  <tr class="tr-hover text-sm cursor-pointer"
                     @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
 
                     {{-- A ordem agora está 100% correta para corresponder ao seu thead --}}
@@ -393,8 +403,17 @@
                     <td class="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO }}</td>
                     <td class="{{ $shrink('DTAQUISICAO') }} py-2">{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : ($colVazia['DTAQUISICAO'] ? '' : '') }}</td>
                     <td class="{{ $shrink('DTOPERACAO') }} py-2">{{ $patrimonio->DTOPERACAO ? \Carbon\Carbon::parse($patrimonio->DTOPERACAO)->format('d/m/Y') : ($colVazia['DTOPERACAO'] ? '' : '') }}</td>
-                    <td class="px-4 py-2">{{ $patrimonio->CDMATRFUNCIONARIO ?? '' }}</td>
-                    <td class="{{ $shrink('USUARIO') }} py-2">{{ $patrimonio->usuario?->NOMEUSER ?? 'SISTEMA' }}</td>
+                    <td class="px-4 py-2">
+                      @if($patrimonio->CDMATRFUNCIONARIO)
+                      <div class="leading-tight">
+                        <span class="font-mono text-xs">{{ $patrimonio->CDMATRFUNCIONARIO }}</span>
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[110px]">{{ $patrimonio->usuario?->NOMEUSER }}</div>
+                      </div>
+                      @else
+                      <span class="text-gray-400 text-[10px]">—</span>
+                      @endif
+                    </td>
+                    <td class="px-4 py-2">{{ $patrimonio->creator?->NOMEUSER ?? ($patrimonio->USUARIO ?? 'SISTEMA') }}</td>
 
                     @if(Auth::user()->PERFIL === 'ADM')
                     <td class="px-2 py-2">
@@ -421,7 +440,7 @@
                   @empty
                   <tr>
                     {{-- Corrigindo o colspan para o número correto de colunas --}}
-                    <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 17 : 16 }}"
+                    <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 16 : 15 }}"
                       class="px-6 py-4 text-center">Nenhum patrimônio encontrado para os
                       filtros atuais.</td>
                   </tr>
