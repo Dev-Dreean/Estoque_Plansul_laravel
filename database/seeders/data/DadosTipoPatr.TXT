@@ -1,0 +1,149 @@
+NUSEQTIPOPATR    DETIPOPATR                                                                                                                                                 
+=============    =======================================================================================================================================================    
+1                APARADOR DE GRAMA                                                                                                                                          
+2                ASPIRADOR DE PÓ                                                                                                                                            
+3                BALDE ESPREMEDOR                                                                                                                                           
+4                CARRINHO DE MÃO                                                                                                                                            
+5                CARRO FUNCIONAL                                                                                                                                            
+6                CONTENTOR DE LIXO                                                                                                                                          
+7                CORTADOR DE GRAMA                                                                                                                                          
+8                ENCERADEIRA                                                                                                                                                
+9                ESCADA                                                                                                                                                     
+10               FURADEIRA                                                                                                                                                  
+11               LAVADORA DE ALTA PRESSÃO                                                                                                                                   
+13               LAVADORA A VAPOR                                                                                                                                           
+14               PARAFUSADEIRA                                                                                                                                              
+15               MICROONDAS                                                                                                                                                 
+17               ROÇADEIRA                                                                                                                                                  
+18               SOPRADOR DE FOLHAS                                                                                                                                         
+19               TESOURÃO PODA                                                                                                                                              
+20               CADEIRA                                                                                                                                                    
+22               AR CONDICIONADO                                                                                                                                            
+23               NOTEBOOK                                                                                                                                                   
+24               ARQUIVO                                                                                                                                                    
+25               SERRA                                                                                                                                                      
+27               COMPUTADOR                                                                                                                                                 
+28               SUPORTE                                                                                                                                                    
+29               CLIMATIZADOR                                                                                                                                               
+30               BALANÇA                                                                                                                                                    
+31               GELADEIRA                                                                                                                                                  
+33               TELEVISÃO                                                                                                                                                  
+34               MONITOR                                                                                                                                                    
+35               GAVETEIRO                                                                                                                                                  
+36               RELOGIO PONTO                                                                                                                                              
+37               ROTEADOR                                                                                                                                                   
+38               MARTELETE                                                                                                                                                  
+39               ESTANTE                                                                                                                                                    
+40               MOTOPODADOR                                                                                                                                                
+41               MAQUINA DE LAVAR                                                                                                                                           
+42               MÁQUINA                                                                                                                                                    
+43               LIXADEIRA                                                                                                                                                  
+44               PARAFUSADEIRA/FURADEIRA                                                                                                                                    
+45               TRANSFORMADOR                                                                                                                                              
+46               PRESSURIZADOR                                                                                                                                              
+47               CARRO COLETOR DE LIXO                                                                                                                                      
+48               IMPRESSORA                                                                                                                                                 
+49               PURIFICADOR DE ÁGUA                                                                                                                                        
+50               SCANNER                                                                                                                                                    
+51               FRIGOBAR                                                                                                                                                   
+52               LAVADORA E SECADORA                                                                                                                                        
+53               MESA                                                                                                                                                       
+54               SERVIDOR                                                                                                                                                   
+55               SCANNER                                                                                                                                                    
+56               QUADRO                                                                                                                                                     
+57               BEBEDOURO                                                                                                                                                  
+58               SMARTPHONE                                                                                                                                                 
+59               ARMARIO                                                                                                                                                    
+60               BANDEIJA                                                                                                                                                   
+62               SANDUICHEIRA                                                                                                                                               
+63               CAFETEIRA                                                                                                                                                  
+64               TELEFONE                                                                                                                                                   
+65               CARRO CORTADOR DE GRAMA                                                                                                                                    
+66               COFRE                                                                                                                                                      
+67               BANQUETA                                                                                                                                                   
+68               LIQUIDIFICADOR                                                                                                                                             
+69               ESTUFA DE PAPEL                                                                                                                                            
+70               LONGARINA                                                                                                                                                  
+71               VENTILADOR                                                                                                                                                 
+72               PRATELEIRA                                                                                                                                                 
+73               PAINEL                                                                                                                                                     
+74               TABUA DE PASSAR                                                                                                                                            
+75               CORTADOR DE PAREDE                                                                                                                                         
+76               NO BREAK                                                                                                                                                   
+77               SWITCH                                                                                                                                                     
+78               FIREWALL                                                                                                                                                   
+79               RACK                                                                                                                                                       
+80               GRAVADOR DE VIDEO DIGITAL                                                                                                                                  
+81               PROJETOR                                                                                                                                                   
+82               POWER BALUN                                                                                                                                                
+83               ACESS POINT                                                                                                                                                
+84               CONTROLE DE ACESSO                                                                                                                                         
+85               CAIXA DE SOM                                                                                                                                               
+86               CORTINA DE AR                                                                                                                                              
+87               ETIQUETADORA                                                                                                                                               
+88               VIDEOGAME                                                                                                                                                  
+89               APOIO PARA PÉS                                                                                                                                             
+90               ESTABILIZADOR                                                                                                                                              
+91               MACA                                                                                                                                                       
+92               TRITURADOR DE PAPEL                                                                                                                                        
+93               OXIMETRO                                                                                                                                                   
+94               MONITOR DE PRESSÃO                                                                                                                                         
+95               LEITOR DE CÓDIGO DE BARRAS                                                                                                                                 
+96               PULVERIZADOR                                                                                                                                               
+97               CONTENTOR DE LIXO                                                                                                                                          
+98               CESTO                                                                                                                                                      
+99               IMPRESSORA DE CARTÃO                                                                                                                                       
+100              LAVADORA E SECADORA DE PISO TRIPULADA                                                                                                                      
+101              GARRAFA                                                                                                                                                    
+102              GARRAFA TERMICA                                                                                                                                            
+103              CAIXA DE FERRAMENTAS                                                                                                                                       
+104              EXTRATORA                                                                                                                                                  
+105              BALCÃO                                                                                                                                                     
+106              CABO                                                                                                                                                       
+107              SECADOR DE MÃOS                                                                                                                                            
+108              LAVADORA AUTOMÁTICA                                                                                                                                        
+109              BANCO                                                                                                                                                      
+110              REGADOR                                                                                                                                                    
+111              WEBCAM                                                                                                                                                     
+112              WALKIE TALKIE                                                                                                                                              
+113              APARADOR DE CERCAS                                                                                                                                         
+114              PODADOR                                                                                                                                                    
+115              PORTA PAPEL                                                                                                                                                
+116              PORTA SABONETE                                                                                                                                             
+117              MICROFONE                                                                                                                                                  
+118              TELA MOSQUETEIRO (NÃO UTILIZAR)                                                                                                                            
+119              RASTELO (NÃO UTILIZAR)                                                                                                                                     
+120              MANGUEIRA (NÃO UTILIZAR)                                                                                                                                   
+121              MISTURADOR ELÉTRICO                                                                                                                                        
+122              ESMERILHADEIRA                                                                                                                                             
+123              CARRINHO DE CARGA                                                                                                                                          
+124              HD EXTERNO                                                                                                                                                 
+125              DOCK STATION                                                                                                                                               
+126              RELOGIO DIGITAL                                                                                                                                            
+127              FRAGMENTADORA                                                                                                                                              
+128              PLACA DE PATRIMÔNIO                                                                                                                                        
+129              BALDE                                                                                                                                                      
+130              MAQUINA DE ASSENTAR PISO                                                                                                                                   
+131              PLACA SINALIZADORA                                                                                                                                         
+132              MANGUEIRA                                                                                                                                                  
+133              ENXADA                                                                                                                                                     
+134              PÁ DE BICO                                                                                                                                                 
+135              ANCINHO                                                                                                                                                    
+136              REGADOR                                                                                                                                                    
+137              KIT LIMPA VIDROS                                                                                                                                           
+138              DILUIDOR PARA PRODUTO DE LIMPEZA                                                                                                                           
+139              TESTADOR                                                                                                                                                   
+140              KIT LOCALIZADOR                                                                                                                                            
+141              CHAVE                                                                                                                                                      
+142              ALICATE                                                                                                                                                    
+143              RADIO                                                                                                                                                      
+144              ESMERILHADEIRA                                                                                                                                             
+145              BETONEIRA                                                                                                                                                  
+146              MAQUINA DE SOLDA                                                                                                                                           
+147              RADIO                                                                                                                                                      
+148              MAÇARICO                                                                                                                                                   
+149              BOMBA                                                                                                                                                      
+150              VEICULO                                                                                                                                                    
+151              AUTO TRANSFORMADOR                                                                                                                                         
+152              MODEM                                                                                                                                                      
+153              CAPACIMETRO                                                                                                                                                

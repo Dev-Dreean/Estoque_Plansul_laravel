@@ -12,10 +12,13 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            // PRIMEIRO, popula a tabela de projetos 'tabfant'
-            TabfantSeeder::class,
+            // Adicione o novo seeder aqui, preferencialmente no início
+            FuncionarioSeeder::class,
 
-            // DEPOIS, popula a tabela de locais e cria a relação
+            // Seeders que já tínhamos
+            TipoPatrSeeder::class,
+            ObjetoPatrSeeder::class,
+            TabfantSeeder::class,
             LocaisProjetoSeeder::class,
         ]);
     }

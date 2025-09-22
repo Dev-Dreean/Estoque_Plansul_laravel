@@ -1,11 +1,11 @@
 @props(['patrimonio' => null])
-<div x-data='patrimonioForm({ patrimonio: @json($patrimonio), old: @json(old()) })' @keydown.enter.prevent="focusNext($event.target)" class="space-y-6">
+<div x-data='patrimonioForm({ patrimonio: @json($patrimonio), old: @json(old()) })' @keydown.enter.prevent="focusNext($event.target)" class="space-y-4 md:space-y-5 text-sm">
 
   {{-- GRUPO 1: N° Patrimônio, N° OC, Campo Vazio --}}
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
     <div>
       <x-input-label for="NUPATRIMONIO" value="Nº Patrimônio *" />
-      <div class="relative mt-1" @click.away="showPatDropdown=false">
+      <div class="relative mt-0.5" @click.away="showPatDropdown=false">
         <input id="NUPATRIMONIO"
           x-model="patSearch"
           @focus="abrirDropdownPatrimonios()"
@@ -49,19 +49,19 @@
     </div>
     <div>
       <x-input-label for="NUMOF" value="Nº OC" />
-      <x-text-input data-index="2" x-model="formData.NUMOF" id="NUMOF" name="NUMOF" type="number" class="mt-1 block w-full" />
+      <x-text-input data-index="2" x-model="formData.NUMOF" id="NUMOF" name="NUMOF" type="number" class="mt-0.5 block w-full" />
     </div>
     <div>
       <x-input-label for="campo_extra" value="-" />
-      <x-text-input data-index="3" id="campo_extra" name="campo_extra" type="text" class="mt-1 block w-full" disabled />
+      <x-text-input data-index="3" id="campo_extra" name="campo_extra" type="text" class="mt-0.5 block w-full" disabled />
     </div>
   </div>
 
   {{-- GRUPO 2: Código e Descrição --}}
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-5">
     <div class="md:col-span-1">
       <x-input-label for="CODOBJETO" value="Código *" />
-      <div class="relative mt-1" @click.away="showCodigoDropdown=false">
+      <div class="relative mt-0.5" @click.away="showCodigoDropdown=false">
         <input id="CODOBJETO"
           x-model="codigoSearch"
           @focus="abrirDropdownCodigos()"
@@ -103,22 +103,22 @@
     </div>
     <div class="md:col-span-3">
       <x-input-label for="DEPATRIMONIO" value="Descrição do Código" />
-      <x-text-input data-index="5" x-model="formData.DEPATRIMONIO" id="DEPATRIMONIO" name="DEPATRIMONIO" type="text" class="mt-1 block w-full bg-gray-100 dark:bg-gray-900" readonly />
+      <x-text-input data-index="5" x-model="formData.DEPATRIMONIO" id="DEPATRIMONIO" name="DEPATRIMONIO" type="text" class="mt-0.5 block w-full bg-gray-100 dark:bg-gray-900" readonly />
     </div>
   </div>
 
   {{-- GRUPO 3: Observação --}}
   <div>
     <x-input-label for="DEHISTORICO" value="Observação" />
-    <textarea data-index="6" x-model="formData.DEHISTORICO" id="DEHISTORICO" name="DEHISTORICO" rows="2" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm"></textarea>
+    <textarea data-index="6" x-model="formData.DEHISTORICO" id="DEHISTORICO" name="DEHISTORICO" rows="2" class="block mt-0.5 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm"></textarea>
   </div>
 
   {{-- GRUPO 4: Projeto, Local e Cód. Termo --}}
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
     <div class="md:col-span-2">
       <x-input-label for="CDPROJETO" value="Projeto" />
       <div class="flex items-center space-x-2 relative" @click.away="showProjetoDropdown=false">
-        <div class="relative w-1/3 mt-1">
+        <div class="relative w-1/3 mt-0.5">
           <input id="CDPROJETO" name="CDPROJETO" x-model="projetoSearch"
             @focus="abrirDropdownProjetos()"
             @input.debounce.300ms="buscarProjetos"
@@ -154,17 +154,17 @@
             </template>
           </div>
         </div>
-        <x-text-input x-model="nomeProjeto" type="text" class="mt-1 block w-2/3 bg-gray-100 dark:bg-gray-900" placeholder="Nome do Projeto" readonly />
+        <x-text-input x-model="nomeProjeto" type="text" class="mt-0.5 block w-2/3 bg-gray-100 dark:bg-gray-900" placeholder="Nome do Projeto" readonly />
       </div>
     </div>
     <div>
       <x-input-label for="NMPLANTA" value="Cód Termo" />
-      <x-text-input data-index="8" x-model="formData.NMPLANTA" id="NMPLANTA" name="NMPLANTA" type="number" class="mt-1 block w-full" />
+      <x-text-input data-index="8" x-model="formData.NMPLANTA" id="NMPLANTA" name="NMPLANTA" type="number" class="mt-0.5 block w-full" />
     </div>
     <div class="md:col-span-3">
       <x-input-label for="CDLOCAL" value="Local" />
       <div class="flex gap-2 items-start">
-        <div class="flex-1 relative mt-1" @click.away="showLocalDropdown=false">
+        <div class="flex-1 relative mt-0.5" @click.away="showLocalDropdown=false">
           <input id="CDLOCAL" name="CDLOCAL" x-model="localSearch"
             @focus="abrirDropdownLocais()"
             @input.debounce.300ms="filtrarLocais"
@@ -197,7 +197,7 @@
             </template>
           </div>
         </div>
-        <button type="button" @click="abrirNovoLocal()" class="mt-1 inline-flex items-center justify-center w-10 h-10 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" title="Cadastrar novo local" aria-label="Cadastrar novo local">
+        <button type="button" @click="abrirNovoLocal()" class="mt-0.5 inline-flex items-center justify-center w-9 h-9 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" title="Cadastrar novo local" aria-label="Cadastrar novo local">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
           </svg>
@@ -205,17 +205,17 @@
       </div>
       <!-- Mini modal / popover cadastro local -->
       <div x-show="novoLocalOpen" x-transition @keydown.escape.window="fecharNovoLocal" class="relative">
-        <div class="absolute z-50 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-xl p-4">
-          <div class="flex justify-between items-center mb-2">
+        <div class="absolute z-50 mt-2 w-72 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-xl p-3">
+          <div class="flex justify-between items-center mb-1">
             <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Novo Local</h4>
             <button type="button" class="text-gray-400 hover:text-gray-600" @click="fecharNovoLocal">✕</button>
           </div>
           <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Nome do Local *</label>
-          <input type="text" x-model="novoLocalNome" @keydown.enter.prevent="salvarNovoLocal" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md text-sm" placeholder="Ex: Almoxarifado" />
+          <input type="text" x-model="novoLocalNome" @keydown.enter.prevent="salvarNovoLocal" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md text-sm mt-0.5" placeholder="Ex: Almoxarifado" />
           <p class="text-xs text-red-500 mt-1" x-text="novoLocalErro"></p>
-          <div class="mt-3 flex justify-end gap-2">
+          <div class="mt-2 flex justify-end gap-2">
             <button type="button" @click="fecharNovoLocal" class="px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancelar</button>
-            <button type="button" @click="salvarNovoLocal" class="px-3 py-1 text-xs rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50" :disabled="salvandoNovoLocal">
+            <button type="button" @click="salvarNovoLocal" class="px-2.5 py-1 text-xs rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50" :disabled="salvandoNovoLocal">
               <span x-show="!salvandoNovoLocal">Salvar</span>
               <span x-show="salvandoNovoLocal">Salvando...</span>
             </button>
@@ -226,18 +226,18 @@
   </div>
 
   {{-- GRUPO 5: Marca, Modelo, Situação, Matrícula / Usuário --}}
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-5 pt-5 border-t border-gray-200 dark:border-gray-700">
     <div>
       <x-input-label for="MARCA" value="Marca" />
-      <x-text-input data-index="11" x-model="formData.MARCA" id="MARCA" name="MARCA" type="text" class="mt-1 block w-full" />
+      <x-text-input data-index="11" x-model="formData.MARCA" id="MARCA" name="MARCA" type="text" class="mt-0.5 block w-full" />
     </div>
     <div>
       <x-input-label for="MODELO" value="Modelo" />
-      <x-text-input data-index="12" x-model="formData.MODELO" id="MODELO" name="MODELO" type="text" class="mt-1 block w-full" />
+      <x-text-input data-index="12" x-model="formData.MODELO" id="MODELO" name="MODELO" type="text" class="mt-0.5 block w-full" />
     </div>
     <div>
       <x-input-label for="SITUACAO" value="Situação *" />
-      <select data-index="13" x-model="formData.SITUACAO" id="SITUACAO" name="SITUACAO" class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" required>
+      <select data-index="13" x-model="formData.SITUACAO" id="SITUACAO" name="SITUACAO" class="block w-full mt-0.5 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" required>
         <option value="EM USO">EM USO</option>
         <option value="CONSERTO">CONSERTO</option>
         <option value="BAIXA">BAIXA</option>
@@ -247,7 +247,7 @@
     </div>
     <div class="relative" @click.away="showUserDropdown=false">
       <x-input-label for="matricula_busca" value="Matrícula Responsável *" />
-      <div class="relative mt-1">
+      <div class="relative mt-0.5">
         <input id="matricula_busca"
           x-model="userSearch"
           @focus="abrirDropdownUsuarios()"
@@ -272,7 +272,7 @@
           </div>
         </div>
       </div>
-      <div x-show="showUserDropdown" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm">
+      <div x-show="showUserDropdown" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto text-sm">
         <template x-if="loadingUsers">
           <div class="p-2 text-gray-500">Buscando...</div>
         </template>
@@ -294,14 +294,14 @@
   </div>
 
   {{-- GRUPO 6: Datas --}}
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
     <div>
       <x-input-label for="DTAQUISICAO" value="Data de Aquisição" />
-      <x-text-input data-index="14" x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" class="mt-1 block w-full" />
+      <x-text-input data-index="14" x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" class="mt-0.5 block w-full" />
     </div>
     <div>
       <x-input-label for="DTBAIXA" value="Data de Baixa" />
-      <x-text-input data-index="15" x-model="formData.DTBAIXA" id="DTBAIXA" name="DTBAIXA" type="date" class="mt-1 block w-full" />
+      <x-text-input data-index="15" x-model="formData.DTBAIXA" id="DTBAIXA" name="DTBAIXA" type="date" class="mt-0.5 block w-full" />
       <x-input-error class="mt-2" :messages="$errors->get('DTBAIXA')" />
     </div>
   </div>
@@ -488,7 +488,7 @@
           console.error('Erro ao buscar locais:', error);
         }
       },
-      async buscarUsuarios() {
+      async buscarUsuarios() { // agora busca funcionarios
         const termo = this.userSearch.trim();
         if (termo === '') {
           this.usuarios = [];
@@ -497,13 +497,19 @@
         }
         this.loadingUsers = true;
         try {
-          const resp = await fetch(`/api/usuarios/pesquisar?q=${encodeURIComponent(termo)}`);
+          const resp = await fetch(`/api/funcionarios/pesquisar?q=${encodeURIComponent(termo)}`);
           if (resp.ok) {
-            this.usuarios = await resp.json();
+            // Normalizamos campos para manter nomenclatura existente (NOMEUSER -> NMFUNCIONARIO)
+            const data = await resp.json();
+            this.usuarios = data.map(f => ({
+              CDMATRFUNCIONARIO: f.CDMATRFUNCIONARIO,
+              NOMEUSER: f.NMFUNCIONARIO,
+              _origem: 'funcionario'
+            }));
             this.highlightedUserIndex = this.usuarios.length > 0 ? 0 : -1;
           }
         } catch (e) {
-          console.error('Falha busca usuários', e);
+          console.error('Falha busca funcionários', e);
         } finally {
           this.loadingUsers = false;
         }
@@ -881,15 +887,15 @@
           await this.buscarProjetoELocais();
           if (targetCdLocal) this.formData.CDLOCAL = targetCdLocal;
         }
-        // Pré-carregar nome do usuário se edição
+        // Pré-carregar nome do responsável (funcionário) se edição
         if (this.formData.CDMATRFUNCIONARIO) {
           try {
-            const r = await fetch(`/api/usuarios/pesquisar?q=${this.formData.CDMATRFUNCIONARIO}`);
+            const r = await fetch(`/api/funcionarios/pesquisar?q=${this.formData.CDMATRFUNCIONARIO}`);
             if (r.ok) {
               const lista = await r.json();
-              const u = lista.find(x => String(x.CDMATRFUNCIONARIO) === String(this.formData.CDMATRFUNCIONARIO));
-              if (u) {
-                this.userSelectedName = `${u.CDMATRFUNCIONARIO} - ${u.NOMEUSER}`;
+              const f = lista.find(x => String(x.CDMATRFUNCIONARIO) === String(this.formData.CDMATRFUNCIONARIO));
+              if (f) {
+                this.userSelectedName = `${f.CDMATRFUNCIONARIO} - ${f.NMFUNCIONARIO}`;
                 this.userSearch = this.userSelectedName;
               }
             }

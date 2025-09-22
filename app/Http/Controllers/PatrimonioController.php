@@ -248,28 +248,7 @@ class PatrimonioController extends Controller
         return response()->json($patrimonios);
     }
 
-    /**
-     * Autocomplete de usuários para seleção por nome ou matrícula.
-     * Retorna até 10 resultados contendo matrícula e nome.
-     */
-    public function pesquisarUsuarios(Request $request): JsonResponse
-    {
-        $termo = trim((string) $request->input('q', ''));
-        if ($termo === '') {
-            return response()->json([]);
-        }
-        $usuarios = User::query()
-            ->when(is_numeric($termo), function ($q) use ($termo) {
-                $q->where('CDMATRFUNCIONARIO', 'like', "%{$termo}%");
-            }, function ($q) use ($termo) {
-                $q->where('NOMEUSER', 'like', "%{$termo}%");
-            })
-            ->orderBy('NOMEUSER')
-            ->select(['CDMATRFUNCIONARIO', 'NOMEUSER'])
-            ->limit(10)
-            ->get();
-        return response()->json($usuarios);
-    }
+    // Método pesquisarUsuarios removido após migração para FuncionarioController::pesquisar
 
     public function buscarProjeto($cdprojeto): JsonResponse
     {
@@ -619,7 +598,7 @@ class PatrimonioController extends Controller
     private function getPatrimoniosQuery(Request $request)
     {
         $user = Auth::user();
-        $query = Patrimonio::with(['usuario', 'local']);
+        $query = Patrimonio::with(['funcionario', 'local', 'creator']);
 
         if ($user->PERFIL !== 'ADM') {
             $query->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO);
@@ -673,7 +652,7 @@ class PatrimonioController extends Controller
             $perPage = 30; // Fixo para modal
 
             // Query para patrimônios disponíveis (sem termo atribuído ou conforme regra de negócio)
-            $query = Patrimonio::with(['usuario'])
+            $query = Patrimonio::with(['funcionario'])
                 ->whereNull('NMPLANTA') // Sem código de termo
                 ->orWhere('NMPLANTA', '') // Ou código vazio
                 ->orderBy('NUPATRIMONIO', 'asc');
@@ -721,7 +700,8 @@ class PatrimonioController extends Controller
             'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,À DISPOSIÇÃO',
             'DTAQUISICAO' => 'nullable|date',
             'DTBAIXA' => 'required_if:SITUACAO,BAIXA|nullable|date',
-            'CDMATRFUNCIONARIO' => 'required|integer|exists:usuario,CDMATRFUNCIONARIO',
+            // Agora valida contra a tabela de funcionarios importados, não mais tabela usuario
+            'CDMATRFUNCIONARIO' => 'required|integer|exists:funcionarios,CDMATRFUNCIONARIO',
         ]);
     }
 

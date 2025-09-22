@@ -62,7 +62,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::get('/api/patrimonios/buscar/{numero}', [PatrimonioController::class, 'buscarPorNumero'])->name('api.patrimonios.buscar');
     Route::get('/api/patrimonios/pesquisar', [PatrimonioController::class, 'pesquisar'])->name('api.patrimonios.pesquisar');
     // Autocomplete Usuários
-    Route::get('/api/usuarios/pesquisar', [PatrimonioController::class, 'pesquisarUsuarios'])->name('api.usuarios.pesquisar');
+    // Rota antiga /api/usuarios/pesquisar removida após migração para funcionários
+    // Nova rota: pesquisa de funcionários
+    Route::get('/api/funcionarios/pesquisar', [\App\Http\Controllers\FuncionarioController::class, 'pesquisar'])->name('api.funcionarios.pesquisar');
 
     // Rotas de Projetos e suas APIs
     Route::resource('projetos', ProjetoController::class)->middleware('admin');
@@ -103,6 +105,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         Route::post('/patrimonios/exportar/csv', [\App\Http\Controllers\RelatorioController::class, 'exportarCsv'])->name('patrimonios.exportar.csv');
         Route::post('/patrimonios/exportar/pdf', [\App\Http\Controllers\RelatorioController::class, 'exportarPdf'])->name('patrimonios.exportar.pdf');
         Route::post('/patrimonios/exportar/ods', [\App\Http\Controllers\RelatorioController::class, 'exportarOds'])->name('patrimonios.exportar.ods');
+
+        // Relatório de Funcionários (Excel)
+        Route::get('/funcionarios/exportar/excel', [\App\Http\Controllers\RelatorioController::class, 'exportarFuncionariosExcel'])->name('funcionarios.exportar.excel');
     });
 
     // Rotas de Termos

@@ -297,13 +297,29 @@
                         @if($patrimonio->CDMATRFUNCIONARIO)
                         <div class="leading-tight">
                           <span class="font-mono text-sm">{{ $patrimonio->CDMATRFUNCIONARIO }}</span>
-                          <div class="text-[11px] text-gray-500 dark:text-gray-400 truncate max-w-[140px]">{{ $patrimonio->usuario?->NOMEUSER }}</div>
+                          <div class="text-[11px] text-gray-500 dark:text-gray-400 truncate max-w-[140px]">{{ $patrimonio->funcionario?->NMFUNCIONARIO }}</div>
                         </div>
                         @else
                         <span class="text-gray-400 text-xs">—</span>
                         @endif
                       </td>
-                      <td class="td">{{ $patrimonio->creator?->NOMEUSER ?? ($patrimonio->USUARIO ?? 'SISTEMA') }}</td>
+                      <td class="td">
+                        @php
+                        $exibido = null;
+                        if ($patrimonio->creator && $patrimonio->creator->NOMEUSER) {
+                        $exibido = $patrimonio->creator->NOMEUSER;
+                        } elseif ($patrimonio->USUARIO) {
+                        // Tentativa de resolver nome via cache local simples (já que eager load não trouxe)
+                        $cacheKey = 'login_nome_'.$patrimonio->USUARIO;
+                        $exibido = Cache::remember($cacheKey, 300, function() use ($patrimonio) {
+                        return optional(\App\Models\User::where('NMLOGIN', $patrimonio->USUARIO)->first())->NOMEUSER ?? $patrimonio->USUARIO;
+                        });
+                        } else {
+                        $exibido = 'SISTEMA';
+                        }
+                        @endphp
+                        {{ $exibido }}
+                      </td>
                       @if(Auth::user()->PERFIL === 'ADM')
                       <td class="td" @click.stop>
                         <div class="flex items-center gap-2">
@@ -407,13 +423,28 @@
                       @if($patrimonio->CDMATRFUNCIONARIO)
                       <div class="leading-tight">
                         <span class="font-mono text-xs">{{ $patrimonio->CDMATRFUNCIONARIO }}</span>
-                        <div class="text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[110px]">{{ $patrimonio->usuario?->NOMEUSER }}</div>
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[110px]">{{ $patrimonio->funcionario?->NMFUNCIONARIO }}</div>
                       </div>
                       @else
                       <span class="text-gray-400 text-[10px]">—</span>
                       @endif
                     </td>
-                    <td class="px-4 py-2">{{ $patrimonio->creator?->NOMEUSER ?? ($patrimonio->USUARIO ?? 'SISTEMA') }}</td>
+                    <td class="px-4 py-2">
+                      @php
+                      $exibido = null;
+                      if ($patrimonio->creator && $patrimonio->creator->NOMEUSER) {
+                      $exibido = $patrimonio->creator->NOMEUSER;
+                      } elseif ($patrimonio->USUARIO) {
+                      $cacheKey = 'login_nome_'.$patrimonio->USUARIO;
+                      $exibido = Cache::remember($cacheKey, 300, function() use ($patrimonio) {
+                      return optional(\App\Models\User::where('NMLOGIN', $patrimonio->USUARIO)->first())->NOMEUSER ?? $patrimonio->USUARIO;
+                      });
+                      } else {
+                      $exibido = 'SISTEMA';
+                      }
+                      @endphp
+                      {{ $exibido }}
+                    </td>
 
                     @if(Auth::user()->PERFIL === 'ADM')
                     <td class="px-2 py-2">
@@ -607,6 +638,15 @@
               </div>
             </div>
             <div class="mt-6 flex justify-end space-x-4">
+              <div class="mr-auto flex items-center">
+                <a href="{{ route('relatorios.funcionarios.exportar.excel') }}" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center" title="Exportar lista completa de funcionários">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
+                  </svg>
+                  <span>Relatório de Funcionários</span>
+                </a>
+              </div>
               <button type="button" @click="relatorioModalOpen = false"
                 class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500"
                 :disabled="isLoading">Sair</button>
@@ -669,7 +709,7 @@
                   <td class="px-6 py-4"
                     x-text="patrimonio.local ? patrimonio.local.LOCAL : 'SISTEMA'"></td>
                   <td class="px-6 py-4"
-                    x-text="patrimonio.usuario ? patrimonio.usuario.NOMEUSER : 'SISTEMA'">
+                    x-text="patrimonio.creator ? patrimonio.creator.NOMEUSER : 'SISTEMA'">
                   </td>
                 </tr>
               </template>

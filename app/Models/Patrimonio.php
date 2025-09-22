@@ -14,7 +14,6 @@ class Patrimonio extends Model
     protected $primaryKey = 'NUSEQPATR';
     public $timestamps = false;
 
-    // TODOS os campos que virão do formulário
     protected $fillable = [
         'NUPATRIMONIO',
         'SITUACAO',
@@ -43,9 +42,10 @@ class Patrimonio extends Model
         'NMPLANTA',
     ];
 
-    public function usuario(): BelongsTo
+    // ALTERAÇÃO AQUI: A relação agora é com Funcionario
+    public function funcionario(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'CDMATRFUNCIONARIO', 'CDMATRFUNCIONARIO');
+        return $this->belongsTo(Funcionario::class, 'CDMATRFUNCIONARIO', 'CDMATRFUNCIONARIO');
     }
 
     public function local()
@@ -54,7 +54,8 @@ class Patrimonio extends Model
     }
 
     /**
-     * Usuário criador (campo USUARIO guarda NMLOGIN do usuário).
+     * Usuário (sistema) que realizou o cadastro.
+     * O campo 'USUARIO' na tabela armazena o login (NMLOGIN). Relacionamos via NMLOGIN -> NMLOGIN.
      */
     public function creator(): BelongsTo
     {

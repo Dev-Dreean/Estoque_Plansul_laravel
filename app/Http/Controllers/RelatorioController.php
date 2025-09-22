@@ -6,10 +6,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Patrimonio;
 use App\Models\Tabfant;
+use App\Models\Funcionario;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 use Barryvdh\DomPDF\Facade\Pdf;
+// Removido uso de Maatwebsite\Excel; usaremos SimpleExcelWriter já presente
 
 class RelatorioController extends Controller
 {
@@ -331,6 +333,39 @@ class RelatorioController extends Controller
         $resultados = $query->get();
         $pdf = PDF::loadView('patrimonios.pdf', compact('resultados'));
         return $pdf->stream('relatorio_patrimonios.pdf');
+    }
+
+    /**
+     * Exporta lista completa de funcionários em Excel.
+     * Colunas: Matrícula, Nome do Funcionário, Data de Admissão, Código do Cargo
+     */
+    public function exportarFuncionariosExcel()
+    {
+        $cols = ['CDMATRFUNCIONARIO', 'NMFUNCIONARIO', 'DTADMISSAO', 'CDCARGO'];
+        $funcionarios = Funcionario::orderBy('NMFUNCIONARIO')->get($cols);
+
+        $fileName = 'relatorio_funcionarios_' . now()->format('d-m-Y_His') . '.xlsx';
+        $path = storage_path('app/' . $fileName);
+        $writer = SimpleExcelWriter::create($path);
+
+        // Cabeçalhos
+        $writer->addRow([
+            'Matrícula',
+            'Nome do Funcionário',
+            'Data de Admissão',
+            'Código do Cargo'
+        ]);
+
+        foreach ($funcionarios as $f) {
+            $writer->addRow([
+                $f->CDMATRFUNCIONARIO,
+                $f->NMFUNCIONARIO,
+                $f->DTADMISSAO,
+                $f->CDCARGO,
+            ]);
+        }
+
+        return response()->download($path)->deleteFileAfterSend(true);
     }
 
     /**

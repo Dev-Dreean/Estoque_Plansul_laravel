@@ -7,7 +7,7 @@
 
     <div class="py-12">
         <div class="w-full sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
                 <div class="p-6"> {{-- GARANTA QUE ESTE p-6 ESTÁ AQUI --}}
                     <form method="POST" action="{{ route('patrimonios.store') }}">
                         @csrf
