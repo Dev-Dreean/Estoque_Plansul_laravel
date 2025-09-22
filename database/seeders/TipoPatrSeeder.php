@@ -7,12 +7,10 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class TipoPatrSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $path = database_path('seeders/data/DadosTipoPatr.TXT');
@@ -21,28 +19,37 @@ class TipoPatrSeeder extends Seeder
             return;
         }
 
+        // Limpa a tabela antes de começar
+        DB::table('TIPOPATR')->delete();
+
         $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        // Pula as duas linhas de cabeçalho
         $dataLines = array_slice($lines, 2);
 
-        $data = [];
-        foreach ($dataLines as $line) {
-            // Extrai o código e a descrição baseando-se na estrutura de largura fixa
-            // LINHA CORRIGIDA: Removido um ')' extra no final
-            $id = (int)trim(substr($line, 0, 16));
-            $descricao = trim(substr($line, 16));
+        $this->command->info('Iniciando importação de TIPOPATR (um por um)...');
+        $successCount = 0;
+        $errorCount = 0;
 
-            if ($id > 0) {
-                $data[] = [
-                    'NUSEQTIPOPATR' => $id,
-                    'DETIPOPATR' => $descricao,
-                ];
+        foreach ($dataLines as $index => $line) {
+            try {
+                $id = (int)trim(substr($line, 0, 16));
+                $descricao = trim(substr($line, 16));
+
+                if ($id > 0) {
+                    DB::table('TIPOPATR')->insert([
+                        'NUSEQTIPOPATR' => $id,
+                        'DETIPOPATR' => $descricao,
+                    ]);
+                    $successCount++;
+                }
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Se der erro, informa qual linha e qual o erro
+                $lineNumber = $index + 3; // +2 do slice, +1 do array index
+                $this->command->error("Erro ao inserir a linha #{$lineNumber} do arquivo .TXT: " . $e->getMessage());
+                Log::error("TipoPatrSeeder Falha na linha {$lineNumber}: {$line}", ['exception' => $e]);
+                $errorCount++;
             }
         }
 
-        // Deleta dados antigos para evitar duplicatas ao rodar o seeder novamente
-        DB::table('TIPOPATR')->delete();
-        // Insere os novos dados
-        DB::table('TIPOPATR')->insert($data);
+        $this->command->info("Importação de TIPOPATR concluída. Sucesso: {$successCount}, Erros: {$errorCount}.");
     }
 }
