@@ -5,6 +5,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
+        // Se a tabela já existir no ambiente (legado), não recria para evitar erro 1050
+        if (Schema::hasTable('tabfant')) {
+            return;
+        }
+
         Schema::create('tabfant', function (Blueprint $table) {
             $table->id();
             $table->integer('CDPROJETO');
