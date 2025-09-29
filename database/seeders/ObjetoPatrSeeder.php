@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use App\Models\ObjetoPatr;
 
 class ObjetoPatrSeeder extends Seeder
 {
@@ -41,9 +42,9 @@ class ObjetoPatrSeeder extends Seeder
             }
         }
 
-        // Deleta dados antigos para evitar duplicatas
-        DB::table('OBJETOPATR')->delete();
-        // Insere os novos dados
-        DB::table('OBJETOPATR')->insert($data);
+    // Deleta dados antigos para evitar duplicatas (usa o Model para respeitar case da tabela)
+    ObjetoPatr::query()->delete();
+    // Insere os novos dados
+    ObjetoPatr::query()->insert($data);
     }
 }

@@ -46,7 +46,7 @@ class RelatorioBensController extends Controller
         ]);
 
         DB::transaction(function () use ($data) {
-            $nextId = (int) (DB::table('TIPOPATR')->max('NUSEQTIPOPATR') ?? 0) + 1;
+            $nextId = (int) (TipoPatr::max('NUSEQTIPOPATR') ?? 0) + 1;
 
             TipoPatr::create([
                 'NUSEQTIPOPATR' => $nextId,

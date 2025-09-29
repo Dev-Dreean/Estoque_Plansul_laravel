@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\TipoPatr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
@@ -19,8 +20,8 @@ class TipoPatrSeeder extends Seeder
             return;
         }
 
-        // Limpa a tabela antes de começar
-        DB::table('TIPOPATR')->delete();
+    // Limpa a tabela antes de começar (usa Model para respeitar o case da tabela)
+    TipoPatr::query()->delete();
 
         // Conversão para UTF-8 evitando problemas de caracteres especiais
         $rawContent = File::get($path);
@@ -39,7 +40,7 @@ class TipoPatrSeeder extends Seeder
                 $descricao = trim(substr($line, 16));
 
                 if ($id > 0) {
-                    DB::table('TIPOPATR')->insert([
+                    TipoPatr::create([
                         'NUSEQTIPOPATR' => $id,
                         'DETIPOPATR' => $descricao,
                     ]);
