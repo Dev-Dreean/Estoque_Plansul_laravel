@@ -6,13 +6,15 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema; // << 1. IMPORTAR SCHEMA
+use App\Models\Tabfant;
 
 class TabfantSeeder extends Seeder
 {
     public function run()
     {
-        // Usar truncate é mais eficiente para limpar a tabela.
-        DB::table('tabfant')->truncate();
+        // Não usar TRUNCATE pois a tabela é referenciada por FKs; DELETE respeita ON DELETE.
+        DB::table('tabfant')->delete();
 
         $path = database_path('seeders/data/tabtansaia.TXT');
         if (!file_exists($path)) {
