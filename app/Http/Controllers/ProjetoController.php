@@ -11,23 +11,26 @@ class ProjetoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request) // Adicione Request $request
+    public function index(Request $request)
     {
         $searchTerm = $request->input('search');
 
+        // A consulta base já carrega o relacionamento para evitar N+1
         $query = LocalProjeto::with('projeto')->orderBy('delocal');
 
-        // Se houver um termo de busca, adiciona a condição no banco
         if ($searchTerm) {
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('delocal', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('cdlocal', 'LIKE', "%{$searchTerm}%");
+                    ->orWhere('cdlocal', 'LIKE', "%{$searchTerm}%")
+                    // MELHORADO: Adiciona a busca pelo nome do projeto relacionado
+                    ->orWhereHas('projeto', function ($subQuery) use ($searchTerm) {
+                        $subQuery->where('NOMEPROJETO', 'LIKE', "%{$searchTerm}%");
+                    });
             });
         }
 
-        $locais = $query->paginate(15)->withQueryString(); // withQueryString mantém o filtro na paginação
+        $locais = $query->paginate(15)->withQueryString();
 
-        // Se a requisição for AJAX, retorna apenas a view da tabela
         if ($request->ajax()) {
             return view('projetos._table_partial', ['locais' => $locais])->render();
         }

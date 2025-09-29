@@ -83,7 +83,8 @@ class RelatorioController extends Controller
                 return response()->json(['message' => 'Validação falhou', 'errors' => $erros], 422);
             }
 
-            $query = Patrimonio::query()->with('usuario', 'local');
+            // 'usuario' não existe mais no Model; relação correta é 'creator' (quem cadastrou)
+            $query = Patrimonio::query()->with('creator', 'local');
             switch ($tipo) {
                 case 'numero':
                     if ($request->filled('numero_busca')) {
@@ -154,7 +155,8 @@ class RelatorioController extends Controller
             'sort_direction' => 'nullable|in:asc,desc'
         ]);
 
-        $query = Patrimonio::query()->with('usuario', 'local');
+        // Ajuste de relações: usar 'creator' (usuário do sistema que cadastrou) e 'local'
+        $query = Patrimonio::query()->with('creator', 'local');
         switch ($validated['tipo_relatorio']) {
             case 'numero':
                 if ($request->filled('numero_busca')) {
@@ -224,7 +226,7 @@ class RelatorioController extends Controller
                 'Data de Aquisição' => $patrimonio->DTAQUISICAO,
                 'Data de Baixa' => $patrimonio->DTBAIXA,
                 'Data de Garantia' => $patrimonio->DTGARANTIA,
-                'Cadastrado Por' => $patrimonio->usuario->NOMEUSER ?? 'SISTEMA',
+                'Cadastrado Por' => $patrimonio->creator->NOMEUSER ?? 'SISTEMA',
                 'Data de Cadastro' => $patrimonio->DTOPERACAO,
                 'OF' => $patrimonio->NUMOF,
                 'Cód. Objeto' => $patrimonio->CODOBJETO,
@@ -257,7 +259,7 @@ class RelatorioController extends Controller
                 'Data de Aquisição' => $patrimonio->DTAQUISICAO,
                 'Data de Baixa' => $patrimonio->DTBAIXA,
                 'Data de Garantia' => $patrimonio->DTGARANTIA,
-                'Cadastrado Por' => $patrimonio->usuario->NOMEUSER ?? 'N/A',
+                'Cadastrado Por' => $patrimonio->creator->NOMEUSER ?? 'N/A',
                 'Data de Cadastro' => $patrimonio->DTOPERACAO,
                 'OF' => $patrimonio->NUMOF,
                 'Cód. Objeto' => $patrimonio->CODOBJETO,
@@ -300,31 +302,6 @@ class RelatorioController extends Controller
             'registros' => $registros,
         ])->setPaper('a4', 'portrait');
         return $pdf->stream('relatorio_patrimonios.pdf');
-        foreach ($query->cursor() as $patrimonio) {
-            $writer->addRow([
-                'N° Patrimônio' => $patrimonio->NUPATRIMONIO,
-                'Descrição' => $patrimonio->DEPATRIMONIO,
-                'Situação' => $patrimonio->SITUACAO,
-                'Marca' => $patrimonio->MARCA,
-                'Modelo' => $patrimonio->MODELO,
-                'N° Série' => $patrimonio->NUSERIE,
-                'Cor' => $patrimonio->COR,
-                'Dimensão' => $patrimonio->DIMENSAO,
-                'Características' => $patrimonio->CARACTERISTICAS,
-                'Histórico' => $patrimonio->DEHISTORICO,
-                'Local (Nome)' => $patrimonio->local->LOCAL ?? 'N/A',
-                'Local Interno (Cód)' => $patrimonio->CDLOCALINTERNO,
-                'Projeto (Cód)' => $patrimonio->CDPROJETO,
-                'Data de Aquisição' => $patrimonio->DTAQUISICAO,
-                'Data de Baixa' => $patrimonio->DTBAIXA,
-                'Data de Garantia' => $patrimonio->DTGARANTIA,
-                'Cadastrado Por' => $patrimonio->usuario->NOMEUSER ?? 'N/A',
-                'Data de Cadastro' => $patrimonio->DTOPERACAO,
-                'OF' => $patrimonio->NUMOF,
-                'Cód. Objeto' => $patrimonio->CODOBJETO,
-            ]);
-        }
-        return response()->download($filePath)->deleteFileAfterSend(true);
     }
 
     public function exportarPdf(Request $request)
@@ -395,8 +372,8 @@ class RelatorioController extends Controller
 
         $query = Patrimonio::query();
 
-        // Relações úteis (ajuste se necessário ligar nomes de usuário / local depois)
-        $query->with('usuario');
+        // Relações úteis (usuário criador)
+        $query->with('creator');
 
         // Aplica filtros se presentes (ignora campos vazios / null)
         if (filled($validated['nupatrimonio'] ?? null)) {
@@ -487,7 +464,7 @@ class RelatorioController extends Controller
             }
             // Acrescenta nome do usuário se carregado (apenas detailed?)
             if ($modelo === 'detailed') {
-                $row['USUARIO'] = $r->usuario->NOMEUSER ?? null;
+                $row['USUARIO'] = $r->creator->NOMEUSER ?? null;
             }
             $writer->addRow($row);
         }

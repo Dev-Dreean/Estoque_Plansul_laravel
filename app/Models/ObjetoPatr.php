@@ -1,24 +1,21 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ObjetoPatr extends Model
 {
-    use HasFactory;
-
-    protected $table = 'OBJETOPATR';
-    // Eloquent não suporta chaves primárias compostas nativamente para find(), mas o model funciona para outras queries.
+    protected $table = 'objetopatr';
     protected $primaryKey = 'NUSEQOBJETO';
+    public $incrementing = false;
+    protected $keyType = 'int';
     public $timestamps = false;
 
-    protected $fillable = [
-        'NUSEQOBJETO',
-        'NUSEQTIPOPATR',
-        'DEOBJETO',
-    ];
+    protected $fillable = ['NUSEQOBJETO', 'NUSEQTIPOPATR', 'DEOBJETO'];
+
+    public function tipo()
+    {
+        return $this->belongsTo(TipoPatr::class, 'NUSEQTIPOPATR', 'NUSEQTIPOPATR');
+    }
 }

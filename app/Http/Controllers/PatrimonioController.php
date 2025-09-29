@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Log;
 use App\Models\Patrimonio;
 use App\Models\User;
+use App\Models\ObjetoPatr;
 use App\Models\Objpatr;
 use App\Models\Tabfant;
 use App\Models\LocalProjeto;
@@ -24,22 +25,20 @@ class PatrimonioController extends Controller
     {
         try {
             $codigo = trim($codigo);
-
-            // Ajuste os nomes de tabela/colunas no Model Objpatr
-            $registro = Objpatr::where('NUSEQOBJ', $codigo)->first();
-
+            // Usa a tabela principal de códigos (objetopatr)
+            $registro = ObjetoPatr::where('NUSEQOBJETO', $codigo)->first();
             if (!$registro) {
                 return response()->json(['found' => false, 'message' => 'Código não encontrado.'], 404);
             }
-
             return response()->json([
                 'found'     => true,
-                'descricao' => $registro->DEOBJETO,      // <- campo de descrição
-                'tipo'      => $registro->NUSEQTIPOPATR, // <- se quiser usar também
+                'descricao' => $registro->DEOBJETO,
+                'tipo'      => $registro->NUSEQTIPOPATR,
             ]);
         } catch (\Throwable $e) {
             Log::error('Erro buscarCodigoObjeto: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            return response()->json(['found' => false, 'message' => 'Erro interno.'], 500);
+            // Evita erro 500 no front: retorna 404 genérico quando houver exceção não crítica
+            return response()->json(['found' => false, 'message' => 'Código não encontrado.'], 404);
         }
     }
 
@@ -48,19 +47,25 @@ class PatrimonioController extends Controller
      */
     public function pesquisarCodigos(Request $request): JsonResponse
     {
-        $termo = trim((string) $request->input('q', ''));
-        if ($termo === '') return response()->json([]);
-        $q = Objpatr::query();
-        if (is_numeric($termo)) {
-            $q->where('NUSEQOBJ', 'like', "%{$termo}%");
-        } else {
-            $q->where('DEOBJETO', 'like', "%{$termo}%");
+        try {
+            $termo = trim((string) $request->input('q', ''));
+            if ($termo === '') return response()->json([]);
+            $q = ObjetoPatr::query();
+            if (is_numeric($termo)) {
+                $q->where('NUSEQOBJETO', 'like', "%{$termo}%");
+            } else {
+                $q->where('DEOBJETO', 'like', "%{$termo}%");
+            }
+            $registros = $q->orderBy('DEOBJETO')
+                ->select(['NUSEQOBJETO as CODOBJETO', 'DEOBJETO as DESCRICAO'])
+                ->limit(10)
+                ->get();
+            return response()->json($registros);
+        } catch (\Throwable $e) {
+            Log::error('Erro pesquisarCodigos: ' . $e->getMessage());
+            // Resposta segura para não quebrar o front
+            return response()->json([], 200);
         }
-        $registros = $q->orderBy('DEOBJETO')
-            ->select(['NUSEQOBJ as CODOBJETO', 'DEOBJETO as DESCRICAO'])
-            ->limit(10)
-            ->get();
-        return response()->json($registros);
     }
 
     public function index(Request $request): View
@@ -102,6 +107,21 @@ class PatrimonioController extends Controller
         ]);
     }
 
+    public function lookupCodigo(Request $request)
+    {
+        $request->validate(['codigo' => 'required|integer']);
+        $objeto = ObjetoPatr::find($request->codigo);
+
+        if ($objeto) {
+            return response()->json([
+                'found' => true,
+                'descricao' => $objeto->ds_obj,
+            ]);
+        }
+
+        return response()->json(['found' => false]);
+    }
+
     /**
      * Mostra o formulário de criação.
      */
@@ -115,19 +135,77 @@ class PatrimonioController extends Controller
 
     /**
      * Salva o novo patrimônio no banco de dados.
+     * Regras:
+     * - Se NUSEQOBJ (código) não existir em objetopatr, cria um novo registro com DEOBJETO.
+     * - Em seguida, cria o Patrimônio referenciando esse código.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
-        $validatedData = $this->validatePatrimonio($request);
-        $authUser = Auth::user();
+        // 1) Validar os campos conforme o formulário (nomes em MAIÚSCULO)
+        $validated = $request->validate([
+            // O Nº Patrimônio pode se repetir entre tipos; removido UNIQUE
+            'NUPATRIMONIO' => 'required|integer',
+            'NUSEQOBJ' => 'required|integer',
+            'DEOBJETO' => 'nullable|string|max:350', // obrigatória apenas quando código for novo
+            'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,À DISPOSIÇÃO',
+            'CDMATRFUNCIONARIO' => 'required|integer|exists:funcionarios,CDMATRFUNCIONARIO',
+            'NUMOF' => 'nullable|integer',
+            'DEHISTORICO' => 'nullable|string|max:300',
+            'CDPROJETO' => 'nullable|integer',
+            // O Local deve ser o código numérico (cdlocal) do LocalProjeto dentro do projeto
+            'CDLOCAL' => 'nullable|integer',
+            'NMPLANTA' => 'nullable|integer',
+            'MARCA' => 'nullable|string|max:30',
+            'MODELO' => 'nullable|string|max:30',
+            'DTAQUISICAO' => 'nullable|date',
+            'DTBAIXA' => 'required_if:SITUACAO,BAIXA|nullable|date',
+        ]);
 
-        // Garantir que matrícula selecionada exista (regra já na validação) e registrar criador
-        Patrimonio::create(array_merge($validatedData, [
-            'USUARIO' => $authUser->NMLOGIN,
+        // 2) Garantir existência do ObjetoPatr (tabela objetopatr)
+        //    O Model ObjetoPatr usa PK 'NUSEQOBJETO'.
+        $codigo = (int) $validated['NUSEQOBJ'];
+        $objeto = ObjetoPatr::find($codigo);
+
+        if (!$objeto) {
+            // Se for novo código, exigir DEOBJETO
+            $request->validate([
+                'DEOBJETO' => 'required|string|max:350',
+            ], [
+                'DEOBJETO.required' => 'Informe a descrição do novo código.',
+            ]);
+
+            $objeto = ObjetoPatr::create([
+                'NUSEQOBJETO' => $codigo,
+                // NUSEQTIPOPATR pode ser opcional aqui; ajustar se sua regra exigir
+                'DEOBJETO' => $request->input('DEOBJETO'),
+            ]);
+        }
+
+        // 3) Criar o patrimônio associando o código recém-verificado/criado
+        $dadosPatrimonio = [
+            'NUPATRIMONIO' => (int) $validated['NUPATRIMONIO'],
+            'CODOBJETO' => $codigo, // campo da tabela patr
+            // Usaremos a descrição do objeto como DEPATRIMONIO para manter compatibilidade atual do front
+            'DEPATRIMONIO' => $objeto->DEOBJETO ?? $request->input('DEOBJETO'),
+            'SITUACAO' => $validated['SITUACAO'],
+            'CDMATRFUNCIONARIO' => (int) $validated['CDMATRFUNCIONARIO'],
+            'NUMOF' => $request->input('NUMOF'),
+            'DEHISTORICO' => $request->input('DEHISTORICO'),
+            'CDPROJETO' => $request->input('CDPROJETO'),
+            'CDLOCAL' => $request->input('CDLOCAL'),
+            'NMPLANTA' => $request->input('NMPLANTA'),
+            'MARCA' => $request->input('MARCA'),
+            'MODELO' => $request->input('MODELO'),
+            'DTAQUISICAO' => $request->input('DTAQUISICAO'),
+            'DTBAIXA' => $request->input('DTBAIXA'),
+            'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
             'DTOPERACAO' => now(),
-        ]));
+        ];
 
-        return redirect()->route('patrimonios.index')->with('success', 'Patrimônio cadastrado com sucesso!');
+        Patrimonio::create($dadosPatrimonio);
+
+        return redirect()->route('patrimonios.index')
+            ->with('success', 'Patrimônio cadastrado com sucesso!');
     }
 
     /**

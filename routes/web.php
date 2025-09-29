@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjetoController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RelatorioBensController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,11 +30,19 @@ require __DIR__ . '/auth.php';
 // GRUPO 1: Apenas para o formulário de completar o perfil.
 // Protegido apenas por 'auth', para garantir que o usuário esteja logado.
 Route::middleware('auth')->group(function () {
-    Route::get('/completar-perfil', [ProfileController::class, 'showCompletionForm'])
-        ->name('profile.completion.create');
-    Route::post('/completar-perfil', [ProfileController::class, 'storeCompletionForm'])
-        ->name('profile.completion.store');
+    Route::get('/completar-perfil',  [ProfileController::class, 'showCompletionForm'])->name('profile.completion.create');
+    Route::post('/completar-perfil', [ProfileController::class, 'storeCompletionForm'])->name('profile.completion.store');
+
+    // Relatório / lista
+    Route::get('/relatorios/bens',  [RelatorioBensController::class, 'index'])->name('relatorios.bens.index');
+
+    // Cadastrar BEM (form do modal – aba "Bem")
+    Route::post('/relatorios/bens', [RelatorioBensController::class, 'store'])->name('relatorios.bens.store');
+
+    // Cadastrar TIPO (form do modal – aba "Tipo")
+    Route::post('/tipopatr', [RelatorioBensController::class, 'storeTipo'])->name('tipopatr.store');
 });
+
 
 // GRUPO 2: Rotas principais que EXIGEM perfil completo. NOTE A MUDANÇA AQUI!
 // NOTE: Adicionamos 'profile.complete' a este grupo.
@@ -50,6 +59,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
 
     // Rotas do CRUD de Patrimônios e suas APIs
     Route::resource('patrimonios', PatrimonioController::class);
+    Route::get('/patrimonios/lookup-codigo', [App\Http\Controllers\PatrimonioController::class, 'lookupCodigo'])->name('patrimonios.lookupCodigo');
+    Route::resource('patrimonios', App\Http\Controllers\PatrimonioController::class);
     Route::get('/patrimonios/atribuir/termo', [PatrimonioController::class, 'atribuir'])->name('patrimonios.atribuir');
     // Alias / nova rota para listagem/atribuição via filtros (referenciada em views e redirects)
     // Mantemos a rota original acima para retrocompatibilidade; esta atende chamadas a route('patrimonios.atribuir.codigos')
@@ -92,6 +103,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // Rotas de Usuários (Admin)
     Route::middleware('admin')->group(function () {
         Route::resource('usuarios', UserController::class);
+        // APIs auxiliares do formulário de usuário
+        Route::get('/api/usuarios/por-matricula', [UserController::class, 'porMatricula'])->name('api.usuarios.porMatricula');
+        Route::get('/api/usuarios/sugerir-login', [UserController::class, 'sugerirLogin'])->name('api.usuarios.sugerirLogin');
+        Route::get('/api/usuarios/login-disponivel', [UserController::class, 'loginDisponivel'])->name('api.usuarios.loginDisponivel');
     });
 
     // Rotas de Relatórios

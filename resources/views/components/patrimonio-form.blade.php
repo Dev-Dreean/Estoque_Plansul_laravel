@@ -1,4 +1,16 @@
 @props(['patrimonio' => null])
+
+@if ($errors->any())
+<div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
+  <strong class="font-bold">Opa! Algo deu errado.</strong>
+  <ul class="mt-2 list-disc list-inside text-sm">
+    @foreach ($errors->all() as $error)
+    <li>{{ $error }}</li>
+    @endforeach
+  </ul>
+</div>
+@endif
+
 <div x-data='patrimonioForm({ patrimonio: @json($patrimonio), old: @json(old()) })' @keydown.enter.prevent="focusNext($event.target)" class="space-y-4 md:space-y-5 text-sm">
 
   {{-- GRUPO 1: N° Patrimônio, N° OC, Campo Vazio --}}
@@ -37,7 +49,7 @@
           <template x-if="!loadingPatrimonios && patrimoniosLista.length === 0">
             <div class="p-2 text-gray-500" x-text="patSearch.trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
           </template>
-          <template x-for="(p, i) in patrimoniosLista" :key="p.NUPATRIMONIO">
+          <template x-for="(p, i) in (patrimoniosLista || [])" :key="p.NUSEQPATR || p.NUPATRIMONIO || i">
             <div data-pat-item @click="selecionarPatrimonio(p)" @mouseover="highlightedPatIndex = i" :class="['px-3 py-2 cursor-pointer', highlightedPatIndex === i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
               <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="p.NUPATRIMONIO"></span>
               <span class="ml-2" x-text="' - ' + p.DEPATRIMONIO"></span>
@@ -60,24 +72,26 @@
   {{-- GRUPO 2: Código e Descrição --}}
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-5">
     <div class="md:col-span-1">
-      <x-input-label for="CODOBJETO" value="Código *" />
+      <x-input-label for="NUSEQOBJ" value="Código *" />
       <div class="relative mt-0.5" @click.away="showCodigoDropdown=false">
-        <input id="CODOBJETO"
+        <input id="NUSEQOBJ"
           x-model="codigoSearch"
           @focus="abrirDropdownCodigos()"
           @input.debounce.300ms="buscarCodigos"
+          @blur="buscarCodigo"
           @keydown.down.prevent="navegarCodigos(1)"
           @keydown.up.prevent="navegarCodigos(-1)"
           @keydown.enter.prevent="selecionarCodigoEnter()"
           @keydown.escape.prevent="showCodigoDropdown=false"
-          name="CODOBJETO"
           type="text"
           inputmode="numeric"
           class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10"
           placeholder="Digite nº ou descrição" required />
+        <!-- Valor efetivo enviado no submit -->
+        <input type="hidden" name="NUSEQOBJ" :value="formData.NUSEQOBJ" />
         <div class="absolute inset-y-0 right-0 flex items-center pr-3">
           <div class="flex items-center gap-2">
-            <button type="button" x-show="formData.CODOBJETO" @click="limparCodigo" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none" title="Limpar seleção" aria-label="Limpar seleção">✕</button>
+            <button type="button" x-show="formData.NUSEQOBJ" @click="limparCodigo" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none" title="Limpar seleção" aria-label="Limpar seleção">✕</button>
             <button type="button" @click="abrirDropdownCodigos(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" aria-label="Abrir lista">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
@@ -92,18 +106,19 @@
           <template x-if="!loadingCodigos && codigosLista.length === 0">
             <div class="p-2 text-gray-500" x-text="codigoSearch.trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
           </template>
-          <template x-for="(c,i) in codigosLista" :key="c.CODOBJETO">
+          <template x-for="(c,i) in (codigosLista || [])" :key="c.CODOBJETO || i">
             <div data-cod-item @click="selecionarCodigo(c)" @mouseover="highlightedCodigoIndex=i" :class="['px-3 py-2 cursor-pointer', highlightedCodigoIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
               <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="c.CODOBJETO"></span>
               <span class="ml-2" x-text="' - ' + c.DESCRICAO"></span>
             </div>
           </template>
         </div>
+        <p class="mt-1 text-xs" x-bind:class="isNovoCodigo ? 'text-amber-600' : (formData.NUSEQOBJ ? 'text-green-600' : '')" x-text="codigoBuscaStatus"></p>
       </div>
     </div>
     <div class="md:col-span-3">
-      <x-input-label for="DEPATRIMONIO" value="Descrição do Código" />
-      <x-text-input data-index="5" x-model="formData.DEPATRIMONIO" id="DEPATRIMONIO" name="DEPATRIMONIO" type="text" class="mt-0.5 block w-full bg-gray-100 dark:bg-gray-900" readonly />
+      <x-input-label for="DEOBJETO" value="Descrição do Código" />
+      <x-text-input data-index="5" x-model="formData.DEOBJETO" id="DEOBJETO" name="DEOBJETO" type="text" class="mt-0.5 block w-full" x-bind:readonly="!isNovoCodigo" x-bind:class="!isNovoCodigo ? 'bg-gray-100 dark:bg-gray-900' : ''" />
     </div>
   </div>
 
@@ -146,7 +161,7 @@
             <template x-if="!loadingProjetos && projetosLista.length===0">
               <div class="p-2 text-gray-500" x-text="projetoSearch.trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
             </template>
-            <template x-for="(pr,i) in projetosLista" :key="pr.CDPROJETO">
+            <template x-for="(pr,i) in (projetosLista || [])" :key="pr.CDPROJETO || i">
               <div data-proj-item @click="selecionarProjeto(pr)" @mouseover="highlightedProjetoIndex=i" :class="['px-3 py-2 cursor-pointer', highlightedProjetoIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
                 <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="pr.CDPROJETO"></span>
                 <span class="ml-2" x-text="' - ' + pr.NOMEPROJETO"></span>
@@ -165,17 +180,19 @@
       <x-input-label for="CDLOCAL" value="Local" />
       <div class="flex gap-2 items-start">
         <div class="flex-1 relative mt-0.5" @click.away="showLocalDropdown=false">
-          <input id="CDLOCAL" name="CDLOCAL" x-model="localSearch"
+          <!-- Campo visível apenas para exibição do nome do local; não enviar no submit -->
+          <input id="CDLOCAL" x-model="localSearch"
             @focus="abrirDropdownLocais()"
-            @input.debounce.300ms="filtrarLocais"
+            @input.debounce.300ms="buscarFantasias"
             @keydown.down.prevent="navegarLocais(1)"
             @keydown.up.prevent="navegarLocais(-1)"
             @keydown.enter.prevent="selecionarLocalEnter()"
             @keydown.escape.prevent="showLocalDropdown=false"
-            :disabled="locais.length===0"
+            :disabled="false"
             class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 disabled:opacity-60"
             placeholder="Local" />
-          <input type="hidden" :value="formData.CDLOCAL" />
+          <!-- Valor efetivo enviado no submit: código numérico do local (cdlocal) -->
+          <input type="hidden" name="CDLOCAL" :value="formData.CDLOCAL" />
           <div class="absolute inset-y-0 right-0 flex items-center pr-3">
             <div class="flex items-center gap-2">
               <button type="button" x-show="formData.CDLOCAL" @click="limparLocal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Limpar seleção">✕</button>
@@ -188,11 +205,12 @@
           </div>
           <div x-show="showLocalDropdown" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-sm">
             <template x-if="locaisFiltrados.length===0">
-              <div class="p-2 text-gray-500" x-text="localSearch.trim()==='' ? (locais.length===0 ? 'Carregue um projeto' : 'Digite para filtrar') : 'Nenhum resultado'"></div>
+              <div class="p-2 text-gray-500" x-text="localSearch.trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
             </template>
-            <template x-for="(l,i) in locaisFiltrados" :key="l.id">
+            <template x-for="(l,i) in (locaisFiltrados || [])" :key="(l.CDPROJETO ?? l.CDFANTASIA ?? l.cdlocal ?? l.id ?? i)">
               <div data-local-item @click="selecionarLocal(l)" @mouseover="highlightedLocalIndex=i" :class="['px-3 py-2 cursor-pointer', highlightedLocalIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
-                <span class="text-xs text-indigo-600 dark:text-indigo-400" x-text="l.LOCAL"></span>
+                <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="(l.CDPROJETO ?? l.CDFANTASIA ?? l.cdlocal ?? l.id)"></span>
+                <span class="ml-2" x-text="' - ' + (l.NOMEPROJETO ?? l.DEFANTASIA ?? l.LOCAL ?? l.delocal ?? '')"></span>
               </div>
             </template>
           </div>
@@ -236,14 +254,17 @@
       <x-text-input data-index="12" x-model="formData.MODELO" id="MODELO" name="MODELO" type="text" class="mt-0.5 block w-full" />
     </div>
     <div>
-      <x-input-label for="SITUACAO" value="Situação *" />
-      <select data-index="13" x-model="formData.SITUACAO" id="SITUACAO" name="SITUACAO" class="block w-full mt-0.5 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" required>
-        <option value="EM USO">EM USO</option>
-        <option value="CONSERTO">CONSERTO</option>
-        <option value="BAIXA">BAIXA</option>
-        <option value="À DISPOSIÇÃO">À DISPOSIÇÃO</option>
+      <label for="SITUACAO" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Situação *</label>
+      <select id="SITUACAO" name="SITUACAO" required
+        class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+        @php
+        $situacaoAtual = old('SITUACAO', $patrimonio->situacao ?? 'EM USO');
+        @endphp
+        <option value="EM USO" @if ($situacaoAtual=='EM USO' ) selected @endif>EM USO</option>
+        <option value="CONSERTO" @if ($situacaoAtual=='CONSERTO' ) selected @endif>CONSERTO</option>
+        <option value="BAIXA" @if ($situacaoAtual=='BAIXA' ) selected @endif>BAIXA</option>
+        <option value="À DISPOSIÇÃO" @if ($situacaoAtual=='À DISPOSIÇÃO' ) selected @endif>À DISPOSIÇÃO</option>
       </select>
-      <x-input-error class="mt-2" :messages="$errors->get('SITUACAO')" />
     </div>
     <div class="relative" @click.away="showUserDropdown=false">
       <x-input-label for="matricula_busca" value="Matrícula Responsável *" />
@@ -279,7 +300,7 @@
         <template x-if="!loadingUsers && usuarios.length === 0">
           <div class="p-2 text-gray-500" x-text="userSearch.trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
         </template>
-        <template x-for="(u, i) in usuarios" :key="u.CDMATRFUNCIONARIO">
+        <template x-for="(u, i) in (usuarios || [])" :key="u.CDMATRFUNCIONARIO || i">
           <div data-user-item @click="selecionarUsuario(u)"
             @mouseover="highlightedUserIndex = i"
             :class="['px-3 py-2 cursor-pointer', highlightedUserIndex === i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
@@ -312,7 +333,7 @@
       <h3 class="text-lg font-semibold mb-4">Pesquisar Patrimônio</h3>
       <input x-model="searchTerm" @input.debounce.300ms="search" type="text" class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" placeholder="Digite o nº ou descrição para buscar...">
       <ul class="mt-4 max-h-60 overflow-y-auto">
-        <template x-for="item in searchResults" :key="item.NUSEQPATR">
+        <template x-for="(item, i) in (searchResults || [])" :key="item.NUSEQPATR || item.NUPATRIMONIO || i">
           <li @click="selectPatrimonio(item)" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-600">
             <span class="font-bold" x-text="item.NUPATRIMONIO"></span> - <span x-text="item.DEPATRIMONIO"></span>
           </li>
@@ -337,7 +358,10 @@
       formData: {
         NUPATRIMONIO: (config.old?.NUPATRIMONIO ?? config.patrimonio?.NUPATRIMONIO) || '',
         NUMOF: (config.old?.NUMOF ?? config.patrimonio?.NUMOF) || '',
-        CODOBJETO: (config.old?.CODOBJETO ?? config.patrimonio?.CODOBJETO) || '',
+        // Novo fluxo de Código/Descrição do Código
+        NUSEQOBJ: (config.old?.NUSEQOBJ ?? config.patrimonio?.CODOBJETO) || '',
+        DEOBJETO: (config.old?.DEOBJETO ?? '') || '',
+        // Mantemos DEPATRIMONIO somente para compatibilidade de carregamento de patrimônio existente (não é mais o campo de edição de descrição do código)
         DEPATRIMONIO: (config.old?.DEPATRIMONIO ?? config.patrimonio?.DEPATRIMONIO) || '',
         DEHISTORICO: (config.old?.DEHISTORICO ?? config.patrimonio?.DEHISTORICO) || '',
         CDPROJETO: (config.old?.CDPROJETO ?? config.patrimonio?.CDPROJETO) || '',
@@ -366,11 +390,13 @@
       showUserDropdown: false,
       userSelectedName: '',
       // Autocomplete Código
-      codigoSearch: (config.old?.CODOBJETO ?? config.patrimonio?.CODOBJETO) || '',
+      codigoSearch: (config.old?.NUSEQOBJ ?? config.patrimonio?.CODOBJETO) || '',
       codigosLista: [],
       loadingCodigos: false,
       showCodigoDropdown: false,
       highlightedCodigoIndex: -1,
+      isNovoCodigo: false,
+      codigoBuscaStatus: '',
       // Autocomplete Projeto
       projetoSearch: (config.old?.CDPROJETO ?? config.patrimonio?.CDPROJETO) || '',
       projetosLista: [],
@@ -433,6 +459,17 @@
                 else this.formData[key] = data[key];
               }
             });
+            // Ajustes específicos de mapeamento entre API e formData atual
+            if (data.hasOwnProperty('CODOBJETO')) {
+              this.formData.NUSEQOBJ = data.CODOBJETO;
+              this.codigoSearch = String(data.CODOBJETO || '');
+            }
+            if (data.hasOwnProperty('DEPATRIMONIO')) {
+              // Exibe descrição na caixa da descrição do código
+              this.formData.DEOBJETO = data.DEPATRIMONIO || '';
+              this.isNovoCodigo = false; // código existente carrega descrição e mantém readonly
+              this.codigoBuscaStatus = this.formData.NUSEQOBJ ? 'Código encontrado.' : '';
+            }
             if (this.formData.CDPROJETO) {
               await this.buscarProjetoELocais();
               this.formData.CDLOCAL = data.CDLOCAL;
@@ -483,7 +520,14 @@
         }
         try {
           const locaisResponse = await fetch(`/api/locais/${this.formData.CDPROJETO}`);
-          if (locaisResponse.ok) this.locais = await locaisResponse.json();
+          if (locaisResponse.ok) {
+            this.locais = await locaisResponse.json();
+            // Se já houver um CDLOCAL (cdlocal) selecionado, sincroniza o nome exibido
+            if (this.formData.CDLOCAL) {
+              const found = this.locais.find(x => String(x.cdlocal) === String(this.formData.CDLOCAL));
+              this.localSearch = found ? found.LOCAL : '';
+            }
+          }
         } catch (error) {
           console.error('Erro ao buscar locais:', error);
         }
@@ -587,6 +631,42 @@
         }
       },
       // === Autocomplete Código ===
+      async buscarCodigo() {
+        const valor = String(this.codigoSearch || '').trim();
+        this.codigoBuscaStatus = '';
+        if (valor === '') {
+          this.formData.NUSEQOBJ = '';
+          this.isNovoCodigo = false;
+          this.formData.DEOBJETO = '';
+          return;
+        }
+        // Ajusta o valor do hidden para enviar no submit
+        this.formData.NUSEQOBJ = valor;
+        try {
+          const r = await fetch(`/api/codigos/buscar/${encodeURIComponent(valor)}`);
+          if (r.ok) {
+            const data = await r.json();
+            if (data.found) {
+              this.formData.DEOBJETO = data.descricao || '';
+              this.isNovoCodigo = false; // bloqueia edição
+              this.codigoBuscaStatus = 'Código encontrado.';
+            } else {
+              // Em teoria 404 cai no else abaixo, mas mantemos por segurança
+              if (!this.formData.DEOBJETO) this.formData.DEOBJETO = '';
+              this.isNovoCodigo = true; // libera edição
+              this.codigoBuscaStatus = 'Novo código. Preencha a descrição.';
+            }
+          } else {
+            // Não encontrado
+            if (!this.formData.DEOBJETO) this.formData.DEOBJETO = '';
+            this.isNovoCodigo = true; // libera edição
+            this.codigoBuscaStatus = 'Novo código. Preencha a descrição.';
+          }
+        } catch (e) {
+          console.error('Erro ao buscar código do objeto', e);
+          this.codigoBuscaStatus = 'Erro na busca.';
+        }
+      },
       async buscarCodigos() {
         const termo = this.codigoSearch.trim();
         if (termo === '') {
@@ -612,9 +692,11 @@
         if (this.codigoSearch.trim() !== '') this.buscarCodigos();
       },
       selecionarCodigo(c) {
-        this.formData.CODOBJETO = c.CODOBJETO;
+        this.formData.NUSEQOBJ = c.CODOBJETO;
         this.codigoSearch = c.CODOBJETO;
-        this.formData.DEPATRIMONIO = c.DESCRICAO;
+        this.formData.DEOBJETO = c.DESCRICAO;
+        this.isNovoCodigo = false;
+        this.codigoBuscaStatus = 'Código encontrado.';
         this.showCodigoDropdown = false;
       },
       selecionarCodigoEnter() {
@@ -623,9 +705,11 @@
         this.selecionarCodigo(this.codigosLista[this.highlightedCodigoIndex]);
       },
       limparCodigo() {
-        this.formData.CODOBJETO = '';
+        this.formData.NUSEQOBJ = '';
         this.codigoSearch = '';
-        this.formData.DEPATRIMONIO = '';
+        this.formData.DEOBJETO = '';
+        this.isNovoCodigo = false;
+        this.codigoBuscaStatus = '';
         this.codigosLista = [];
         this.highlightedCodigoIndex = -1;
         this.showCodigoDropdown = true;
@@ -722,22 +806,32 @@
       },
       // === Autocomplete Local ===
       abrirDropdownLocais(force = false) {
-        if (this.locais.length === 0) return;
         this.showLocalDropdown = true;
-        this.filtrarLocais();
+        // Carrega lista inicial se houver termo
+        if (this.localSearch.trim() !== '') this.buscarFantasias();
       },
-      filtrarLocais() {
-        const termo = this.localSearch.trim().toLowerCase();
+      async buscarFantasias() {
+        const termo = this.localSearch.trim();
         if (termo === '') {
-          this.locaisFiltrados = this.locais.slice(0, 100);
-        } else {
-          this.locaisFiltrados = this.locais.filter(l => l.LOCAL.toLowerCase().includes(termo)).slice(0, 100);
+          this.locaisFiltrados = [];
+          this.highlightedLocalIndex = -1;
+          return;
         }
-        this.highlightedLocalIndex = this.locaisFiltrados.length > 0 ? 0 : -1;
+        try {
+          const resp = await fetch(`/api/projetos/pesquisar?q=${encodeURIComponent(termo)}`);
+          if (resp.ok) {
+            this.locaisFiltrados = await resp.json();
+            this.highlightedLocalIndex = this.locaisFiltrados.length > 0 ? 0 : -1;
+          }
+        } catch (e) {
+          /* silencioso */ }
       },
       selecionarLocal(l) {
-        this.formData.CDLOCAL = l.id;
-        this.localSearch = l.LOCAL;
+        // Aceita diferentes formatos: Tabfant (CDFANTASIA/DEFANTASIA ou CDPROJETO/NOMEPROJETO) ou LocalProjeto (cdlocal/LOCAL)
+        const code = (l && (l.CDFANTASIA ?? l.CDPROJETO ?? l.cdlocal ?? l.id)) ?? '';
+        const name = (l && (l.DEFANTASIA ?? l.NOMEPROJETO ?? l.LOCAL ?? l.delocal ?? l.nome ?? l.name)) ?? '';
+        this.formData.CDLOCAL = code || '';
+        this.localSearch = (code && name) ? `${code} - ${name}` : (code || name || '');
         this.showLocalDropdown = false;
       },
       selecionarLocalEnter() {
@@ -748,7 +842,7 @@
       limparLocal() {
         this.formData.CDLOCAL = '';
         this.localSearch = '';
-        this.locaisFiltrados = this.locais.slice(0, 100);
+        this.locaisFiltrados = [];
         this.highlightedLocalIndex = -1;
         this.showLocalDropdown = true;
       },
@@ -858,7 +952,9 @@
           if (resp.ok) {
             const novo = await resp.json();
             this.locais.push(novo);
-            this.formData.CDLOCAL = novo.id;
+            // Seleciona o novo local (usa cdlocal numérico e mostra o nome)
+            this.formData.CDLOCAL = novo.cdlocal;
+            this.localSearch = novo.LOCAL;
             this.fecharNovoLocal();
           } else {
             const err = await resp.json().catch(() => ({}));
@@ -903,6 +999,47 @@
             /* silencioso */
           }
         }
+        // Pré-carregar descrição do código quando já houver código (edição)
+        if (this.formData.NUSEQOBJ) {
+          this.codigoSearch = String(this.formData.NUSEQOBJ);
+          await this.buscarCodigo();
+        }
+        // Pré-carregar nome do "Local" quando já houver CDLOCAL (usa Tabfant)
+        if (this.formData.CDLOCAL) {
+          try {
+            const r = await fetch(`/api/projetos/buscar/${this.formData.CDLOCAL}`);
+            if (r.ok) {
+              const pj = await r.json();
+              const nome = pj?.NOMEPROJETO ?? pj?.DEFANTASIA ?? pj?.NOME ?? '';
+              if (pj && nome) {
+                this.localSearch = `${this.formData.CDLOCAL} - ${nome}`;
+              } else {
+                // Sem nome retornado; exibe apenas o código ou deixa vazio
+                this.localSearch = String(this.formData.CDLOCAL);
+              }
+            }
+          } catch (e) {
+            /* silencioso */ }
+        }
+        // Manter localSearch sincronizado quando CDLOCAL mudar depois do init (ex.: ao carregar um patrimônio)
+        this.$watch('formData.CDLOCAL', async (val) => {
+          if (!val) {
+            this.localSearch = '';
+            return;
+          }
+          try {
+            const r = await fetch(`/api/projetos/buscar/${val}`);
+            if (r.ok) {
+              const pj = await r.json();
+              const nome = pj?.NOMEPROJETO ?? pj?.DEFANTASIA ?? pj?.NOME ?? '';
+              this.localSearch = nome ? `${val} - ${nome}` : String(val);
+            } else {
+              this.localSearch = String(val);
+            }
+          } catch (e) {
+            this.localSearch = String(val);
+          }
+        });
         // Se situação for BAIXA e não houver data, sugere hoje (apenas UX; ainda valida no backend)
         this.$watch('formData.SITUACAO', (val) => {
           const dt = document.getElementById('DTBAIXA');

@@ -64,16 +64,27 @@
                   </div>
                 </div>
               </div>
-              <!-- Barra de ações (paridade com index: flex flex-wrap items-center mb-4 gap-3 w-full) -->
+              <!-- Barra de ações: filtros à esquerda, ação de planilha à direita -->
               <div class="flex flex-wrap items-center mb-4 gap-3 w-full" x-data="{ }">
+                <!-- Esquerda: Disponíveis/Atribuídos -->
                 <div class="flex flex-wrap items-center gap-3">
                   <a href="{{ route('patrimonios.atribuir.codigos', array_merge(request()->except('page','status'), ['status'=>'disponivel'])) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status','disponivel')=='disponivel' ? 'bg-green-600 text-white border-green-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-green-600/10' }}">Disponíveis</a>
                   <a href="{{ route('patrimonios.atribuir.codigos', array_merge(request()->except('page','status'), ['status'=>'indisponivel'])) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status')=='indisponivel' ? 'bg-red-600 text-white border-red-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-red-600/10' }}">Atribuídos</a>
                 </div>
-                <div class="flex-1"></div>
+
+                <!-- Centro: contador quando houver seleção -->
+                <div class="flex-1 min-w-[1rem]"></div>
                 <template x-if="selectedPatrimonios.length > 0">
                   <span id="contador-selecionados-tabs" class="text-[11px] text-muted" x-text="contadorTexto"></span>
                 </template>
+
+                <!-- Direita: Gerar Planilha Termo -->
+                <div class="ml-auto">
+                  <button type="button" @click="$dispatch('open-termo-modal')" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center" title="Gerar Planilha Termo">
+                    <x-heroicon-o-printer class="w-5 h-5 mr-2" />
+                    <span>Gerar Planilha Termo</span>
+                  </button>
+                </div>
               </div>
 
               <!-- Forms para geração e atribuição direta de códigos -->
@@ -175,6 +186,24 @@
     </div>
   </div><!-- /w-full wrapper -->
   </div><!-- /py-12 wrapper -->
+
+  {{-- Modal: Gerar Planilha por Termo --}}
+  <div x-data="{ open:false }" @open-termo-modal.window="open=true" x-show="open" x-transition class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">
+    <div @click.outside="open = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6">
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Gerar Planilha por Termo</h3>
+      <form action="{{ route('termos.exportar.excel') }}" method="POST" @submit="open=false">
+        @csrf
+        <div class="mb-4">
+          <label for="cod_termo" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Cód Termo:</label>
+          <input type="number" id="cod_termo" name="cod_termo" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" required>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" @click="open = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Sair</button>
+          <x-primary-button type="submit">Gerar</x-primary-button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Modal de Confirmação de Atribuição (encapsulado em x-data isolado para não gerar erros se não usado) -->
   <div x-data="{showConfirmModal:false, selectedPatrimonios:[], codigoTermo:''}" x-show="showConfirmModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">

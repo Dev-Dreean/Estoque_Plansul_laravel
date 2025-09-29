@@ -10,8 +10,7 @@
     reportFilters: {},
     tipoRelatorio: 'numero', // <-- A variável agora vive aqui, no lugar certo.
     relatorioErrors: {},
-    relatorioGlobalError: null,
-    viewMode: 'simple',
+  relatorioGlobalError: null,
     init() {
         if (window.location.hash === '#atribuir-termo') {
             this.atribuirTermoModalOpen = true;
@@ -221,10 +220,6 @@
                   <x-heroicon-o-chart-bar class="w-5 h-5 mr-2" />
                   <span>Gerar Relatório</span>
                 </button>
-                <button @click="termoModalOpen = true" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
-                  <x-heroicon-o-printer class="w-5 h-5 mr-2" />
-                  <span>Gerar Planilha Termo</span>
-                </button>
                 <a href="{{ route('patrimonios.atribuir') }}" class="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
                   <x-heroicon-o-document-plus class="w-5 h-5 mr-2" />
                   <span>Atribuir Cód. Termo</span>
@@ -233,12 +228,12 @@
                   <x-heroicon-o-clock class="w-5 h-5 mr-2" />
                   <span>Histórico</span>
                 </a>
+                <a href="{{ route('relatorios.bens.index') }}" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+                  <x-heroicon-o-clipboard-document-list class="w-5 h-5 mr-2" />
+                  <span>Relatório de Bens</span>
+                </a>
               </div>
-              <div class="flex items-center gap-2 ml-auto">
-                <span class="text-sm font-medium">Visualização:</span>
-                <button type="button" @click="viewMode='simple'" :class="viewMode==='simple' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-200'" class="px-3 py-1 rounded text-sm">Simples</button>
-                <button type="button" @click="viewMode='detailed'" :class="viewMode==='detailed' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-200'" class="px-3 py-1 rounded text-sm">Detalhada</button>
-              </div>
+
             </div>
 
             @php
@@ -259,113 +254,19 @@
             ];
             $shrink = fn($key) => $colVazia[$key] ? 'w-px px-0 text-[0] overflow-hidden' : 'px-4';
             @endphp
-            <!-- Visualização controls movidos para a barra principal -->
-
-            <!-- Tabela Simples -->
-            <template x-if="viewMode==='simple'">
-              <div class="table-wrap">
-                <table class="table-var">
-                  <thead>
-                    <tr>
-                      <th class="px-4 py-3">Nº Pat.</th>
-                      <th class="px-4 py-3">Cód. Objeto</th>
-                      <th class="px-4 py-3">Cód. Projeto</th>
-                      <th class="px-4 py-3">Modelo</th>
-                      <th class="px-4 py-3">Descrição</th>
-                      <th class="px-4 py-3">Situação</th>
-                      <th class="px-4 py-3">Dt. Aquisição</th>
-                      <th class="px-4 py-3">Dt. Cadastro</th>
-                      <th class="px-4 py-3">Matrícula (Responsável)</th>
-                      <th class="px-4 py-3">Cadastrado Por</th>
-                      @if(Auth::user()->PERFIL === 'ADM')
-                      <th class="px-4 py-3">Ações</th>
-                      @endif
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @forelse($patrimonios as $patrimonio)
-                    <tr class="tr-hover text-sm cursor-pointer" @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
-                      <td class="td">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
-                      <td class="td">{{ $patrimonio->CODOBJETO ?? '' }}</td>
-                      <td class="td">{{ $patrimonio->CDPROJETO ?? '' }}</td>
-                      <td class="td">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,10,'...') : '' }}</td>
-                      <td class="td font-medium">{{ Str::limit($patrimonio->DEPATRIMONIO,10,'...') }}</td>
-                      <td class="td whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO }}</td>
-                      <td class="td">{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : '' }}</td>
-                      <td class="td">{{ $patrimonio->DTOPERACAO ? \Carbon\Carbon::parse($patrimonio->DTOPERACAO)->format('d/m/Y') : '' }}</td>
-                      <td class="td">
-                        @if($patrimonio->CDMATRFUNCIONARIO)
-                        <div class="leading-tight">
-                          <span class="font-mono text-sm">{{ $patrimonio->CDMATRFUNCIONARIO }}</span>
-                          <div class="text-[11px] text-gray-500 dark:text-gray-400 truncate max-w-[140px]">{{ $patrimonio->funcionario?->NMFUNCIONARIO }}</div>
-                        </div>
-                        @else
-                        <span class="text-gray-400 text-xs">—</span>
-                        @endif
-                      </td>
-                      <td class="td">
-                        @php
-                        $exibido = null;
-                        if ($patrimonio->creator && $patrimonio->creator->NOMEUSER) {
-                        $exibido = $patrimonio->creator->NOMEUSER;
-                        } elseif ($patrimonio->USUARIO) {
-                        // Tentativa de resolver nome via cache local simples (já que eager load não trouxe)
-                        $cacheKey = 'login_nome_'.$patrimonio->USUARIO;
-                        $exibido = Cache::remember($cacheKey, 300, function() use ($patrimonio) {
-                        return optional(\App\Models\User::where('NMLOGIN', $patrimonio->USUARIO)->first())->NOMEUSER ?? $patrimonio->USUARIO;
-                        });
-                        } else {
-                        $exibido = 'SISTEMA';
-                        }
-                        @endphp
-                        {{ $exibido }}
-                      </td>
-                      @if(Auth::user()->PERFIL === 'ADM')
-                      <td class="td" @click.stop>
-                        <div class="flex items-center gap-2">
-                          @can('delete', $patrimonio)
-                          <form method="POST" action="{{ route('patrimonios.destroy', $patrimonio) }}" onsubmit="return confirm('Tem certeza que deseja deletar este item?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-600 dark:text-red-500 hover:text-red-700" title="Excluir" aria-label="Excluir patrimônio">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-                                <polyline points="3 6 5 6 21 6" />
-                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                                <path d="M10 11v6" />
-                                <path d="M14 11v6" />
-                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                              </svg>
-                            </button>
-                          </form>
-                          @endcan
-                        </div>
-                      </td>
-                      @endif
-                    </tr>
-                    @empty
-                    <tr>
-                      <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 10 : 9 }}" class="td text-center">Nenhum patrimônio encontrado.</td>
-                    </tr>
-                    @endforelse
-                  </tbody>
-                </table>
-              </div>
-            </template>
-
             <!-- Tabela Detalhada -->
-            <template x-if="viewMode==='detailed'">
-              <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0">
-                <table class="w-full text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                  <thead
-                    class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    @php
-                    function sortable_link($column, $label)
-                    {
-                    $direction =
-                    request('sort') === $column && request('direction') === 'asc'
-                    ? 'desc'
-                    : 'asc';
-                    return '<a href="' .
+            <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0">
+              <table class="w-full text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead
+                  class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                  @php
+                  function sortable_link($column, $label)
+                  {
+                  $direction =
+                  request('sort') === $column && request('direction') === 'asc'
+                  ? 'desc'
+                  : 'asc';
+                  return '<a href="' .
                                                 route(
                                                     'patrimonios.index',
                                                     array_merge(request()->query(), [
@@ -374,111 +275,95 @@
                                                     ]),
                                                 ) .
                                                 '">' .
-                      $label .
-                      '</a>';
-                    }
-                    @endphp
-                    <tr>
-                      <th class="px-4 py-3">Nº Pat.</th>
-                      <th class="{{ $shrink('NUMOF') }} py-3">OF</th>
-                      <th class="{{ $shrink('CODOBJETO') }} py-3">Cód. Objeto</th>
-                      <th class="{{ $shrink('NMPLANTA') }} py-3">Cód. Termo</th>
-                      <th class="{{ $shrink('NUSERIE') }} py-3">Nº Série</th>
-                      <th class="{{ $shrink('CDPROJETO') }} py-3">Cód. Projeto</th>
-                      <th class="px-4 py-3">Local</th>
-                      <th class="{{ $shrink('MODELO') }} py-3">Modelo</th>
-                      <th class="{{ $shrink('MARCA') }} py-3">Marca</th>
-                      <th class="{{ $shrink('COR') }} py-3">Cor</th>
-                      <th class="px-4 py-3">Descrição</th>
-                      <th class="px-4 py-3">Situação</th>
-                      <th class="{{ $shrink('DTAQUISICAO') }} py-3">Dt. Aquisição</th>
-                      <th class="{{ $shrink('DTOPERACAO') }} py-3">Dt. Cadastro</th>
-                      <th class="px-4 py-3">Matrícula (Responsável)</th>
-                      <th class="{{ $shrink('USUARIO') }} py-3">Cadastrado Por</th>
-                      @if(Auth::user()->PERFIL === 'ADM')
-                      <th class="px-4 py-3">Ações</th>
-                      @endif
-                    </tr>
-                  </thead>
-                  @forelse ($patrimonios as $patrimonio)
-                  <tr class="tr-hover text-sm cursor-pointer"
-                    @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
-
-                    {{-- A ordem agora está 100% correta para corresponder ao seu thead --}}
-                    <td class="px-4 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
-                    <td class="{{ $shrink('NUMOF') }} py-2">{{ $patrimonio->NUMOF ?? ($colVazia['NUMOF'] ? '' : '') }}</td>
-                    <td class="{{ $shrink('CODOBJETO') }} py-2">{{ $patrimonio->CODOBJETO ?? ($colVazia['CODOBJETO'] ? '' : '') }}</td>
-                    <td class="{{ $shrink('NMPLANTA') }} py-2 font-bold">{{ $patrimonio->NMPLANTA ?? ($colVazia['NMPLANTA'] ? '' : '') }}</td>
-                    <td class="{{ $shrink('NUSERIE') }} py-2">{{ $patrimonio->NUSERIE ?? ($colVazia['NUSERIE'] ? '' : '') }}</td>
-                    <td class="{{ $shrink('CDPROJETO') }} py-2">{{ $patrimonio->CDPROJETO ?? ($colVazia['CDPROJETO'] ? '' : '') }}</td>
-                    <td class="px-4 py-2">{{ $patrimonio->local?->LOCAL ?? '' }}</td>
-                    <td class="{{ $shrink('MODELO') }} py-2">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,10,'...') : ($colVazia['MODELO'] ? '' : '') }}</td>
-                    <td class="{{ $shrink('MARCA') }} py-2">{{ $patrimonio->MARCA ?? ($colVazia['MARCA'] ? '' : '') }}</td>
-                    <td class="{{ $shrink('COR') }} py-2">{{ $patrimonio->COR ?? ($colVazia['COR'] ? '' : '') }}</td>
-                    <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">{{ Str::limit($patrimonio->DEPATRIMONIO,10,'...') }}</td>
-                    <td class="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO }}</td>
-                    <td class="{{ $shrink('DTAQUISICAO') }} py-2">{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : ($colVazia['DTAQUISICAO'] ? '' : '') }}</td>
-                    <td class="{{ $shrink('DTOPERACAO') }} py-2">{{ $patrimonio->DTOPERACAO ? \Carbon\Carbon::parse($patrimonio->DTOPERACAO)->format('d/m/Y') : ($colVazia['DTOPERACAO'] ? '' : '') }}</td>
-                    <td class="px-4 py-2">
-                      @if($patrimonio->CDMATRFUNCIONARIO)
-                      <div class="leading-tight">
-                        <span class="font-mono text-xs">{{ $patrimonio->CDMATRFUNCIONARIO }}</span>
-                        <div class="text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[110px]">{{ $patrimonio->funcionario?->NMFUNCIONARIO }}</div>
-                      </div>
-                      @else
-                      <span class="text-gray-400 text-[10px]">—</span>
-                      @endif
-                    </td>
-                    <td class="px-4 py-2">
-                      @php
-                      $exibido = null;
-                      if ($patrimonio->creator && $patrimonio->creator->NOMEUSER) {
-                      $exibido = $patrimonio->creator->NOMEUSER;
-                      } elseif ($patrimonio->USUARIO) {
-                      $cacheKey = 'login_nome_'.$patrimonio->USUARIO;
-                      $exibido = Cache::remember($cacheKey, 300, function() use ($patrimonio) {
-                      return optional(\App\Models\User::where('NMLOGIN', $patrimonio->USUARIO)->first())->NOMEUSER ?? $patrimonio->USUARIO;
-                      });
-                      } else {
-                      $exibido = 'SISTEMA';
-                      }
-                      @endphp
-                      {{ $exibido }}
-                    </td>
-
+                    $label .
+                    '</a>';
+                  }
+                  @endphp
+                  <tr>
+                    <th class="px-4 py-3">Nº Pat.</th>
+                    <th class="{{ $shrink('NUMOF') }} py-3">OF</th>
+                    <th class="{{ $shrink('CODOBJETO') }} py-3">Cód. Objeto</th>
+                    <th class="{{ $shrink('NMPLANTA') }} py-3">Cód. Termo</th>
+                    <th class="{{ $shrink('NUSERIE') }} py-3">Nº Série</th>
+                    <th class="{{ $shrink('CDPROJETO') }} py-3">Cód. Projeto</th>
+                    <th class="px-4 py-3">Local</th>
+                    <th class="{{ $shrink('MODELO') }} py-3">Modelo</th>
+                    <th class="{{ $shrink('MARCA') }} py-3">Marca</th>
+                    <th class="{{ $shrink('COR') }} py-3">Cor</th>
+                    <th class="px-4 py-3">Descrição</th>
+                    <th class="px-4 py-3">Situação</th>
+                    <th class="{{ $shrink('DTAQUISICAO') }} py-3">Dt. Aquisição</th>
+                    <th class="{{ $shrink('DTOPERACAO') }} py-3">Dt. Cadastro</th>
+                    <th class="px-4 py-3">Matrícula (Responsável)</th>
+                    <th class="{{ $shrink('USUARIO') }} py-3">Cadastrado Por</th>
                     @if(Auth::user()->PERFIL === 'ADM')
-                    <td class="px-2 py-2">
-                      <div class="flex items-center gap-2">
-                        @can('delete', $patrimonio)
-                        <form method="POST" action="{{ route('patrimonios.destroy', $patrimonio) }}" onsubmit="return confirm('Tem certeza que deseja deletar este item?');" @click.stop>
-                          @csrf
-                          @method('DELETE')
-                          <button type="submit" class="text-red-600 dark:text-red-500 hover:text-red-700" title="Excluir" aria-label="Excluir patrimônio">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-                              <polyline points="3 6 5 6 21 6" />
-                              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                              <path d="M10 11v6" />
-                              <path d="M14 11v6" />
-                              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                            </svg>
-                          </button>
-                        </form>
-                        @endcan
-                      </div>
-                    </td>
+                    <th class="px-4 py-3">Ações</th>
                     @endif
                   </tr>
-                  @empty
-                  <tr>
-                    {{-- Corrigindo o colspan para o número correto de colunas --}}
-                    <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 16 : 15 }}"
-                      class="px-6 py-4 text-center">Nenhum patrimônio encontrado para os
-                      filtros atuais.</td>
-                  </tr>
-                  @endforelse
-                </table>
-              </div>
-            </template>
+                </thead>
+                @forelse ($patrimonios as $patrimonio)
+                <tr class="tr-hover text-sm cursor-pointer"
+                  @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
+
+                  {{-- A ordem agora está 100% correta para corresponder ao seu thead --}}
+                  <td class="px-4 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
+                  <td class="{{ $shrink('NUMOF') }} py-2">{{ $patrimonio->NUMOF ?? ($colVazia['NUMOF'] ? '' : '') }}</td>
+                  <td class="{{ $shrink('CODOBJETO') }} py-2">{{ $patrimonio->CODOBJETO ?? ($colVazia['CODOBJETO'] ? '' : '') }}</td>
+                  <td class="{{ $shrink('NMPLANTA') }} py-2 font-bold">{{ $patrimonio->NMPLANTA ?? ($colVazia['NMPLANTA'] ? '' : '') }}</td>
+                  <td class="{{ $shrink('NUSERIE') }} py-2">{{ $patrimonio->NUSERIE ?? ($colVazia['NUSERIE'] ? '' : '') }}</td>
+                  <td class="{{ $shrink('CDPROJETO') }} py-2">{{ $patrimonio->CDPROJETO ?? ($colVazia['CDPROJETO'] ? '' : '') }}</td>
+                  <td class="px-4 py-2">{{ $patrimonio->local?->LOCAL ?? '' }}</td>
+                  <td class="{{ $shrink('MODELO') }} py-2">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,10,'...') : ($colVazia['MODELO'] ? '' : '') }}</td>
+                  <td class="{{ $shrink('MARCA') }} py-2">{{ $patrimonio->MARCA ?? ($colVazia['MARCA'] ? '' : '') }}</td>
+                  <td class="{{ $shrink('COR') }} py-2">{{ $patrimonio->COR ?? ($colVazia['COR'] ? '' : '') }}</td>
+                  <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">{{ Str::limit($patrimonio->DEPATRIMONIO,10,'...') }}</td>
+                  <td class="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO }}</td>
+                  <td class="{{ $shrink('DTAQUISICAO') }} py-2">{{ $patrimonio->dtaquisicao_pt_br ?? ($colVazia['DTAQUISICAO'] ? '' : '') }}</td>
+                  <td class="{{ $shrink('DTOPERACAO') }} py-2">{{ $patrimonio->dtoperacao_pt_br ?? ($colVazia['DTOPERACAO'] ? '' : '') }}</td>
+                  <td class="px-4 py-2">
+                    @if($patrimonio->CDMATRFUNCIONARIO)
+                    <div class="leading-tight">
+                      <span class="font-mono text-xs">{{ $patrimonio->CDMATRFUNCIONARIO }}</span>
+                      <div class="text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[110px]">{{ $patrimonio->funcionario?->NMFUNCIONARIO }}</div>
+                    </div>
+                    @else
+                    <span class="text-gray-400 text-[10px]">—</span>
+                    @endif
+                  </td>
+                  <td class="px-4 py-2">{{ $patrimonio->cadastrado_por_nome }}</td>
+
+                  @if(Auth::user()->PERFIL === 'ADM')
+                  <td class="px-2 py-2">
+                    <div class="flex items-center gap-2">
+                      @can('delete', $patrimonio)
+                      <form method="POST" action="{{ route('patrimonios.destroy', $patrimonio) }}" onsubmit="return confirm('Tem certeza que deseja deletar este item?');" @click.stop>
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-red-600 dark:text-red-500 hover:text-red-700" title="Excluir" aria-label="Excluir patrimônio">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                            <path d="M10 11v6" />
+                            <path d="M14 11v6" />
+                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                          </svg>
+                        </button>
+                      </form>
+                      @endcan
+                    </div>
+                  </td>
+                  @endif
+                </tr>
+                @empty
+                <tr>
+                  {{-- Corrigindo o colspan para o número correto de colunas --}}
+                  <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 16 : 15 }}"
+                    class="px-6 py-4 text-center">Nenhum patrimônio encontrado para os
+                    filtros atuais.</td>
+                </tr>
+                @endforelse
+              </table>
+            </div>
             <div class="mt-4">
               {{ $patrimonios->appends(request()->query())->links() }}
             </div>

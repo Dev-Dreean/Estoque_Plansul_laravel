@@ -1,55 +1,67 @@
 <?php
 
-declare(strict_types=1);
+// Caminho: database/seeders/TabfantSeeder.php
 
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema; // Adicione esta linha
 
 class TabfantSeeder extends Seeder
 {
-    public function run(): void
+    public function run()
     {
-        // Desativa a checagem, limpa a tabela, e reativa.
-        Schema::disableForeignKeyConstraints();
+        // Usar truncate é mais eficiente para limpar a tabela.
         DB::table('tabfant')->truncate();
-        Schema::enableForeignKeyConstraints();
 
         $path = database_path('seeders/data/tabtansaia.TXT');
         if (!file_exists($path)) {
-            $this->command->error('Arquivo de dados não encontrado: ' . $path);
+            $this->command->error("Arquivo de dados não encontrado: " . $path);
             return;
         }
-        // Conversão para UTF-8 do conteúdo inteiro
-        $rawContent = file_get_contents($path);
-        $utf8Content = mb_convert_encoding($rawContent, 'UTF-8', 'ISO-8859-1');
-        $lines = explode(PHP_EOL, $utf8Content);
-        $lines = array_filter($lines);
-        array_splice($lines, 0, 2); // remove cabeçalho
 
-        $dataToInsert = [];
-        foreach ($lines as $line) {
-            $cdFantasia = trim(substr($line, 0, 14));
-            $deFantasia = trim(substr($line, 14, 61));
-            $cdFilial = trim(substr($line, 75, 12));
+        $file = fopen($path, 'r');
+        if (!$file) {
+            $this->command->error("Não foi possível abrir o arquivo: " . $path);
+            return;
+        }
 
-            if (is_numeric($cdFantasia)) {
-                $dataToInsert[] = [
-                    'CDPROJETO' => (int)$cdFantasia,
-                    'NOMEPROJETO' => mb_convert_encoding($deFantasia, 'UTF-8', 'ISO-8859-1'),
-                    'LOCAL' => is_numeric($cdFilial) ? (string)$cdFilial : null,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+        $projetos = [];
+        $now = now();
+        fgets($file); // Ignora cabeçalho
+        fgets($file); // Ignora linha de separadores
+
+        while (($line = fgets($file)) !== false) {
+            $encoding = mb_detect_encoding($line, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
+            if ($encoding !== 'UTF-8') {
+                $line = mb_convert_encoding($line, 'UTF-8', $encoding);
+            }
+
+            $cdfantasia = trim(substr($line, 0, 14));
+            $defantasia = trim(substr($line, 14, 61));
+            $ufproj = trim(substr($line, 87, 10));
+
+            $id = is_numeric($cdfantasia) ? (int)$cdfantasia : null;
+            if ($id === null || empty($defantasia)) {
+                continue;
+            }
+
+            $projetos[] = [
+                'id'          => $id, // ID explícito para manter a referência do arquivo original
+                'NOMEPROJETO' => $defantasia,
+                'CDPROJETO'   => $cdfantasia, // Este é o código que usamos como chave
+                'LOCAL'       => $ufproj,
+                'created_at'  => $now,
+                'updated_at'  => $now,
+            ];
+        }
+        fclose($file);
+
+        if (!empty($projetos)) {
+            foreach (array_chunk($projetos, 500) as $chunk) {
+                DB::table('tabfant')->insert($chunk);
             }
         }
-
-        foreach (array_chunk($dataToInsert, 200) as $chunk) {
-            DB::table('tabfant')->insert($chunk);
-        }
-
         $this->command->info('Tabela tabfant populada com sucesso!');
     }
 }

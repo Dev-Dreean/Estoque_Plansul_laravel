@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Cache;
 
 class Patrimonio extends Model
 {
@@ -42,6 +43,14 @@ class Patrimonio extends Model
         'NMPLANTA',
     ];
 
+    protected $casts = [
+        'DTAQUISICAO' => 'date',
+        'DTOPERACAO'  => 'date',
+        'DTBAIXA'     => 'date',
+        'DTGARANTIA'  => 'date',
+        'DTLAUDO'     => 'date',
+    ];
+
     // ALTERAÇÃO AQUI: A relação agora é com Funcionario
     public function funcionario(): BelongsTo
     {
@@ -60,5 +69,31 @@ class Patrimonio extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'USUARIO', 'NMLOGIN');
+    }
+
+    // Nome legível de quem cadastrou (usa relação creator, ou fallback resolvido via cache simples)
+    public function getCadastradoPorNomeAttribute(): string
+    {
+        if ($this->relationLoaded('creator') && $this->creator && $this->creator->NOMEUSER) {
+            return $this->creator->NOMEUSER;
+        }
+        if (!empty($this->USUARIO)) {
+            $cacheKey = 'login_nome_' . $this->USUARIO;
+            return Cache::remember($cacheKey, 300, function () {
+                return optional(User::where('NMLOGIN', $this->USUARIO)->first())->NOMEUSER ?? $this->USUARIO;
+            });
+        }
+        return 'SISTEMA';
+    }
+
+    // Datas formatadas PT-BR (evita Carbon::parse no Blade)
+    public function getDtaquisicaoPtBrAttribute(): ?string
+    {
+        return $this->DTAQUISICAO ? $this->DTAQUISICAO->format('d/m/Y') : null;
+    }
+
+    public function getDtoperacaoPtBrAttribute(): ?string
+    {
+        return $this->DTOPERACAO ? $this->DTOPERACAO->format('d/m/Y') : null;
     }
 }

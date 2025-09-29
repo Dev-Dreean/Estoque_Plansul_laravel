@@ -1,59 +1,98 @@
 <?php
 
+// Caminho: app/Console/Commands/FixLocalRelations.php
+
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
+use App\Models\LocalProjeto;
+use App\Models\Tabfant;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use App\Models\LocalProjeto;
 
 class FixLocalRelations extends Command
 {
-    protected $signature = 'app:fix-local-relations';
-    protected $description = 'Corrige as chaves estrangeiras na tabela locais_projeto com base na regra de negócio final.';
+    /**
+     * O nome e a assinatura do comando do console.
+     * --report-only: Apenas lista os problemas, não altera o banco.
+     * --force: Executa as correções no banco de dados.
+     */
+    protected $signature = 'app:fix-local-relations {--report-only} {--force}';
 
-    public function handle()
+    /**
+     * A descrição do comando do console.
+     */
+    protected $description = 'Verifica e corrige relacionamentos quebrados entre LocalProjeto e Tabfant.';
+
+    public function handle(): int
     {
-        $this->info('Iniciando a correção final das relações...');
+        $reportOnly = $this->option('report-only');
+        $force = $this->option('force');
 
-        // 1. Mapeia os projetos: CDFANTASIA/CDPROJETO => ID da tabela
-        $projetosMap = DB::table('tabfant')->pluck('id', 'CDPROJETO');
-        if ($projetosMap->isEmpty()) {
-            $this->error('A tabela `tabfant` está vazia. Rode o TabfantSeeder primeiro.');
-            return 1;
+        if (!$reportOnly && !$force) {
+            $this->warn('Nenhuma ação será executada. Use --report-only para ver os problemas ou --force para corrigi-los.');
+            return self::SUCCESS;
         }
 
-        // 2. Pega todos os locais já importados do nosso banco
-        $locais = LocalProjeto::all();
-        if ($locais->isEmpty()) {
-            $this->error('A tabela `locais_projeto` está vazia. Rode o LocaisProjetoSeeder primeiro.');
-            return 1;
+        $title = $reportOnly ? 'Relatório de Diagnóstico' : 'Tentativa de Correção';
+        $this->info("=============================================");
+        $this->info("== {$title} de Relacionamentos ==");
+        $this->info("=============================================");
+
+        // Pega todos os IDs válidos da tabela de projetos (tabfant)
+        $validProjectIds = Tabfant::pluck('id')->all();
+
+        // Encontra todos os locais que têm um tabfant_id não nulo, mas que não existe na tabela de projetos
+        $brokenLocais = LocalProjeto::whereNotNull('tabfant_id')
+            ->whereNotIn('tabfant_id', $validProjectIds)
+            ->get();
+
+        if ($brokenLocais->isEmpty()) {
+            $this->info('Nenhum relacionamento quebrado encontrado. O banco de dados parece consistente!');
+            return self::SUCCESS;
         }
 
-        $updatedCount = 0;
-        $bar = $this->output->createProgressBar($locais->count());
-        $bar->start();
+        $this->warn("Encontrados {$brokenLocais->count()} locais com Projeto Associado inválido:");
+        $headers = ['ID Local', 'Cód. Local', 'Nome do Local', 'ID Projeto Inválido', 'Status'];
+        $rows = [];
+        $fixedCount = 0;
 
-        // 3. Itera sobre os locais do NOSSO BANCO e os atualiza
-        foreach ($locais as $local) {
-            // A CHAVE DE LIGAÇÃO é o próprio ID do local, que corresponde ao NUSEQLOCALPROJ do arquivo original.
-            $lookupKey = $local->id;
+        foreach ($brokenLocais as $local) {
+            $status = 'Inválido. Nenhuma correspondência encontrada.';
 
-            // Busca no mapa de projetos usando essa chave
-            $tabfantId = $projetosMap->get($lookupKey);
+            // Tenta encontrar um projeto correspondente pela lógica alternativa
+            $projetoAlternativo = Tabfant::where('CDPROJETO', (string) $local->cdlocal)->first();
 
-            if ($tabfantId) {
-                $local->tabfant_id = $tabfantId;
-                $local->save();
-                $updatedCount++;
+            if ($projetoAlternativo) {
+                $status = "CORRIGÍVEL -> Projeto '{$projetoAlternativo->NOMEPROJETO}' (ID: {$projetoAlternativo->id})";
+
+                if ($force) {
+                    $local->tabfant_id = $projetoAlternativo->id;
+                    $local->save();
+                    $fixedCount++;
+                    $status = "CORRIGIDO -> Associado ao projeto '{$projetoAlternativo->NOMEPROJETO}'";
+                }
             }
-            $bar->advance();
+
+            $rows[] = [
+                $local->id,
+                $local->cdlocal,
+                $local->delocal,
+                $local->tabfant_id,
+                $status,
+            ];
         }
 
-        $bar->finish();
-        $this->newLine(2);
-        $this->info("Correção finalizada!");
-        $this->info("{$updatedCount} registros atualizados com sucesso.");
+        $this->table($headers, $rows);
 
-        return 0;
+        if ($force) {
+            $this->info("=============================================");
+            $this->info("Correção concluída. {$fixedCount} de {$brokenLocais->count()} locais foram atualizados.");
+        } else {
+            $this->warn("\nExecute o comando com a flag --force para aplicar as correções sugeridas.");
+        }
+
+        return self::SUCCESS;
     }
 }
