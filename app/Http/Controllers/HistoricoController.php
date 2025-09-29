@@ -6,6 +6,7 @@ use App\Models\HistoricoMovimentacao;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class HistoricoController extends Controller
 {
@@ -34,13 +35,20 @@ class HistoricoController extends Controller
                 'u2.NOMEUSER as NM_CO_AUTOR'
             );
 
+        // Segurança: usuários não-ADM só veem seus próprios históricos
+        $user = Auth::user();
+        if ($user && ($user->PERFIL ?? null) !== 'ADM') {
+            $query->where('movpartr.USUARIO', $user->NMLOGIN);
+        }
+
         if ($request->filled('nupatr')) {
             $query->where('NUPATR', $request->nupatr);
         }
         if ($request->filled('codproj')) {
             $query->where('CODPROJ', $request->codproj);
         }
-        if ($request->filled('usuario')) {
+        // Filtro por usuário só é respeitado para administradores
+        if ($request->filled('usuario') && $user && ($user->PERFIL ?? null) === 'ADM') {
             $query->where('movpartr.USUARIO', 'like', '%' . $request->usuario . '%');
         }
         if ($request->filled('tipo')) {
@@ -53,7 +61,7 @@ class HistoricoController extends Controller
             $query->whereDate('DTOPERACAO', '<=', $request->data_fim);
         }
 
-    $query->orderBy('movpartr.DTOPERACAO', 'desc');
+        $query->orderBy('movpartr.DTOPERACAO', 'desc');
 
         $perPage = (int) $request->input('per_page', 30);
         if ($perPage < 10) $perPage = 10;

@@ -24,6 +24,7 @@ class ApplyTheme
         $cookieTheme = $request->cookie('theme');
 
         $theme = $sessionTheme ?? $userTheme ?? $cookieTheme;
+        $isFallback = false;
         Log::debug('[ApplyTheme] Valores iniciais', [
             'session' => $sessionTheme,
             'user' => $userTheme,
@@ -32,8 +33,9 @@ class ApplyTheme
         ]);
 
         if (!$theme) {
-            // Optional: detecta preferência do sistema (simples)
-            // Sem JS aqui, fallback padrão
+            // Sem preferência explícita no servidor: não persistir nada.
+            // Usaremos um fallback visual mínimo e deixaremos o JS aplicar o tema do sistema.
+            $isFallback = true;
             $theme = 'light';
         }
 
@@ -47,13 +49,13 @@ class ApplyTheme
 
         // Propaga para sessão (para convidados) se ainda não estiver
         // Se sessão não tem ou está desatualizada, sincroniza
-        if ($sessionTheme !== $theme) {
+        if (!$isFallback && $sessionTheme !== $theme) {
             session(['theme' => $theme]);
             Log::debug('[ApplyTheme] Sessão sincronizada', ['new_session_theme' => $theme]);
         }
 
         // Se user logado e diferente do salvo, alinha (não grava fallback 'light' se user já tem custom)
-        if (Auth::check() && $userTheme !== $theme && $theme !== null) {
+        if (!$isFallback && Auth::check() && $userTheme !== $theme && $theme !== null) {
             /** @var \App\Models\User $u */
             $u = Auth::user();
             $u->theme = $theme;
@@ -78,7 +80,7 @@ class ApplyTheme
         $response = $next($request);
 
         // Anexa cookie persistente (1 ano) se mudou
-        if ($cookieTheme !== $theme) {
+        if (!$isFallback && $cookieTheme !== $theme) {
             $response->headers->setCookie(cookie('theme', $theme, 60 * 24 * 365));
             Log::debug('[ApplyTheme] Cookie atualizado', ['cookie_old' => $cookieTheme, 'cookie_new' => $theme]);
         }

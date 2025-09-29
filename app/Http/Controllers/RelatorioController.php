@@ -12,6 +12,7 @@ use Illuminate\View\View;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 use Barryvdh\DomPDF\Facade\Pdf;
 // Removido uso de Maatwebsite\Excel; usaremos SimpleExcelWriter já presente
+use Illuminate\Support\Facades\Auth;
 
 class RelatorioController extends Controller
 {
@@ -85,6 +86,17 @@ class RelatorioController extends Controller
 
             // 'usuario' não existe mais no Model; relação correta é 'creator' (quem cadastrou)
             $query = Patrimonio::query()->with('creator', 'local');
+            // Segurança: usuários não-ADM veem registros que criaram OU dos quais são responsáveis
+            $user = Auth::user();
+            if ($user && ($user->PERFIL ?? null) !== 'ADM') {
+                $nmLogin = (string) ($user->NMLOGIN ?? '');
+                $nmUser  = (string) ($user->NOMEUSER ?? '');
+                $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
+                    $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
+                        ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
+                        ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser]);
+                });
+            }
             switch ($tipo) {
                 case 'numero':
                     if ($request->filled('numero_busca')) {
@@ -157,6 +169,17 @@ class RelatorioController extends Controller
 
         // Ajuste de relações: usar 'creator' (usuário do sistema que cadastrou) e 'local'
         $query = Patrimonio::query()->with('creator', 'local');
+        // Segurança: usuários não-ADM veem registros que criaram OU dos quais são responsáveis
+        $user = Auth::user();
+        if ($user && ($user->PERFIL ?? null) !== 'ADM') {
+            $nmLogin = (string) ($user->NMLOGIN ?? '');
+            $nmUser  = (string) ($user->NOMEUSER ?? '');
+            $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
+                $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser]);
+            });
+        }
         switch ($validated['tipo_relatorio']) {
             case 'numero':
                 if ($request->filled('numero_busca')) {

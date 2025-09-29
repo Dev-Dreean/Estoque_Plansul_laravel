@@ -20,8 +20,8 @@ class TipoPatrSeeder extends Seeder
             return;
         }
 
-    // Limpa a tabela antes de começar (usa Model para respeitar o case da tabela)
-    TipoPatr::query()->delete();
+        // Limpa a tabela antes de começar (usa Model para respeitar o case da tabela)
+        TipoPatr::query()->delete();
 
         // Conversão para UTF-8 evitando problemas de caracteres especiais
         $rawContent = File::get($path);

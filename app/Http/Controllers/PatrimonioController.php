@@ -17,6 +17,7 @@ use Illuminate\View\View;
 use App\Models\HistoricoMovimentacao;
 use App\Models\TermoCodigo;
 use App\Services\CodigoService;
+use Illuminate\Validation\ValidationException;
 
 class PatrimonioController extends Controller
 {
@@ -182,6 +183,7 @@ class PatrimonioController extends Controller
         }
 
         // 3) Criar o patrimônio associando o código recém-verificado/criado
+        $usuarioCriador = Auth::user()->NMLOGIN ?? Auth::user()->NOMEUSER ?? 'SISTEMA';
         $dadosPatrimonio = [
             'NUPATRIMONIO' => (int) $validated['NUPATRIMONIO'],
             'CODOBJETO' => $codigo, // campo da tabela patr
@@ -198,7 +200,7 @@ class PatrimonioController extends Controller
             'MODELO' => $request->input('MODELO'),
             'DTAQUISICAO' => $request->input('DTAQUISICAO'),
             'DTBAIXA' => $request->input('DTBAIXA'),
-            'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+            'USUARIO' => $usuarioCriador,
             'DTOPERACAO' => now(),
         ];
 
@@ -416,6 +418,18 @@ class PatrimonioController extends Controller
         // Query base para patrimônios
         $query = Patrimonio::query();
 
+        // Segurança: usuários não-ADM só visualizam patrimônios que eles cadastraram
+        $user = Auth::user();
+        if ($user && ($user->PERFIL ?? null) !== 'ADM') {
+            $nmLogin = (string) ($user->NMLOGIN ?? '');
+            $nmUser  = (string) ($user->NOMEUSER ?? '');
+            $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
+                $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser]);
+            });
+        }
+
         // Filtro por status - default volta a 'disponivel'
         $status = $request->get('status', 'disponivel');
 
@@ -468,6 +482,18 @@ class PatrimonioController extends Controller
         // Reutilizamos a lógica do método atribuir sem duplicar demasiadamente
         // (poderíamos extrair para método privado, mas mantemos simples para clareza)
         $query = Patrimonio::query();
+
+        // Segurança: usuários não-ADM só visualizam patrimônios que eles cadastraram
+        $user = Auth::user();
+        if ($user && ($user->PERFIL ?? null) !== 'ADM') {
+            $nmLogin = (string) ($user->NMLOGIN ?? '');
+            $nmUser  = (string) ($user->NOMEUSER ?? '');
+            $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
+                $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser]);
+            });
+        }
 
         $status = $request->get('status', 'disponivel');
         if ($status === 'disponivel') {
@@ -679,7 +705,14 @@ class PatrimonioController extends Controller
         $query = Patrimonio::with(['funcionario', 'local', 'creator']);
 
         if ($user->PERFIL !== 'ADM') {
-            $query->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO);
+            // Não-ADM: pode ver o que é responsável OU o que ele mesmo cadastrou (login ou nome), case-insensitive
+            $nmLogin = (string) ($user->NMLOGIN ?? '');
+            $nmUser  = (string) ($user->NOMEUSER ?? '');
+            $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
+                $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser]);
+            });
         }
         if ($request->filled('nupatrimonio')) {
             $query->where('NUPATRIMONIO', $request->nupatrimonio);
@@ -763,11 +796,17 @@ class PatrimonioController extends Controller
 
     private function validatePatrimonio(Request $request): array
     {
-        return $request->validate([
+        // 1) Validar campos básicos; aceitar tanto o fluxo novo (NUSEQOBJ/DEOBJETO)
+        // quanto o legado (CODOBJETO/DEPATRIMONIO)
+        $data = $request->validate([
             'NUPATRIMONIO' => 'required|integer',
             'NUMOF' => 'nullable|integer',
-            'CODOBJETO' => 'required|integer',
-            'DEPATRIMONIO' => 'required|string|max:350',
+            // Fluxo novo de código
+            'NUSEQOBJ' => 'nullable|integer',
+            'DEOBJETO' => 'nullable|string|max:350',
+            // Fluxo legado (fallback)
+            'CODOBJETO' => 'nullable|integer',
+            'DEPATRIMONIO' => 'nullable|string|max:350',
             'DEHISTORICO' => 'nullable|string|max:300',
             'CDPROJETO' => 'nullable|integer',
             'CDLOCAL' => 'nullable|integer',
@@ -778,9 +817,45 @@ class PatrimonioController extends Controller
             'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,À DISPOSIÇÃO',
             'DTAQUISICAO' => 'nullable|date',
             'DTBAIXA' => 'required_if:SITUACAO,BAIXA|nullable|date',
-            // Agora valida contra a tabela de funcionarios importados, não mais tabela usuario
+            // Matricula precisa existir na tabela funcionarios
             'CDMATRFUNCIONARIO' => 'required|integer|exists:funcionarios,CDMATRFUNCIONARIO',
         ]);
+
+        // 2) Resolver o código do objeto a partir de NUSEQOBJ (preferencial) ou CODOBJETO (fallback)
+        $codigoInput = $request->input('NUSEQOBJ', $request->input('CODOBJETO'));
+        if ($codigoInput === null || $codigoInput === '') {
+            throw ValidationException::withMessages([
+                'NUSEQOBJ' => 'Informe o código do objeto.'
+            ]);
+        }
+        if (!is_numeric($codigoInput)) {
+            throw ValidationException::withMessages([
+                'NUSEQOBJ' => 'O código do objeto deve ser numérico.'
+            ]);
+        }
+        $codigo = (int) $codigoInput;
+
+        // 3) Garantir existência do registro em OBJETOPATR
+        $objeto = ObjetoPatr::find($codigo);
+        if (!$objeto) {
+            $descricao = trim((string) $request->input('DEOBJETO', ''));
+            if ($descricao === '') {
+                throw ValidationException::withMessages([
+                    'DEOBJETO' => 'Informe a descrição do novo código.'
+                ]);
+            }
+            $objeto = ObjetoPatr::create([
+                'NUSEQOBJETO' => $codigo,
+                'DEOBJETO' => $descricao,
+            ]);
+        }
+
+        // 4) Mapear para os campos reais da tabela PATR
+        $data['CODOBJETO'] = $codigo;
+        $data['DEPATRIMONIO'] = $objeto->DEOBJETO; // mantém compatibilidade de exibição no index/relatórios
+        unset($data['NUSEQOBJ'], $data['DEOBJETO']);
+
+        return $data;
     }
 
     /* === Rotas solicitadas para geração e atribuição direta de códigos (fluxo simplificado) === */

@@ -42,9 +42,9 @@ class ObjetoPatrSeeder extends Seeder
             }
         }
 
-    // Deleta dados antigos para evitar duplicatas (usa o Model para respeitar case da tabela)
-    ObjetoPatr::query()->delete();
-    // Insere os novos dados
-    ObjetoPatr::query()->insert($data);
+        // Deleta dados antigos para evitar duplicatas (usa o Model para respeitar case da tabela)
+        ObjetoPatr::query()->delete();
+        // Insere os novos dados
+        ObjetoPatr::query()->insert($data);
     }
 }

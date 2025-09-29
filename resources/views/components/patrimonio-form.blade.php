@@ -277,6 +277,7 @@
           @keydown.up.prevent="navegarUsuarios(-1)"
           @keydown.enter.prevent="selecionarUsuarioEnter()"
           @keydown.escape.prevent="showUserDropdown=false"
+          @blur="normalizarMatriculaBusca()"
           type="text"
           placeholder="Digite matrícula ou nome"
           class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10"
@@ -571,6 +572,26 @@
         this.userSearch = this.userSelectedName;
         this.showUserDropdown = false;
       },
+      // Sanitiza o campo visível removendo datas/números após o nome e garante que o hidden receba só a matrícula
+      normalizarMatriculaBusca() {
+        let s = String(this.userSearch || '');
+        // Corta qualquer data (ex: 10/02/1998) e o que vem depois
+        const dateIdx = s.search(/\d{2}\/\d{2}\/\d{4}/);
+        if (dateIdx >= 0) s = s.slice(0, dateIdx);
+        // Remove números soltos no final (ex: "   0")
+        s = s.replace(/\s+\d+\s*$/, '');
+        // Mantém apenas "mat - nome" quando houver mais lixo depois
+        const m = s.match(/^(\d+)\s*-\s*([^\d\/]+?)(?:\s+\d.*)?$/);
+        if (m) {
+          s = `${m[1]} - ${m[2].trim()}`;
+        }
+        this.userSearch = s.trim();
+        // Tenta extrair a matrícula no início da string e atualizar o hidden
+        const onlyMat = this.userSearch.match(/^(\d{1,12})\b/);
+        if (onlyMat) {
+          this.formData.CDMATRFUNCIONARIO = onlyMat[1];
+        }
+      },
       selecionarUsuarioEnter() {
         if (!this.showUserDropdown) return;
         if (this.highlightedUserIndex < 0 || this.highlightedUserIndex >= this.usuarios.length) return;
@@ -824,7 +845,8 @@
             this.highlightedLocalIndex = this.locaisFiltrados.length > 0 ? 0 : -1;
           }
         } catch (e) {
-          /* silencioso */ }
+          /* silencioso */
+        }
       },
       selecionarLocal(l) {
         // Aceita diferentes formatos: Tabfant (CDFANTASIA/DEFANTASIA ou CDPROJETO/NOMEPROJETO) ou LocalProjeto (cdlocal/LOCAL)
@@ -1019,7 +1041,8 @@
               }
             }
           } catch (e) {
-            /* silencioso */ }
+            /* silencioso */
+          }
         }
         // Manter localSearch sincronizado quando CDLOCAL mudar depois do init (ex.: ao carregar um patrimônio)
         this.$watch('formData.CDLOCAL', async (val) => {

@@ -47,9 +47,11 @@ Route::middleware('auth')->group(function () {
 // GRUPO 2: Rotas principais que EXIGEM perfil completo. NOTE A MUDANÇA AQUI!
 // NOTE: Adicionamos 'profile.complete' a este grupo.
 Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])->group(function () {
-    // Configuração de Tema
-    Route::get('/settings/theme', [\App\Http\Controllers\ThemeController::class, 'index'])->name('settings.theme');
-    Route::post('/settings/theme', [\App\Http\Controllers\ThemeController::class, 'update'])->name('settings.theme.update');
+    // Configuração de Tema (apenas administradores)
+    Route::middleware('admin')->group(function () {
+        Route::get('/settings/theme', [\App\Http\Controllers\ThemeController::class, 'index'])->name('settings.theme');
+        Route::post('/settings/theme', [\App\Http\Controllers\ThemeController::class, 'update'])->name('settings.theme.update');
+    });
 
     // MOVI TODAS AS SUAS ROTAS PRINCIPAIS PARA DENTRO DESTE GRUPO
 

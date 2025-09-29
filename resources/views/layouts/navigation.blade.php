@@ -49,9 +49,11 @@
                     </x-slot>
 
                     <x-slot name="content">
+                        @if(Auth::user()->PERFIL === 'ADM')
                         <x-dropdown-link :href="route('settings.theme')">
                             {{ __('Temas') }}
                         </x-dropdown-link>
+                        @endif
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <x-dropdown-link :href="route('logout')"
@@ -93,9 +95,11 @@
             </div>
 
             <div class="mt-3 space-y-1">
+                @if(Auth::user()->PERFIL === 'ADM')
                 <x-responsive-nav-link :href="route('settings.theme')">
                     {{ __('Temas') }}
                 </x-responsive-nav-link>
+                @endif
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <x-responsive-nav-link :href="route('logout')"

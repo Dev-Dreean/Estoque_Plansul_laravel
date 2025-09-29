@@ -12,17 +12,22 @@
   <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
   <script>
-    // Early apply de tema: roda antes do CSS para evitar flash e reforçar persistência local
+    // Early apply de tema: evita FOUC e aplica padrão conforme cor do sistema (Windows)
     (function() {
       try {
         var cookie = document.cookie.match(/(?:^|; )theme=([^;]+)/);
         var cookieTheme = cookie ? decodeURIComponent(cookie[1]) : null;
         var stored = localStorage.getItem('theme');
-        // Prioridade: stored > cookie
         var t = stored || cookieTheme;
-        if (t) {
-          document.documentElement.setAttribute('data-theme', t);
+        if (!t) {
+          // Sem preferência salva: usa preferência do sistema operacional
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          t = prefersDark ? 'dark' : 'light';
+          try {
+            localStorage.setItem('theme', t);
+          } catch (e) {}
         }
+        document.documentElement.setAttribute('data-theme', t);
       } catch (e) {
         /* ignore */ }
     })();

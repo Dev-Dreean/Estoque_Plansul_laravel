@@ -12,16 +12,21 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
     <script>
-        // Early theme (guest): prioriza localStorage, fallback cookie
+        // Early theme (guest): prioriza localStorage, depois cookie e por fim preferência do sistema
         (function() {
             try {
                 var c = document.cookie.match(/(?:^|; )theme=([^;]+)/);
                 var ct = c ? decodeURIComponent(c[1]) : null;
                 var s = localStorage.getItem('theme');
                 var t = s || ct;
-                if (t) {
-                    document.documentElement.setAttribute('data-theme', t);
+                if (!t) {
+                    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    t = prefersDark ? 'dark' : 'light';
+                    try {
+                        localStorage.setItem('theme', t);
+                    } catch (e) {}
                 }
+                document.documentElement.setAttribute('data-theme', t);
             } catch (e) {}
         })();
     </script>
