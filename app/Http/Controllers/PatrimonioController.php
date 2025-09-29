@@ -204,7 +204,28 @@ class PatrimonioController extends Controller
             'DTOPERACAO' => now(),
         ];
 
-        Patrimonio::create($dadosPatrimonio);
+        $patrimonio = Patrimonio::create($dadosPatrimonio);
+
+        // Histórico: criação de patrimônio (evita duplicidade caso o submit ocorra duas vezes)
+        try {
+            $jaExiste = HistoricoMovimentacao::where('TIPO', 'criacao')
+                ->where('NUPATR', $patrimonio->NUPATRIMONIO)
+                ->exists();
+            if (!$jaExiste) {
+                $this->logHistorico(
+                    'criacao',
+                    'PATRIMONIO',
+                    null,
+                    sprintf('#%s - %s', $patrimonio->NUPATRIMONIO, (string)($patrimonio->DEPATRIMONIO ?? '')),
+                    $patrimonio
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao gravar histórico de criação', [
+                'patrimonio' => $patrimonio->NUSEQPATR ?? null,
+                'erro' => $e->getMessage()
+            ]);
+        }
 
         return redirect()->route('patrimonios.index')
             ->with('success', 'Patrimônio cadastrado com sucesso!');
@@ -228,8 +249,9 @@ class PatrimonioController extends Controller
      */
     public function update(Request $request, Patrimonio $patrimonio): RedirectResponse
     {
-        $this->authorize('update', $patrimonio);
-        $validatedData = $this->validatePatrimonio($request);
+    $this->authorize('update', $patrimonio);
+    $validatedData = $this->validatePatrimonio($request);
+    $original = $patrimonio->getOriginal();
 
         // Detectar alterações relevantes
         $oldProjeto = $patrimonio->CDPROJETO;
@@ -293,6 +315,36 @@ class PatrimonioController extends Controller
                 ]);
             }
         }
+        // Histórico: deltas de edição para campos relevantes (exceto projeto/situação já registrados acima)
+        try {
+            $campos = [
+                'DEPATRIMONIO', 'MARCA', 'MODELO', 'COR', 'DIMENSAO', 'CARACTERISTICAS', 'NUSERIE', 'DEHISTORICO',
+                'CDMATRFUNCIONARIO', 'CDLOCAL', 'DTAQUISICAO', 'DTGARANTIA', 'DTBAIXA', 'NUMOF', 'CODOBJETO', 'NMPLANTA',
+            ];
+            foreach ($campos as $campo) {
+                $old = $original[$campo] ?? null;
+                $new = $patrimonio->$campo;
+                // Normaliza datas para string simples
+                if ($old instanceof \Carbon\Carbon) { $old = $old->toDateString(); }
+                if ($new instanceof \Carbon\Carbon) { $new = $new->toDateString(); }
+                if ((string)($old ?? '') !== (string)($new ?? '')) {
+                    $tipoDelta = $campo === 'CDMATRFUNCIONARIO' ? 'responsavel' : 'edicao';
+                    $this->logHistorico(
+                        $tipoDelta,
+                        $campo,
+                        $old,
+                        $new,
+                        $patrimonio
+                    );
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao gravar histórico de edição (deltas)', [
+                'patrimonio' => $patrimonio->NUSEQPATR,
+                'erro' => $e->getMessage(),
+            ]);
+        }
+
         return redirect()->route('patrimonios.index')->with('success', 'Patrimônio atualizado com sucesso!');
     }
 
@@ -302,8 +354,48 @@ class PatrimonioController extends Controller
     public function destroy(Patrimonio $patrimonio): RedirectResponse
     {
         $this->authorize('delete', $patrimonio);
+        // Histórico: exclusão (apenas ADM pela policy)
+        try {
+            $this->logHistorico(
+                'exclusao',
+                'PATRIMONIO',
+                sprintf('#%s - %s', $patrimonio->NUPATRIMONIO, (string)($patrimonio->DEPATRIMONIO ?? '')),
+                null,
+                $patrimonio
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao gravar histórico de exclusão', [
+                'patrimonio' => $patrimonio->NUSEQPATR,
+                'erro' => $e->getMessage(),
+            ]);
+        }
         $patrimonio->delete();
         return redirect()->route('patrimonios.index')->with('success', 'Patrimônio deletado com sucesso!');
+    }
+
+    /**
+     * Helper para registrar histórico com regras consistentes (autor/co-autor, projeto, etc.)
+     */
+    private function logHistorico(string $tipo, string $campo, $de, $para, Patrimonio $patr): void
+    {
+        $actorLogin = Auth::user()->NMLOGIN ?? 'SISTEMA';
+        $actorMat = Auth::user()->CDMATRFUNCIONARIO ?? null;
+        $ownerMat = $patr->CDMATRFUNCIONARIO;
+        $coAutor = null;
+        if (!empty($actorMat) && !empty($ownerMat) && $actorMat != $ownerMat) {
+            $coAutor = User::where('CDMATRFUNCIONARIO', $ownerMat)->value('NMLOGIN');
+        }
+        HistoricoMovimentacao::create([
+            'TIPO' => $tipo,
+            'CAMPO' => $campo,
+            'VALOR_ANTIGO' => $de,
+            'VALOR_NOVO' => $para,
+            'NUPATR' => $patr->NUPATRIMONIO,
+            'CODPROJ' => $patr->CDPROJETO,
+            'USUARIO' => $actorLogin,
+            'CO_AUTOR' => $coAutor,
+            'DTOPERACAO' => now(),
+        ]);
     }
 
     // --- MÉTODOS DE API PARA O FORMULÁRIO DINÂMICO ---

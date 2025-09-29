@@ -35,10 +35,30 @@ class HistoricoController extends Controller
                 'u2.NOMEUSER as NM_CO_AUTOR'
             );
 
-        // Segurança: usuários não-ADM só veem seus próprios históricos
+        // Segurança: usuários não-ADM veem históricos que:
+        // (a) Foram feitos por eles (USUARIO = NMLOGIN) OU
+        // (b) Pertencem a patrimônios que eles podem ver (responsável OU criador do patrimônio)
         $user = Auth::user();
         if ($user && ($user->PERFIL ?? null) !== 'ADM') {
-            $query->where('movpartr.USUARIO', $user->NMLOGIN);
+            $nmLogin = trim((string)($user->NMLOGIN ?? ''));
+            $nmUser  = trim((string)($user->NOMEUSER ?? ''));
+            $mat     = (string)($user->CDMATRFUNCIONARIO ?? '');
+
+            $query->where(function ($q) use ($nmLogin, $nmUser, $mat) {
+                // (a) Ações feitas pelo usuário
+                $q->whereRaw('LOWER(movpartr.USUARIO) = LOWER(?)', [$nmLogin])
+                  // (b) Movimentações de patrimônios visíveis ao usuário (sem join para evitar duplicação)
+                  ->orWhereExists(function ($sub) use ($nmLogin, $nmUser, $mat) {
+                      $sub->select(DB::raw(1))
+                          ->from('patr as p')
+                          ->whereColumn('p.NUPATRIMONIO', 'movpartr.NUPATR')
+                          ->where(function ($q3) use ($nmLogin, $nmUser, $mat) {
+                              $q3->where('p.CDMATRFUNCIONARIO', $mat)
+                                 ->orWhereRaw('LOWER(p.USUARIO) = LOWER(?)', [$nmLogin])
+                                 ->orWhereRaw('LOWER(p.USUARIO) = LOWER(?)', [$nmUser]);
+                          });
+                  });
+            });
         }
 
         if ($request->filled('nupatr')) {
