@@ -29,11 +29,19 @@ class PatrimonioPolicy
 
     /**
      * Quem pode ver UM patrimônio específico?
-     * (Não-admins só podem ver os seus)
+     * (Não-admins: podem ver se são responsáveis OU se foram os criadores)
      */
     public function view(User $user, Patrimonio $patrimonio): bool
     {
-        return $user->CDMATRFUNCIONARIO === $patrimonio->CDMATRFUNCIONARIO;
+        $isResp = (string)($user->CDMATRFUNCIONARIO ?? '') === (string)($patrimonio->CDMATRFUNCIONARIO ?? '');
+        $usuario = trim((string)($patrimonio->USUARIO ?? ''));
+        $nmLogin = trim((string)($user->NMLOGIN ?? ''));
+        $nmUser  = trim((string)($user->NOMEUSER ?? ''));
+        $isCreator = $usuario !== '' && (
+            strcasecmp($usuario, $nmLogin) === 0 ||
+            strcasecmp($usuario, $nmUser) === 0
+        );
+        return $isResp || $isCreator;
     }
 
     /**
@@ -45,11 +53,20 @@ class PatrimonioPolicy
     }
 
     /**
-     * Quem pode atualizar? NINGUÉM, exceto o admin (que já foi pego pelo 'before').
+     * Quem pode atualizar?
+     * Admin já liberado no 'before'. Para não-admins, permitir se responsável OU criador.
      */
     public function update(User $user, Patrimonio $patrimonio): bool
     {
-        return $user->CDMATRFUNCIONARIO === $patrimonio->CDMATRFUNCIONARIO;
+        $isResp = (string)($user->CDMATRFUNCIONARIO ?? '') === (string)($patrimonio->CDMATRFUNCIONARIO ?? '');
+        $usuario = trim((string)($patrimonio->USUARIO ?? ''));
+        $nmLogin = trim((string)($user->NMLOGIN ?? ''));
+        $nmUser  = trim((string)($user->NOMEUSER ?? ''));
+        $isCreator = $usuario !== '' && (
+            strcasecmp($usuario, $nmLogin) === 0 ||
+            strcasecmp($usuario, $nmUser) === 0
+        );
+        return $isResp || $isCreator;
     }
 
     /**
