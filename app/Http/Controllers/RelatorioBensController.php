@@ -11,7 +11,7 @@ class RelatorioBensController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ObjetoPatr::query()->with('tipo');
+    $query = ObjetoPatr::query()->with('tipo');
 
         if ($request->filled('descricao')) {
             $query->where('DEOBJETO', 'like', '%' . $request->input('descricao') . '%');
@@ -75,7 +75,7 @@ class RelatorioBensController extends Controller
                 ->withInput();
         }
 
-        DB::transaction(function () use ($data, $tipo) {
+    DB::transaction(function () use ($data, $tipo) {
             // Cria o tipo se não existir
             $tipoId = (int) $data['NUSEQTIPOPATR'];
             if (!$tipo) {
@@ -86,7 +86,7 @@ class RelatorioBensController extends Controller
             }
 
             // Próximo código do objeto
-            $nextId = (int) (DB::table('objetopatr')->max('NUSEQOBJETO') ?? 0) + 1;
+            $nextId = (int) (ObjetoPatr::max('NUSEQOBJETO') ?? 0) + 1;
 
             ObjetoPatr::create([
                 'NUSEQOBJETO'   => $nextId,

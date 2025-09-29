@@ -146,7 +146,7 @@
                     </div>
 
                     <div class="mt-4">
-                        {{ $bens->appends(request()->query())->links() }}
+                        {{ $bens->withQueryString()->links() }}
                     </div>
 
                 </div>
