@@ -204,28 +204,7 @@ class PatrimonioController extends Controller
             'DTOPERACAO' => now(),
         ];
 
-        $patrimonio = Patrimonio::create($dadosPatrimonio);
-
-        // Histórico: criação de patrimônio (evita duplicidade caso o submit ocorra duas vezes)
-        try {
-            $jaExiste = HistoricoMovimentacao::where('TIPO', 'criacao')
-                ->where('NUPATR', $patrimonio->NUPATRIMONIO)
-                ->exists();
-            if (!$jaExiste) {
-                $this->logHistorico(
-                    'criacao',
-                    'PATRIMONIO',
-                    null,
-                    sprintf('#%s - %s', $patrimonio->NUPATRIMONIO, (string)($patrimonio->DEPATRIMONIO ?? '')),
-                    $patrimonio
-                );
-            }
-        } catch (\Throwable $e) {
-            Log::warning('Falha ao gravar histórico de criação', [
-                'patrimonio' => $patrimonio->NUSEQPATR ?? null,
-                'erro' => $e->getMessage()
-            ]);
-        }
+        Patrimonio::create($dadosPatrimonio);
 
         return redirect()->route('patrimonios.index')
             ->with('success', 'Patrimônio cadastrado com sucesso!');
@@ -249,9 +228,8 @@ class PatrimonioController extends Controller
      */
     public function update(Request $request, Patrimonio $patrimonio): RedirectResponse
     {
-    $this->authorize('update', $patrimonio);
-    $validatedData = $this->validatePatrimonio($request);
-    $original = $patrimonio->getOriginal();
+        $this->authorize('update', $patrimonio);
+        $validatedData = $this->validatePatrimonio($request);
 
         // Detectar alterações relevantes
         $oldProjeto = $patrimonio->CDPROJETO;
@@ -315,36 +293,6 @@ class PatrimonioController extends Controller
                 ]);
             }
         }
-        // Histórico: deltas de edição para campos relevantes (exceto projeto/situação já registrados acima)
-        try {
-            $campos = [
-                'DEPATRIMONIO', 'MARCA', 'MODELO', 'COR', 'DIMENSAO', 'CARACTERISTICAS', 'NUSERIE', 'DEHISTORICO',
-                'CDMATRFUNCIONARIO', 'CDLOCAL', 'DTAQUISICAO', 'DTGARANTIA', 'DTBAIXA', 'NUMOF', 'CODOBJETO', 'NMPLANTA',
-            ];
-            foreach ($campos as $campo) {
-                $old = $original[$campo] ?? null;
-                $new = $patrimonio->$campo;
-                // Normaliza datas para string simples
-                if ($old instanceof \Carbon\Carbon) { $old = $old->toDateString(); }
-                if ($new instanceof \Carbon\Carbon) { $new = $new->toDateString(); }
-                if ((string)($old ?? '') !== (string)($new ?? '')) {
-                    $tipoDelta = $campo === 'CDMATRFUNCIONARIO' ? 'responsavel' : 'edicao';
-                    $this->logHistorico(
-                        $tipoDelta,
-                        $campo,
-                        $old,
-                        $new,
-                        $patrimonio
-                    );
-                }
-            }
-        } catch (\Throwable $e) {
-            Log::warning('Falha ao gravar histórico de edição (deltas)', [
-                'patrimonio' => $patrimonio->NUSEQPATR,
-                'erro' => $e->getMessage(),
-            ]);
-        }
-
         return redirect()->route('patrimonios.index')->with('success', 'Patrimônio atualizado com sucesso!');
     }
 
@@ -354,48 +302,8 @@ class PatrimonioController extends Controller
     public function destroy(Patrimonio $patrimonio): RedirectResponse
     {
         $this->authorize('delete', $patrimonio);
-        // Histórico: exclusão (apenas ADM pela policy)
-        try {
-            $this->logHistorico(
-                'exclusao',
-                'PATRIMONIO',
-                sprintf('#%s - %s', $patrimonio->NUPATRIMONIO, (string)($patrimonio->DEPATRIMONIO ?? '')),
-                null,
-                $patrimonio
-            );
-        } catch (\Throwable $e) {
-            Log::warning('Falha ao gravar histórico de exclusão', [
-                'patrimonio' => $patrimonio->NUSEQPATR,
-                'erro' => $e->getMessage(),
-            ]);
-        }
         $patrimonio->delete();
         return redirect()->route('patrimonios.index')->with('success', 'Patrimônio deletado com sucesso!');
-    }
-
-    /**
-     * Helper para registrar histórico com regras consistentes (autor/co-autor, projeto, etc.)
-     */
-    private function logHistorico(string $tipo, string $campo, $de, $para, Patrimonio $patr): void
-    {
-        $actorLogin = Auth::user()->NMLOGIN ?? 'SISTEMA';
-        $actorMat = Auth::user()->CDMATRFUNCIONARIO ?? null;
-        $ownerMat = $patr->CDMATRFUNCIONARIO;
-        $coAutor = null;
-        if (!empty($actorMat) && !empty($ownerMat) && $actorMat != $ownerMat) {
-            $coAutor = User::where('CDMATRFUNCIONARIO', $ownerMat)->value('NMLOGIN');
-        }
-        HistoricoMovimentacao::create([
-            'TIPO' => $tipo,
-            'CAMPO' => $campo,
-            'VALOR_ANTIGO' => $de,
-            'VALOR_NOVO' => $para,
-            'NUPATR' => $patr->NUPATRIMONIO,
-            'CODPROJ' => $patr->CDPROJETO,
-            'USUARIO' => $actorLogin,
-            'CO_AUTOR' => $coAutor,
-            'DTOPERACAO' => now(),
-        ]);
     }
 
     // --- MÉTODOS DE API PARA O FORMULÁRIO DINÂMICO ---
@@ -451,6 +359,54 @@ class PatrimonioController extends Controller
         return response()->json($projetos);
     }
 
+    /**
+     * Cria um novo projeto com código único e sequencial.
+     */
+    public function criarProjeto(Request $request): JsonResponse
+    {
+        $request->validate([
+            'nome' => 'required|string|max:255',
+        ], [
+            'nome.required' => 'Informe o nome do projeto.',
+            'nome.max' => 'Nome muito longo (máximo 255 caracteres).',
+        ]);
+
+        try {
+            // Gera o próximo código sequencial único
+            $maxCodigo = Tabfant::max('CDPROJETO') ?? 0;
+            $novoCodigo = (int) $maxCodigo + 1;
+
+            // Cria o projeto
+            $projeto = Tabfant::create([
+                'CDPROJETO' => $novoCodigo,
+                'NOMEPROJETO' => $request->nome,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            Log::info('Projeto criado', [
+                'CDPROJETO' => $projeto->CDPROJETO,
+                'NOMEPROJETO' => $projeto->NOMEPROJETO,
+                'usuario' => Auth::id()
+            ]);
+
+            return response()->json([
+                'CDPROJETO' => $projeto->CDPROJETO,
+                'NOMEPROJETO' => $projeto->NOMEPROJETO,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao criar projeto', [
+                'nome' => $request->nome,
+                'erro' => $e->getMessage(),
+                'usuario' => Auth::id()
+            ]);
+
+            return response()->json([
+                'error' => 'Erro interno. Tente novamente.'
+            ], 500);
+        }
+    }
+
     public function getLocaisPorProjeto($cdprojeto): JsonResponse
     {
         $projeto = Tabfant::where('CDPROJETO', $cdprojeto)->first(['id']);
@@ -476,7 +432,7 @@ class PatrimonioController extends Controller
         $request->validate([
             'delocal' => 'required|string|max:120',
         ], [
-            'delocal.required' => 'Informe o nome do local.'
+            'delocal.required' => 'Informe o nome do local.',
         ]);
 
         $projeto = Tabfant::where('CDPROJETO', $cdprojeto)->first(['id']);
@@ -484,9 +440,20 @@ class PatrimonioController extends Controller
             return response()->json(['error' => 'Projeto não encontrado.'], 404);
         }
 
-        // Gera código sequencial simples dentro do projeto (ou global se preferir)
-        $nextCdLocal = (int) LocalProjeto::where('tabfant_id', $projeto->id)->max('cdlocal');
-        $nextCdLocal = $nextCdLocal ? $nextCdLocal + 1 : 1;
+        // Calcula automaticamente o próximo cdlocal baseado apenas nos locais deste projeto
+        $maxCdLocal = LocalProjeto::where('tabfant_id', $projeto->id)
+            ->max('cdlocal') ?? 0;
+
+        $nextCdLocal = (int) $maxCdLocal + 1;
+
+        // Log para debug
+        Log::info('Criando local para projeto', [
+            'cdprojeto' => $cdprojeto,
+            'tabfant_id' => $projeto->id,
+            'max_cdlocal_atual' => $maxCdLocal,
+            'next_cdlocal' => $nextCdLocal,
+            'delocal' => $request->delocal
+        ]);
 
         $local = LocalProjeto::create([
             'tabfant_id' => $projeto->id,
@@ -499,6 +466,101 @@ class PatrimonioController extends Controller
             'id' => $local->id,
             'LOCAL' => $local->delocal,
             'cdlocal' => $local->cdlocal,
+        ], 201);
+    }
+
+    /**
+     * Busca locais disponíveis por código ou nome
+     */
+    public function buscarLocais(Request $request): JsonResponse
+    {
+        $termo = $request->input('termo', '');
+
+        $query = LocalProjeto::with('projeto')->where('flativo', true);
+
+        if (!empty($termo)) {
+            $query->where(function ($q) use ($termo) {
+                $q->where('cdlocal', 'LIKE', "%{$termo}%")
+                    ->orWhere('delocal', 'LIKE', "%{$termo}%");
+            });
+        }
+
+        $locais = $query->orderBy('cdlocal')
+            ->limit(empty($termo) ? 20 : 50) // Menos resultados se não há termo específico
+            ->get()
+            ->map(function ($local) {
+                return [
+                    'id' => $local->id,
+                    'cdlocal' => $local->cdlocal,
+                    'LOCAL' => $local->delocal,
+                    'delocal' => $local->delocal,
+                    'tabfant_id' => $local->tabfant_id,
+                    'CDPROJETO' => $local->projeto ? $local->projeto->CDPROJETO : null,
+                    'NOMEPROJETO' => $local->projeto ? $local->projeto->NOMEPROJETO : null,
+                ];
+            });
+
+        Log::info('Busca de locais', [
+            'termo' => $termo,
+            'resultados' => $locais->count(),
+            'primeiros_3' => $locais->take(3)->toArray()
+        ]);
+
+        return response()->json($locais);
+    }
+
+    /**
+     * Cria um novo local informando o projeto por nome ou código
+     */
+    public function criarLocalComProjeto(Request $request): JsonResponse
+    {
+        $request->validate([
+            'delocal' => 'required|string|max:120',
+            'projeto' => 'required|string|max:120',
+        ], [
+            'delocal.required' => 'Informe o nome do local.',
+            'projeto.required' => 'Informe o projeto associado.',
+        ]);
+
+        // Busca o projeto por código ou nome
+        $projeto = Tabfant::where('CDPROJETO', $request->projeto)
+            ->orWhere('NOMEPROJETO', 'LIKE', "%{$request->projeto}%")
+            ->first(['id', 'CDPROJETO', 'NOMEPROJETO']);
+
+        if (!$projeto) {
+            return response()->json(['error' => 'Projeto não encontrado.'], 404);
+        }
+
+        // Calcula automaticamente o próximo cdlocal baseado apenas nos locais deste projeto
+        $maxCdLocal = LocalProjeto::where('tabfant_id', $projeto->id)
+            ->max('cdlocal') ?? 0;
+
+        $nextCdLocal = (int) $maxCdLocal + 1;
+
+        Log::info('Criando local com projeto informado', [
+            'projeto_busca' => $request->projeto,
+            'projeto_encontrado' => $projeto->CDPROJETO . ' - ' . $projeto->NOMEPROJETO,
+            'tabfant_id' => $projeto->id,
+            'max_cdlocal_atual' => $maxCdLocal,
+            'next_cdlocal' => $nextCdLocal,
+            'delocal' => $request->delocal
+        ]);
+
+        $local = LocalProjeto::create([
+            'tabfant_id' => $projeto->id,
+            'cdlocal' => $nextCdLocal,
+            'delocal' => $request->delocal,
+            'flativo' => true,
+        ]);
+
+        return response()->json([
+            'id' => $local->id,
+            'LOCAL' => $local->delocal,
+            'cdlocal' => $local->cdlocal,
+            'projeto' => [
+                'CDPROJETO' => $projeto->CDPROJETO,
+                'NOMEPROJETO' => $projeto->NOMEPROJETO,
+            ]
         ], 201);
     }
 

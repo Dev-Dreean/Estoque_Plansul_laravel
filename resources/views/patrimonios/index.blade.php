@@ -286,7 +286,7 @@
                     <th class="{{ $shrink('NMPLANTA') }} py-3">Cód. Termo</th>
                     <th class="{{ $shrink('NUSERIE') }} py-3">Nº Série</th>
                     <th class="{{ $shrink('CDPROJETO') }} py-3">Cód. Projeto</th>
-                    <th class="px-4 py-3">Local</th>
+                    <th class="px-4 py-3">Projeto associado</th>
                     <th class="{{ $shrink('MODELO') }} py-3">Modelo</th>
                     <th class="{{ $shrink('MARCA') }} py-3">Marca</th>
                     <th class="{{ $shrink('COR') }} py-3">Cor</th>

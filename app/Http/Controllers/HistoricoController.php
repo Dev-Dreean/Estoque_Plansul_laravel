@@ -13,6 +13,8 @@ class HistoricoController extends Controller
     public function index(Request $request): View
     {
         $query = HistoricoMovimentacao::query()
+            // Vincula patrimônio para aplicar mesma regra de visibilidade (responsável OU criador)
+            ->leftJoin('patr as p', 'p.NUPATRIMONIO', '=', 'movpartr.NUPATR')
             ->leftJoin('usuario as u1', function ($join) {
                 $join->on(
                     DB::raw("CONVERT(u1.NMLOGIN USING utf8mb4) COLLATE utf8mb4_unicode_ci"),
@@ -47,17 +49,12 @@ class HistoricoController extends Controller
             $query->where(function ($q) use ($nmLogin, $nmUser, $mat) {
                 // (a) Ações feitas pelo usuário
                 $q->whereRaw('LOWER(movpartr.USUARIO) = LOWER(?)', [$nmLogin])
-                  // (b) Movimentações de patrimônios visíveis ao usuário (sem join para evitar duplicação)
-                  ->orWhereExists(function ($sub) use ($nmLogin, $nmUser, $mat) {
-                      $sub->select(DB::raw(1))
-                          ->from('patr as p')
-                          ->whereColumn('p.NUPATRIMONIO', 'movpartr.NUPATR')
-                          ->where(function ($q3) use ($nmLogin, $nmUser, $mat) {
-                              $q3->where('p.CDMATRFUNCIONARIO', $mat)
-                                 ->orWhereRaw('LOWER(p.USUARIO) = LOWER(?)', [$nmLogin])
-                                 ->orWhereRaw('LOWER(p.USUARIO) = LOWER(?)', [$nmUser]);
-                          });
-                  });
+                    // (b) Movimentações de patrimônios visíveis ao usuário
+                    ->orWhere(function ($q2) use ($nmLogin, $nmUser, $mat) {
+                        $q2->where('p.CDMATRFUNCIONARIO', $mat)
+                            ->orWhereRaw('LOWER(p.USUARIO) = LOWER(?)', [$nmLogin])
+                            ->orWhereRaw('LOWER(p.USUARIO) = LOWER(?)', [$nmUser]);
+                    });
             });
         }
 
