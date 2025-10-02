@@ -107,7 +107,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
 
     // Rotas de Usuários (Admin)
     Route::middleware('admin')->group(function () {
-        Route::resource('usuarios', UserController::class);
+    Route::resource('usuarios', UserController::class);
+    Route::get('usuarios/confirmacao', [UserController::class, 'confirmacao'])->name('usuarios.confirmacao');
         // APIs auxiliares do formulário de usuário
         Route::get('/api/usuarios/por-matricula', [UserController::class, 'porMatricula'])->name('api.usuarios.porMatricula');
         Route::get('/api/usuarios/sugerir-login', [UserController::class, 'sugerirLogin'])->name('api.usuarios.sugerirLogin');

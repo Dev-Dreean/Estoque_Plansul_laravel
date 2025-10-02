@@ -13,16 +13,38 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request)
     {
         $query = User::query();
 
-        if ($request->filled('busca')) {
-            $query->where('NOMEUSER', 'like', '%' . $request->busca . '%')
-                ->orWhere('NMLOGIN', 'like', '%' . $request->busca . '%');
+        $search = $request->input('search', $request->input('busca', ''));
+        $terms = [];
+        if (!empty($search)) {
+            // Aceita string separada por vírgula, pipe ou array
+            if (is_array($search)) {
+                $terms = $search;
+            } else {
+                $terms = preg_split('/[\s,|]+/', $search, -1, PREG_SPLIT_NO_EMPTY);
+            }
+        }
+        if (count($terms)) {
+            foreach ($terms as $term) {
+                $query->where(function ($q) use ($term) {
+                    $q->where('NOMEUSER', 'like', "%$term%")
+                        ->orWhere('NMLOGIN', 'like', "%$term%")
+                        ->orWhere('CDMATRFUNCIONARIO', 'like', "%$term%")
+                        ->orWhere('UF', 'like', "%$term%")
+                        ->orWhere('PERFIL', 'like', "%$term%")
+                    ;
+                });
+            }
         }
 
         $usuarios = $query->orderBy('NOMEUSER')->paginate(10);
+
+        if ($request->ajax()) {
+            return view('usuarios._table_partial', compact('usuarios'))->render();
+        }
         return view('usuarios.index', compact('usuarios'));
     }
 
@@ -31,7 +53,7 @@ class UserController extends Controller
         return view('usuarios.create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): View|\Illuminate\Http\RedirectResponse
     {
         $request->validate([
             'NOMEUSER' => ['required', 'string', 'max:80'],
@@ -40,10 +62,11 @@ class UserController extends Controller
             'PERFIL' => ['required', \Illuminate\Validation\Rule::in(['ADM', 'USR'])],
         ]);
 
-        // Senha padrão provisória para primeiro acesso
-        $senhaProvisoria = 'Plansul@123';
+        // Senha provisória forte: prefixo 'Plansul@' + 6 números aleatórios
+        $randomNumbers = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $senhaProvisoria = 'Plansul@' . $randomNumbers;
 
-        User::create([
+        $user = User::create([
             'NOMEUSER' => $request->NOMEUSER,
             'NMLOGIN' => $request->NMLOGIN,
             'CDMATRFUNCIONARIO' => $request->CDMATRFUNCIONARIO,
@@ -53,7 +76,11 @@ class UserController extends Controller
             'must_change_password' => true,
         ]);
 
-        return redirect()->route('usuarios.index')->with('success', 'Usuário criado com sucesso! Senha provisória: ' . $senhaProvisoria);
+        // Retornar tela de confirmação com credenciais para copiar/repasse
+        return view('usuarios.confirmacao', [
+            'nmLogin' => $user->NMLOGIN,
+            'senhaProvisoria' => $senhaProvisoria,
+        ]);
     }
 
     public function edit(User $usuario): View

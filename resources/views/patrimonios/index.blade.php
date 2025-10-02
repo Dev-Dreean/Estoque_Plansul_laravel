@@ -141,14 +141,14 @@
 
             {{-- Formulário de Filtro --}}
             <div x-data="{ open: false }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6" x-id="['filtro-patrimonios']" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimonios')">
-              <div @click="open = !open" class="flex justify-between items-center cursor-pointer">
+              <div class="flex justify-between items-center">
                 <h3 class="font-semibold text-lg">Filtros de Busca</h3>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform"
-                  :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M19 9l-7 7-7-7" />
-                </svg>
+                <button type="button" @click="open = !open" aria-expanded="open" aria-controls="$id('filtro-patrimonios')" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                  <span class="sr-only">Expandir filtros</span>
+                </button>
               </div>
               <div x-show="open" x-transition class="mt-4" style="display: none;" :id="$id('filtro-patrimonios')">
                 <form method="GET" action="{{ route('patrimonios.index') }}" @submit="open=false">
@@ -198,8 +198,8 @@
                     </div>
 
                     <label class="flex items-center gap-2 ml-auto shrink-0">
-                      <span class="text-sm text-gray-700 dark:text-gray-300">Itens por página</span>
-                      <select name="per_page" class="h-10 px-10 pr-8 w-20 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
+                      <span class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Itens por página</span>
+                      <select name="per_page" class="h-10 px-2 sm:px-3 w-24 text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
                         @foreach([10,30,50,100,200] as $opt)
                         <option value="{{ $opt }}" @selected(request('per_page', 30)==$opt)>{{ $opt }}</option>
                         @endforeach

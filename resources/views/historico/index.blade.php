@@ -1,9 +1,4 @@
 <x-app-layout>
-  <x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-      Histórico de Movimentações
-    </h2>
-  </x-slot>
 
   <div class="py-12">
     <div class="w-full px-2 sm:px-4 lg:px-8 2xl:px-12">
@@ -19,38 +14,51 @@
             </div>
           </div>
           <div x-data="{ open: false }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
-            <div @click="open = !open" class="flex justify-between items-center cursor-pointer">
+            <div class="flex justify-between items-center">
               <h3 class="font-semibold text-lg">Filtros de Busca</h3>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
+              <button type="button" @click="open = !open" aria-expanded="open" aria-controls="filtros-historico" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+                <span class="sr-only">Expandir filtros</span>
+              </button>
             </div>
             <div x-show="open" x-transition class="mt-4" style="display: none;">
-              <form method="GET" action="{{ route('historico.index') }}">
-                <div class="grid gap-3 sm:gap-4" style="grid-template-columns: repeat(auto-fit,minmax(150px,1fr));">
-                  <div class="flex gap-2">
-                    <input type="number" name="nupatr" value="{{ request('nupatr') }}" placeholder="Nº Patr." class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
-                    <input type="number" name="codproj" value="{{ request('codproj') }}" placeholder="Cód. Projeto" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+              <form method="GET" action="{{ route('historico.index') }}" id="filtros-historico">
+                <div class="flex flex-row gap-3 sm:gap-4">
+                  <div class="flex-1 min-w-[120px]">
+                    <label for="nupatr" class="sr-only">Nº Patrimônio</label>
+                    <input type="number" id="nupatr" name="nupatr" value="{{ request('nupatr') }}" placeholder="Nº Patr." class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                   </div>
-                  <div>
-                    <select name="tipo" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
+                  <div class="flex-1 min-w-[120px]">
+                    <label for="codproj" class="sr-only">Cód. Projeto</label>
+                    <input type="number" id="codproj" name="codproj" value="{{ request('codproj') }}" placeholder="Cód. Projeto" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                  </div>
+                  <div class="flex-1 min-w-[120px]">
+                    <label for="tipo" class="sr-only">Tipo de evento</label>
+                    <select id="tipo" name="tipo" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
                       <option value="">Tipo de evento</option>
                       @foreach(['projeto','situacao','termo'] as $tp)
                       <option value="{{ $tp }}" @selected(request('tipo')==$tp)>{{ ucfirst($tp) }}</option>
                       @endforeach
                     </select>
                   </div>
-                  <div>
-                    <input list="usuariosList" name="usuario" value="{{ request('usuario') }}" placeholder="Usuário" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                  <div class="flex-1 min-w-[120px]">
+                    <label for="usuario" class="sr-only">Usuário</label>
+                    <input list="usuariosList" id="usuario" name="usuario" value="{{ request('usuario') }}" placeholder="Usuário" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                     <datalist id="usuariosList">
                       @foreach($usuarios as $u)
                       <option value="{{ $u }}" />
                       @endforeach
                     </datalist>
                   </div>
-                  <div class="flex gap-2">
-                    <input type="date" name="data_inicio" value="{{ request('data_inicio') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
-                    <input type="date" name="data_fim" value="{{ request('data_fim') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                  <div class="flex-1 min-w-[120px]">
+                    <label for="data_inicio" class="sr-only">Data início</label>
+                    <input type="date" id="data_inicio" name="data_inicio" value="{{ request('data_inicio') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                  </div>
+                  <div class="flex-1 min-w-[120px]">
+                    <label for="data_fim" class="sr-only">Data fim</label>
+                    <input type="date" id="data_fim" name="data_fim" value="{{ request('data_fim') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                   </div>
                 </div>
 
@@ -61,8 +69,8 @@
                   </div>
 
                   <label class="flex items-center gap-2 ml-auto shrink-0">
-                    <span class="text-sm text-gray-700 dark:text-gray-300">Itens por página</span>
-                    <select name="per_page" class="h-10 px-10 pr-8 w-20 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
+                    <span class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Itens por página</span>
+                    <select name="per_page" class="h-10 px-2 sm:px-3 w-24 text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
                       @foreach([10,30,50,100,200] as $opt)
                       <option value="{{ $opt }}" @selected(request('per_page', 30)==$opt)>{{ $opt }}</option>
                       @endforeach

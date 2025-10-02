@@ -19,14 +19,17 @@ class ProjetoController extends Controller
         $query = LocalProjeto::with('projeto')->orderBy('delocal');
 
         if ($searchTerm) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('delocal', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('cdlocal', 'LIKE', "%{$searchTerm}%")
-                    // MELHORADO: Adiciona a busca pelo nome do projeto relacionado
-                    ->orWhereHas('projeto', function ($subQuery) use ($searchTerm) {
-                        $subQuery->where('NOMEPROJETO', 'LIKE', "%{$searchTerm}%");
-                    });
-            });
+            // Suporta múltiplos termos/tags separados por vírgula
+            $terms = array_filter(array_map('trim', explode(',', $searchTerm)));
+            foreach ($terms as $term) {
+                $query->where(function ($q) use ($term) {
+                    $q->where('delocal', 'LIKE', "%{$term}%")
+                        ->orWhere('cdlocal', 'LIKE', "%{$term}%")
+                        ->orWhereHas('projeto', function ($subQuery) use ($term) {
+                            $subQuery->where('NOMEPROJETO', 'LIKE', "%{$term}%");
+                        });
+                });
+            }
         }
 
         $locais = $query->paginate(15)->withQueryString();

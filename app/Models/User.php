@@ -39,6 +39,7 @@ class User extends Authenticatable
     protected $fillable = [
         'NOMEUSER',
         'NMLOGIN',
+        'PERFIL',
         'SENHA',
         'LGATIVO',
         'CDMATRFUNCIONARIO',

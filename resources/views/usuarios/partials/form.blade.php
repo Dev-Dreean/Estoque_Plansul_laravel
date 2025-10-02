@@ -52,8 +52,8 @@
         @else
         <x-input-label value="Senha Provisória" />
         <div class="mt-1 text-sm rounded-md border border-dashed border-gray-400/40 dark:border-gray-600/60 bg-gray-50 dark:bg-gray-800 px-3 py-2">
-            A senha inicial será: <span class="font-mono font-semibold select-all">Plansul@123</span><br>
-            O usuário deverá trocá-la no primeiro acesso.
+            Uma senha inicial aleatória será gerada automaticamente (ex.: <span class="font-mono font-semibold">Plansul@123456</span>).<br>
+            Você verá a senha após o cadastro e deverá repassá-la ao usuário. O usuário deverá trocá-la no primeiro acesso.
         </div>
         @endif
     </div>
