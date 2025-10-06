@@ -1448,20 +1448,14 @@ class PatrimonioController extends Controller
             }
 
             // Se foi fornecido nome do local, criar/atualizar local
-            if ($nomeLocal) {
-                // Verificar se já existe um local com este código (sem se preocupar com tabfant_id)
-                $localExistente = LocalProjeto::where('cdlocal', $cdlocal)
-                    ->orderByDesc('id')
-                    ->first();
-
-                // SEMPRE criar novo local, nunca atualizar existente
+            // Se foi fornecido nome do local, criar apenas se NÃO houver projeto
+            if ($nomeLocal && !$projeto) {
                 $local = LocalProjeto::create([
                     'cdlocal' => $cdlocal,
                     'delocal' => $nomeLocal,
-                    'tabfant_id' => null, // Será associado depois se houver projeto
+                    'tabfant_id' => null,
                     'flativo' => true,
                 ]);
-
                 \Illuminate\Support\Facades\Log::info('Local criado:', [
                     'cdlocal' => $local->cdlocal,
                     'delocal' => $local->delocal
@@ -1473,8 +1467,8 @@ class PatrimonioController extends Controller
                 // Pegar o nome do local - prioridade: nomeLocal > nomeLocalAtual > "Local {cdlocal}"
                 $nomeLocalParaAssociacao = $nomeLocal ?: ($nomeLocalAtual ?: "Local {$cdlocal}");
 
-                // Criar nova entrada na tabela locais_projeto vinculando o projeto ao local
-                $novaAssociacao = LocalProjeto::create([
+                // Criar apenas a associação local-projeto
+                $local = LocalProjeto::create([
                     'cdlocal' => $cdlocal,
                     'delocal' => $nomeLocalParaAssociacao,
                     'tabfant_id' => $projeto->id,
@@ -1482,18 +1476,13 @@ class PatrimonioController extends Controller
                 ]);
 
                 \Illuminate\Support\Facades\Log::info('Nova associação local-projeto criada:', [
-                    'id' => $novaAssociacao->id,
-                    'cdlocal' => $novaAssociacao->cdlocal,
-                    'delocal' => $novaAssociacao->delocal,
-                    'tabfant_id' => $novaAssociacao->tabfant_id,
+                    'id' => $local->id,
+                    'cdlocal' => $local->cdlocal,
+                    'delocal' => $local->delocal,
+                    'tabfant_id' => $local->tabfant_id,
                     'projeto_codigo' => $projeto->CDPROJETO,
                     'projeto_nome' => $projeto->NOMEPROJETO
                 ]);
-
-                // Se não foi criado/atualizado um local específico, usar a nova associação como referência
-                if (!$local) {
-                    $local = $novaAssociacao;
-                }
             }
 
             DB::commit();
