@@ -89,11 +89,15 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     });
     Route::get('/api/projetos/buscar/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'buscarProjeto'])->name('api.projetos.buscar');
     Route::get('/api/projetos/pesquisar', [App\Http\Controllers\PatrimonioController::class, 'pesquisarProjetos'])->name('api.projetos.pesquisar');
+    Route::get('/api/projetos/por-local/{cdlocal}', [App\Http\Controllers\PatrimonioController::class, 'buscarProjetosPorLocal'])->name('api.projetos.por-local');
     Route::post('/api/projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarProjeto'])->name('api.projetos.criar');
+    Route::post('/api/projetos/criar-associado', [App\Http\Controllers\PatrimonioController::class, 'criarProjetoAssociado'])->name('api.projetos.criar-associado');
     Route::get('/api/locais/buscar', [App\Http\Controllers\PatrimonioController::class, 'buscarLocais'])->name('api.locais.buscar');
-    Route::post('/api/locais/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalComProjeto'])->name('api.locais.criar-com-projeto');
+    Route::post('/api/locais/criar', [App\Http\Controllers\PatrimonioController::class, 'criarNovoLocal'])->name('api.locais.criar');
+    Route::post('/api/locais-projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalProjeto'])->name('api.locais-projetos.criar');
+    Route::post('/api/locais/criar-com-projeto', [App\Http\Controllers\PatrimonioController::class, 'criarLocalComProjeto'])->name('api.locais.criar-com-projeto');
     Route::get('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'getLocaisPorProjeto'])->name('api.locais');
-    Route::post('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'criarLocal'])->name('api.locais.criar');
+    Route::post('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'criarLocalPorProjeto'])->name('api.locais.criar-por-projeto');
 
     // Rotas de Códigos (API)
     Route::get('/api/codigos/buscar/{codigo}', [PatrimonioController::class, 'buscarCodigoObjeto'])->name('api.codigos.buscar');
@@ -107,8 +111,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
 
     // Rotas de Usuários (Admin)
     Route::middleware('admin')->group(function () {
-    Route::resource('usuarios', UserController::class);
-    Route::get('usuarios/confirmacao', [UserController::class, 'confirmacao'])->name('usuarios.confirmacao');
+        Route::resource('usuarios', UserController::class);
+        Route::get('usuarios/confirmacao', [UserController::class, 'confirmacao'])->name('usuarios.confirmacao');
         // APIs auxiliares do formulário de usuário
         Route::get('/api/usuarios/por-matricula', [UserController::class, 'porMatricula'])->name('api.usuarios.porMatricula');
         Route::get('/api/usuarios/sugerir-login', [UserController::class, 'sugerirLogin'])->name('api.usuarios.sugerirLogin');

@@ -20,8 +20,7 @@
       <div class="relative mt-0.5" @click.away="showPatDropdown=false">
         <input id="NUPATRIMONIO"
           x-model="patSearch"
-          @focus="abrirDropdownPatrimonios()"
-          @input.debounce.300ms="buscarPatrimonios"
+          @input="(function(){ const t=String(patSearch||'').trim(); if(t.length>0){ showPatDropdown=true; buscarPatrimonios(); } else { showPatDropdown=false; patrimoniosLista=[]; highlightedPatIndex=-1; } })()"
           @keydown.down.prevent="navegarPatrimonios(1)"
           @keydown.up.prevent="navegarPatrimonios(-1)"
           @keydown.enter.prevent="selecionarPatrimonioEnter()"
@@ -76,8 +75,7 @@
       <div class="relative mt-0.5" @click.away="showCodigoDropdown=false">
         <input id="NUSEQOBJ"
           x-model="codigoSearch"
-          @focus="abrirDropdownCodigos()"
-          @input.debounce.300ms="buscarCodigos"
+          @input="(function(){ const t=String(codigoSearch||'').trim(); if(t.length>0){ showCodigoDropdown=true; buscarCodigos(); } else { showCodigoDropdown=false; codigosLista=[]; highlightedCodigoIndex=-1; } })()"
           @blur="buscarCodigo"
           @keydown.down.prevent="navegarCodigos(1)"
           @keydown.up.prevent="navegarCodigos(-1)"
@@ -132,11 +130,10 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
     <div class="md:col-span-2">
       <x-input-label for="CDLOCAL" value="Local" />
-      <div class="flex items-center space-x-2 relative" @click.away="fecharSeFora($event)">
+      <div class="flex items-center space-x-2 relative" @focusin="localFocused = true" @focusout="localFocused = false; handleLocalFocusOut($event)">
         <div class="relative w-1/3 mt-0.5">
           <input id="CDLOCAL_INPUT" name="CDLOCAL" x-model="localSearch"
-            @focus="abrirDropdownLocais(true)"
-            @input="showLocalDropdown = true; buscarLocaisDisponiveis()"
+            @input="(function(){ const t=String(localSearch||'').trim(); if(t.length>0){ showLocalDropdown=true; buscarLocaisDisponiveis(); } else { showLocalDropdown=false; locaisFiltrados=[]; highlightedLocalIndex=-1; } })()"
             @keydown.down.prevent="navegarLocais(1)"
             @keydown.up.prevent="navegarLocais(-1)"
             @keydown.enter.prevent="selecionarLocalEnter()"
@@ -158,7 +155,7 @@
             <template x-if="locaisFiltrados.length===0">
               <div class="p-2 text-gray-500" x-text="String(localSearch || '').trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
             </template>
-            <template x-for="(l,i) in (locaisFiltrados || [])" :key="(l.cdlocal ?? l.id ?? i)">
+            <template x-for="(l,i) in (locaisFiltrados || [])" :key="l.id">
               <div data-local-item @mousedown.prevent @click="selecionarLocal(l)" @mouseover="highlightedLocalIndex=i" :class="['px-3 py-2 cursor-pointer', highlightedLocalIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
                 <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="l.cdlocal"></span>
                 <span class="ml-2" x-text="' - ' + (l.LOCAL ?? l.delocal ?? '')"></span>
@@ -179,21 +176,20 @@
         <div class="flex-1 relative mt-0.5" @click.away="fecharSeFora($event)">
           <!-- Campo visível apenas para exibição do nome do local; não enviar no submit -->
           <input id="CDPROJETO" x-model="projetoAssociadoSearch"
-            @focus="showProjetoAssociadoDropdown=true"
-            @input="showProjetoAssociadoDropdown=true; buscarProjetosParaAssociar()"
+            @input="(function(){ const t=String(projetoAssociadoSearch||'').trim(); if(t.length>0){ showProjetoAssociadoDropdown=true; buscarProjetosParaAssociar(); } else { showProjetoAssociadoDropdown=false; projetosAssociadosLista=[]; highlightedProjetoAssociadoIndex=-1; } })()"
             @keydown.down.prevent="navegarProjetosAssociados(1)"
             @keydown.up.prevent="navegarProjetosAssociados(-1)"
             @keydown.enter.prevent="selecionarProjetoAssociadoEnter()"
             @keydown.escape.prevent="showProjetoAssociadoDropdown=false"
-            :disabled="false"
+            :disabled="!formData.CDLOCAL"
             class="block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 disabled:opacity-60"
-            placeholder="Projeto Associado" />
+            :placeholder="!formData.CDLOCAL ? 'Selecione um local primeiro' : 'Projeto Associado'" />
           <!-- Valor efetivo enviado no submit: ID do projeto associado ao local -->
           <input type="hidden" name="CDPROJETO" :value="formData.CDPROJETO" />
           <div class="absolute inset-y-0 right-0 flex items-center pr-3">
             <div class="flex items-center gap-2">
               <button type="button" x-show="formData.CDPROJETO" @click="limparProjetoAssociado" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Limpar seleção">✕</button>
-              <button type="button" @click="showProjetoAssociadoDropdown=true; buscarProjetosParaAssociar()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="Abrir lista" aria-label="Abrir lista">
+              <button type="button" @click.stop="showProjetoAssociadoDropdown=true; buscarProjetosParaAssociar()" :disabled="!formData.CDLOCAL" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 disabled:opacity-50" title="Abrir lista" aria-label="Abrir lista">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                 </svg>
@@ -215,28 +211,47 @@
             </template>
           </div>
         </div>
-        <button type="button" @click="abrirNovoProjeto()" class="mt-0.5 inline-flex items-center justify-center w-9 h-9 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" title="Cadastrar novo projeto" aria-label="Cadastrar novo projeto">
+        <button type="button" @click="abrirModalCriar()" :disabled="!formData.CDLOCAL" class="mt-0.5 inline-flex items-center justify-center w-9 h-9 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed" title="Criar novo local ou projeto (selecione um local primeiro)" aria-label="Criar novo local ou projeto">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
           </svg>
         </button>
       </div>
-      <!-- Mini modal / popover cadastro projeto -->
-      <div x-show="novoProjetoOpen" x-transition @keydown.escape.window="fecharNovoProjeto" class="relative">
-        <div class="absolute z-50 mt-2 w-72 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-xl p-3">
-          <div class="flex justify-between items-center mb-1">
-            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Novo Projeto Associado</h4>
-            <button type="button" class="text-gray-400 hover:text-gray-600" @click="fecharNovoProjeto">✕</button>
-          </div>
-          <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Nome do Projeto *</label>
-          <input type="text" x-model="novoProjetoNome" @keydown.enter.prevent="salvarNovoProjeto" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md text-sm mt-0.5" placeholder="Ex: MP-MG" />
 
-          <p class="text-xs text-red-500 mt-1" x-text="novoProjetoErro"></p>
-          <div class="mt-2 flex justify-end gap-2">
-            <button type="button" @click="fecharNovoProjeto" class="px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancelar</button>
-            <button type="button" @click="salvarNovoProjeto" class="px-2.5 py-1 text-xs rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50" :disabled="salvandoNovoProjeto">
-              <span x-show="!salvandoNovoProjeto">Salvar</span>
-              <span x-show="salvandoNovoProjeto">Salvando...</span>
+
+      <!-- Modal de criação de local/projeto -->
+      <div x-show="modalCriarOpen" x-transition x-cloak @keydown.escape.window="fecharModalCriar" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-96">
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Criar Local e Projeto</h4>
+            <button type="button" class="text-gray-400 hover:text-gray-600" @click="fecharModalCriar">✕</button>
+          </div>
+
+          <!-- Campo Nome do Local -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nome do Local</label>
+            <input type="text" x-model="novoLocalNome" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md" placeholder="Digite o nome do local" />
+            <button type="button" @click="usarLocalAtual()" class="mt-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300" x-show="nomeLocal">Usar atual</button>
+            <p class="text-xs text-gray-500 mt-1" x-show="nomeLocal" x-text="'Atual: ' + nomeLocal"></p>
+          </div>
+
+          <!-- Campo Projeto Associado -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Projeto Associado</label>
+            <input type="text" x-model="novoProjetoNome" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md" placeholder="Digite o nome do projeto" />
+            <button type="button" @click="usarProjetoAtual()" class="mt-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300" x-show="formData.CDPROJETO && projetoAssociadoSearch">Usar atual</button>
+            <p class="text-xs text-gray-500 mt-1" x-show="formData.CDPROJETO && projetoAssociadoSearch" x-text="'Atual: ' + projetoAssociadoSearch"></p>
+          </div>
+
+          <p class="text-xs text-red-500 mb-4" x-text="erroCriacao" x-show="erroCriacao"></p>
+
+          <p class="text-xs text-red-500 mb-4" x-text="erroCriacao" x-show="erroCriacao"></p>
+
+          <div class="flex justify-end gap-2">
+            <button type="button" @click="fecharModalCriar" class="px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">Cancelar</button>
+            <button type="button" @click="salvarNovoCriar" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50" :disabled="salvandoCriacao">
+              <span x-show="!salvandoCriacao">Criar</span>
+              <span x-show="salvandoCriacao">Criando...</span>
             </button>
           </div>
         </div>
@@ -272,8 +287,7 @@
       <div class="relative mt-0.5">
         <input id="matricula_busca"
           x-model="userSearch"
-          @focus="abrirDropdownUsuarios()"
-          @input.debounce.300ms="buscarUsuarios"
+          @input="(function(){ const t=String(userSearch||'').trim(); if(t.length>0){ showUserDropdown=true; buscarUsuarios(); } else { showUserDropdown=false; usuarios=[]; highlightedUserIndex=-1; } })()"
           @keydown.down.prevent="navegarUsuarios(1)"
           @keydown.up.prevent="navegarUsuarios(-1)"
           @keydown.enter.prevent="selecionarUsuarioEnter()"
@@ -410,6 +424,7 @@
       nomeLocal: '',
       locaisFiltrados: [],
       showLocalDropdown: false,
+      localFocused: false,
       highlightedLocalIndex: -1,
       // Autocomplete Patrimônio
       patSearch: (config.old?.NUPATRIMONIO ?? config.patrimonio?.NUPATRIMONIO) || '',
@@ -417,11 +432,13 @@
       loadingPatrimonios: false,
       showPatDropdown: false,
       highlightedPatIndex: -1,
-      // Novo Projeto
-      novoProjetoOpen: false,
+
+      // Modal Criação
+      modalCriarOpen: false,
+      novoLocalNome: '',
       novoProjetoNome: '',
-      novoProjetoErro: '',
-      salvandoNovoProjeto: false,
+      erroCriacao: '',
+      salvandoCriacao: false,
 
       // == FUNÇÕES ==
       openSearchModal() {
@@ -544,6 +561,26 @@
         // Caso contrário, fecha ambos dropdowns
         this.showLocalDropdown = false;
         this.showProjetoDropdown = false;
+      },
+
+      // Fecha o dropdown de locais apenas quando o foco realmente saiu do input e do próprio dropdown
+      handleLocalFocusOut(e) {
+        // Pequeno atraso para permitir que o focus mude para um item do dropdown (mousedown)
+        setTimeout(() => {
+          try {
+            const active = document.activeElement;
+            const input = this.$root.querySelector('#CDLOCAL_INPUT');
+            const dropdown = this.$root.querySelector('[x-show="showLocalDropdown"]');
+            const isInsideDropdown = dropdown && dropdown.contains(active);
+            const isInput = input && (active === input);
+            if (!isInsideDropdown && !isInput) {
+              this.showLocalDropdown = false;
+            }
+          } catch (err) {
+            // Em caso de erro, fecha como fallback
+            this.showLocalDropdown = false;
+          }
+        }, 0);
       },
       async buscarUsuarios() { // agora busca funcionarios
         const termo = this.userSearch.trim();
@@ -803,55 +840,21 @@
 
       // === Buscar Projetos Para Associar ===
       async buscarProjetosParaAssociar() {
-        if (this.projetoAssociadoSearch.trim() === '') {
+        const termo = String(this.projetoAssociadoSearch || '').trim();
+        // Se houver local selecionado, faz busca filtrada por local (mesmo que termo seja vazio)
+        if (this.formData.CDLOCAL) {
+          await this.buscarProjetosAssociadosPorLocal(this.formData.CDLOCAL, termo);
+          return;
+        }
+
+        // Sem local: comportamento global de pesquisa por termo
+        if (termo === '') {
           this.projetosAssociadosLista = [];
           return;
         }
         this.loadingProjetosAssociados = true;
         try {
-          const resp = await fetch(`/api/projetos/pesquisar?q=${encodeURIComponent(this.projetoAssociadoSearch.trim())}`);
-          if (resp.ok) {
-            this.projetosAssociadosLista = await resp.json();
-            this.highlightedProjetoAssociadoIndex = this.projetosAssociadosLista.length > 0 ? 0 : -1;
-          }
-        } catch (e) {
-          console.error('Falha busca projetos associados', e);
-        } finally {
-          this.loadingProjetosAssociados = false;
-        }
-      },
-      abrirDropdownProjetos(force = false) {
-        this.showProjetoDropdown = true;
-        if (this.projetoSearch.trim() !== '') this.buscarProjetos();
-      },
-      async selecionarLocal(local) {
-        // Seleciona apenas o local, sem carregar projeto automaticamente
-        this.formData.CDLOCAL = local.cdlocal;
-        this.localSearch = local.cdlocal;
-        this.nomeLocal = local.LOCAL || local.delocal;
-        this.showLocalDropdown = false;
-
-        this.locaisFiltrados = [];
-        this.highlightedLocalIndex = -1;
-
-        console.log('Local selecionado:', {
-          cdlocal: local.cdlocal,
-          nome: local.LOCAL || local.delocal
-        });
-      },
-      selecionarProjetoEnter() {
-        if (!this.showProjetoDropdown) return;
-        if (this.highlightedProjetoIndex < 0 || this.highlightedProjetoIndex >= this.projetosLista.length) return;
-        this.selecionarProjeto(this.projetosLista[this.highlightedProjetoIndex]);
-      },
-      async buscarProjetosParaAssociar() {
-        if (this.projetoAssociadoSearch.trim() === '') {
-          this.projetosAssociadosLista = [];
-          return;
-        }
-        this.loadingProjetosAssociados = true;
-        try {
-          const resp = await fetch(`/api/projetos/pesquisar?q=${encodeURIComponent(this.projetoAssociadoSearch.trim())}`, {
+          const resp = await fetch(`/api/projetos/pesquisar?q=${encodeURIComponent(termo)}`, {
             credentials: 'same-origin',
             headers: {
               'X-Requested-With': 'XMLHttpRequest'
@@ -867,6 +870,34 @@
           this.loadingProjetosAssociados = false;
         }
       },
+      abrirDropdownProjetos(force = false) {
+        this.showProjetoDropdown = true;
+        if (this.projetoSearch.trim() !== '') this.buscarProjetos();
+      },
+      async selecionarLocal(local) {
+        // Seleciona o local e limpa seleção de projeto associado
+        this.formData.CDLOCAL = local.cdlocal;
+        this.localSearch = local.cdlocal;
+        this.nomeLocal = local.LOCAL || local.delocal;
+        this.showLocalDropdown = false;
+
+        this.locaisFiltrados = [];
+        this.highlightedLocalIndex = -1;
+
+        // Limpa seleção anterior de projeto para evitar inconsistência
+        this.formData.CDPROJETO = '';
+        this.projetoAssociadoSearch = '';
+
+        // Buscar projetos vinculados ao local selecionado e abrir dropdown (não selecionar automaticamente)
+        await this.buscarProjetosAssociadosPorLocal(local.cdlocal, '');
+        this.showProjetoAssociadoDropdown = true;
+      },
+      selecionarProjetoEnter() {
+        if (!this.showProjetoDropdown) return;
+        if (this.highlightedProjetoIndex < 0 || this.highlightedProjetoIndex >= this.projetosLista.length) return;
+        this.selecionarProjeto(this.projetosLista[this.highlightedProjetoIndex]);
+      },
+      // Nota: função principal de busca já declarada acima. Mantida referência para compatibilidade.
 
       selecionarProjetoAssociado(projeto) {
         this.formData.CDPROJETO = projeto.CDPROJETO;
@@ -896,6 +927,27 @@
             }
           }
         });
+      },
+      // Novo método: busca projetos vinculados ao local (aceita termo opcional)
+      buscarProjetosAssociadosPorLocal: async function(cdlocal, termo = '') {
+        this.loadingProjetosAssociados = true;
+        try {
+          const url = `/api/projetos/por-local/${cdlocal}` + (termo ? `?q=${encodeURIComponent(termo)}` : '');
+          const resp = await fetch(url, {
+            credentials: 'same-origin',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          });
+          if (resp.ok) {
+            this.projetosAssociadosLista = await resp.json();
+            this.highlightedProjetoAssociadoIndex = this.projetosAssociadosLista.length > 0 ? 0 : -1;
+          }
+        } catch (e) {
+          console.error('Falha busca projetos por local', e);
+        } finally {
+          this.loadingProjetosAssociados = false;
+        }
       },
 
       selecionarProjetoAssociadoEnter() {
@@ -1037,69 +1089,159 @@
           }
         });
       },
-      abrirNovoProjeto() {
-        this.novoProjetoOpen = true;
-        this.novoProjetoNome = '';
-        this.novoProjetoErro = '';
-        this.$nextTick(() => {
-          const el = document.querySelector('input[x-model="novoProjetoNome"]');
-          el?.focus();
-        });
-      },
-      fecharNovoProjeto() {
-        this.novoProjetoOpen = false;
-        this.novoProjetoNome = '';
-        this.novoProjetoErro = '';
-      },
-      async salvarNovoProjeto() {
-        if (!this.novoProjetoNome.trim()) {
-          this.novoProjetoErro = 'Digite o nome do projeto';
+
+
+      // Métodos do modal de criação
+      abrirModalCriar() {
+        if (!this.formData.CDLOCAL) {
+          alert('Selecione um local primeiro');
           return;
         }
-        this.salvandoNovoProjeto = true;
-        this.novoProjetoErro = '';
-        try {
-          console.log('Criando novo projeto:', this.novoProjetoNome);
+        this.modalCriarOpen = true;
+        this.limparCamposCriacao();
+      },
 
+      fecharModalCriar() {
+        this.modalCriarOpen = false;
+        this.limparCamposCriacao();
+      },
+
+      limparCamposCriacao() {
+        this.novoLocalNome = '';
+        this.novoProjetoNome = '';
+        this.erroCriacao = '';
+        this.salvandoCriacao = false;
+      },
+
+      usarProjetoAtual() {
+        if (this.projetoAssociadoSearch) {
+          // Extrair apenas o nome do projeto (remover código)
+          const nomeProjeto = this.projetoAssociadoSearch.split(' - ')[1] || this.projetoAssociadoSearch;
+          this.novoProjetoNome = nomeProjeto;
+        }
+      },
+
+      usarLocalAtual() {
+        if (this.nomeLocal) {
+          this.novoLocalNome = this.nomeLocal;
+        }
+      },
+
+
+
+      async salvarNovoCriar() {
+        this.erroCriacao = '';
+
+        if (!this.novoLocalNome.trim() && !this.novoProjetoNome.trim()) {
+          this.erroCriacao = 'Preencha pelo menos um campo';
+          return;
+        }
+
+        this.salvandoCriacao = true;
+
+        try {
           const payload = {
-            nome: this.novoProjetoNome
+            nomeLocal: this.novoLocalNome.trim() || this.nomeLocal || null,
+            nomeProjeto: this.novoProjetoNome.trim() || null,
+            cdlocal: this.formData.CDLOCAL,
+            nomeLocalAtual: this.nomeLocal || null,
+            projetoAtual: this.formData.CDPROJETO || null
           };
 
-          const resp = await fetch('/api/projetos/criar', {
+          console.log('Payload enviado:', payload);
+
+          // Obter CSRF token
+          const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+          console.log('CSRF Token:', csrfToken);
+
+          const response = await fetch('/api/locais-projetos/criar', {
             method: 'POST',
-            credentials: 'same-origin',
             headers: {
               'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': '{{ csrf_token() }}',
-              'X-Requested-With': 'XMLHttpRequest'
+              'X-CSRF-TOKEN': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'application/json'
             },
+            credentials: 'same-origin',
             body: JSON.stringify(payload)
           });
 
-          if (resp.ok) {
-            const novoProjeto = await resp.json();
-            console.log('Projeto criado:', novoProjeto);
+          console.log('Response status:', response.status);
+          console.log('Response headers:', response.headers);
 
-            // Preenche o input do projeto associado com nome e código
-            this.formData.CDPROJETO = novoProjeto.CDPROJETO;
-            this.projetoAssociadoSearch = `${novoProjeto.NOMEPROJETO} (Cód: ${novoProjeto.CDPROJETO})`;
-
-            // Fecha dropdown e modal
-            this.showProjetoAssociadoDropdown = false;
-            this.projetosAssociadosLista = [];
-            this.fecharNovoProjeto();
-
-          } else {
-            const err = await resp.json().catch(() => ({}));
-            this.novoProjetoErro = err.error || 'Erro ao salvar.';
+          if (!response.ok) {
+            // Tenta extrair mensagem de erro do servidor
+            let serverMsg = '';
+            try {
+              const errData = await response.clone().json();
+              if (errData && (errData.message || errData.errors)) {
+                serverMsg = errData.message || Object.values(errData.errors).flat().join(' \n');
+              }
+            } catch (_) {
+              // ignora se não for JSON
+            }
+            const httpMsg = `HTTP error! status: ${response.status}`;
+            throw new Error(serverMsg ? `${httpMsg} - ${serverMsg}` : httpMsg);
           }
-        } catch (e) {
-          console.error('Erro ao criar projeto:', e);
-          this.novoProjetoErro = 'Falha na requisição.';
+
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('Response não é JSON:', text);
+            throw new Error('Resposta do servidor não é JSON válido');
+          }
+
+          const data = await response.json();
+          console.log('Response data:', data);
+
+          if (data.success) {
+            // Atualizar campos do formulário com os dados criados
+            if (data.local) {
+              // Se foi criado um novo local, atualizar o código e nome
+              this.formData.CDLOCAL = data.local.cdlocal;
+              this.nomeLocal = data.local.delocal;
+              this.localSearch = data.local.cdlocal; // Atualizar campo de busca
+            }
+
+            if (data.projeto) {
+              // Se foi criado um novo projeto, selecionar
+              this.formData.CDPROJETO = data.projeto.CDPROJETO;
+              this.projetoAssociadoSearch = `${data.projeto.CDPROJETO} - ${data.projeto.NOMEPROJETO}`;
+
+              // Atualizar lista de projetos associados para incluir o novo
+              this.projetosAssociadosLista.push({
+                CDPROJETO: data.projeto.CDPROJETO,
+                NOMEPROJETO: data.projeto.NOMEPROJETO
+              });
+            }
+
+            // Atualizar dropdowns se necessário
+            if (data.local) {
+              this.buscarLocaisDisponiveis();
+            }
+            if (data.projeto) {
+              this.buscarProjetosParaAssociar();
+            }
+
+            this.fecharModalCriar();
+          } else {
+            this.erroCriacao = data.message || 'Erro ao criar';
+          }
+        } catch (error) {
+          console.error('Erro ao criar:', error);
+          if (error.message.includes('JSON')) {
+            this.erroCriacao = 'Erro no servidor - resposta inválida';
+          } else if (error.message.includes('HTTP error')) {
+            this.erroCriacao = `${error.message}`;
+          } else {
+            this.erroCriacao = 'Erro de comunicação com o servidor';
+          }
         } finally {
-          this.salvandoNovoProjeto = false;
+          this.salvandoCriacao = false;
         }
       },
+
+
       focusNext(currentElement) {
         const focusable = Array.from(currentElement.closest('form').querySelectorAll('input:not([readonly]):not([disabled]), select:not([readonly]):not([disabled]), textarea:not([readonly]):not([disabled])'));
         const currentIndex = focusable.indexOf(currentElement);
@@ -1169,14 +1311,26 @@
             /* silencioso */
           }
         }
-        // Manter localSearch sincronizado quando CDLOCAL mudar
-        this.$watch('formData.CDLOCAL', async (val) => {
+        // Manter localSearch sincronizado quando CDLOCAL mudar e limpar projeto associado
+        this.$watch('formData.CDLOCAL', async (val, oldVal) => {
           if (!val) {
             this.localSearch = '';
             this.nomeLocal = '';
+            // Limpar projeto associado quando local for limpo
+            this.formData.CDPROJETO = '';
+            this.projetoAssociadoSearch = '';
+            this.projetosAssociadosLista = [];
             return;
           }
           this.localSearch = String(val);
+
+          // Se o local mudou (não é inicialização), limpar projeto associado
+          if (oldVal && String(oldVal) !== String(val)) {
+            this.formData.CDPROJETO = '';
+            this.projetoAssociadoSearch = '';
+            this.projetosAssociadosLista = [];
+          }
+
           // Buscar nome do local
           try {
             const r = await fetch(`/api/locais/buscar?termo=${val}`);

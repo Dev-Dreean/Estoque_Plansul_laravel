@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Models\Patrimonio;
 use App\Models\User;
 use App\Models\ObjetoPatr;
@@ -360,6 +361,55 @@ class PatrimonioController extends Controller
     }
 
     /**
+     * Busca projetos associados a um local específico.
+     * Retorna os projetos vinculados ao local informado pelo cdlocal.
+     */
+    public function buscarProjetosPorLocal($cdlocal): JsonResponse
+    {
+        try {
+            // Buscar TODOS os projetos vinculados a este local
+            $locaisProjetos = LocalProjeto::with('projeto')
+                ->where('cdlocal', $cdlocal)
+                ->where('flativo', true)
+                ->whereHas('projeto')
+                ->get();
+
+            $projetos = [];
+            foreach ($locaisProjetos as $localProjeto) {
+                if ($localProjeto->projeto) {
+                    $projetos[] = [
+                        'id' => $localProjeto->id,
+                        'CDPROJETO' => $localProjeto->projeto->CDPROJETO,
+                        'NOMEPROJETO' => $localProjeto->projeto->NOMEPROJETO,
+                        'tabfant_id' => $localProjeto->tabfant_id
+                    ];
+                }
+            }
+
+            // Remover duplicatas por CDPROJETO
+            $projetosUnicos = collect($projetos)->unique('CDPROJETO')->values()->all();
+
+            // Se veio um termo de busca (q), filtra pelo código ou nome
+            $q = trim((string) request()->query('q', ''));
+            if ($q !== '') {
+                $projetosUnicos = array_filter($projetosUnicos, function ($projeto) use ($q) {
+                    return stripos((string) $projeto['CDPROJETO'], $q) !== false ||
+                        stripos((string) $projeto['NOMEPROJETO'], $q) !== false;
+                });
+                $projetosUnicos = array_values($projetosUnicos);
+            }
+
+            return response()->json($projetosUnicos);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Erro ao buscar projetos por local', [
+                'cdlocal' => $cdlocal,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json([]);
+        }
+    }
+
+    /**
      * Cria um novo projeto com código único e sequencial.
      */
     public function criarProjeto(Request $request): JsonResponse
@@ -383,6 +433,41 @@ class PatrimonioController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            // Se recebeu cdlocal e delocal, cria um novo local vinculado a este projeto
+            $cdlocal = $request->input('cdlocal');
+            $delocal = $request->input('delocal');
+
+            \Illuminate\Support\Facades\Log::info('Debug criar projeto - dados recebidos', [
+                'cdlocal' => $cdlocal,
+                'delocal' => $delocal,
+                'projeto_id' => $projeto->id,
+                'projeto_codigo' => $projeto->CDPROJETO,
+                'request_all' => $request->all()
+            ]);
+
+            if ($cdlocal && $delocal) {
+                $novoLocal = LocalProjeto::create([
+                    'cdlocal' => $cdlocal,
+                    'delocal' => $delocal,
+                    'tabfant_id' => $projeto->id,
+                    'flativo' => true,
+                ]);
+
+                \Illuminate\Support\Facades\Log::info('Local criado para novo projeto', [
+                    'local_id' => $novoLocal->id,
+                    'cdlocal' => $cdlocal,
+                    'delocal' => $delocal,
+                    'projeto_id' => $projeto->id,
+                    'projeto_codigo' => $projeto->CDPROJETO,
+                    'projeto_nome' => $projeto->NOMEPROJETO
+                ]);
+            } else {
+                \Illuminate\Support\Facades\Log::warning('Local NÃO criado - dados insuficientes', [
+                    'cdlocal' => $cdlocal,
+                    'delocal' => $delocal
+                ]);
+            }
 
             Log::info('Projeto criado', [
                 'CDPROJETO' => $projeto->CDPROJETO,
@@ -485,20 +570,33 @@ class PatrimonioController extends Controller
             });
         }
 
-        $locais = $query->orderBy('cdlocal')
-            ->limit(empty($termo) ? 20 : 50) // Menos resultados se não há termo específico
-            ->get()
-            ->map(function ($local) {
-                return [
-                    'id' => $local->id,
-                    'cdlocal' => $local->cdlocal,
-                    'LOCAL' => $local->delocal,
-                    'delocal' => $local->delocal,
-                    'tabfant_id' => $local->tabfant_id,
-                    'CDPROJETO' => $local->projeto ? $local->projeto->CDPROJETO : null,
-                    'NOMEPROJETO' => $local->projeto ? $local->projeto->NOMEPROJETO : null,
-                ];
-            });
+        $todosLocais = $query->orderBy('cdlocal')
+            ->limit(empty($termo) ? 20 : 50)
+            ->get();
+
+        // Agrupar locais por cdlocal + delocal para eliminar duplicatas no dropdown
+        $locaisAgrupados = $todosLocais->groupBy(function ($local) {
+            return $local->cdlocal . '|' . $local->delocal;
+        })->map(function ($grupo) {
+            $primeiro = $grupo->first();
+            $projetosVinculados = $grupo->filter(function ($local) {
+                return $local->projeto !== null;
+            })->pluck('projeto')->unique('CDPROJETO');
+
+            return [
+                'id' => $primeiro->id,
+                'cdlocal' => $primeiro->cdlocal,
+                'LOCAL' => $primeiro->delocal,
+                'delocal' => $primeiro->delocal,
+                'tabfant_id' => $primeiro->tabfant_id,
+                'CDPROJETO' => $primeiro->projeto ? $primeiro->projeto->CDPROJETO : null,
+                'NOMEPROJETO' => $primeiro->projeto ? $primeiro->projeto->NOMEPROJETO : null,
+                'projetos_count' => $projetosVinculados->count(),
+                'tem_multiplos_projetos' => $projetosVinculados->count() > 1
+            ];
+        })->values();
+
+        $locais = $locaisAgrupados;
 
         Log::info('Busca de locais', [
             'termo' => $termo,
@@ -1113,5 +1211,331 @@ class PatrimonioController extends Controller
         }
         $arr = $request->input('ids', []);
         return is_array($arr) ? array_values(array_filter($arr)) : [];
+    }
+
+    /**
+     * Cria um novo local com projeto opcional.
+     */
+    public function criarNovoLocal(Request $request): JsonResponse
+    {
+        $request->validate([
+            'cdlocal' => 'required|string|max:10',
+            'delocal' => 'required|string|max:255',
+            'projeto' => 'nullable|string|max:255',
+        ], [
+            'cdlocal.required' => 'Código do local é obrigatório.',
+            'delocal.required' => 'Nome do local é obrigatório.',
+        ]);
+
+        try {
+            $cdlocal = $request->input('cdlocal');
+            $delocal = $request->input('delocal');
+            $nomeProjeto = $request->input('projeto');
+
+            // Verificar se já existe local com esse código
+            $localExistente = LocalProjeto::where('cdlocal', $cdlocal)->first();
+            if ($localExistente) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Já existe um local com este código.'
+                ]);
+            }
+
+            $projeto = null;
+            $tabfantId = null;
+
+            // Se foi especificado um projeto, criar ou encontrar
+            if ($nomeProjeto) {
+                // Primeiro tentar encontrar projeto existente pelo nome
+                $projeto = Tabfant::where('NOMEPROJETO', 'LIKE', "%{$nomeProjeto}%")->first();
+
+                if (!$projeto) {
+                    // Criar novo projeto
+                    $maxCodigo = Tabfant::max('CDPROJETO') ?? 0;
+                    $novoCodigo = $maxCodigo + 1;
+
+                    $projeto = Tabfant::create([
+                        'CDPROJETO' => $novoCodigo,
+                        'NOMEPROJETO' => $nomeProjeto,
+                        'flativo' => true,
+                    ]);
+                }
+
+                $tabfantId = $projeto->id;
+            }
+
+            // Criar o local
+            $local = LocalProjeto::create([
+                'cdlocal' => $cdlocal,
+                'delocal' => $delocal,
+                'tabfant_id' => $tabfantId,
+                'flativo' => true,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'local' => [
+                    'cdlocal' => $local->cdlocal,
+                    'delocal' => $local->delocal,
+                ],
+                'projeto' => $projeto ? [
+                    'CDPROJETO' => $projeto->CDPROJETO,
+                    'NOMEPROJETO' => $projeto->NOMEPROJETO
+                ] : null
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Erro ao criar local:', [
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro interno do servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Cria um novo projeto associado com local opcional.
+     */
+    public function criarProjetoAssociado(Request $request): JsonResponse
+    {
+        $request->validate([
+            'nome' => 'required|string|max:255',
+            'local' => 'nullable|string|max:255',
+        ], [
+            'nome.required' => 'Nome do projeto é obrigatório.',
+        ]);
+
+        try {
+            $nomeProjeto = $request->input('nome');
+            $localInfo = $request->input('local');
+
+            // Criar novo projeto
+            $maxCodigo = Tabfant::max('CDPROJETO') ?? 0;
+            $novoCodigo = $maxCodigo + 1;
+
+            $projeto = Tabfant::create([
+                'CDPROJETO' => $novoCodigo,
+                'NOMEPROJETO' => $nomeProjeto,
+                'flativo' => true,
+            ]);
+
+            $local = null;
+
+            // Se foi especificado um local, processar
+            if ($localInfo) {
+                // Tentar extrair código e nome do formato "123 - Nome do Local"
+                if (preg_match('/^(\d+)\s*-\s*(.+)$/', $localInfo, $matches)) {
+                    $cdlocal = $matches[1];
+                    $delocal = $matches[2];
+
+                    // Verificar se o local já existe
+                    $localExistente = LocalProjeto::where('cdlocal', $cdlocal)->first();
+
+                    if ($localExistente) {
+                        // Criar nova associação local-projeto (permitir múltiplos projetos por local)
+                        $local = LocalProjeto::create([
+                            'cdlocal' => $cdlocal,
+                            'delocal' => $delocal,
+                            'tabfant_id' => $projeto->id,
+                            'flativo' => true,
+                        ]);
+                    } else {
+                        // Criar novo local associado ao projeto
+                        $local = LocalProjeto::create([
+                            'cdlocal' => $cdlocal,
+                            'delocal' => $delocal,
+                            'tabfant_id' => $projeto->id,
+                            'flativo' => true,
+                        ]);
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'projeto' => [
+                    'CDPROJETO' => $projeto->CDPROJETO,
+                    'NOMEPROJETO' => $projeto->NOMEPROJETO
+                ],
+                'local' => $local ? [
+                    'cdlocal' => $local->cdlocal,
+                    'delocal' => $local->delocal,
+                ] : null
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Erro ao criar projeto associado:', [
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro interno do servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Cria local e/ou projeto baseado nos dados do formulário de patrimônio.
+     */
+    public function criarLocalProjeto(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'nomeLocal' => 'nullable|string|max:255',
+                'nomeProjeto' => 'nullable|string|max:255',
+                'cdlocal' => 'required|max:20',
+                'nomeLocalAtual' => 'nullable|string|max:255',
+                'projetoAtual' => 'nullable|max:20'
+            ], [
+                'cdlocal.required' => 'Código do local é obrigatório',
+                'nomeLocal.max' => 'Nome do local muito longo (máximo 255 caracteres)',
+                'nomeProjeto.max' => 'Nome do projeto muito longo (máximo 255 caracteres)',
+            ]);
+
+            $nomeLocal = $validated['nomeLocal'];
+            $nomeProjeto = $validated['nomeProjeto'];
+            $cdlocal = $validated['cdlocal'];
+            $nomeLocalAtual = $validated['nomeLocalAtual'];
+
+            \Illuminate\Support\Facades\Log::info('criarLocalProjeto - Dados recebidos:', [
+                'nomeLocal' => $nomeLocal,
+                'nomeProjeto' => $nomeProjeto,
+                'cdlocal' => $cdlocal,
+                'nomeLocalAtual' => $nomeLocalAtual
+            ]);
+
+            if (!$nomeLocal && !$nomeProjeto) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Preencha pelo menos um campo (Nome do Local ou Projeto Associado)'
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            $local = null;
+            $projeto = null;
+
+            // Se foi fornecido nome do projeto, criar projeto
+            if ($nomeProjeto) {
+                // Criar novo projeto sempre (não buscar existente)
+                $maxCodigo = Tabfant::max('CDPROJETO') ?? 0;
+                $novoCodigo = $maxCodigo + 1;
+
+                $projeto = Tabfant::create([
+                    'CDPROJETO' => $novoCodigo,
+                    'NOMEPROJETO' => $nomeProjeto,
+                    'LOCAL' => null,  // Campo LOCAL na tabela tabfant
+                ]);
+
+                \Illuminate\Support\Facades\Log::info('Projeto criado:', [
+                    'CDPROJETO' => $projeto->CDPROJETO,
+                    'NOMEPROJETO' => $projeto->NOMEPROJETO
+                ]);
+            }
+
+            // Se foi fornecido nome do local, criar/atualizar local
+            if ($nomeLocal) {
+                // Verificar se já existe um local com este código (sem se preocupar com tabfant_id)
+                $localExistente = LocalProjeto::where('cdlocal', $cdlocal)
+                    ->orderByDesc('id')
+                    ->first();
+
+                if ($localExistente) {
+                    // Atualizar nome do local existente
+                    $localExistente->update([
+                        'delocal' => $nomeLocal,
+                    ]);
+                    $local = $localExistente;
+
+                    \Illuminate\Support\Facades\Log::info('Local atualizado:', [
+                        'cdlocal' => $local->cdlocal,
+                        'delocal' => $local->delocal
+                    ]);
+                } else {
+                    // Criar novo local com código fornecido
+                    $local = LocalProjeto::create([
+                        'cdlocal' => $cdlocal,
+                        'delocal' => $nomeLocal,
+                        'tabfant_id' => null, // Será associado depois se houver projeto
+                        'flativo' => true,
+                    ]);
+
+                    \Illuminate\Support\Facades\Log::info('Local criado:', [
+                        'cdlocal' => $local->cdlocal,
+                        'delocal' => $local->delocal
+                    ]);
+                }
+            }
+
+            // Se foi criado um projeto, SEMPRE criar uma nova entrada na tabela locais_projeto para a associação
+            if ($projeto) {
+                // Pegar o nome do local - prioridade: nomeLocal > nomeLocalAtual > "Local {cdlocal}"
+                $nomeLocalParaAssociacao = $nomeLocal ?: ($nomeLocalAtual ?: "Local {$cdlocal}");
+
+                // Criar nova entrada na tabela locais_projeto vinculando o projeto ao local
+                $novaAssociacao = LocalProjeto::create([
+                    'cdlocal' => $cdlocal,
+                    'delocal' => $nomeLocalParaAssociacao,
+                    'tabfant_id' => $projeto->id,
+                    'flativo' => true,
+                ]);
+
+                \Illuminate\Support\Facades\Log::info('Nova associação local-projeto criada:', [
+                    'id' => $novaAssociacao->id,
+                    'cdlocal' => $novaAssociacao->cdlocal,
+                    'delocal' => $novaAssociacao->delocal,
+                    'tabfant_id' => $novaAssociacao->tabfant_id,
+                    'projeto_codigo' => $projeto->CDPROJETO,
+                    'projeto_nome' => $projeto->NOMEPROJETO
+                ]);
+
+                // Se não foi criado/atualizado um local específico, usar a nova associação como referência
+                if (!$local) {
+                    $local = $novaAssociacao;
+                }
+            }
+
+            DB::commit();
+
+            \Illuminate\Support\Facades\Log::info('Criação finalizada com sucesso:', [
+                'local_criado' => $local ? true : false,
+                'projeto_criado' => $projeto ? true : false
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'local' => $local ? [
+                    'cdlocal' => $local->cdlocal,
+                    'delocal' => $local->delocal,
+                ] : null,
+                'projeto' => $projeto ? [
+                    'CDPROJETO' => $projeto->CDPROJETO,
+                    'NOMEPROJETO' => $projeto->NOMEPROJETO
+                ] : null
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dados inválidos: ' . implode(', ', $e->validator->errors()->all())
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            \Illuminate\Support\Facades\Log::error('Erro ao criar local/projeto:', [
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro interno do servidor: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

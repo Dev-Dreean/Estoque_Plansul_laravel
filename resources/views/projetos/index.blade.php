@@ -10,10 +10,7 @@
                                 <template x-if="tags.length > 0">
                                     <div class="flex flex-wrap items-center gap-2 mb-3">
                                         <template x-for="(tag, idx) in tags" :key="tag">
-                                            <span
-                                                :class="'inline-flex items-center px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold mr-1 transition-all duration-300 ' + (animateTag === idx ? 'opacity-0 -translate-x-6 scale-90' : 'opacity-100 translate-x-0 scale-100')"
-                                                x-init="$nextTick(() => { animateTag = idx; setTimeout(() => animateTag = null, 350); })"
-                                            >
+                                            <span class="inline-flex items-center px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold mr-1">
                                                 <span x-text="tag"></span>
                                                 <button type="button" @click="removeTag(idx)" class="ml-1 text-indigo-500 hover:text-red-500 focus:outline-none">&times;</button>
                                             </span>
@@ -66,13 +63,11 @@
             return {
                 inputValue: '',
                 tags: [],
-                animateTag: null,
                 tableHtml: document.getElementById('table-container').innerHTML,
                 addTag() {
                     const val = this.inputValue.trim();
                     if (val && !this.tags.includes(val)) {
                         this.tags.push(val);
-                        this.animateTag = this.tags.length - 1;
                         this.inputValue = '';
                         this.search();
                     }
@@ -97,15 +92,15 @@
                     }
                     const url = `${baseUrl}?search=${encodeURIComponent(params.join(','))}`;
                     fetch(url, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                    })
-                    .then(response => response.text())
-                    .then(html => {
-                        this.tableHtml = html;
-                    })
-                    .catch(error => console.error('Erro ao buscar os dados:', error));
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                        })
+                        .then(response => response.text())
+                        .then(html => {
+                            this.tableHtml = html;
+                        })
+                        .catch(error => console.error('Erro ao buscar os dados:', error));
                 }
             }
         }
