@@ -20,7 +20,7 @@
       <div class="relative mt-0.5" @click.away="showPatDropdown=false">
         <input id="NUPATRIMONIO"
           x-model="patSearch"
-          @input="(function(){ const t=String(patSearch||'').trim(); if(t.length>0){ showPatDropdown=true; buscarPatrimonios(); } else { showPatDropdown=false; patrimoniosLista=[]; highlightedPatIndex=-1; } })()"
+          @input="(function(){ const t=String(patSearch||'').trim(); if(t.length>=3){ showPatDropdown=true; buscarPatrimonios(); } else { showPatDropdown=false; patrimoniosLista=[]; highlightedPatIndex=-1; } })()"
           @keydown.down.prevent="navegarPatrimonios(1)"
           @keydown.up.prevent="navegarPatrimonios(-1)"
           @keydown.enter.prevent="selecionarPatrimonioEnter()"

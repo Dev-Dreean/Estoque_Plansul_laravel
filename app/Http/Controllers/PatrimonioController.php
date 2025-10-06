@@ -391,6 +391,9 @@ class PatrimonioController extends Controller
 
             // Se veio um termo de busca (q), filtra pelo código ou nome
             $q = trim((string) request()->query('q', ''));
+            if ($q !== '' && strlen($q) < 3) {
+                return response()->json([]);
+            }
             if ($q !== '') {
                 $projetosUnicos = array_filter($projetosUnicos, function ($projeto) use ($q) {
                     return stripos((string) $projeto['CDPROJETO'], $q) !== false ||
@@ -398,6 +401,8 @@ class PatrimonioController extends Controller
                 });
                 $projetosUnicos = array_values($projetosUnicos);
             }
+            // Limitar a 5 resultados
+            $projetosUnicos = array_slice($projetosUnicos, 0, 5);
 
             return response()->json($projetosUnicos);
         } catch (\Exception $e) {
@@ -561,17 +566,21 @@ class PatrimonioController extends Controller
     {
         $termo = $request->input('termo', '');
 
-        $query = LocalProjeto::with('projeto')->where('flativo', true);
-
-        if (!empty($termo)) {
-            $query->where(function ($q) use ($termo) {
-                $q->where('cdlocal', 'LIKE', "%{$termo}%")
-                    ->orWhere('delocal', 'LIKE', "%{$termo}%");
-            });
+        // Só busca se tiver 3+ caracteres
+        if (strlen(trim($termo)) < 3) {
+            return response()->json([]);
         }
 
+        $query = LocalProjeto::with('projeto')
+            ->where('flativo', true)
+            ->where(function ($q) use ($termo) {
+                $q->where('cdlocal', 'LIKE', "{$termo}%")
+                    ->orWhere('delocal', 'LIKE', "{$termo}%");
+            });
+
         $todosLocais = $query->orderBy('cdlocal')
-            ->limit(empty($termo) ? 20 : 50)
+            ->select('id', 'cdlocal', 'delocal', 'tabfant_id')
+            ->limit(5)
             ->get();
 
         // Agrupar locais por cdlocal + delocal para eliminar duplicatas no dropdown
