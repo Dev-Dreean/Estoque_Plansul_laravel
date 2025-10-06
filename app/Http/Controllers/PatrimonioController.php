@@ -1454,31 +1454,18 @@ class PatrimonioController extends Controller
                     ->orderByDesc('id')
                     ->first();
 
-                if ($localExistente) {
-                    // Atualizar nome do local existente
-                    $localExistente->update([
-                        'delocal' => $nomeLocal,
-                    ]);
-                    $local = $localExistente;
+                // SEMPRE criar novo local, nunca atualizar existente
+                $local = LocalProjeto::create([
+                    'cdlocal' => $cdlocal,
+                    'delocal' => $nomeLocal,
+                    'tabfant_id' => null, // Será associado depois se houver projeto
+                    'flativo' => true,
+                ]);
 
-                    \Illuminate\Support\Facades\Log::info('Local atualizado:', [
-                        'cdlocal' => $local->cdlocal,
-                        'delocal' => $local->delocal
-                    ]);
-                } else {
-                    // Criar novo local com código fornecido
-                    $local = LocalProjeto::create([
-                        'cdlocal' => $cdlocal,
-                        'delocal' => $nomeLocal,
-                        'tabfant_id' => null, // Será associado depois se houver projeto
-                        'flativo' => true,
-                    ]);
-
-                    \Illuminate\Support\Facades\Log::info('Local criado:', [
-                        'cdlocal' => $local->cdlocal,
-                        'delocal' => $local->delocal
-                    ]);
-                }
+                \Illuminate\Support\Facades\Log::info('Local criado:', [
+                    'cdlocal' => $local->cdlocal,
+                    'delocal' => $local->delocal
+                ]);
             }
 
             // Se foi criado um projeto, SEMPRE criar uma nova entrada na tabela locais_projeto para a associação
