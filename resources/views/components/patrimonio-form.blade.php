@@ -16,7 +16,7 @@
   {{-- GRUPO 1: N° Patrimônio, N° OC, Campo Vazio --}}
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     <div>
-      <label for="NUPATRIMONIO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Número do Patrimônio *</label>
+      <label for="NUPATRIMONIO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número do Patrimônio *</label>
       <div class="relative" @click.away="showPatDropdown=false">
         <input id="NUPATRIMONIO"
           x-model="patSearch"
@@ -33,14 +33,12 @@
           placeholder="Informe o número do patrimônio"
           required />
         <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
-          <div class="flex items-center gap-1">
-            <button type="button" x-show="formData.NUPATRIMONIO" @click="limparPatrimonio" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none" title="Limpar seleção" tabindex="-1">×</button>
-            <button type="button" @click="abrirDropdownPatrimonios(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" tabindex="-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-              </svg>
-            </button>
-          </div>
+          <button type="button" x-show="formData.NUPATRIMONIO" @click="limparPatrimonio" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none" title="Limpar seleção" tabindex="-1">×</button>
+          <button type="button" @click="abrirDropdownPatrimonios(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" tabindex="-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            </svg>
+          </button>
         </div>
         <div x-show="showPatDropdown" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-xs">
           <template x-if="loadingPatrimonios">
@@ -73,7 +71,7 @@
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
     {{-- Descrição do Objeto (busca com dropdown) --}}
     <div class="md:col-span-3">
-      <label for="DEOBJETO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Descrição do Objeto *</label>
+      <label for="DEOBJETO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Descrição do Objeto *</label>
       <div class="relative" @click.away="showCodigoDropdown=false">
         <input id="DEOBJETO"
           x-model="descricaoSearch"
@@ -89,15 +87,13 @@
           placeholder="Informe a descrição do objeto" required />
         {{-- Valor enviado (hidden) --}}
         <input type="hidden" name="NUSEQOBJ" :value="formData.NUSEQOBJ" />
-        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-          <div class="flex items-center gap-2">
-            <button type="button" x-show="formData.NUSEQOBJ" @click="limparCodigo" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none" title="Limpar seleção" aria-label="Limpar seleção">✕</button>
-            <button type="button" @click="abrirDropdownCodigos(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" aria-label="Abrir lista">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-              </svg>
-            </button>
-          </div>
+        <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+          <button type="button" x-show="formData.NUSEQOBJ" @click="limparCodigo" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none" title="Limpar seleção" tabindex="-1">×</button>
+          <button type="button" @click="abrirDropdownCodigos(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" tabindex="-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            </svg>
+          </button>
         </div>
         <div x-show="showCodigoDropdown" x-transition class="absolute z-50 bottom-full mb-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm">
           <template x-if="loadingCodigos">
@@ -118,7 +114,7 @@
     </div>
     {{-- Código do Objeto (preenchido automaticamente) --}}
     <div class="md:col-span-1">
-      <label for="NUSEQOBJ" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Código do Objeto *</label>
+      <label for="NUSEQOBJ" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código do Objeto *</label>
       <input id="NUSEQOBJ"
         x-model="formData.NUSEQOBJ"
         type="text"
@@ -142,7 +138,7 @@
 
     {{-- PROJETO (AGORA EM PRIMEIRO LUGAR - SELECIONÁVEL COM DROPDOWN) --}}
     <div class="md:col-span-3">
-      <label for="projetoSelect" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Projeto Associado *</label>
+      <label for="projetoSelect" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Projeto Associado *</label>
       <div class="relative" @click.away="showProjetoDropdown=false">
         <input id="projetoSelect"
           x-model="projetoSearch"
@@ -156,15 +152,13 @@
           class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
           placeholder="Informe o código ou nome do projeto" required />
         <input type="hidden" name="CDPROJETO" :value="formData.CDPROJETO" />
-        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-          <div class="flex items-center gap-2">
-            <button type="button" x-show="formData.CDPROJETO" @click="limparProjeto" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none" title="Limpar seleção" aria-label="Limpar seleção">✕</button>
-            <button type="button" @click="abrirDropdownProjetos(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" aria-label="Abrir lista">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-              </svg>
-            </button>
-          </div>
+        <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+          <button type="button" x-show="formData.CDPROJETO" @click="limparProjeto" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none" title="Limpar seleção" tabindex="-1">×</button>
+          <button type="button" @click="abrirDropdownProjetos(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" tabindex="-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            </svg>
+          </button>
         </div>
         <div x-show="showProjetoDropdown" x-transition class="absolute z-50 bottom-full mb-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm">
           <template x-if="loadingProjetos">
