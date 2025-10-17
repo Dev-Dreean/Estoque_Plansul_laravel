@@ -1407,7 +1407,11 @@ class PatrimonioController extends Controller
             try {
                 // 1. Criar na tabela tabfant (cadastro de projetos/nomes de locais)
                 // Nota: tabfant não tem CDLOCAL, apenas LOCAL (nome do local)
+                // IMPORTANTE: Como tabfant tem incrementing=false, precisamos gerar o ID manualmente
+                $proximoId = (Tabfant::max('id') ?? 10000000) + 1;
+                
                 $novoTabfant = Tabfant::create([
+                    'id' => $proximoId,  // ← CRÍTICO: Especificar ID manualmente!
                     'LOCAL' => $nomeLocal,  // Nome do local
                     'CDPROJETO' => $cdprojeto,
                     'NOMEPROJETO' => $projeto->NOMEPROJETO,
