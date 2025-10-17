@@ -11,7 +11,7 @@
 </div>
 @endif
 
-<div x-data='patrimonioForm({ patrimonio: @json($patrimonio), old: @json(old()) })' @keydown.enter.prevent="focusNext($event.target)" class="space-y-4 text-sm">
+<div x-data='patrimonioForm({ patrimonio: @json($patrimonio), old: @json(old()) })' @keydown.enter.prevent="handleEnter($event)" class="space-y-4 text-sm">
 
   {{-- GRUPO 1: N° Patrimônio, N° OC, Campo Vazio --}}
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -69,24 +69,24 @@
     </div>
   </div>
 
-  {{-- GRUPO 2: Código e Descrição --}}
+  {{-- GRUPO 2: Descrição e Código do Objeto (INVERTIDOS) --}}
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    <div class="md:col-span-1">
-      <label for="NUSEQOBJ" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Código do Objeto *</label>
+    {{-- Descrição do Objeto (busca com dropdown) --}}
+    <div class="md:col-span-3">
+      <label for="DEOBJETO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Descrição do Objeto *</label>
       <div class="relative" @click.away="showCodigoDropdown=false">
-        <input id="NUSEQOBJ"
-          x-model="codigoSearch"
-          @input.debounce.300ms="(function(){ const t=String(codigoSearch||'').trim(); if(t.length>0){ showCodigoDropdown=true; buscarCodigos(); } else { showCodigoDropdown=false; codigosLista=[]; highlightedCodigoIndex=-1; } })()"
+        <input id="DEOBJETO"
+          x-model="descricaoSearch"
+          @input.debounce.300ms="(function(){ const t=String(descricaoSearch||'').trim(); if(t.length>0){ showCodigoDropdown=true; buscarCodigos(); } else { showCodigoDropdown=false; codigosLista=[]; highlightedCodigoIndex=-1; } })()"
           @blur="(function(){ setTimeout(()=>{ buscarCodigo(); }, 150); })()"
           @keydown.down.prevent="navegarCodigos(1)"
           @keydown.up.prevent="navegarCodigos(-1)"
           @keydown.enter.prevent="selecionarCodigoEnter()"
           @keydown.escape.prevent="showCodigoDropdown=false"
           type="text"
-          inputmode="numeric"
           tabindex="3"
           class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
-          placeholder="Informe o código do objeto" required />
+          placeholder="Informe a descrição do objeto" required />
         {{-- Valor enviado (hidden) --}}
         <input type="hidden" name="NUSEQOBJ" :value="formData.NUSEQOBJ" />
         <div class="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -104,21 +104,30 @@
             <div class="p-2 text-gray-500">Buscando...</div>
           </template>
           <template x-if="!loadingCodigos && codigosLista.length === 0">
-            <div class="p-2 text-gray-500" x-text="String(codigoSearch || '').trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
+            <div class="p-2 text-gray-500" x-text="String(descricaoSearch || '').trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
           </template>
           <template x-for="(c,i) in (codigosLista || [])" :key="c.CODOBJETO || i">
             <div data-cod-item @click="selecionarCodigo(c)" @mouseover="highlightedCodigoIndex=i" :class="['px-3 py-2 cursor-pointer', highlightedCodigoIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
-              <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="c.CODOBJETO"></span>
-              <span class="ml-2" x-text="' - ' + c.DESCRICAO"></span>
+              <span class="ml-2 text-gray-700 dark:text-gray-300" x-text="c.DESCRICAO"></span>
+              <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400 ml-2" x-text="' (' + c.CODOBJETO + ')'"></span>
             </div>
           </template>
         </div>
         <p class="mt-1 text-xs" x-bind:class="isNovoCodigo ? 'text-amber-600' : (formData.NUSEQOBJ ? 'text-green-600' : '')" x-text="codigoBuscaStatus"></p>
       </div>
     </div>
-    <div class="md:col-span-3">
-      <x-input-label for="DEOBJETO" value="Descrição do Objeto" />
-      <x-text-input data-index="5" x-model="formData.DEOBJETO" id="DEOBJETO" name="DEOBJETO" type="text" tabindex="4" class="mt-0.5 block w-full" x-bind:readonly="!isNovoCodigo" x-bind:class="!isNovoCodigo ? 'bg-gray-100 dark:bg-gray-900' : ''" />
+    {{-- Código do Objeto (preenchido automaticamente) --}}
+    <div class="md:col-span-1">
+      <label for="NUSEQOBJ" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Código do Objeto *</label>
+      <input id="NUSEQOBJ"
+        x-model="formData.NUSEQOBJ"
+        type="text"
+        inputmode="numeric"
+        tabindex="4"
+        x-bind:readonly="!isNovoCodigo"
+        x-bind:class="!isNovoCodigo ? 'bg-gray-100 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed' : ''"
+        class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500"
+        placeholder="Preenchido automaticamente" />
     </div>
   </div>
 
@@ -385,7 +394,7 @@
         </div>
 
         {{-- ✅ Quando projeto foi encontrado: mostrar campos desabilitados + campo de nome --}}
-        <div x-show="novoProjeto.cdprojeto && !carregandoProjeto" class="space-y-4" x-init="if(novoProjeto.cdprojeto && $refs.inputNomeLocal){ $nextTick(() => $refs.inputNomeLocal.focus()); }">
+        <div x-show="novoProjeto.cdprojeto && !carregandoProjeto" class="space-y-4" x-effect="if(novoProjeto.cdprojeto && $refs.inputNomeLocal){ $nextTick(() => $refs.inputNomeLocal.focus()); }">
           {{-- Código do Local (desabilitado) --}}
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -605,8 +614,8 @@
       loadingUsers: false,
       showUserDropdown: false,
       userSelectedName: '',
-      // Autocomplete Código
-      codigoSearch: (config.old?.NUSEQOBJ ?? config.patrimonio?.CODOBJETO) || '',
+      // Autocomplete Descrição (antes chamado de Código)
+      descricaoSearch: (config.old?.DEOBJETO ?? config.patrimonio?.DEOBJETO) || '',
       codigosLista: [],
       loadingCodigos: false,
       showCodigoDropdown: false,
@@ -683,6 +692,26 @@
       estadoTemporario: null, // Salva o estado do formulário antes de abrir o modal
 
       // == FUNÇÕES ==
+      handleEnter(e) {
+        // Se for textarea, permite quebra de linha
+        if (e.target.tagName === 'TEXTAREA') return;
+        // Se for botão submit, submete
+        if (e.target.type === 'submit') {
+          e.target.form && e.target.form.submit();
+          return;
+        }
+        // Avança para o próximo campo (igual ao Tab)
+        const form = e.target.form || this.$root.querySelector('form');
+        if (!form) return;
+        const focusables = Array.from(form.querySelectorAll('[tabindex]:not([tabindex="-1"]),input:not([type=hidden]),select,textarea,button')).filter(el => !el.disabled && el.offsetParent !== null);
+        const idx = focusables.indexOf(e.target);
+        if (idx > -1 && idx < focusables.length - 1) {
+          focusables[idx + 1].focus();
+        } else if (idx === focusables.length - 1) {
+          // Último campo: submete
+          form.submit();
+        }
+      },
       openSearchModal() {
         this.searchModalOpen = true;
         this.search();
@@ -724,13 +753,13 @@
             // Ajustes específicos de mapeamento entre API e formData atual
             if (data.hasOwnProperty('CODOBJETO')) {
               this.formData.NUSEQOBJ = data.CODOBJETO;
-              this.codigoSearch = String(data.CODOBJETO || '');
+              this.descricaoSearch = String(data.DEPATRIMONIO || '');
+              this.isNovoCodigo = false; // código existente, bloqueia edição
             }
             if (data.hasOwnProperty('DEPATRIMONIO')) {
               // Exibe descrição na caixa da descrição do código
               this.formData.DEOBJETO = data.DEPATRIMONIO || '';
-              this.isNovoCodigo = false; // código existente carrega descrição e mantém readonly
-              this.codigoBuscaStatus = this.formData.NUSEQOBJ ? 'Código encontrado.' : '';
+              this.codigoBuscaStatus = this.formData.NUSEQOBJ ? 'Código encontrado e preenchido automaticamente.' : '';
             }
             if (this.formData.CDPROJETO) {
               await this.buscarProjetoELocais();
@@ -1101,9 +1130,9 @@
           this.loadingPatrimonios = false;
         }
       },
-      // === Autocomplete Código ===
+      // === Autocomplete Código (agora busca por Descrição) ===
       async buscarCodigo() {
-        const valor = String(this.codigoSearch || '').trim();
+        const valor = String(this.descricaoSearch || '').trim();
         this.codigoBuscaStatus = '';
         if (valor === '') {
           this.formData.NUSEQOBJ = '';
@@ -1111,35 +1140,38 @@
           this.formData.DEOBJETO = '';
           return;
         }
-        // Ajusta o valor do hidden para enviar no submit
-        this.formData.NUSEQOBJ = valor;
         try {
-          const r = await fetch(`/api/codigos/buscar/${encodeURIComponent(valor)}`);
+          const r = await fetch(`/api/codigos/pesquisar?q=${encodeURIComponent(valor)}`);
           if (r.ok) {
             const data = await r.json();
-            if (data.found) {
-              this.formData.DEOBJETO = data.descricao || '';
-              this.isNovoCodigo = false; // bloqueia edição
-              this.codigoBuscaStatus = 'Código encontrado.';
+            // Se encontrar resultados, seleciona o primeiro
+            if (data.length > 0) {
+              this.formData.NUSEQOBJ = data[0].CODOBJETO;
+              this.formData.DEOBJETO = data[0].DESCRICAO || valor;
+              this.isNovoCodigo = false; // bloqueia edição do código
+              this.codigoBuscaStatus = 'Código encontrado e preenchido automaticamente.';
             } else {
-              // Em teoria 404 cai no else abaixo, mas mantemos por segurança
-              if (!this.formData.DEOBJETO) this.formData.DEOBJETO = '';
-              this.isNovoCodigo = true; // libera edição
-              this.codigoBuscaStatus = 'Novo código. Preencha a descrição.';
+              // Sem resultado: novo código
+              this.formData.NUSEQOBJ = '';
+              this.formData.DEOBJETO = valor;
+              this.isNovoCodigo = true; // libera edição do código
+              this.codigoBuscaStatus = 'Novo código. Você pode preencher o número do código.';
             }
           } else {
-            // Não encontrado
-            if (!this.formData.DEOBJETO) this.formData.DEOBJETO = '';
-            this.isNovoCodigo = true; // libera edição
-            this.codigoBuscaStatus = 'Novo código. Preencha a descrição.';
+            // Erro na busca
+            this.formData.NUSEQOBJ = '';
+            this.formData.DEOBJETO = valor;
+            this.isNovoCodigo = true;
+            this.codigoBuscaStatus = 'Novo código. Você pode preencher o número do código.';
           }
         } catch (e) {
           console.error('Erro ao buscar código do objeto', e);
           this.codigoBuscaStatus = 'Erro na busca.';
+          this.isNovoCodigo = true;
         }
       },
       async buscarCodigos() {
-        const termo = this.codigoSearch.trim();
+        const termo = this.descricaoSearch.trim();
         if (termo === '') {
           this.codigosLista = [];
           this.highlightedCodigoIndex = -1;
@@ -1160,15 +1192,14 @@
       },
       abrirDropdownCodigos(force = false) {
         this.showCodigoDropdown = true;
-        if (this.codigoSearch.trim() !== '') this.buscarCodigos();
+        if (this.descricaoSearch.trim() !== '') this.buscarCodigos();
       },
       selecionarCodigo(c) {
         this.formData.NUSEQOBJ = c.CODOBJETO;
-        this.codigoSearch = c.CODOBJETO;
+        this.descricaoSearch = c.DESCRICAO;
         this.formData.DEOBJETO = c.DESCRICAO;
-        this.isNovoCodigo = false;
-        this.codigoBuscaStatus = 'Código encontrado.';
-        // Ensure dropdown is closed when user selects an item
+        this.isNovoCodigo = false; // bloqueia edição do código
+        this.codigoBuscaStatus = 'Código encontrado e preenchido automaticamente.';
         this.showCodigoDropdown = false;
       },
       selecionarCodigoEnter() {
@@ -1178,7 +1209,7 @@
       },
       limparCodigo() {
         this.formData.NUSEQOBJ = '';
-        this.codigoSearch = '';
+        this.descricaoSearch = '';
         this.formData.DEOBJETO = '';
         this.isNovoCodigo = false;
         this.codigoBuscaStatus = '';
