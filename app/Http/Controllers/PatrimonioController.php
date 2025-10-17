@@ -569,8 +569,9 @@ class PatrimonioController extends Controller
     public function buscarLocais(Request $request): JsonResponse
     {
         $termo = trim($request->input('termo', ''));
+        $cdprojeto = trim($request->input('cdprojeto', ''));
 
-        Log::info('🔍 [API BUSCAR LOCAIS] Termo recebido:', ['termo' => $termo]);
+        Log::info('🔍 [API BUSCAR LOCAIS] Termo recebido:', ['termo' => $termo, 'cdprojeto' => $cdprojeto]);
 
         // BUSCAR NA TABELA LOCAIS_PROJETO (tem o cdlocal)
         // REMOVIDO filtro flativo para mostrar TODOS os locais (ativos e inativos)
@@ -581,6 +582,13 @@ class PatrimonioController extends Controller
             $query->where(function ($q) use ($termo) {
                 $q->where('cdlocal', 'LIKE', "%{$termo}%")
                     ->orWhere('delocal', 'LIKE', "%{$termo}%");
+            });
+        }
+
+        // Se tiver cdprojeto, filtrar apenas por esse projeto
+        if ($cdprojeto !== '') {
+            $query->whereHas('projeto', function ($q) use ($cdprojeto) {
+                $q->where('CDPROJETO', $cdprojeto);
             });
         }
 

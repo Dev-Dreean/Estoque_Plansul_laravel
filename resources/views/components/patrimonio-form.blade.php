@@ -140,15 +140,47 @@
   {{-- GRUPO 4: Local, Cód. Termo e Projeto (REORDENADO) --}}
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-    {{-- PROJETO (AGORA EM PRIMEIRO LUGAR - readonly) --}}
+    {{-- PROJETO (AGORA EM PRIMEIRO LUGAR - SELECIONÁVEL COM DROPDOWN) --}}
     <div class="md:col-span-3">
-      <label for="CDPROJETO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Projeto Vinculado ao Local</label>
-      <input id="CDPROJETO"
-        :value="projetoAssociadoSearch || (!formData.CDLOCAL ? 'Selecione um local para exibir o projeto' : 'Carregando...')"
-        readonly
-        tabindex="-1"
-        class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-md shadow-sm cursor-not-allowed" />
-      <input type="hidden" name="CDPROJETO" :value="formData.CDPROJETO" />
+      <label for="projetoSelect" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Projeto Associado *</label>
+      <div class="relative" @click.away="showProjetoDropdown=false">
+        <input id="projetoSelect"
+          x-model="projetoSearch"
+          @input.debounce.300ms="(function(){ const t=String(projetoSearch||'').trim(); if(t.length>0){ showProjetoDropdown=true; buscarProjetosDisponiveis(); } else { showProjetoDropdown=false; projetosDisponiveisList=[]; highlightedProjetoIndex=-1; } })()"
+          @keydown.down.prevent="navegarProjetos(1)"
+          @keydown.up.prevent="navegarProjetos(-1)"
+          @keydown.enter.prevent="selecionarProjetoEnter()"
+          @keydown.escape.prevent="showProjetoDropdown=false"
+          type="text"
+          tabindex="6"
+          class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
+          placeholder="Informe o código ou nome do projeto" required />
+        <input type="hidden" name="CDPROJETO" :value="formData.CDPROJETO" />
+        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+          <div class="flex items-center gap-2">
+            <button type="button" x-show="formData.CDPROJETO" @click="limparProjeto" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none" title="Limpar seleção" aria-label="Limpar seleção">✕</button>
+            <button type="button" @click="abrirDropdownProjetos(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" aria-label="Abrir lista">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div x-show="showProjetoDropdown" x-transition class="absolute z-50 bottom-full mb-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm">
+          <template x-if="loadingProjetos">
+            <div class="p-2 text-gray-500">Buscando...</div>
+          </template>
+          <template x-if="!loadingProjetos && projetosDisponiveisList.length === 0">
+            <div class="p-2 text-gray-500" x-text="String(projetoSearch || '').trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
+          </template>
+          <template x-for="(p,i) in (projetosDisponiveisList || [])" :key="p.CDPROJETO || i">
+            <div data-proj-item @click="selecionarProjeto(p)" @mouseover="highlightedProjetoIndex=i" :class="['px-3 py-2 cursor-pointer', highlightedProjetoIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+              <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="p.CDPROJETO"></span>
+              <span class="ml-2 text-gray-700 dark:text-gray-300" x-text="' - ' + p.NOMEPROJETO"></span>
+            </div>
+          </template>
+        </div>
+      </div>
     </div>
 
     {{-- LOCAL: Botão + | Código | Dropdown Nome --}}
@@ -629,6 +661,13 @@
       showProjetoAssociadoDropdown: false,
       highlightedProjetoAssociadoIndex: -1,
 
+      // Autocomplete Projetos (Novo - Seleção de Projeto Primário)
+      projetoSearch: '',
+      projetosDisponiveisList: [],
+      loadingProjetos: false,
+      showProjetoDropdown: false,
+      highlightedProjetoIndex: -1,
+
       // === SISTEMA SIMPLIFICADO DE LOCAIS ===
       codigoLocalDigitado: '', // Código digitado pelo usuário
       localNome: '', // ✅ Nome do local (preenchido automaticamente)
@@ -958,6 +997,96 @@
         });
       },
 
+      // === Autocomplete Projetos (Novo) ===
+      async buscarProjetosDisponiveis() {
+        const termo = String(this.projetoSearch || '').trim();
+        if (termo.length === 0) {
+          this.projetosDisponiveisList = [];
+          this.highlightedProjetoIndex = -1;
+          return;
+        }
+        this.loadingProjetos = true;
+        try {
+          // Busca todos os projetos que contenham o termo (no código ou nome)
+          const resp = await fetch(`/api/projetos/pesquisar?q=${encodeURIComponent(termo)}`);
+          if (resp.ok) {
+            this.projetosDisponiveisList = await resp.json();
+            this.highlightedProjetoIndex = this.projetosDisponiveisList.length > 0 ? 0 : -1;
+          } else {
+            this.projetosDisponiveisList = [];
+            this.highlightedProjetoIndex = -1;
+          }
+        } catch (e) {
+          console.error('Erro ao buscar projetos:', e);
+          this.projetosDisponiveisList = [];
+          this.highlightedProjetoIndex = -1;
+        } finally {
+          this.loadingProjetos = false;
+        }
+      },
+      abrirDropdownProjetos(force = false) {
+        this.showProjetoDropdown = true;
+        if (this.projetoSearch.trim() !== '') {
+          this.buscarProjetosDisponiveis();
+        }
+      },
+      selecionarProjeto(projeto) {
+        // Atualiza o campo hidden com o código do projeto
+        this.formData.CDPROJETO = String(projeto.CDPROJETO).replace(/[^0-9]/g, '');
+        // Mostra "código - nome" no campo visível
+        this.projetoSearch = `${projeto.CDPROJETO} - ${projeto.NOMEPROJETO}`;
+        this.showProjetoDropdown = false;
+        // Agora que o projeto foi selecionado, precisa recarregar os locais/códigos disponíveis
+        // Limpar a seleção de local anterior para forçar nova busca
+        this.formData.CDLOCAL = '';
+        this.codigoLocalDigitado = '';
+        this.localNome = '';
+        this.locaisEncontrados = [];
+        // IMPORTANTE: Não limpar os campos de código do objeto - apenas recarregar os locais baseado no novo projeto
+      },
+      selecionarProjetoEnter() {
+        if (!this.showProjetoDropdown) return;
+        if (this.highlightedProjetoIndex < 0 || this.highlightedProjetoIndex >= this.projetosDisponiveisList.length) return;
+        this.selecionarProjeto(this.projetosDisponiveisList[this.highlightedProjetoIndex]);
+      },
+      limparProjeto() {
+        this.formData.CDPROJETO = '';
+        this.projetoSearch = '';
+        this.projetosDisponiveisList = [];
+        this.showProjetoDropdown = false;
+        this.highlightedProjetoIndex = -1;
+        // Limpar dependências
+        this.formData.CDLOCAL = '';
+        this.codigoLocalDigitado = '';
+        this.localNome = '';
+        this.locaisEncontrados = [];
+      },
+      navegarProjetos(delta) {
+        if (!this.showProjetoDropdown || this.projetosDisponiveisList.length === 0) return;
+        const max = this.projetosDisponiveisList.length - 1;
+        if (this.highlightedProjetoIndex === -1) {
+          this.highlightedProjetoIndex = 0;
+        } else {
+          this.highlightedProjetoIndex = Math.min(max, Math.max(0, this.highlightedProjetoIndex + delta));
+        }
+        // Scroll into view
+        this.$nextTick(() => {
+          const list = this.$root.querySelector('[x-show="showProjetoDropdown"]');
+          if (!list) return;
+          const items = list.querySelectorAll('[data-proj-item]');
+          const el = items[this.highlightedProjetoIndex];
+          if (el && typeof el.scrollIntoView === 'function') {
+            const parentRect = list.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            if (elRect.top < parentRect.top || elRect.bottom > parentRect.bottom) {
+              el.scrollIntoView({
+                block: 'nearest'
+              });
+            }
+          }
+        });
+      },
+
       // === Autocomplete Nome do Local ===
       async buscarNomesLocais() {
         const termo = this.nomeLocalBusca.trim();
@@ -1149,24 +1278,24 @@
               this.formData.NUSEQOBJ = data[0].CODOBJETO;
               this.formData.DEOBJETO = data[0].DESCRICAO || valor;
               this.isNovoCodigo = false; // bloqueia edição do código
-              this.codigoBuscaStatus = 'Código encontrado e preenchido automaticamente.';
+              this.codigoBuscaStatus = ''; // sem mensagem quando encontrado
             } else {
               // Sem resultado: novo código
               this.formData.NUSEQOBJ = '';
               this.formData.DEOBJETO = valor;
               this.isNovoCodigo = true; // libera edição do código
-              this.codigoBuscaStatus = 'Novo código. Você pode preencher o número do código.';
+              this.codigoBuscaStatus = 'Preencha o número do código do objeto.';
             }
           } else {
             // Erro na busca
             this.formData.NUSEQOBJ = '';
             this.formData.DEOBJETO = valor;
             this.isNovoCodigo = true;
-            this.codigoBuscaStatus = 'Novo código. Você pode preencher o número do código.';
+            this.codigoBuscaStatus = 'Preencha o número do código do objeto.';
           }
         } catch (e) {
           console.error('Erro ao buscar código do objeto', e);
-          this.codigoBuscaStatus = 'Erro na busca.';
+          this.codigoBuscaStatus = 'Preencha o número do código do objeto.';
           this.isNovoCodigo = true;
         }
       },
@@ -1199,7 +1328,7 @@
         this.descricaoSearch = c.DESCRICAO;
         this.formData.DEOBJETO = c.DESCRICAO;
         this.isNovoCodigo = false; // bloqueia edição do código
-        this.codigoBuscaStatus = 'Código encontrado e preenchido automaticamente.';
+        this.codigoBuscaStatus = ''; // sem mensagem quando selecionado
         this.showCodigoDropdown = false;
       },
       selecionarCodigoEnter() {
@@ -1255,7 +1384,12 @@
         console.log('🔍 [BUSCA LOCAL] Termo digitado:', termo);
 
         try {
-          const url = `/api/locais/buscar?termo=${encodeURIComponent(termo)}`;
+          // Se um projeto foi selecionado, incluir como parâmetro para filtrar
+          let url = `/api/locais/buscar?termo=${encodeURIComponent(termo)}`;
+          if (this.formData.CDPROJETO) {
+            url += `&cdprojeto=${encodeURIComponent(this.formData.CDPROJETO)}`;
+            console.log('🔍 [BUSCA LOCAL] Filtrando por projeto:', this.formData.CDPROJETO);
+          }
           console.log('🌐 [BUSCA LOCAL] URL chamada:', url);
 
           const resp = await fetch(url);
