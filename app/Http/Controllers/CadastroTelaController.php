@@ -10,10 +10,10 @@ class CadastroTelaController extends Controller
 {
     public function index()
     {
-        // Apenas Super Admin
+        // Permite acesso para Admin e Super Admin
         /** @var \App\Models\User|null $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser || !$currentUser->isGod()) {
+        if (!$currentUser || !($currentUser->isAdmin() || $currentUser->isSuperAdmin())) {
             abort(403, 'Acesso não autorizado.');
         }
 
@@ -73,10 +73,10 @@ class CadastroTelaController extends Controller
 
     public function store(Request $request)
     {
-        // Apenas Super Admin
+        // Permite acesso para Admin e Super Admin
         /** @var \App\Models\User|null $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser || !$currentUser->isGod()) {
+        if (!$currentUser || !($currentUser->isAdmin() || $currentUser->isSuperAdmin())) {
             abort(403, 'Acesso não autorizado');
         }
 
@@ -102,10 +102,10 @@ class CadastroTelaController extends Controller
 
     public function showForm(Request $request, $nome)
     {
-        // Apenas Super Admin
+        // Permite acesso para Admin e Super Admin
         /** @var \App\Models\User|null $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser || !$currentUser->isGod()) {
+        if (!$currentUser || !($currentUser->isAdmin() || $currentUser->isSuperAdmin())) {
             abort(403, 'Acesso não autorizado');
         }
 
@@ -123,10 +123,10 @@ class CadastroTelaController extends Controller
 
     public function gerarVincular(Request $request, $nome)
     {
-        // Apenas Super Admin
+        // Permite acesso para Admin e Super Admin
         /** @var \App\Models\User|null $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser || !$currentUser->isGod()) {
+        if (!$currentUser || !($currentUser->isAdmin() || $currentUser->isSuperAdmin())) {
             abort(403, 'Acesso não autorizado');
         }
 

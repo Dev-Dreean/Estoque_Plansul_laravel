@@ -24,7 +24,7 @@ class CheckTelaAccess
             return redirect()->route('login')
                 ->with('error', 'Você precisa estar autenticado para acessar esta página.');
         }
-        
+
         /** @var User|null $user */
         $user = Auth::user();
 

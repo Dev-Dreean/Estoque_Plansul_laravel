@@ -16,7 +16,7 @@
   {{-- GRUPO 1: N° Patrimônio, N° OC, Campo Vazio --}}
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     <div>
-      <label for="NUPATRIMONIO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Nº Patrimônio *</label>
+      <label for="NUPATRIMONIO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Número do Patrimônio *</label>
       <div class="relative" @click.away="showPatDropdown=false">
         <input id="NUPATRIMONIO"
           x-model="patSearch"
@@ -30,7 +30,7 @@
           inputmode="numeric"
           tabindex="1"
           class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
-          placeholder="Digite número ou descrição"
+          placeholder="Informe o número do patrimônio"
           required />
         <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
           <div class="flex items-center gap-1">
@@ -60,11 +60,11 @@
       </div>
     </div>
     <div>
-      <label for="NUMOF" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nº OC</label>
+      <label for="NUMOF" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número da Ordem de Compra</label>
       <input x-model="formData.NUMOF" id="NUMOF" name="NUMOF" type="number" tabindex="2" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
     <div>
-      <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">-</label>
+      <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Campo Extra</label>
       <input id="campo_extra" name="campo_extra" type="text" disabled tabindex="-1" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 rounded-md cursor-not-allowed" />
     </div>
   </div>
@@ -72,7 +72,7 @@
   {{-- GRUPO 2: Código e Descrição --}}
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
     <div class="md:col-span-1">
-      <label for="NUSEQOBJ" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Código *</label>
+      <label for="NUSEQOBJ" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Código do Objeto *</label>
       <div class="relative" @click.away="showCodigoDropdown=false">
         <input id="NUSEQOBJ"
           x-model="codigoSearch"
@@ -86,7 +86,7 @@
           inputmode="numeric"
           tabindex="3"
           class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
-          placeholder="Digite nº ou descrição" required />
+          placeholder="Informe o código do objeto" required />
         {{-- Valor enviado (hidden) --}}
         <input type="hidden" name="NUSEQOBJ" :value="formData.NUSEQOBJ" />
         <div class="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -117,14 +117,14 @@
       </div>
     </div>
     <div class="md:col-span-3">
-      <x-input-label for="DEOBJETO" value="Descrição do Código" />
+      <x-input-label for="DEOBJETO" value="Descrição do Objeto" />
       <x-text-input data-index="5" x-model="formData.DEOBJETO" id="DEOBJETO" name="DEOBJETO" type="text" tabindex="4" class="mt-0.5 block w-full" x-bind:readonly="!isNovoCodigo" x-bind:class="!isNovoCodigo ? 'bg-gray-100 dark:bg-gray-900' : ''" />
     </div>
   </div>
 
   {{-- GRUPO 3: Observação --}}
   <div>
-    <x-input-label for="DEHISTORICO" value="Observação" />
+    <x-input-label for="DEHISTORICO" value="Observações" />
     <textarea data-index="6" x-model="formData.DEHISTORICO" id="DEHISTORICO" name="DEHISTORICO" rows="2" tabindex="5" class="block mt-0.5 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm"></textarea>
   </div>
 
@@ -133,7 +133,7 @@
 
     {{-- LOCAL: Botão + | Código | Dropdown Nome --}}
     <div class="md:col-span-2">
-      <label for="CDLOCAL_INPUT" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Local *</label>
+      <label for="CDLOCAL_INPUT" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Código do Local *</label>
 
       <div class="flex gap-3">
         {{-- Botão + (Criar Novo Local/Projeto) --}}
@@ -153,7 +153,7 @@
             inputmode="numeric"
             x-model="codigoLocalDigitado"
             @input.debounce.300ms="buscarLocalPorCodigo()"
-            placeholder="Ex: 103"
+            placeholder="Informe o código do local"
             tabindex="7"
             class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
           <input type="hidden" name="CDLOCAL" :value="formData.CDLOCAL" />
@@ -172,7 +172,7 @@
               @keydown.enter.prevent="selecionarNomeLocalEnter()"
               @keydown.escape.prevent="showNomeLocalDropdown=false"
               :disabled="!codigoLocalDigitado || locaisEncontrados.length === 1"
-              :placeholder="!codigoLocalDigitado ? 'Digite o código primeiro' : (locaisEncontrados.length === 1 ? 'Preenchido automaticamente' : 'Digite o nome do local')"
+              :placeholder="!codigoLocalDigitado ? 'Informe o código do local primeiro' : (locaisEncontrados.length === 1 ? 'Preenchido automaticamente' : 'Informe o nome do local')"
               tabindex="8"
               :class="[
                 'block w-full h-8 text-sm rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500',
@@ -234,7 +234,7 @@
 
     {{-- CAMPO CÓD TERMO --}}
     <div>
-      <label for="NMPLANTA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Cód Termo</label>
+      <label for="NMPLANTA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Código do Termo</label>
       <input x-model="formData.NMPLANTA"
         id="NMPLANTA"
         name="NMPLANTA"
@@ -245,9 +245,9 @@
 
     {{-- CAMPO PROJETO (readonly, preenchido automaticamente) --}}
     <div class="md:col-span-3">
-      <label for="CDPROJETO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Projeto Associado ao Local</label>
+      <label for="CDPROJETO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Projeto Vinculado ao Local</label>
       <input id="CDPROJETO"
-        :value="projetoAssociadoSearch || (!formData.CDLOCAL ? '⚠️ Selecione um local primeiro' : '⏳ Carregando...')"
+        :value="projetoAssociadoSearch || (!formData.CDLOCAL ? 'Selecione um local para exibir o projeto' : 'Carregando...')"
         readonly
         tabindex="-1"
         class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-md shadow-sm cursor-not-allowed" />
@@ -258,15 +258,15 @@
   {{-- GRUPO 5: Marca, Modelo, Situação, Matrícula / Usuário --}}
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
     <div>
-      <label for="MARCA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Marca</label>
+      <label for="MARCA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Marca do Patrimônio</label>
       <input x-model="formData.MARCA" id="MARCA" name="MARCA" type="text" tabindex="10" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
     <div>
-      <label for="MODELO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Modelo</label>
+      <label for="MODELO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Modelo do Patrimônio</label>
       <input x-model="formData.MODELO" id="MODELO" name="MODELO" type="text" tabindex="11" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
     <div>
-      <label for="SITUACAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Situação *</label>
+      <label for="SITUACAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Situação do Patrimônio *</label>
       <select id="SITUACAO" name="SITUACAO" required tabindex="12"
         class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500">
         @php
@@ -279,7 +279,7 @@
       </select>
     </div>
     <div class="relative" @click.away="showUserDropdown=false">
-      <label for="matricula_busca" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Matrícula Responsável *</label>
+      <label for="matricula_busca" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Matrícula do Responsável *</label>
       <div class="relative">
         <input id="matricula_busca"
           x-model="userSearch"
@@ -330,11 +330,11 @@
   {{-- GRUPO 6: Datas --}}
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     <div>
-      <label for="DTAQUISICAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Data de Aquisição</label>
+      <label for="DTAQUISICAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Data de Aquisição do Patrimônio</label>
       <input x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" tabindex="14" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
     <div>
-      <label for="DTBAIXA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Data de Baixa</label>
+      <label for="DTBAIXA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Data de Baixa do Patrimônio</label>
       <input x-model="formData.DTBAIXA" id="DTBAIXA" name="DTBAIXA" type="date" tabindex="15" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
       <x-input-error class="mt-2" :messages="$errors->get('DTBAIXA')" />
     </div>
@@ -349,7 +349,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl">
       <div class="flex justify-between items-center mb-4">
         <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-200">
-          🆕 Criar Novo Local/Projeto
+          Criar Novo Local/Projeto
         </h4>
         <button type="button"
           class="text-gray-400 hover:text-gray-600 text-2xl leading-none"
@@ -362,7 +362,7 @@
         {{-- 🔍 Input de Busca: Código do Projeto --}}
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            🔍 Código do Projeto *
+            Código do Projeto *
           </label>
           <input type="text"
             x-model="novoProjeto.cdprojetoBusca"
@@ -371,7 +371,7 @@
             placeholder="Ex: 001"
             class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Digite o código do projeto a buscar
+            Informe o código do projeto para buscar
           </p>
         </div>
 
@@ -385,11 +385,11 @@
         </div>
 
         {{-- ✅ Quando projeto foi encontrado: mostrar campos desabilitados + campo de nome --}}
-        <div x-show="novoProjeto.cdprojeto && !carregandoProjeto" class="space-y-4">
+        <div x-show="novoProjeto.cdprojeto && !carregandoProjeto" class="space-y-4" x-init="if(novoProjeto.cdprojeto && $refs.inputNomeLocal){ $nextTick(() => $refs.inputNomeLocal.focus()); }">
           {{-- Código do Local (desabilitado) --}}
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              📍 Código do Local
+              Código do Local
             </label>
             <input type="text"
               :value="novoProjeto.cdprojetoBusca"
@@ -401,19 +401,19 @@
           {{-- Projeto Associado (desabilitado) --}}
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              🏢 Projeto Associado
+              Projeto Associado
             </label>
             <input type="text"
               :value="novoProjeto.nmProjeto"
               disabled
               class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed" />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Projeto associado ao local (identificado automaticamente)</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Projeto vinculado ao local (identificado automaticamente)</p>
           </div>
 
           {{-- Nome do Local (ÚNICO editável) --}}
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              📝 Nome do Local *
+              Nome do Local *
             </label>
             <input type="text"
               x-model="novoProjeto.nomeLocal"
@@ -421,7 +421,7 @@
               placeholder="Ex: Almoxarifado Central"
               class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md focus:ring-2 focus:ring-blue-500" />
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Este é o único campo que você precisa preencher
+              Preencha o nome do local
             </p>
           </div>
         </div>
@@ -430,7 +430,7 @@
         <div x-show="!novoProjeto.cdprojeto && !carregandoProjeto && novoProjeto.cdprojetoBusca">
           <div class="bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded p-3 mb-4">
             <p class="text-sm text-amber-800 dark:text-amber-200">
-              ⚠️ Projeto não encontrado. Preencha os dados abaixo para criar novo:
+              Projeto não encontrado. Preencha os dados abaixo para criar novo:
             </p>
           </div>
 
@@ -2399,21 +2399,21 @@
       focusNext(currentElement) {
         // Define a sequência exata de inputs segundo o fluxo definido
         const sequencia = [
-          '#NUPATRIMONIO',      // 1. Nº Patrimônio
-          '#NUMOF',             // 2. Nº OC
-          '#NUSEQOBJ',          // 3. Código
+          '#NUPATRIMONIO', // 1. Nº Patrimônio
+          '#NUMOF', // 2. Nº OC
+          '#NUSEQOBJ', // 3. Código
           // 4. Se código NÃO existir: Descrição do Código (DEOBJETO)
           // 5. Observação (DEHISTORICO)
           // 6. Botão + (abrindo espaço, com tabindex 6, pulará para o próximo)
-          '#CDLOCAL_INPUT',     // 7. Cód Local
-          '#NOMELOCAL_INPUT',   // 8. Nome Local
-          '#NMPLANTA',          // 9. Cód Termo
-          '#MARCA',             // 10. Marca
-          '#MODELO',            // 11. Modelo
-          '#SITUACAO',          // 12. Situação
-          '#matricula_busca',   // 13. Matrícula Responsável
-          '#DTAQUISICAO',       // 14. Data de Aquisição
-          '#DTBAIXA',           // 15. Data de Baixa
+          '#CDLOCAL_INPUT', // 7. Cód Local
+          '#NOMELOCAL_INPUT', // 8. Nome Local
+          '#NMPLANTA', // 9. Cód Termo
+          '#MARCA', // 10. Marca
+          '#MODELO', // 11. Modelo
+          '#SITUACAO', // 12. Situação
+          '#matricula_busca', // 13. Matrícula Responsável
+          '#DTAQUISICAO', // 14. Data de Aquisição
+          '#DTBAIXA', // 15. Data de Baixa
         ];
 
         const currentId = currentElement.id;
@@ -2441,7 +2441,7 @@
         if (currentIndex >= 0 && currentIndex < sequencia.length - 1) {
           const nextId = sequencia[currentIndex + 1];
           const nextElement = document.querySelector(nextId);
-          
+
           if (nextElement && !nextElement.disabled && !nextElement.readOnly) {
             nextElement.focus();
             return;

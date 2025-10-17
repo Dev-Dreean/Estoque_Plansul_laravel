@@ -85,7 +85,7 @@ class RelatorioController extends Controller
             }
 
             $query = Patrimonio::query()->with('creator', 'local');
-            
+
             // Filtra patrimônios por usuário (exceto Admin e Super Admin)
             /** @var \App\Models\User|null $user */
             $user = Auth::user();
@@ -169,7 +169,7 @@ class RelatorioController extends Controller
         ]);
 
         $query = Patrimonio::query()->with('creator', 'local');
-        
+
         // Filtra patrimônios por usuário (exceto Admin e Super Admin)
         /** @var \App\Models\User|null $user */
         $user = Auth::user();

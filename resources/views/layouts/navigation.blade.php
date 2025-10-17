@@ -33,7 +33,7 @@
                     </x-nav-link>
                     @endif
 
-                    @if(Auth::user()->temAcessoTela(1004))
+                    @if(Auth::user()->isAdmin() || Auth::user()->isSuperAdmin())
                     <x-nav-link :href="route('cadastro-tela.index')" :active="request()->routeIs('cadastro-tela.*')">
                         {{ __('Cadastro de Telas') }}
                     </x-nav-link>
@@ -115,7 +115,7 @@
             </x-responsive-nav-link>
             @endif
 
-            @if(Auth::user()->temAcessoTela(1004))
+            @if(Auth::user()->isAdmin() || Auth::user()->isSuperAdmin())
             <x-responsive-nav-link :href="route('cadastro-tela.index')" :active="request()->routeIs('cadastro-tela.*')">
                 {{ __('Cadastro de Telas') }}
             </x-responsive-nav-link>
