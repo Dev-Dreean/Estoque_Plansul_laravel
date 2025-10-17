@@ -198,17 +198,61 @@
           <span class="text-lg font-bold leading-none">+</span>
         </button>
 
-        {{-- Input Código do Local --}}
-        <div class="flex-shrink-0 w-24">
+        {{-- Input Código do Local (Agora com Dropdown Searchable) --}}
+        <div class="flex-shrink-0 w-24 relative" @click.away="showCodigoLocalDropdown=false">
           <input id="CDLOCAL_INPUT"
             type="text"
             inputmode="numeric"
             x-model="codigoLocalDigitado"
-            @input.debounce.300ms="buscarLocalPorCodigo()"
-            placeholder="Informe o código do local"
+            @focus="abrirDropdownCodigosLocais()"
+            @input.debounce.300ms="(function(){ buscarCodigosLocaisFiltrados(); })()"
+            @keydown.down.prevent="navegarCodigosLocais(1)"
+            @keydown.up.prevent="navegarCodigosLocais(-1)"
+            @keydown.enter.prevent="selecionarCodigoLocalEnter()"
+            @keydown.escape.prevent="showCodigoLocalDropdown=false"
+            placeholder="Código local"
             tabindex="7"
-            class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+            class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500" />
           <input type="hidden" name="CDLOCAL" :value="formData.CDLOCAL" />
+          
+          {{-- Botão Lupa e Limpar --}}
+          <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+            <button type="button"
+              x-show="codigoLocalDigitado"
+              @click="limparCodigoLocal()"
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none"
+              title="Limpar seleção"
+              tabindex="-1">×</button>
+            <button type="button"
+              @click="abrirDropdownCodigosLocais(true)"
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
+              title="Abrir lista"
+              tabindex="-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+
+          {{-- Dropdown de Códigos Locais --}}
+          <div x-show="showCodigoLocalDropdown"
+            x-transition
+            class="absolute z-50 bottom-full mb-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto text-xs">
+            <template x-if="loadingCodigosLocais">
+              <div class="p-2 text-gray-500 text-center">Buscando...</div>
+            </template>
+            <template x-if="!loadingCodigosLocais && codigosLocaisFiltrados.length === 0">
+              <div class="p-2 text-gray-500 text-center" x-text="codigoLocalDigitado.trim() === '' ? 'Nenhum código disponível' : 'Nenhum resultado'"></div>
+            </template>
+            <template x-for="(codigo, i) in codigosLocaisFiltrados" :key="codigo.id || codigo.cdlocal">
+              <div @click="selecionarCodigoLocal(codigo)"
+                @mouseover="highlightedCodigoLocalIndex = i"
+                :class="['px-3 py-1.5 cursor-pointer border-b border-gray-200 dark:border-gray-700 last:border-0', highlightedCodigoLocalIndex === i ? 'bg-indigo-100 dark:bg-indigo-900' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+                <span class="font-mono text-indigo-600 dark:text-indigo-400" x-text="codigo.cdlocal"></span>
+                <span class="ml-2 text-gray-700 dark:text-gray-300" x-text="'- ' + (codigo.LOCAL || codigo.delocal)"></span>
+              </div>
+            </template>
+          </div>
         </div>
 
         {{-- Dropdown/Input Nome do Local com Autocomplete --}}
@@ -677,6 +721,12 @@
       resultadosBusca: [], // Resultados brutos da busca (lupa ou digitação)
       resultadosBuscaGrouped: [], // Resultados agrupados por cdlocal
 
+      // Dropdown de Códigos Locais (Novo)
+      codigosLocaisFiltrados: [],
+      loadingCodigosLocais: false,
+      showCodigoLocalDropdown: false,
+      highlightedCodigoLocalIndex: -1,
+
       // Autocomplete Nome do Local
       nomeLocalBusca: '', // Texto digitado pelo usuário no campo de nome
       nomesLocaisLista: [], // Lista de sugestões de nomes
@@ -1075,6 +1125,110 @@
           if (!list) return;
           const items = list.querySelectorAll('[data-proj-item]');
           const el = items[this.highlightedProjetoIndex];
+          if (el && typeof el.scrollIntoView === 'function') {
+            const parentRect = list.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            if (elRect.top < parentRect.top || elRect.bottom > parentRect.bottom) {
+              el.scrollIntoView({
+                block: 'nearest'
+              });
+            }
+          }
+        });
+      },
+
+      // === Dropdown de Códigos Locais (Novo) ===
+      async buscarCodigosLocaisFiltrados() {
+        const termo = String(this.codigoLocalDigitado || '').trim();
+
+        // Se vazio, mostrar todos os disponíveis
+        if (termo === '') {
+          // Se há locais encontrados, mostrar seus códigos
+          if (this.locaisEncontrados.length > 0) {
+            this.codigosLocaisFiltrados = [...this.locaisEncontrados];
+            this.highlightedCodigoLocalIndex = -1;
+          } else {
+            this.codigosLocaisFiltrados = [];
+          }
+          return;
+        }
+
+        // Buscar pela API
+        this.loadingCodigosLocais = true;
+        try {
+          let url = `/api/locais/buscar?termo=${encodeURIComponent(termo)}`;
+          // Se tem projeto selecionado, filtrar por ele
+          if (this.formData.CDPROJETO) {
+            url += `&cdprojeto=${encodeURIComponent(this.formData.CDPROJETO)}`;
+          }
+
+          const resp = await fetch(url);
+          if (resp.ok) {
+            const locais = await resp.json();
+            // Armazenar para próxima consulta e atualizar lista filtrada
+            this.locaisEncontrados = locais;
+            // Manter apenas aqueles que começam com o termo
+            this.codigosLocaisFiltrados = locais.filter(l =>
+              String(l.cdlocal).startsWith(termo) || String(l.cdlocal).includes(termo)
+            );
+            this.highlightedCodigoLocalIndex = this.codigosLocaisFiltrados.length > 0 ? 0 : -1;
+          }
+        } catch (e) {
+          console.error('Erro ao buscar códigos de locais:', e);
+          this.codigosLocaisFiltrados = [];
+        } finally {
+          this.loadingCodigosLocais = false;
+        }
+      },
+      abrirDropdownCodigosLocais(force = false) {
+        this.showCodigoLocalDropdown = true;
+        // Se clicou na lupa sem ter digitado, buscar todos
+        if (force && this.codigoLocalDigitado.trim() === '') {
+          this.buscarCodigosLocaisFiltrados();
+        } else if (this.codigoLocalDigitado.trim() !== '') {
+          this.buscarCodigosLocaisFiltrados();
+        }
+      },
+      selecionarCodigoLocal(codigo) {
+        // Atualiza o código
+        this.codigoLocalDigitado = String(codigo.cdlocal);
+        this.formData.CDLOCAL = String(codigo.cdlocal);
+        // Atualizar nome do local
+        this.localNome = codigo.LOCAL || codigo.delocal || '';
+        this.showCodigoLocalDropdown = false;
+        // Chamar a função original para processar (buscar nomes, etc)
+        this.buscarLocalPorCodigo();
+      },
+      selecionarCodigoLocalEnter() {
+        if (!this.showCodigoLocalDropdown) return;
+        if (this.highlightedCodigoLocalIndex < 0 || this.highlightedCodigoLocalIndex >= this.codigosLocaisFiltrados.length) return;
+        this.selecionarCodigoLocal(this.codigosLocaisFiltrados[this.highlightedCodigoLocalIndex]);
+      },
+      limparCodigoLocal() {
+        this.codigoLocalDigitado = '';
+        this.formData.CDLOCAL = '';
+        this.localNome = '';
+        this.codigosLocaisFiltrados = [];
+        this.showCodigoLocalDropdown = false;
+        this.highlightedCodigoLocalIndex = -1;
+        this.locaisEncontrados = [];
+        this.nomeLocalBusca = '';
+        this.nomesLocaisLista = [];
+      },
+      navegarCodigosLocais(delta) {
+        if (!this.showCodigoLocalDropdown || this.codigosLocaisFiltrados.length === 0) return;
+        const max = this.codigosLocaisFiltrados.length - 1;
+        if (this.highlightedCodigoLocalIndex === -1) {
+          this.highlightedCodigoLocalIndex = 0;
+        } else {
+          this.highlightedCodigoLocalIndex = Math.min(max, Math.max(0, this.highlightedCodigoLocalIndex + delta));
+        }
+        // Scroll into view
+        this.$nextTick(() => {
+          const list = this.$root.querySelector('[x-show="showCodigoLocalDropdown"]');
+          if (!list) return;
+          const items = list.querySelectorAll('[x-for*="codigosLocaisFiltrados"]');
+          const el = items[this.highlightedCodigoLocalIndex];
           if (el && typeof el.scrollIntoView === 'function') {
             const parentRect = list.getBoundingClientRect();
             const elRect = el.getBoundingClientRect();
