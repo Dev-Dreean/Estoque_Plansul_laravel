@@ -20,6 +20,8 @@
       <div class="relative" @click.away="showPatDropdown=false">
         <input id="NUPATRIMONIO"
           x-model="patSearch"
+          @focus="abrirDropdownPatrimonios()"
+          @blur.debounce.150ms="showPatDropdown=false"
           @input.debounce.300ms="(function(){ const t=String(patSearch||'').trim(); if(t.length>=3){ showPatDropdown=true; buscarPatrimonios(); } else { showPatDropdown=false; patrimoniosLista=[]; highlightedPatIndex=-1; } })()"
           @keydown.down.prevent="navegarPatrimonios(1)"
           @keydown.up.prevent="navegarPatrimonios(-1)"
@@ -29,7 +31,7 @@
           type="text"
           inputmode="numeric"
           tabindex="1"
-          class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
+          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
           placeholder="Informe o número do patrimônio"
           required />
         <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
@@ -75,15 +77,16 @@
       <div class="relative" @click.away="showCodigoDropdown=false">
         <input id="DEOBJETO"
           x-model="descricaoSearch"
+          @focus="abrirDropdownCodigos()"
+          @blur.debounce.150ms="(function(){ showCodigoDropdown=false; buscarCodigo(); })()"
           @input.debounce.300ms="(function(){ const t=String(descricaoSearch||'').trim(); if(t.length>0){ showCodigoDropdown=true; buscarCodigos(); } else { showCodigoDropdown=false; codigosLista=[]; highlightedCodigoIndex=-1; } })()"
-          @blur="(function(){ setTimeout(()=>{ buscarCodigo(); }, 150); })()"
           @keydown.down.prevent="navegarCodigos(1)"
           @keydown.up.prevent="navegarCodigos(-1)"
           @keydown.enter.prevent="selecionarCodigoEnter()"
           @keydown.escape.prevent="showCodigoDropdown=false"
           type="text"
           tabindex="3"
-          class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
+          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
           placeholder="Informe a descrição do objeto" required />
         {{-- Valor enviado (hidden) --}}
         <input type="hidden" name="NUSEQOBJ" :value="formData.NUSEQOBJ" />
@@ -142,6 +145,8 @@
       <div class="relative" @click.away="showProjetoDropdown=false">
         <input id="projetoSelect"
           x-model="projetoSearch"
+          @focus="abrirDropdownProjetos()"
+          @blur.debounce.150ms="showProjetoDropdown=false"
           @input.debounce.300ms="(function(){ const t=String(projetoSearch||'').trim(); if(t.length>0){ showProjetoDropdown=true; buscarProjetosDisponiveis(); } else { showProjetoDropdown=false; projetosDisponiveisList=[]; highlightedProjetoIndex=-1; } })()"
           @keydown.down.prevent="navegarProjetos(1)"
           @keydown.up.prevent="navegarProjetos(-1)"
@@ -149,7 +154,7 @@
           @keydown.escape.prevent="showProjetoDropdown=false"
           type="text"
           tabindex="6"
-          class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
+          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
           placeholder="Informe o código ou nome do projeto" required />
         <input type="hidden" name="CDPROJETO" :value="formData.CDPROJETO" />
         <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
@@ -199,6 +204,7 @@
             inputmode="numeric"
             x-model="codigoLocalDigitado"
             @focus="abrirDropdownCodigosLocais()"
+            @blur.debounce.150ms="showCodigoLocalDropdown=false"
             @input.debounce.300ms="(function(){ buscarCodigosLocaisFiltrados(); })()"
             @keydown.down.prevent="navegarCodigosLocais(1)"
             @keydown.up.prevent="navegarCodigosLocais(-1)"
@@ -208,10 +214,10 @@
             placeholder="Código local"
             tabindex="7"
             :class="[
-              'block w-full h-8 text-sm rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500',
+              'block w-full h-8 text-xs rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500 border',
               !formData.CDPROJETO
-                ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed'
-                : 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200'
+                ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 text-gray-600 cursor-not-allowed'
+                : 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 text-gray-700'
             ]" />
           <input type="hidden" name="CDLOCAL" :value="formData.CDLOCAL" />
           
@@ -268,6 +274,7 @@
               id="NOMELOCAL_INPUT"
               x-model="nomeLocalBusca"
               @focus="abrirDropdownNomesLocaisAoFocar()"
+              @blur.debounce.150ms="showNomeLocalDropdown=false"
               @input.debounce.300ms="(function(){ buscarNomesLocais(); })()"
               @keydown.down.prevent="navegarNomesLocais(1)"
               @keydown.up.prevent="navegarNomesLocais(-1)"
@@ -277,10 +284,10 @@
               :placeholder="!codigoLocalDigitado ? 'Selecione um código primeiro' : (locaisEncontrados.length === 1 ? 'Preenchido automaticamente' : 'Informe o nome do local')"
               tabindex="8"
               :class="[
-                'block w-full h-8 text-sm rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500',
+                'block w-full h-8 text-xs rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500 border',
                 !codigoLocalDigitado || locaisEncontrados.length === 1
-                  ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed'
-                  : 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200'
+                  ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 text-gray-600 cursor-not-allowed'
+                  : 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 text-gray-700'
               ]"
               autocomplete="off" />
 
@@ -357,9 +364,9 @@
       <input x-model="formData.MODELO" id="MODELO" name="MODELO" type="text" tabindex="11" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
     <div>
-      <label for="SITUACAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Situação do Patrimônio *</label>
+      <label for="SITUACAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Situação do Patrimônio *</label>
       <select id="SITUACAO" name="SITUACAO" required tabindex="12"
-        class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500">
+        class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500">
         @php
         $situacaoAtual = old('SITUACAO', $patrimonio->situacao ?? 'EM USO');
         @endphp
