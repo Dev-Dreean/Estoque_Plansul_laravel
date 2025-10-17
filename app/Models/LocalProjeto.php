@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class LocalProjeto extends Model
 {
@@ -16,5 +17,32 @@ class LocalProjeto extends Model
     public function projeto(): BelongsTo
     {
         return $this->belongsTo(Tabfant::class, 'tabfant_id', 'id');
+    }
+
+    /**
+     * Accessor para compatibilidade: retorna o nome do local.
+     * Permite usar $localProjeto->LOCAL
+     */
+    public function getLOCALAttribute()
+    {
+        return $this->delocal;
+    }
+
+    /**
+     * Accessor para compatibilidade: retorna o código do projeto.
+     * Permite usar $localProjeto->CDPROJETO
+     */
+    public function getCDPROJETOAttribute()
+    {
+        return $this->projeto ? $this->projeto->CDPROJETO : null;
+    }
+
+    /**
+     * Accessor para compatibilidade: retorna o nome do projeto.
+     * Permite usar $localProjeto->NOMEPROJETO
+     */
+    public function getNOMEPROJETOAttribute()
+    {
+        return $this->projeto ? $this->projeto->NOMEPROJETO : null;
     }
 }

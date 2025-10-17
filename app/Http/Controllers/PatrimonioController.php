@@ -1016,7 +1016,7 @@ class PatrimonioController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        $query = Patrimonio::with(['funcionario', 'local', 'creator']);
+        $query = Patrimonio::with(['funcionario', 'local.projeto', 'creator']);
 
         // Filtra patrimônios por usuário (exceto Admin e Super Admin)
         if (!$user->isGod() && $user->PERFIL !== 'ADM') {

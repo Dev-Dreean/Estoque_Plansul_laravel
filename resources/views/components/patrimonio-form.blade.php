@@ -31,10 +31,10 @@
           type="text"
           inputmode="numeric"
           tabindex="1"
-          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
+          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500"
           placeholder="Informe o número do patrimônio"
           required />
-        <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+        <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
           <button type="button" x-show="formData.NUPATRIMONIO" @click="limparPatrimonio" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none" title="Limpar seleção" tabindex="-1">×</button>
           <button type="button" @click="abrirDropdownPatrimonios(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" tabindex="-1">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -61,11 +61,11 @@
     </div>
     <div>
       <label for="NUMOF" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número da Ordem de Compra</label>
-      <input x-model="formData.NUMOF" id="NUMOF" name="NUMOF" type="number" tabindex="2" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <input x-model="formData.NUMOF" id="NUMOF" name="NUMOF" type="number" tabindex="2" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
     <div>
       <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Campo Extra</label>
-      <input id="campo_extra" name="campo_extra" type="text" disabled tabindex="-1" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 rounded-md cursor-not-allowed" />
+      <input id="campo_extra" name="campo_extra" type="text" disabled tabindex="-1" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 rounded-md cursor-not-allowed" />
     </div>
   </div>
 
@@ -86,11 +86,11 @@
           @keydown.escape.prevent="showCodigoDropdown=false"
           type="text"
           tabindex="3"
-          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
+          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500"
           placeholder="Informe a descrição do objeto" required />
         {{-- Valor enviado (hidden) --}}
         <input type="hidden" name="NUSEQOBJ" :value="formData.NUSEQOBJ" />
-        <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+        <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
           <button type="button" x-show="formData.NUSEQOBJ" @click="limparCodigo" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none" title="Limpar seleção" tabindex="-1">×</button>
           <button type="button" @click="abrirDropdownCodigos(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" tabindex="-1">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -124,9 +124,13 @@
         inputmode="numeric"
         tabindex="4"
         x-bind:readonly="!isNovoCodigo"
-        x-bind:class="!isNovoCodigo ? 'bg-gray-100 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed' : ''"
-        class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500"
-        placeholder="Preenchido automaticamente" />
+        :class="[
+          'block w-full h-8 text-xs border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500',
+          !isNovoCodigo
+            ? 'bg-gray-100 dark:bg-gray-700 dark:text-gray-400 text-gray-600 cursor-not-allowed'
+            : 'dark:bg-gray-900 dark:text-gray-200'
+        ]"
+        placeholder="" />
     </div>
   </div>
 
@@ -154,10 +158,10 @@
           @keydown.escape.prevent="showProjetoDropdown=false"
           type="text"
           tabindex="6"
-          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
+          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500"
           placeholder="Informe o código ou nome do projeto" required />
         <input type="hidden" name="CDPROJETO" :value="formData.CDPROJETO" />
-        <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+        <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
           <button type="button" x-show="formData.CDPROJETO" @click="limparProjeto" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none" title="Limpar seleção" tabindex="-1">×</button>
           <button type="button" @click="abrirDropdownProjetos(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" tabindex="-1">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -184,7 +188,7 @@
 
     {{-- LOCAL: Botão + | Código | Dropdown Nome --}}
     <div class="md:col-span-2">
-      <label for="CDLOCAL_INPUT" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Código do Local *</label>
+      <label for="CDLOCAL_INPUT" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código do Local *</label>
 
       <div class="flex gap-3 items-stretch">
         {{-- Botão + (Criar Novo Local/Projeto) --}}
@@ -214,15 +218,15 @@
             placeholder="Código local"
             tabindex="7"
             :class="[
-              'block w-full h-8 text-xs rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500 border',
+              'block w-full h-8 text-xs rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500 border',
               !formData.CDPROJETO
                 ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 text-gray-600 cursor-not-allowed'
                 : 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 text-gray-700'
             ]" />
           <input type="hidden" name="CDLOCAL" :value="formData.CDLOCAL" />
-          
+
           {{-- Botão Lupa e Limpar --}}
-          <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+          <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
             <button type="button"
               x-show="codigoLocalDigitado && formData.CDPROJETO"
               @click="limparCodigoLocal()"
@@ -284,14 +288,14 @@
               :placeholder="!codigoLocalDigitado ? 'Selecione um código primeiro' : (locaisEncontrados.length === 1 ? 'Preenchido automaticamente' : 'Informe o nome do local')"
               tabindex="8"
               :class="[
-                'block w-full h-8 text-xs rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500 border',
+                'block w-full h-8 text-xs rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500 border',
                 !codigoLocalDigitado || locaisEncontrados.length === 1
                   ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 text-gray-600 cursor-not-allowed'
                   : 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 text-gray-700'
               ]"
               autocomplete="off" />
 
-            <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+            <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
               <button type="button"
                 x-show="nomeLocalBusca && codigoLocalDigitado"
                 @click="limparNomeLocal"
@@ -343,25 +347,25 @@
 
     {{-- CAMPO CÓD TERMO --}}
     <div>
-      <label for="NMPLANTA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Código do Termo</label>
+      <label for="NMPLANTA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código do Termo</label>
       <input x-model="formData.NMPLANTA"
         id="NMPLANTA"
         name="NMPLANTA"
         type="number"
         tabindex="9"
-        class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+        class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
   </div>
 
   {{-- GRUPO 5: Marca, Modelo, Situação, Matrícula / Usuário --}}
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
     <div>
-      <label for="MARCA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Marca do Patrimônio</label>
-      <input x-model="formData.MARCA" id="MARCA" name="MARCA" type="text" tabindex="10" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <label for="MARCA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Marca do Patrimônio</label>
+      <input x-model="formData.MARCA" id="MARCA" name="MARCA" type="text" tabindex="10" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
     <div>
-      <label for="MODELO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Modelo do Patrimônio</label>
-      <input x-model="formData.MODELO" id="MODELO" name="MODELO" type="text" tabindex="11" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <label for="MODELO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Modelo do Patrimônio</label>
+      <input x-model="formData.MODELO" id="MODELO" name="MODELO" type="text" tabindex="11" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
     <div>
       <label for="SITUACAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Situação do Patrimônio *</label>
@@ -377,10 +381,12 @@
       </select>
     </div>
     <div class="relative" @click.away="showUserDropdown=false">
-      <label for="matricula_busca" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Matrícula do Responsável *</label>
+      <label for="matricula_busca" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Matrícula do Responsável *</label>
       <div class="relative">
         <input id="matricula_busca"
           x-model="userSearch"
+          @focus="abrirDropdownUsuarios()"
+          @blur.debounce.150ms="showUserDropdown=false"
           @input.debounce.300ms="(function(){ const t=String(userSearch||'').trim(); if(t.length>0){ showUserDropdown=true; buscarUsuarios(); } else { showUserDropdown=false; usuarios=[]; highlightedUserIndex=-1; } })()"
           @keydown.down.prevent="navegarUsuarios(1)"
           @keydown.up.prevent="navegarUsuarios(-1)"
@@ -390,10 +396,10 @@
           type="text"
           placeholder="Digite matrícula ou nome"
           tabindex="13"
-          class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
+          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500"
           autocomplete="off" />
         <input type="hidden" name="CDMATRFUNCIONARIO" :value="formData.CDMATRFUNCIONARIO" />
-        <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+        <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
           <div class="flex items-center gap-1">
             <button type="button" x-show="formData.CDMATRFUNCIONARIO" @click="limparUsuario" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none" title="Limpar seleção" tabindex="-1">×</button>
             <button type="button" @click="abrirDropdownUsuarios(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" tabindex="-1">
@@ -433,12 +439,17 @@
     </div>
     <div>
       <label for="DTBAIXA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Data de Baixa do Patrimônio</label>
-      <input x-model="formData.DTBAIXA" id="DTBAIXA" name="DTBAIXA" type="date" tabindex="15" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <input x-model="formData.DTBAIXA"
+        id="DTBAIXA"
+        name="DTBAIXA"
+        type="date"
+        tabindex="15"
+        class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
       <x-input-error class="mt-2" :messages="$errors->get('DTBAIXA')" />
     </div>
   </div>
 
-  {{-- ✨ MODAL DE CRIAR NOVO PROJETO/LOCAL --}}
+  {{-- ✨ MODAL DE CRIAR NOVO LOCAL --}}
   <div x-show="modalCriarProjetoOpen"
     x-transition
     x-cloak
@@ -447,7 +458,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl">
       <div class="flex justify-between items-center mb-4">
         <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-200">
-          Criar Novo Local/Projeto
+          Criar Novo Local
         </h4>
         <button type="button"
           class="text-gray-400 hover:text-gray-600 text-2xl leading-none"
@@ -457,119 +468,150 @@
 
       {{-- Formulário de Criação --}}
       <div class="space-y-4">
-        {{-- 🔍 Input de Busca: Código do Projeto --}}
+        {{-- 🎯 PRIMEIRA INFORMAÇÃO: Projeto Associado (Dropdown Searchable) --}}
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Código do Projeto *
+            Projeto Associado *
           </label>
-          <input type="text"
-            x-model="novoProjeto.cdprojetoBusca"
-            x-ref="inputCodProjetoBusca"
-            @input="buscarProjetoExistente"
-            placeholder="Ex: 001"
-            class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+          <div class="relative" @click.away="showModalProjetoDropdown = false">
+            <input type="text"
+              x-model="modalProjetoSearch"
+              x-ref="inputProjetoAssociado"
+              @focus="abrirModalDropdownProjeto()"
+              @blur.debounce.150ms="showModalProjetoDropdown = false"
+              @input.debounce.300ms="buscarModalProjetos()"
+              @keydown.down.prevent="navegarModalProjetos(1)"
+              @keydown.up.prevent="navegarModalProjetos(-1)"
+              @keydown.enter.prevent="selecionarModalProjetoEnter()"
+              @keydown.escape.prevent="showModalProjetoDropdown = false"
+              placeholder="Digite o código ou nome do projeto"
+              class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md pr-10" />
+
+            {{-- Botão limpar e lupa --}}
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 gap-2">
+              <button type="button"
+                x-show="novoProjeto.cdprojeto"
+                @click="limparModalProjeto()"
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-lg leading-none">×</button>
+              <button type="button"
+                @click="abrirModalDropdownProjeto(true)"
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                </svg>
+              </button>
+            </div>
+
+            {{-- Dropdown de projetos --}}
+            <div x-show="showModalProjetoDropdown"
+              x-transition
+              class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-sm">
+              <template x-if="loadingModalProjetos">
+                <div class="p-2 text-gray-500 text-center">Buscando...</div>
+              </template>
+              <template x-if="!loadingModalProjetos && modalProjetosLista.length === 0">
+                <div class="p-2 text-gray-500 text-center" x-text="modalProjetoSearch.trim() === '' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
+              </template>
+              <template x-for="(p, i) in modalProjetosLista" :key="p.CDPROJETO">
+                <div @click="selecionarModalProjeto(p)"
+                  @mouseover="highlightedModalProjetoIndex = i"
+                  :class="['px-3 py-2 cursor-pointer', highlightedModalProjetoIndex === i ? 'bg-indigo-100 dark:bg-indigo-900' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+                  <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="p.CDPROJETO"></span>
+                  <span class="ml-2 text-gray-700 dark:text-gray-300" x-text="' - ' + p.NOMEPROJETO"></span>
+                </div>
+              </template>
+            </div>
+          </div>
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Informe o código do projeto para buscar
+            Primeiro selecione o projeto para o qual deseja criar um novo local
           </p>
         </div>
 
         {{-- Spinner de carregamento --}}
-        <div x-show="carregandoProjeto" class="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+        <div x-show="carregandoCodigosLocaisModal" class="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
           <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span>Buscando projeto...</span>
+          <span>Carregando códigos de locais...</span>
         </div>
 
-        {{-- ✅ Quando projeto foi encontrado: mostrar campos desabilitados + campo de nome --}}
-        <div x-show="novoProjeto.cdprojeto && !carregandoProjeto" class="space-y-4" x-effect="if(novoProjeto.cdprojeto && $refs.inputNomeLocal){ $nextTick(() => $refs.inputNomeLocal.focus()); }">
-          {{-- Código do Local (desabilitado) --}}
+        {{-- ✅ Campos que aparecem APÓS selecionar o projeto --}}
+        <div x-show="novoProjeto.cdprojeto && !carregandoCodigosLocaisModal" class="space-y-4">
+
+          {{-- 🔍 Código do Local (Dropdown com códigos existentes) --}}
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Código do Local
+              Código do Local *
             </label>
-            <input type="text"
-              :value="novoProjeto.cdprojetoBusca"
-              disabled
-              class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed" />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Código identificado automaticamente</p>
+            <div class="relative" @click.away="showModalCodigoLocalDropdown = false">
+              <input type="text"
+                x-model="modalCodigoLocalSearch"
+                x-ref="inputCodigoLocal"
+                @focus="abrirModalDropdownCodigoLocal()"
+                @blur.debounce.150ms="showModalCodigoLocalDropdown = false"
+                @input.debounce.300ms="filtrarModalCodigosLocais()"
+                @keydown.down.prevent="navegarModalCodigosLocais(1)"
+                @keydown.up.prevent="navegarModalCodigosLocais(-1)"
+                @keydown.enter.prevent="selecionarModalCodigoLocalEnter()"
+                @keydown.escape.prevent="showModalCodigoLocalDropdown = false"
+                placeholder="Digite para filtrar códigos existentes"
+                class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md pr-10" />
+
+              {{-- Botão limpar e lupa --}}
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 gap-2">
+                <button type="button"
+                  x-show="novoProjeto.cdlocal"
+                  @click="limparModalCodigoLocal()"
+                  class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-lg leading-none">×</button>
+                <button type="button"
+                  @click="abrirModalDropdownCodigoLocal(true)"
+                  class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+
+              {{-- Dropdown de códigos locais --}}
+              <div x-show="showModalCodigoLocalDropdown"
+                x-transition
+                class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-sm">
+                <template x-if="modalCodigosLocaisFiltrados.length === 0 && modalCodigoLocalSearch.trim() === ''">
+                  <div class="p-2 text-gray-500 text-center">Digite para filtrar</div>
+                </template>
+                <template x-if="modalCodigosLocaisFiltrados.length === 0 && modalCodigoLocalSearch.trim() !== ''">
+                  <div class="p-2 text-gray-500 text-center">Nenhum código encontrado</div>
+                </template>
+                <template x-for="(codigo, i) in modalCodigosLocaisFiltrados" :key="codigo">
+                  <div @click="selecionarModalCodigoLocal(codigo)"
+                    @mouseover="highlightedModalCodigoLocalIndex = i"
+                    :class="['px-3 py-2 cursor-pointer', highlightedModalCodigoLocalIndex === i ? 'bg-indigo-100 dark:bg-indigo-900' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+                    <span class="font-mono text-indigo-600 dark:text-indigo-400" x-text="codigo"></span>
+                  </div>
+                </template>
+              </div>
+            </div>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Selecione um código de local já cadastrado para este projeto
+            </p>
           </div>
 
-          {{-- Projeto Associado (desabilitado) --}}
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Projeto Associado
-            </label>
-            <input type="text"
-              :value="novoProjeto.nmProjeto"
-              disabled
-              class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed" />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Projeto vinculado ao local (identificado automaticamente)</p>
-          </div>
-
-          {{-- Nome do Local (ÚNICO editável) --}}
-          <div>
+          {{-- 📝 Nome do Local (ÚNICO campo editável para criar novo) --}}
+          <div x-show="novoProjeto.cdlocal">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Nome do Local *
             </label>
             <input type="text"
               x-model="novoProjeto.nomeLocal"
               x-ref="inputNomeLocal"
-              placeholder="Ex: Almoxarifado Central"
+              placeholder="Ex: Almoxarifado Central - Setor B"
               class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md focus:ring-2 focus:ring-blue-500" />
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Preencha o nome do local
-            </p>
-          </div>
-        </div>
-
-        {{-- 📋 Campos que aparecem quando NÃO encontrou projeto --}}
-        <div x-show="!novoProjeto.cdprojeto && !carregandoProjeto && novoProjeto.cdprojetoBusca">
-          <div class="bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded p-3 mb-4">
-            <p class="text-sm text-amber-800 dark:text-amber-200">
-              Projeto não encontrado. Preencha os dados abaixo para criar novo:
+              Digite um novo nome para criar um local com o código selecionado
             </p>
           </div>
 
-          {{-- Código do Projeto --}}
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Código do Projeto *
-            </label>
-            <input type="text"
-              x-model="novoProjeto.cdlocal"
-              placeholder="Ex: 001"
-              class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Código que identificará o novo projeto</p>
-          </div>
-
-          {{-- Nome do Local --}}
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Nome do Local *
-            </label>
-            <input type="text"
-              x-model="novoProjeto.nomeLocal"
-              placeholder="Ex: Almoxarifado Central"
-              class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Nome descritivo do local</p>
-          </div>
-
-          {{-- Projeto Associado --}}
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Projeto Associado *
-            </label>
-            <select x-model="novoProjeto.cdprojeto"
-              class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md">
-              <option value="">Selecione um projeto</option>
-              <template x-for="proj in projetosExistentes" :key="proj.CDPROJETO">
-                <option :value="proj.CDPROJETO" x-text="proj.CDPROJETO + ' - ' + proj.NOMEPROJETO"></option>
-              </template>
-            </select>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Projeto ao qual este local será associado</p>
-          </div>
         </div>
       </div>
 
@@ -585,10 +627,10 @@
           Cancelar
         </button>
         <button type="button"
-          @click="salvarNovoProjeto"
-          :disabled="salvandoCriacaoProjeto"
+          @click="salvarNovoLocal"
+          :disabled="salvandoCriacaoProjeto || !novoProjeto.cdprojeto || !novoProjeto.cdlocal || !novoProjeto.nomeLocal"
           class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center gap-2">
-          <span x-show="!salvandoCriacaoProjeto">✓ Criar</span>
+          <span x-show="!salvandoCriacaoProjeto">✓ Criar Local</span>
           <span x-show="salvandoCriacaoProjeto">
             <svg class="animate-spin h-4 w-4 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -778,19 +820,30 @@
       salvandoCriacao: false,
       salvandoEdicao: false,
 
-      // 🆕 MODAL CRIAR PROJETO/LOCAL
+      // 🆕 MODAL CRIAR LOCAL (NOVO FLUXO)
       modalCriarProjetoOpen: false,
       novoProjeto: {
-        cdlocal: '',
-        nomeLocal: '',
-        cdprojeto: '',
-        cdprojetoBusca: '', // Campo de busca de projeto existente
-        nmProjeto: '', // Nome do projeto encontrado
+        cdlocal: '', // Código do local selecionado
+        nomeLocal: '', // Nome do novo local (editável)
+        cdprojeto: '', // ID do projeto associado selecionado
+        nmProjeto: '', // Nome do projeto (para exibição)
       },
+      // Dropdown de Projeto Associado (Modal)
+      modalProjetoSearch: '',
+      modalProjetosLista: [],
+      loadingModalProjetos: false,
+      showModalProjetoDropdown: false,
+      highlightedModalProjetoIndex: -1,
+      // Dropdown de Código do Local (Modal)
+      modalCodigoLocalSearch: '',
+      modalCodigosLocaisDisponiveis: [], // Todos os códigos disponíveis do projeto
+      modalCodigosLocaisFiltrados: [], // Códigos filtrados pela busca
+      showModalCodigoLocalDropdown: false,
+      highlightedModalCodigoLocalIndex: -1,
+      carregandoCodigosLocaisModal: false,
+      // Controle
       erroCriacaoProjeto: '',
       salvandoCriacaoProjeto: false,
-      carregandoProjeto: false, // Flag para quando está buscando projeto
-      buscaProjetoTimeout: null, // Armazena o timeout para cancelamento
       estadoTemporario: null, // Salva o estado do formulário antes de abrir o modal
 
       // == FUNÇÕES ==
@@ -1171,7 +1224,7 @@
             const locais = await resp.json();
             // Armazenar para próxima consulta e atualizar lista filtrada
             this.locaisEncontrados = locais;
-            
+
             // Se tem termo, filtrar; se vazio, mostrar todos
             if (termo === '') {
               this.codigosLocaisFiltrados = locais;
@@ -1982,120 +2035,152 @@
       },
 
       // ========================================
-      // 🆕 FUNÇÕES DO MODAL CRIAR PROJETO/LOCAL
+      // � FUNÇÕES DE ORDENAÇÃO POR PROXIMIDADE
       // ========================================
 
       /**
-       * Buscar projeto existente pelo código
-       * Sem delay: começa a buscar imediatamente com debounce
-       * Mantém loading até encontrar ou exibir formulário
+       * Calcular distância de Levenshtein entre duas strings
+       * Quanto menor, mais similares são
        */
-      buscarProjetoExistente() {
-        const cdproj = String(this.novoProjeto.cdprojetoBusca || '').trim();
+      calcularDistanciaLevenshtein(s1, s2) {
+        s1 = String(s1).toLowerCase();
+        s2 = String(s2).toLowerCase();
 
-        if (!cdproj) {
-          console.log('🔍 [BUSCAR PROJETO] Campo vazio, limpando dados');
-          // Cancelar timeout anterior se existir
-          if (this.buscaProjetoTimeout) {
-            clearTimeout(this.buscaProjetoTimeout);
-            this.buscaProjetoTimeout = null;
+        const len1 = s1.length;
+        const len2 = s2.length;
+
+        if (len1 === 0) return len2;
+        if (len2 === 0) return len1;
+
+        const matriz = Array(len2 + 1).fill(null).map(() => Array(len1 + 1).fill(0));
+
+        for (let i = 0; i <= len1; i++) matriz[0][i] = i;
+        for (let j = 0; j <= len2; j++) matriz[j][0] = j;
+
+        for (let j = 1; j <= len2; j++) {
+          for (let i = 1; i <= len1; i++) {
+            const custo = s1[i - 1] === s2[j - 1] ? 0 : 1;
+            matriz[j][i] = Math.min(
+              matriz[j][i - 1] + 1, // Inserção
+              matriz[j - 1][i] + 1, // Deleção
+              matriz[j - 1][i - 1] + custo // Substituição
+            );
           }
-          this.novoProjeto.cdprojeto = '';
-          this.novoProjeto.nmProjeto = '';
-          this.novoProjeto.cdlocal = '';
-          this.novoProjeto.nomeLocal = '';
-          this.erroCriacaoProjeto = '';
-          this.carregandoProjeto = false;
-          return;
         }
 
-        // Cancelar busca anterior se ainda estiver pendente
-        if (this.buscaProjetoTimeout) {
-          clearTimeout(this.buscaProjetoTimeout);
-        }
-
-        console.log('⌨️ [BUSCAR PROJETO] Digitando:', cdproj);
-        this.carregandoProjeto = true; // Mostrar loading IMEDIATAMENTE
-
-        // Debounce de 300ms para não fazer muitas requisições enquanto digita
-        this.buscaProjetoTimeout = setTimeout(() => {
-          console.log('🔍 [BUSCAR PROJETO] Executando busca após debounce');
-          this._executarBuscaProjetoExistente(cdproj);
-        }, 300); // 300ms debounce
-      },
-
-      async _executarBuscaProjetoExistente(cdproj) {
-        console.log('🔍 [BUSCAR PROJETO] Buscando local/projeto:', cdproj);
-        // carregandoProjeto já está true
-
-        try {
-          // Buscar na API de locais para ver se esse código de local já existe
-          const responseLocal = await fetch(`/api/locais/buscar?termo=${encodeURIComponent(cdproj)}`);
-
-          if (!responseLocal.ok) {
-            throw new Error(`Erro HTTP ${responseLocal.status}`);
-          }
-
-          const dataLocais = await responseLocal.json();
-          console.log('🔍 [BUSCAR PROJETO] Locais encontrados:', dataLocais);
-
-          // Procurar por um local que tenha código EXATAMENTE igual
-          let localEncontrado = null;
-
-          if (Array.isArray(dataLocais)) {
-            localEncontrado = dataLocais.find(l => String(l.cdlocal) === String(cdproj));
-          }
-
-          if (localEncontrado && localEncontrado.CDPROJETO) {
-            console.log('✅ [BUSCAR PROJETO] Local encontrado com projeto associado:', localEncontrado);
-
-            // Este local já existe e tem um projeto associado
-            // Preencher dados do projeto associado ao local
-            this.novoProjeto.cdprojeto = localEncontrado.CDPROJETO;
-            this.novoProjeto.nmProjeto = localEncontrado.NOMEPROJETO || 'Projeto não nomeado';
-
-            // Limpar campo de nome do local para o usuário preencher um NOVO nome
-            this.novoProjeto.nomeLocal = '';
-
-            console.log('✅ [BUSCAR PROJETO] Projeto do local preenchido, focando no campo de nome do local');
-
-            // Focar no campo de nome do local
-            this.$nextTick(() => {
-              this.$refs.inputNomeLocal?.focus();
-            });
-          } else {
-            console.log('ℹ️ [BUSCAR PROJETO] Local não encontrado - exibindo formulário para criar novo');
-
-            // Deixar os campos de criação aparecerem (mantém loading visível até aqui)
-            this.novoProjeto.cdprojeto = '';
-            this.novoProjeto.nmProjeto = '';
-          }
-
-        } catch (error) {
-          console.error('❌ [BUSCAR PROJETO] Erro:', error);
-
-          // Permitir criar novo (sem mensagem de erro)
-          this.novoProjeto.cdprojeto = '';
-          this.novoProjeto.nmProjeto = '';
-        } finally {
-          this.carregandoProjeto = false;
-          this.buscaProjetoTimeout = null;
-        }
+        return matriz[len2][len1];
       },
 
       /**
-       * Função auxiliar para aguardar com delay
+       * Ordenar projetos por proximidade ao termo digitado
+       * Prioridade: Match exato do código → Começa com termo → Contém termo
        */
-      _aguardarComDelay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+      ordenarPorProximidade(items, termo, fieldCodigo, fieldNome) {
+        const termoLower = String(termo).toLowerCase();
+
+        // Calcular score para cada item
+        const itemsComScore = items.map(item => {
+          const codigo = String(item[fieldCodigo] || '').toLowerCase();
+          const nome = String(item[fieldNome] || '').toLowerCase();
+
+          let score = 1000; // Default alto (pior)
+
+          // 🥇 Match exato do código
+          if (codigo === termoLower) {
+            score = 0;
+          }
+          // 🥈 Código começa com o termo
+          else if (codigo.startsWith(termoLower)) {
+            score = 10 + this.calcularDistanciaLevenshtein(codigo, termoLower);
+          }
+          // 🥉 Código contém o termo
+          else if (codigo.includes(termoLower)) {
+            const posicao = codigo.indexOf(termoLower);
+            score = 50 + posicao + this.calcularDistanciaLevenshtein(codigo, termoLower);
+          }
+          // Nome começa com o termo
+          else if (nome.startsWith(termoLower)) {
+            score = 100 + this.calcularDistanciaLevenshtein(nome, termoLower);
+          }
+          // Nome contém o termo
+          else if (nome.includes(termoLower)) {
+            const posicao = nome.indexOf(termoLower);
+            score = 200 + posicao + this.calcularDistanciaLevenshtein(nome, termoLower);
+          }
+          // Distância de Levenshtein (similaridade)
+          else {
+            score = 500 + this.calcularDistanciaLevenshtein(codigo, termoLower);
+          }
+
+          return {
+            item,
+            score
+          };
+        });
+
+        // Ordenar por score e retornar apenas os items
+        return itemsComScore
+          .sort((a, b) => a.score - b.score)
+          .map(x => x.item);
       },
 
       /**
-       * Abrir modal de criar novo projeto/local
+       * Ordenar códigos de locais por proximidade ao termo digitado
+       * Prioridade: Match exato → Começa com termo → Contém termo
+       */
+      ordenarCodigosLocalPorProximidade(codigos, termo) {
+        const termoLower = String(termo).toLowerCase();
+
+        // Calcular score para cada código
+        const codigosComScore = codigos.map(codigo => {
+          const codigoStr = String(codigo).toLowerCase();
+
+          let score = 1000; // Default alto (pior)
+
+          // 🥇 Match exato
+          if (codigoStr === termoLower) {
+            score = 0;
+          }
+          // 🥈 Começa com o termo
+          else if (codigoStr.startsWith(termoLower)) {
+            score = 10 + this.calcularDistanciaLevenshtein(codigoStr, termoLower);
+          }
+          // 🥉 Contém o termo
+          else if (codigoStr.includes(termoLower)) {
+            const posicao = codigoStr.indexOf(termoLower);
+            score = 50 + posicao + this.calcularDistanciaLevenshtein(codigoStr, termoLower);
+          }
+          // Distância de Levenshtein (similaridade)
+          else {
+            score = 500 + this.calcularDistanciaLevenshtein(codigoStr, termoLower);
+          }
+
+          return {
+            codigo,
+            score
+          };
+        });
+
+        // Ordenar por score e retornar apenas os códigos
+        return codigosComScore
+          .sort((a, b) => a.score - b.score)
+          .map(x => x.codigo);
+      },
+
+      // ========================================
+      // �🆕 FUNÇÕES DO MODAL CRIAR PROJETO/LOCAL
+      // ========================================
+
+      // ═══════════════════════════════════════════════════════════
+      // 🆕 NOVO FLUXO DO MODAL (Projeto → Código → Nome)
+      // ═══════════════════════════════════════════════════════════
+
+      /**
+       * Abrir modal de criar novo local
        * Salva estado atual do formulário antes de abrir
        */
       abrirModalCriarProjeto() {
-        console.log('🟢 [MODAL CRIAR] Iniciando abertura do modal');
+        console.log('🟢 [MODAL CRIAR] Abrindo modal - NOVO FLUXO');
 
         // 1. Salvar estado atual do formulário
         this.estadoTemporario = {
@@ -2113,55 +2198,238 @@
           DTBAIXA: this.formData.DTBAIXA,
           // Campos de busca
           patSearch: this.patSearch,
-          codigoSearch: this.codigoSearch,
           userSearch: this.userSearch,
           userSelectedName: this.userSelectedName,
         };
 
-        console.log('🟢 [MODAL CRIAR] Estado salvo:', this.estadoTemporario);
-
-        // 2. Preencher código do local se já foi digitado
-        this.novoProjeto.cdlocal = this.codigoLocalDigitado || '';
-        this.novoProjeto.nomeLocal = '';
-        this.novoProjeto.cdprojeto = '';
-
-        // 3. Limpar erros anteriores
+        // 2. Limpar dados do modal
+        this.novoProjeto = {
+          cdlocal: '',
+          nomeLocal: '',
+          cdprojeto: '',
+          nmProjeto: '',
+        };
+        this.modalProjetoSearch = '';
+        this.modalProjetosLista = [];
+        this.showModalProjetoDropdown = false;
+        this.modalCodigoLocalSearch = '';
+        this.modalCodigosLocaisDisponiveis = [];
+        this.modalCodigosLocaisFiltrados = [];
+        this.showModalCodigoLocalDropdown = false;
         this.erroCriacaoProjeto = '';
         this.salvandoCriacaoProjeto = false;
 
-        // 4. Abrir modal
+        // 3. Abrir modal
         this.modalCriarProjetoOpen = true;
 
-        // 5. Focar no campo de CÓDIGO DO PROJETO (busca)
+        // 4. Focar no campo de Projeto Associado
         this.$nextTick(() => {
-          const inputCodProjetoBusca = this.$refs.inputCodProjetoBusca;
-          if (inputCodProjetoBusca) {
-            inputCodProjetoBusca.focus();
-            console.log('✅ [MODAL CRIAR] Focus no input "Código do Projeto"');
-          } else {
-            console.warn('⚠️ [MODAL CRIAR] Input "Código do Projeto" não encontrado');
+          const input = this.$refs.inputProjetoAssociado;
+          if (input) {
+            input.focus();
+            console.log('✅ [MODAL CRIAR] Focus no campo "Projeto Associado"');
           }
         });
-
-        console.log('🟢 [MODAL CRIAR] Modal aberto com sucesso');
       },
 
       /**
-       * Fechar modal de criar projeto/local
+       * Buscar projetos para o dropdown do modal
+       * Ordena por proximidade - matches exatos primeiro, depois semelhantes
+       */
+      async buscarModalProjetos() {
+        const termo = String(this.modalProjetoSearch || '').trim();
+
+        if (termo === '') {
+          this.modalProjetosLista = [];
+          this.highlightedModalProjetoIndex = -1;
+          return;
+        }
+
+        this.loadingModalProjetos = true;
+        try {
+          const resp = await fetch(`/api/projetos/pesquisar?q=${encodeURIComponent(termo)}`);
+          if (resp.ok) {
+            let projetos = await resp.json();
+
+            // 🎯 Ordenar por proximidade
+            projetos = this.ordenarPorProximidade(projetos, termo, 'CDPROJETO', 'NOMEPROJETO');
+
+            this.modalProjetosLista = projetos;
+            this.highlightedModalProjetoIndex = this.modalProjetosLista.length > 0 ? 0 : -1;
+          }
+        } catch (e) {
+          console.error('Erro ao buscar projetos:', e);
+          this.modalProjetosLista = [];
+        } finally {
+          this.loadingModalProjetos = false;
+        }
+      },
+
+      abrirModalDropdownProjeto(force = false) {
+        this.showModalProjetoDropdown = true;
+        if (this.modalProjetoSearch.trim() !== '') {
+          this.buscarModalProjetos();
+        }
+      },
+
+      async selecionarModalProjeto(projeto) {
+        console.log('📌 [MODAL] Projeto selecionado:', projeto);
+
+        // Atualizar dados do projeto
+        this.novoProjeto.cdprojeto = projeto.CDPROJETO;
+        this.novoProjeto.nmProjeto = projeto.NOMEPROJETO;
+        this.modalProjetoSearch = `${projeto.CDPROJETO} - ${projeto.NOMEPROJETO}`;
+        this.showModalProjetoDropdown = false;
+
+        // Carregar códigos de locais deste projeto
+        await this.carregarCodigosLocaisDoProjeto(projeto.CDPROJETO);
+
+        // Focar no campo de código do local
+        this.$nextTick(() => {
+          const input = this.$refs.inputCodigoLocal;
+          if (input) {
+            input.focus();
+          }
+        });
+      },
+
+      selecionarModalProjetoEnter() {
+        if (!this.showModalProjetoDropdown) return;
+        if (this.highlightedModalProjetoIndex < 0 || this.highlightedModalProjetoIndex >= this.modalProjetosLista.length) return;
+        this.selecionarModalProjeto(this.modalProjetosLista[this.highlightedModalProjetoIndex]);
+      },
+
+      limparModalProjeto() {
+        this.novoProjeto.cdprojeto = '';
+        this.novoProjeto.nmProjeto = '';
+        this.novoProjeto.cdlocal = '';
+        this.novoProjeto.nomeLocal = '';
+        this.modalProjetoSearch = '';
+        this.modalProjetosLista = [];
+        this.showModalProjetoDropdown = false;
+        this.modalCodigosLocaisDisponiveis = [];
+        this.modalCodigosLocaisFiltrados = [];
+        this.modalCodigoLocalSearch = '';
+      },
+
+      navegarModalProjetos(delta) {
+        if (!this.showModalProjetoDropdown || this.modalProjetosLista.length === 0) return;
+        const max = this.modalProjetosLista.length - 1;
+        if (this.highlightedModalProjetoIndex === -1) {
+          this.highlightedModalProjetoIndex = 0;
+        } else {
+          this.highlightedModalProjetoIndex = Math.min(max, Math.max(0, this.highlightedModalProjetoIndex + delta));
+        }
+      },
+
+      /**
+       * Carregar códigos de locais já existentes do projeto selecionado
+       */
+      async carregarCodigosLocaisDoProjeto(cdprojeto) {
+        console.log('� [MODAL] Carregando códigos do projeto:', cdprojeto);
+
+        this.carregandoCodigosLocaisModal = true;
+        try {
+          // Buscar todos os locais deste projeto
+          const resp = await fetch(`/api/locais/buscar?cdprojeto=${encodeURIComponent(cdprojeto)}`);
+          if (resp.ok) {
+            const locais = await resp.json();
+
+            // Extrair códigos únicos
+            const codigosUnicos = [...new Set(locais.map(l => String(l.cdlocal)))].sort();
+
+            this.modalCodigosLocaisDisponiveis = codigosUnicos;
+            this.modalCodigosLocaisFiltrados = codigosUnicos;
+
+            console.log('✅ [MODAL] Códigos carregados:', codigosUnicos.length);
+          }
+        } catch (e) {
+          console.error('❌ [MODAL] Erro ao carregar códigos:', e);
+          this.modalCodigosLocaisDisponiveis = [];
+          this.modalCodigosLocaisFiltrados = [];
+        } finally {
+          this.carregandoCodigosLocaisModal = false;
+        }
+      },
+
+      /**
+       * Filtrar códigos conforme usuário digita
+       * Ordena por proximidade - matches exatos primeiro, depois semelhantes
+       */
+      filtrarModalCodigosLocais() {
+        const termo = String(this.modalCodigoLocalSearch || '').trim();
+
+        if (termo === '') {
+          this.modalCodigosLocaisFiltrados = [...this.modalCodigosLocaisDisponiveis];
+        } else {
+          // Filtrar primeiro
+          let filtrados = this.modalCodigosLocaisDisponiveis.filter(codigo =>
+            String(codigo).toLowerCase().includes(termo.toLowerCase())
+          );
+
+          // 🎯 Ordenar por proximidade
+          filtrados = this.ordenarCodigosLocalPorProximidade(filtrados, termo);
+
+          this.modalCodigosLocaisFiltrados = filtrados;
+        }
+
+        this.highlightedModalCodigoLocalIndex = this.modalCodigosLocaisFiltrados.length > 0 ? 0 : -1;
+      },
+
+      abrirModalDropdownCodigoLocal(force = false) {
+        this.showModalCodigoLocalDropdown = true;
+        if (force || this.modalCodigoLocalSearch.trim() === '') {
+          this.filtrarModalCodigosLocais();
+        }
+      },
+
+      selecionarModalCodigoLocal(codigo) {
+        console.log('🔢 [MODAL] Código selecionado:', codigo);
+
+        this.novoProjeto.cdlocal = codigo;
+        this.modalCodigoLocalSearch = codigo;
+        this.showModalCodigoLocalDropdown = false;
+
+        // Focar no campo de nome do local
+        this.$nextTick(() => {
+          const input = this.$refs.inputNomeLocal;
+          if (input) {
+            input.focus();
+          }
+        });
+      },
+
+      selecionarModalCodigoLocalEnter() {
+        if (!this.showModalCodigoLocalDropdown) return;
+        if (this.highlightedModalCodigoLocalIndex < 0 || this.highlightedModalCodigoLocalIndex >= this.modalCodigosLocaisFiltrados.length) return;
+        this.selecionarModalCodigoLocal(this.modalCodigosLocaisFiltrados[this.highlightedModalCodigoLocalIndex]);
+      },
+
+      limparModalCodigoLocal() {
+        this.novoProjeto.cdlocal = '';
+        this.novoProjeto.nomeLocal = '';
+        this.modalCodigoLocalSearch = '';
+        this.showModalCodigoLocalDropdown = false;
+      },
+
+      navegarModalCodigosLocais(delta) {
+        if (!this.showModalCodigoLocalDropdown || this.modalCodigosLocaisFiltrados.length === 0) return;
+        const max = this.modalCodigosLocaisFiltrados.length - 1;
+        if (this.highlightedModalCodigoLocalIndex === -1) {
+          this.highlightedModalCodigoLocalIndex = 0;
+        } else {
+          this.highlightedModalCodigoLocalIndex = Math.min(max, Math.max(0, this.highlightedModalCodigoLocalIndex + delta));
+        }
+      },
+
+      /**
+       * Fechar modal de criar local
        */
       fecharModalCriarProjeto() {
         console.log('🔴 [MODAL CRIAR] Fechando modal');
 
         if (this.salvandoCriacaoProjeto) {
-          console.log('🔴 [MODAL CRIAR] Salvamento em andamento, cancelando fechamento');
           return;
-        }
-
-        // Cancelar timeout de busca se existir
-        if (this.buscaProjetoTimeout) {
-          clearTimeout(this.buscaProjetoTimeout);
-          this.buscaProjetoTimeout = null;
-          console.log('⏱️ [MODAL CRIAR] Timeout de busca cancelado');
         }
 
         this.modalCriarProjetoOpen = false;
@@ -2169,251 +2437,120 @@
           cdlocal: '',
           nomeLocal: '',
           cdprojeto: '',
-          cdprojetoBusca: '',
           nmProjeto: '',
         };
+        this.modalProjetoSearch = '';
+        this.modalCodigoLocalSearch = '';
+        this.modalProjetosLista = [];
+        this.modalCodigosLocaisDisponiveis = [];
+        this.modalCodigosLocaisFiltrados = [];
         this.erroCriacaoProjeto = '';
         this.salvandoCriacaoProjeto = false;
-        this.carregandoProjeto = false;
 
-        // 🎯 AUTO-FOCUS NO CAMPO "NOME DO LOCAL" AO FECHAR MODAL
+        // 🎯 AUTO-FOCUS NO CAMPO "CÓDIGO DO LOCAL"
         this.$nextTick(() => {
-          const nomeLocalInput = document.getElementById('NOMELOCAL_INPUT');
-          if (nomeLocalInput && !nomeLocalInput.disabled) {
-            nomeLocalInput.focus();
-            console.log('✅ [MODAL CRIAR] Focus no campo "Nome do Local"');
-          } else {
-            console.log('⚠️ [MODAL CRIAR] Campo "Nome do Local" desabilitado ou não encontrado');
+          const input = document.getElementById('CDLOCAL_INPUT');
+          if (input && !input.disabled) {
+            input.focus();
           }
         });
-
-        console.log('🔴 [MODAL CRIAR] Modal fechado');
       },
 
       /**
-       * Salvar novo projeto/local
-       * Após salvar, recarrega a página e restaura o estado
+       * Salvar novo local com código existente
        */
-      async salvarNovoProjeto() {
-        console.log('💾 [SALVAR PROJETO] ════════════════════════════════');
-        console.log('💾 [SALVAR PROJETO] Iniciando salvamento');
-        console.log('💾 [SALVAR PROJETO] Dados:', this.novoProjeto);
+      async salvarNovoLocal() {
+        console.log('💾 [SALVAR LOCAL] ════════════════════════════════');
+        console.log('💾 [SALVAR LOCAL] Dados:', this.novoProjeto);
 
+        const cdlocal = String(this.novoProjeto.cdlocal || '').trim();
         const nomeLocal = String(this.novoProjeto.nomeLocal || '').trim();
-        const projetoEncontrado = this.novoProjeto.nmProjeto !== ''; // Se nmProjeto preenchido, projeto já existia
+        const cdprojeto = this.novoProjeto.cdprojeto;
 
-        // VALIDAÇÃO INICIAL: Verificar se projeto foi selecionado
+        // Validações
+        if (!cdprojeto) {
+          this.erroCriacaoProjeto = '❌ Selecione um projeto associado';
+          return;
+        }
+
+        if (!cdlocal) {
+          this.erroCriacaoProjeto = '❌ Selecione um código do local';
+          return;
+        }
+
         if (!nomeLocal) {
           this.erroCriacaoProjeto = '❌ Digite o nome do local';
-          console.log('💾 [SALVAR PROJETO] Erro: Nome do local vazio');
           return;
         }
 
-        if (!projetoEncontrado && !String(this.novoProjeto.cdprojetoBusca || '').trim()) {
-          this.erroCriacaoProjeto = '❌ ⚠️ OBRIGATÓRIO: Digite o nome/código do projeto e aguarde a busca, ou selecione da lista';
-          console.log('💾 [SALVAR PROJETO] Erro: Projeto não foi buscado/selecionado. nmProjeto:', this.novoProjeto.nmProjeto, 'cdprojetoBusca:', this.novoProjeto.cdprojetoBusca);
-          return;
-        }
+        this.salvandoCriacaoProjeto = true;
+        this.erroCriacaoProjeto = '';
 
-        // ===== CENÁRIO 1: Projeto ENCONTRADO =====
-        if (projetoEncontrado) {
-          // Validação 1: Nome do local obrigatório
-          if (!nomeLocal) {
-            this.erroCriacaoProjeto = '❌ Digite o nome do local';
-            console.log('💾 [SALVAR PROJETO] Erro: Nome do local vazio');
-            return;
+        try {
+          const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+          const payload = {
+            cdlocal: cdlocal,
+            local: nomeLocal,
+            cdprojeto: cdprojeto,
+          };
+
+          console.log('💾 [SALVAR LOCAL] Payload:', payload);
+
+          const response = await fetch('/api/locais/criar', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'application/json'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            let serverMsg = '';
+            try {
+              const errData = await response.clone().json();
+              serverMsg = errData.message || JSON.stringify(errData.errors || errData);
+            } catch (_) {
+              serverMsg = await response.text();
+            }
+            throw new Error(`Erro HTTP ${response.status}: ${serverMsg}`);
           }
 
-          const cdlocal = String(this.novoProjeto.cdprojetoBusca || '').trim();
-          const cdprojeto = Number(this.novoProjeto.cdprojeto) || null; // Manter como número, não string!
+          const data = await response.json();
 
-          if (!cdlocal) {
-            this.erroCriacaoProjeto = '❌ Código do projeto não encontrado';
-            return;
-          }
+          if (data.success) {
+            console.log('✅ [SALVAR LOCAL] Local criado com sucesso!');
 
-          if (!cdprojeto) {
-            this.erroCriacaoProjeto = '❌ Projeto não foi carregado corretamente';
-            return;
-          }
-
-          this.salvandoCriacaoProjeto = true;
-          this.erroCriacaoProjeto = '';
-
-          try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-            // Usar o código digitado (cdprojetoBusca) como cdlocal
-            const payload = {
-              cdlocal: cdlocal,
-              local: nomeLocal,
-              cdprojeto: cdprojeto,
+            // Salvar estado no sessionStorage antes de recarregar
+            const estadoParaSalvar = {
+              ...this.estadoTemporario,
+              codigoLocalDigitado: cdlocal,
+              timestamp: Date.now()
             };
 
-            console.log('💾 [SALVAR PROJETO] Payload (Projeto Encontrado):', payload);
-            console.log('💾 [SALVAR PROJETO] CSRF Token:', csrfToken);
+            sessionStorage.setItem('patrimonioFormState', JSON.stringify(estadoParaSalvar));
 
-            const response = await fetch('/api/locais/criar', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-              },
-              credentials: 'same-origin',
-              body: JSON.stringify(payload)
-            });
-
-            console.log('💾 [SALVAR PROJETO] Status HTTP:', response.status);
-
-            if (!response.ok) {
-              let serverMsg = '';
-              try {
-                const errData = await response.clone().json();
-                serverMsg = errData.message || JSON.stringify(errData.errors || errData);
-                console.log('💾 [SALVAR PROJETO] Erro do servidor:', errData);
-              } catch (_) {
-                serverMsg = await response.text();
-                console.log('💾 [SALVAR PROJETO] Erro do servidor (text):', serverMsg);
-              }
-              throw new Error(`Erro HTTP ${response.status}: ${serverMsg}`);
-            }
-
-            const data = await response.json();
-            console.log('💾 [SALVAR PROJETO] Resposta do servidor:', data);
-
-            if (data.success) {
-              console.log('✅ [SALVAR PROJETO] Local criado com sucesso!');
-              console.log('✅ [SALVAR PROJETO] ID do local:', data.local_id);
-
-              // Salvar estado no sessionStorage antes de recarregar
-              const estadoParaSalvar = {
-                ...this.estadoTemporario,
-                codigoLocalDigitado: cdlocal,
-                timestamp: Date.now()
-              };
-
-              sessionStorage.setItem('patrimonioFormState', JSON.stringify(estadoParaSalvar));
-              console.log('✅ [SALVAR PROJETO] Estado salvo no sessionStorage:', estadoParaSalvar);
-
-              // Recarregar a página
-              console.log('✅ [SALVAR PROJETO] Recarregando página...');
-              window.location.reload();
-            } else {
-              this.erroCriacaoProjeto = data.message || '❌ Erro ao criar local';
-              console.log('❌ [SALVAR PROJETO] Falha:', this.erroCriacaoProjeto);
-              this.salvandoCriacaoProjeto = false;
-            }
-
-          } catch (error) {
-            console.error('❌ [SALVAR PROJETO] Exceção:', error);
-            this.erroCriacaoProjeto = error.message || '❌ Erro ao criar local';
+            // Recarregar a página
+            window.location.reload();
+          } else {
+            this.erroCriacaoProjeto = data.message || '❌ Erro ao criar local';
             this.salvandoCriacaoProjeto = false;
           }
-        }
-        // ===== CENÁRIO 2: Projeto NÃO ENCONTRADO (criar novo) =====
-        else {
-          const cdlocal = String(this.novoProjeto.cdlocal || '').trim();
-          const cdprojeto = Number(this.novoProjeto.cdprojeto) || null; // Manter como número, não string!
 
-          // Validações
-          if (!cdlocal) {
-            this.erroCriacaoProjeto = '❌ Digite o código do projeto';
-            console.log('💾 [SALVAR PROJETO] Erro: Código do projeto vazio');
-            return;
-          }
-
-          if (!nomeLocal) {
-            this.erroCriacaoProjeto = '❌ Digite o nome do local';
-            console.log('💾 [SALVAR PROJETO] Erro: Nome do local vazio');
-            return;
-          }
-
-          if (!cdprojeto) {
-            this.erroCriacaoProjeto = '❌ Selecione um projeto';
-            console.log('💾 [SALVAR PROJETO] Erro: Projeto não selecionado');
-            return;
-          }
-
-          this.salvandoCriacaoProjeto = true;
-          this.erroCriacaoProjeto = '';
-
-          try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-            // Criar novo com todos os dados
-            const payload = {
-              cdlocal: cdlocal,
-              local: nomeLocal,
-              cdprojeto: cdprojeto,
-            };
-
-            console.log('💾 [SALVAR PROJETO] Payload (Criar Novo):', payload);
-            console.log('💾 [SALVAR PROJETO] CSRF Token:', csrfToken);
-
-            const response = await fetch('/api/locais/criar', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-              },
-              credentials: 'same-origin',
-              body: JSON.stringify(payload)
-            });
-
-            console.log('💾 [SALVAR PROJETO] Status HTTP:', response.status);
-
-            if (!response.ok) {
-              let serverMsg = '';
-              try {
-                const errData = await response.clone().json();
-                serverMsg = errData.message || JSON.stringify(errData.errors || errData);
-                console.log('💾 [SALVAR PROJETO] Erro do servidor:', errData);
-              } catch (_) {
-                serverMsg = await response.text();
-                console.log('💾 [SALVAR PROJETO] Erro do servidor (text):', serverMsg);
-              }
-              throw new Error(`Erro HTTP ${response.status}: ${serverMsg}`);
-            }
-
-            const data = await response.json();
-            console.log('💾 [SALVAR PROJETO] Resposta do servidor:', data);
-
-            if (data.success) {
-              console.log('✅ [SALVAR PROJETO] Local criado com sucesso!');
-              console.log('✅ [SALVAR PROJETO] ID do local:', data.local_id);
-
-              // Salvar estado no sessionStorage antes de recarregar
-              const estadoParaSalvar = {
-                ...this.estadoTemporario,
-                codigoLocalDigitado: cdlocal,
-                timestamp: Date.now()
-              };
-
-              sessionStorage.setItem('patrimonioFormState', JSON.stringify(estadoParaSalvar));
-              console.log('✅ [SALVAR PROJETO] Estado salvo no sessionStorage:', estadoParaSalvar);
-
-              // Recarregar a página
-              console.log('✅ [SALVAR PROJETO] Recarregando página...');
-              window.location.reload();
-            } else {
-              this.erroCriacaoProjeto = data.message || '❌ Erro ao criar local';
-              console.log('❌ [SALVAR PROJETO] Falha:', this.erroCriacaoProjeto);
-              this.salvandoCriacaoProjeto = false;
-            }
-
-          } catch (error) {
-            console.error('❌ [SALVAR PROJETO] Exceção:', error);
-            this.erroCriacaoProjeto = error.message || '❌ Erro ao criar local';
-            this.salvandoCriacaoProjeto = false;
-          }
+        } catch (error) {
+          console.error('❌ [SALVAR LOCAL] Erro:', error);
+          this.erroCriacaoProjeto = error.message || '❌ Erro ao criar local';
+          this.salvandoCriacaoProjeto = false;
         }
 
-        console.log('💾 [SALVAR PROJETO] ════════════════════════════════');
+        console.log('� [SALVAR LOCAL] ════════════════════════════════');
       },
+
+
 
       /**
        * Selecionar local do dropdown (quando múltiplos)
@@ -2824,256 +2961,9 @@
       // ========================================
       // �🆕 MODAL CRIAR NOVO LOCAL (SIMPLES)
       // ========================================
-      abrirModalCriarLocal() {
-        console.log('🔘 [BOTÃO +] Clicado!', {
-          codigoLocalDigitado: this.codigoLocalDigitado,
-          CDPROJETO: this.formData.CDPROJETO,
-          projetoAssociadoSearch: this.projetoAssociadoSearch
-        });
 
-        if (!this.codigoLocalDigitado) {
-          alert('Digite um código de local primeiro');
-          return;
-        }
-        if (!this.formData.CDPROJETO) {
-          alert('Selecione um local com projeto associado primeiro');
-          return;
-        }
 
-        console.log('🔘 [MODAL ABRIR] Modal vai abrir');
-        console.log('🔘 [MODAL ABRIR] formData.CDPROJETO:', this.formData.CDPROJETO);
-        console.log('🔘 [MODAL ABRIR] projetoAssociadoSearch:', this.projetoAssociadoSearch);
 
-        this.modalCriarNovoLocalOpen = true;
-        this.novoLocalNome = '';
-        this.erroNovoLocal = '';
-        this.salvandoNovoLocal = false;
-
-        // Focar no input do nome após o modal abrir
-        this.$nextTick(() => {
-          this.$refs.inputNovoLocal?.focus();
-        });
-      },
-
-      fecharModalCriarNovoLocal() {
-        console.log('🔘 [MODAL FECHAR] Modal vai fechar');
-        console.log('🔘 [MODAL FECHAR] processandoCriacaoLocal:', this.processandoCriacaoLocal);
-
-        this.modalCriarNovoLocalOpen = false;
-        this.novoLocalNome = '';
-        this.erroNovoLocal = '';
-        this.salvandoNovoLocal = false;
-      },
-
-      async salvarNovoLocal() {
-        console.log('\n\n');
-        console.log('🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣🟣');
-        console.log('🟣 [DEBUG SALVAR] ═══════════════════════════════════');
-        console.log('🟣 [DEBUG SALVAR] ✨✨✨ FUNÇÃO CHAMADA! ✨✨✨');
-        console.log('🟣 [DEBUG SALVAR] Iniciando salvarNovoLocal()');
-        console.log('🟣 [DEBUG SALVAR] Estado ANTES de salvar:');
-        console.log('   - novoLocalNome:', this.novoLocalNome);
-        console.log('   - codigoLocalDigitado:', this.codigoLocalDigitado);
-        console.log('   - formData.CDPROJETO:', this.formData.CDPROJETO);
-        console.log('   - projetoAssociadoSearch:', this.projetoAssociadoSearch);
-        console.log('   - localSelecionadoId:', this.localSelecionadoId);
-        console.log('   - formData.CDLOCAL:', this.formData.CDLOCAL);
-        console.log('   - locaisEncontrados.length:', this.locaisEncontrados.length);
-        console.log('🟣 [DEBUG SALVAR] ═══════════════════════════════════');
-
-        this.erroNovoLocal = '';
-
-        const nome = String(this.novoLocalNome || '').trim();
-        if (nome === '') {
-          this.erroNovoLocal = 'Digite o nome do local';
-          console.log('🟣 [DEBUG SALVAR] ❌ Nome vazio, abortando');
-          return;
-        }
-
-        // ✅ ATIVAR FLAG DE PROTEÇÃO ANTES DE TUDO!
-        console.log('🟣 [DEBUG SALVAR] ✅ Ativando processandoCriacaoLocal = true');
-        this.processandoCriacaoLocal = true;
-        this.salvandoNovoLocal = true;
-
-        try {
-          // Encontrar o tabfant_id do primeiro local do array (todos do mesmo código têm o mesmo projeto)
-          const tabfantId = this.locaisEncontrados.length > 0 ?
-            this.locaisEncontrados[0].tabfant_id :
-            null;
-
-          if (!tabfantId) {
-            this.erroNovoLocal = 'Não foi possível identificar o projeto associado';
-            this.salvandoNovoLocal = false;
-            return;
-          }
-
-          const payload = {
-            cdlocal: this.codigoLocalDigitado,
-            local: nome,
-            cdprojeto: this.locaisEncontrados[0].CDPROJETO
-          };
-
-          console.log('📤 [CRIAR LOCAL] Payload:', payload);
-
-          const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-          const response = await fetch('/api/locais/criar', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': csrfToken,
-              'X-Requested-With': 'XMLHttpRequest',
-              'Accept': 'application/json'
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify(payload)
-          });
-
-          if (!response.ok) {
-            let serverMsg = '';
-            try {
-              const errData = await response.clone().json();
-              serverMsg = errData.message || JSON.stringify(errData.errors || errData);
-            } catch (_) {
-              serverMsg = await response.text();
-            }
-            throw new Error(`Erro HTTP ${response.status}: ${serverMsg}`);
-          }
-
-          const data = await response.json();
-          console.log('✅ [CRIAR LOCAL] Resposta completa do servidor:', JSON.stringify(data, null, 2));
-
-          if (data.success) {
-            console.log('🟣 [PASSO 1] ═══════════════════════════════════════════');
-            console.log('🟣 [PASSO 1] Salvando estado do projeto ANTES de tudo');
-
-            const projetoSalvo = this.formData.CDPROJETO;
-            const projetoNomeSalvo = this.projetoAssociadoSearch;
-            const codigoLocalSalvo = this.codigoLocalDigitado;
-
-            console.log('� [PASSO 1] projetoSalvo:', projetoSalvo);
-            console.log('🟣 [PASSO 1] projetoNomeSalvo:', projetoNomeSalvo);
-            console.log('� [PASSO 1] codigoLocalSalvo:', codigoLocalSalvo);
-            console.log('🟣 [PASSO 1] ✅ Estado salvo com sucesso');
-
-            console.log('\n🟣 [PASSO 2] ═══════════════════════════════════════════');
-            console.log('🟣 [PASSO 2] Fechando modal');
-            this.fecharModalCriarNovoLocal();
-            console.log('🟣 [PASSO 2] ✅ Modal fechado');
-
-            await this.$nextTick();
-
-            console.log('\n🟣 [PASSO 3] ═══════════════════════════════════════════');
-            console.log('🟣 [PASSO 3] Re-buscando locais do backend');
-            console.log('� [PASSO 3] Garantindo código está setado:', codigoLocalSalvo);
-            this.codigoLocalDigitado = codigoLocalSalvo;
-
-            console.log('🟣 [PASSO 3] Chamando buscarLocais()...');
-            await this.buscarLocais();
-            console.log('🟣 [PASSO 3] ✅ Busca concluída');
-            console.log('🟣 [PASSO 3] Total de locais encontrados:', this.locaisEncontrados.length);
-            console.log('🟣 [PASSO 3] Locais:', this.locaisEncontrados.map(l => ({
-              id: l.id,
-              delocal: l.delocal,
-              cdlocal: l.cdlocal
-            })));
-
-            await this.$nextTick();
-
-            console.log('\n🟣 [PASSO 4] ═══════════════════════════════════════════');
-            console.log('🟣 [PASSO 4] Verificando estado do projeto APÓS buscarLocais()');
-            console.log('🟣 [PASSO 4] formData.CDPROJETO atual:', this.formData.CDPROJETO);
-            console.log('🟣 [PASSO 4] projetoAssociadoSearch atual:', this.projetoAssociadoSearch);
-            console.log('� [PASSO 4] Restaurando projeto...');
-            this.formData.CDPROJETO = projetoSalvo;
-            this.projetoAssociadoSearch = projetoNomeSalvo;
-            console.log('🟣 [PASSO 4] ✅ Projeto restaurado');
-            console.log('🟣 [PASSO 4] formData.CDPROJETO após restaurar:', this.formData.CDPROJETO);
-            console.log('🟣 [PASSO 4] projetoAssociadoSearch após restaurar:', this.projetoAssociadoSearch);
-
-            await this.$nextTick();
-
-            console.log('\n🟣 [PASSO 5] ═══════════════════════════════════════════');
-            console.log('🟣 [PASSO 5] Procurando local recém-criado');
-            console.log('� [PASSO 5] Buscando por nome:', nome, '| código:', codigoLocalSalvo);
-
-            const localCriado = this.locaisEncontrados.find(l =>
-              l.delocal.toLowerCase() === nome.toLowerCase() &&
-              String(l.cdlocal) === String(codigoLocalSalvo)
-            );
-
-            if (localCriado) {
-              console.log('🟣 [PASSO 5] ✅ Local encontrado:', localCriado);
-
-              console.log('\n🟣 [PASSO 6] ═══════════════════════════════════════════');
-              console.log('🟣 [PASSO 6] Selecionando o local criado');
-              console.log('🟣 [PASSO 6] localSelecionadoId:', localCriado.id);
-              console.log('🟣 [PASSO 6] formData.CDLOCAL:', localCriado.id);
-
-              this.localSelecionadoId = localCriado.id;
-              this.formData.CDLOCAL = localCriado.id;
-
-              await this.$nextTick();
-
-              console.log('\n🟣 [PASSO 7] ═══════════════════════════════════════════');
-              console.log('🟣 [PASSO 7] Forçando select visualmente');
-              const selectElement = document.querySelector('select[name="CDLOCAL"]');
-              if (selectElement) {
-                console.log('🟣 [PASSO 7] Select encontrado, value ANTES:', selectElement.value);
-                selectElement.value = localCriado.id;
-                console.log('🟣 [PASSO 7] Select value DEPOIS:', selectElement.value);
-                selectElement.dispatchEvent(new Event('change', {
-                  bubbles: true
-                }));
-                console.log('🟣 [PASSO 7] ✅ Evento change disparado');
-              } else {
-                console.log('🟣 [PASSO 7] ❌ Select NÃO encontrado!');
-              }
-
-              console.log('\n🎉 ═══════════════════════════════════════════════════');
-              console.log('🎉   SUCESSO TOTAL!');
-              console.log('🎉   Local criado:', localCriado.delocal);
-              console.log('🎉   Projeto:', projetoSalvo, '-', projetoNomeSalvo);
-              console.log('🎉 ═══════════════════════════════════════════════════\n');
-
-              // ✅ AUTO-FOCUS NO CAMPO "NOME DO LOCAL" APÓS CRIAR
-              console.log('🟣 [FINAL] Auto-focando no campo "Nome do Local"');
-              this.$nextTick(() => {
-                const nomeLocalInput = document.getElementById('NOMELOCAL_INPUT');
-                if (nomeLocalInput) {
-                  nomeLocalInput.focus();
-                  console.log('✅ [FOCUS] Campo "Nome do Local" focado com sucesso');
-                } else {
-                  console.warn('⚠️ [FOCUS] Campo "Nome do Local" não encontrado');
-                }
-              });
-
-              // ✅ DESATIVAR FLAG DE PROTEÇÃO APENAS NO SUCESSO
-              console.log('🟣 [FINAL] Desativando processandoCriacaoLocal = false');
-              this.processandoCriacaoLocal = false;
-            } else {
-              console.error('❌ Local não encontrado após busca!');
-              console.log('Locais disponíveis:', this.locaisEncontrados.map(l => ({
-                id: l.id,
-                delocal: l.delocal
-              })));
-              this.processandoCriacaoLocal = false;
-            }
-
-          } else {
-            this.erroNovoLocal = data.message || 'Erro ao criar local';
-            console.error('❌ [CRIAR LOCAL] Falha:', this.erroNovoLocal);
-            this.processandoCriacaoLocal = false;
-          }
-
-        } catch (error) {
-          console.error('❌ [CRIAR LOCAL] Erro:', error);
-          this.erroNovoLocal = error.message || 'Erro ao criar local';
-          this.processandoCriacaoLocal = false;
-        } finally {
-          this.salvandoNovoLocal = false;
-        }
-      },
 
       async init() {
         console.log('🚀 [INIT] Inicializando formulário...');

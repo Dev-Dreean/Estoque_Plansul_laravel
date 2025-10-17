@@ -56,11 +56,28 @@ class Patrimonio extends Model
         return $this->belongsTo(Funcionario::class, 'CDMATRFUNCIONARIO', 'CDMATRFUNCIONARIO');
     }
 
-    public function local()
+    /**
+     * Relação com o Local do Projeto.
+     * CDLOCAL armazena o ID da tabela locais_projeto.
+     */
+    public function localProjeto(): BelongsTo
     {
-        return $this->belongsTo(Tabfant::class, 'CDLOCAL', 'id');
+        return $this->belongsTo(LocalProjeto::class, 'CDLOCAL', 'id');
     }
 
+    /**
+     * Relação com o Local (via LocalProjeto -> Tabfant).
+     * Esta é a relação corrigida que busca o projeto através do local.
+     */
+    public function local()
+    {
+        return $this->belongsTo(LocalProjeto::class, 'CDLOCAL', 'id');
+    }
+
+    /**
+     * Relação com o Projeto diretamente.
+     * CDPROJETO armazena o código do projeto (não o ID).
+     */
     public function projeto()
     {
         return $this->belongsTo(Tabfant::class, 'CDPROJETO', 'CDPROJETO');

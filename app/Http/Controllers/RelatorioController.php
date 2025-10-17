@@ -84,7 +84,7 @@ class RelatorioController extends Controller
                 return response()->json(['message' => 'Validação falhou', 'errors' => $erros], 422);
             }
 
-            $query = Patrimonio::query()->with('creator', 'local');
+            $query = Patrimonio::query()->with('creator', 'local.projeto');
 
             // Filtra patrimônios por usuário (exceto Admin e Super Admin)
             /** @var \App\Models\User|null $user */
@@ -168,7 +168,7 @@ class RelatorioController extends Controller
             'sort_direction' => 'nullable|in:asc,desc'
         ]);
 
-        $query = Patrimonio::query()->with('creator', 'local');
+        $query = Patrimonio::query()->with('creator', 'local.projeto');
 
         // Filtra patrimônios por usuário (exceto Admin e Super Admin)
         /** @var \App\Models\User|null $user */
