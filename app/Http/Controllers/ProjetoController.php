@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\LocalProjeto; // ALTERADO: Usando o Model correto
 use App\Models\Tabfant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProjetoController extends Controller
 {
@@ -118,10 +119,15 @@ class ProjetoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(LocalProjeto $projeto)
+    public function destroy(Request $request, LocalProjeto $projeto)
     {
         $projeto->delete();
-        return redirect()->route('projetos.index')->with('success', 'Local apagado com sucesso.');
+
+        // Manter os filtros da requisição anterior
+        $filtros = $request->only(['search', 'cdprojeto', 'local', 'tag']);
+
+        return redirect()->route('projetos.index', $filtros)
+            ->with('success', 'Local apagado com sucesso.');
     }
 
     /**
@@ -131,17 +137,30 @@ class ProjetoController extends Controller
      */
     public function duplicate(LocalProjeto $projeto)
     {
-        // Prefill mantendo somente o código; nome e projeto ficam em branco para novo preenchimento
+        // Prefill: manter o código do local e o projeto associado (tabfant_id).
+        // Apenas o nome do local (delocal) deve ficar em branco e editável.
         $prefill = [
             'delocal' => '',
             'cdlocal' => $projeto->cdlocal,
-            'tabfant_id' => ''
+            'tabfant_id' => $projeto->tabfant_id,
         ];
+
+        // Também enviar informações do projeto original na sessão para exibição/controle na view
+        $projetoOriginal = null;
+        if ($projeto->tabfant_id) {
+            $projetoOriginal = Tabfant::find($projeto->tabfant_id);
+        }
+
         return redirect()
             ->route('projetos.create')
             ->withInput($prefill)
             ->with('duplicating_from', $projeto->id)
-            ->with('duplicating_mode', true);
+            ->with('duplicating_mode', true)
+            ->with('duplicating_project', $projetoOriginal ? [
+                'id' => $projetoOriginal->id,
+                'CDPROJETO' => $projetoOriginal->CDPROJETO,
+                'NOMEPROJETO' => $projetoOriginal->NOMEPROJETO,
+            ] : null);
     }
 
     /**
@@ -169,5 +188,63 @@ class ProjetoController extends Controller
                 'projeto_codigo' => $local->projeto->CDPROJETO ?? null,
             ]
         ]);
+    }
+
+    /**
+     * 🆕 Criar novo local de forma simplificada (POST + Redirect igual duplicate)
+     * Recebe: cdlocal, delocal, tabfant_id
+     * Redireciona para patrimonios/create com dados preenchidos
+     */
+    public function criarSimples(Request $request)
+    {
+        $validated = $request->validate([
+            'cdlocal' => 'required|integer',
+            'delocal' => 'required|string|max:255',
+            'tabfant_id' => 'required|exists:tabfant,id',
+        ]);
+
+        try {
+            $novoLocal = LocalProjeto::create([
+                'cdlocal' => $validated['cdlocal'],
+                'delocal' => $validated['delocal'],
+                'tabfant_id' => $validated['tabfant_id'],
+                'flativo' => true,
+            ]);
+
+            Log::info('✅ Novo local criado', [
+                'id' => $novoLocal->id,
+                'cdlocal' => $novoLocal->cdlocal,
+                'delocal' => $novoLocal->delocal,
+            ]);
+
+            // Buscar informações do projeto
+            $projeto = Tabfant::find($validated['tabfant_id']);
+
+            // Redirecionar para create com dados preenchidos (igual duplicate)
+            return redirect()
+                ->route('patrimonios.create')
+                ->withInput([
+                    'codigo_local_digitado' => $validated['cdlocal'],
+                    'local_id_selecionado' => $novoLocal->id,
+                ])
+                ->with('success', 'Local "' . $novoLocal->delocal . '" criado com sucesso!')
+                ->with('local_criado', $novoLocal->id)
+                ->with('projeto_info', $projeto ? [
+                    'id' => $projeto->id,
+                    'codigo' => $projeto->CDPROJETO,
+                    'nome' => $projeto->NOMEPROJETO,
+                ] : null);
+                
+        } catch (\Exception $e) {
+            Log::error('❌ Erro ao criar local', [
+                'message' => $e->getMessage(),
+                'payload' => $validated,
+            ]);
+
+            return redirect()
+                ->back()
+                ->withErrors(['error' => 'Erro ao criar local: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 }

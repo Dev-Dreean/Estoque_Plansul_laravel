@@ -84,11 +84,12 @@ class RelatorioController extends Controller
                 return response()->json(['message' => 'Validação falhou', 'errors' => $erros], 422);
             }
 
-            // 'usuario' não existe mais no Model; relação correta é 'creator' (quem cadastrou)
             $query = Patrimonio::query()->with('creator', 'local');
-            // Segurança: usuários não-ADM veem registros que criaram OU dos quais são responsáveis
+            
+            // Filtra patrimônios por usuário (exceto Admin e Super Admin)
+            /** @var \App\Models\User|null $user */
             $user = Auth::user();
-            if ($user && ($user->PERFIL ?? null) !== 'ADM') {
+            if ($user && !$user->isGod() && ($user->PERFIL ?? null) !== 'ADM') {
                 $nmLogin = (string) ($user->NMLOGIN ?? '');
                 $nmUser  = (string) ($user->NOMEUSER ?? '');
                 $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
@@ -167,11 +168,12 @@ class RelatorioController extends Controller
             'sort_direction' => 'nullable|in:asc,desc'
         ]);
 
-        // Ajuste de relações: usar 'creator' (usuário do sistema que cadastrou) e 'local'
         $query = Patrimonio::query()->with('creator', 'local');
-        // Segurança: usuários não-ADM veem registros que criaram OU dos quais são responsáveis
+        
+        // Filtra patrimônios por usuário (exceto Admin e Super Admin)
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
-        if ($user && ($user->PERFIL ?? null) !== 'ADM') {
+        if ($user && !$user->isGod() && ($user->PERFIL ?? null) !== 'ADM') {
             $nmLogin = (string) ($user->NMLOGIN ?? '');
             $nmUser  = (string) ($user->NOMEUSER ?? '');
             $query->where(function ($q) use ($user, $nmLogin, $nmUser) {

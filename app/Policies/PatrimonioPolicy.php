@@ -8,14 +8,20 @@ use App\Models\User;
 class PatrimonioPolicy
 {
     /**
-     * Regra "VIP": Admins podem fazer tudo.
+     * Verifica permissões antes das policies específicas
+     * Super Admin e Admin têm acesso total
      */
     public function before(User $user, string $ability): bool|null
     {
+        if ($user->isGod()) {
+            return true;
+        }
+
         if ($user->PERFIL === 'ADM') {
             return true;
         }
-        return null; // Deixa o Laravel checar as outras regras para não-admins
+
+        return null;
     }
 
     /**
@@ -54,7 +60,7 @@ class PatrimonioPolicy
 
     /**
      * Quem pode atualizar?
-     * Admin já liberado no 'before'. Para não-admins, permitir se responsável OU criador.
+     * God/Admin já liberado no 'before'. Para não-admins, permitir se responsável OU criador.
      */
     public function update(User $user, Patrimonio $patrimonio): bool
     {
@@ -70,10 +76,14 @@ class PatrimonioPolicy
     }
 
     /**
-     * Quem pode deletar? NINGUÉM, exceto o admin (que já foi pego pelo 'before').
+     * Quem pode deletar?
+     * God/Super Admin pode deletar TUDO (verificado no 'before').
+     * NINGUÉM mais pode deletar.
      */
     public function delete(User $user, Patrimonio $patrimonio): bool
     {
+        // Esta linha nunca será alcançada se God/Admin,
+        // pois o before() retorna true antes.
         return false;
     }
 }

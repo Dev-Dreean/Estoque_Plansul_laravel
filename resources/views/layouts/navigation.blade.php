@@ -9,23 +9,34 @@
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    @if(Auth::user()->temAcessoTela(1000))
                     <x-nav-link :href="route('patrimonios.index')" :active="request()->routeIs('patrimonios.*')">
                         {{ ('Controle de Patrimônio') }}
                     </x-nav-link>
+                    @endif
 
+                    @if(Auth::user()->temAcessoTela(1001))
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Gráficos') }}
                     </x-nav-link>
+                    @endif
 
-                    @if(Auth::user()->PERFIL === 'ADM')
+                    @if(Auth::user()->temAcessoTela(1002))
                     <x-nav-link :href="route('projetos.index')" :active="request()->routeIs('projetos.*')">
                         {{ __('Cadastro de Locais') }}
                     </x-nav-link>
+                    @endif
 
+                    @if(Auth::user()->temAcessoTela(1003))
                     <x-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')">
                         {{ __('Usuários') }}
                     </x-nav-link>
+                    @endif
 
+                    @if(Auth::user()->temAcessoTela(1004))
+                    <x-nav-link :href="route('cadastro-tela.index')" :active="request()->routeIs('cadastro-tela.*')">
+                        {{ __('Cadastro de Telas') }}
+                    </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -80,12 +91,35 @@
     {{-- menu mobile --}}
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-surface border-t border-base">
         <div class="pt-2 pb-3 space-y-1">
+            @if(Auth::user()->temAcessoTela(1000))
             <x-responsive-nav-link :href="route('patrimonios.index')" :active="request()->routeIs('patrimonios.*')">
                 {{ ('Controle de Patrimônio') }}
             </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->temAcessoTela(1001))
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Gráficos') }}
             </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->temAcessoTela(1002))
+            <x-responsive-nav-link :href="route('projetos.index')" :active="request()->routeIs('projetos.*')">
+                {{ __('Cadastro de Locais') }}
+            </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->temAcessoTela(1003))
+            <x-responsive-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')">
+                {{ __('Usuários') }}
+            </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->temAcessoTela(1004))
+            <x-responsive-nav-link :href="route('cadastro-tela.index')" :active="request()->routeIs('cadastro-tela.*')">
+                {{ __('Cadastro de Telas') }}
+            </x-responsive-nav-link>
+            @endif
         </div>
 
         <div class="pt-4 pb-1 border-t border-base">

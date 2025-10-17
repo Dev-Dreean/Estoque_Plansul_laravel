@@ -24,6 +24,20 @@
 
     <div class="md:col-span-1">
         <label for="tabfant_id" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Projeto Associado</label>
+        @if(session('duplicating_mode') && session('duplicating_project'))
+        {{-- Em modo duplicação: exibir projeto associado como texto e enviar tabfant_id via hidden --}}
+        @php
+        $dup = session('duplicating_project');
+        $dupNome = data_get($dup, 'NOMEPROJETO');
+        $dupCod = data_get($dup, 'CDPROJETO');
+        $dupId = data_get($dup, 'id');
+        @endphp
+        <div class="mt-1 block w-full rounded-md shadow-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 p-2">
+            <strong>{{ $dupNome }}</strong> (Cód: {{ $dupCod }})
+        </div>
+        <input type="hidden" name="tabfant_id" value="{{ old('tabfant_id', $local->tabfant_id ?? $dupId) }}">
+        <p class="text-xs text-gray-500 mt-1">Projeto associado bloqueado durante clonagem.</p>
+        @else
         <select id="tabfant_id" name="tabfant_id" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" required>
             <option value="">Selecione um projeto</option>
             @foreach ($projetos as $projeto_opcao)
@@ -34,6 +48,7 @@
         </select>
         @if(session('duplicating_mode'))
         <p class="text-xs text-blue-500 mt-1">Selecione o projeto para o novo local clonado.</p>
+        @endif
         @endif
     </div>
 

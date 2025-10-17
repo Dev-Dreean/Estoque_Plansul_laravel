@@ -118,14 +118,14 @@
     </div>
     <div class="md:col-span-3">
       <x-input-label for="DEOBJETO" value="Descrição do Código" />
-      <x-text-input data-index="5" x-model="formData.DEOBJETO" id="DEOBJETO" name="DEOBJETO" type="text" class="mt-0.5 block w-full" x-bind:readonly="!isNovoCodigo" x-bind:class="!isNovoCodigo ? 'bg-gray-100 dark:bg-gray-900' : ''" />
+      <x-text-input data-index="5" x-model="formData.DEOBJETO" id="DEOBJETO" name="DEOBJETO" type="text" tabindex="4" class="mt-0.5 block w-full" x-bind:readonly="!isNovoCodigo" x-bind:class="!isNovoCodigo ? 'bg-gray-100 dark:bg-gray-900' : ''" />
     </div>
   </div>
 
   {{-- GRUPO 3: Observação --}}
   <div>
     <x-input-label for="DEHISTORICO" value="Observação" />
-    <textarea data-index="6" x-model="formData.DEHISTORICO" id="DEHISTORICO" name="DEHISTORICO" rows="2" class="block mt-0.5 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm"></textarea>
+    <textarea data-index="6" x-model="formData.DEHISTORICO" id="DEHISTORICO" name="DEHISTORICO" rows="2" tabindex="5" class="block mt-0.5 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm"></textarea>
   </div>
 
   {{-- GRUPO 4: Local, Cód. Termo e Projeto --}}
@@ -139,9 +139,10 @@
         {{-- Botão + (Criar Novo Local/Projeto) --}}
         <button type="button"
           @click="abrirModalCriarProjeto()"
+          @keydown.space.prevent="abrirModalCriarProjeto()"
           class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
-          title="Criar novo local/projeto"
-          tabindex="-1">
+          title="Criar novo local/projeto (Espaço)"
+          tabindex="6">
           <span class="text-lg font-bold leading-none">+</span>
         </button>
 
@@ -153,35 +154,80 @@
             x-model="codigoLocalDigitado"
             @input.debounce.300ms="buscarLocalPorCodigo()"
             placeholder="Ex: 103"
-            tabindex="6"
+            tabindex="7"
             class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
           <input type="hidden" name="CDLOCAL" :value="formData.CDLOCAL" />
         </div>
 
-        {{-- Dropdown/Input Nome do Local --}}
-        <div class="flex-1">
-          <template x-if="locaisEncontrados.length <= 1">
-            {{-- Se apenas 1 local: campo readonly --}}
+        {{-- Dropdown/Input Nome do Local com Autocomplete --}}
+        <div class="flex-1 relative" @click.away="showNomeLocalDropdown=false">
+          <div class="relative">
             <input type="text"
-              readonly
-              tabindex="-1"
-              :value="localNome"
-              placeholder="Nome do local"
-              class="block w-full h-8 text-sm border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-md cursor-not-allowed" />
-          </template>
+              id="NOMELOCAL_INPUT"
+              x-model="nomeLocalBusca"
+              @focus="abrirDropdownNomesLocaisAoFocar()"
+              @input.debounce.300ms="(function(){ buscarNomesLocais(); })()"
+              @keydown.down.prevent="navegarNomesLocais(1)"
+              @keydown.up.prevent="navegarNomesLocais(-1)"
+              @keydown.enter.prevent="selecionarNomeLocalEnter()"
+              @keydown.escape.prevent="showNomeLocalDropdown=false"
+              :disabled="!codigoLocalDigitado || locaisEncontrados.length === 1"
+              :placeholder="!codigoLocalDigitado ? 'Digite o código primeiro' : (locaisEncontrados.length === 1 ? 'Preenchido automaticamente' : 'Digite o nome do local')"
+              tabindex="8"
+              :class="[
+                'block w-full h-8 text-sm rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500',
+                !codigoLocalDigitado || locaisEncontrados.length === 1
+                  ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed'
+                  : 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200'
+              ]"
+              autocomplete="off" />
 
-          <template x-if="locaisEncontrados.length > 1">
-            {{-- Se múltiplos locais: dropdown para escolher --}}
-            <select x-model="localSelecionadoId"
-              @change="selecionarLocalDoDropdown(localSelecionadoId)"
-              tabindex="7"
-              class="block w-full h-8 text-sm border-amber-500 dark:border-amber-400 bg-amber-50 dark:bg-amber-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-amber-500">
-              <option value="">⚠️ Selecione o local correto</option>
-              <template x-for="local in locaisEncontrados" :key="local.id">
-                <option :value="local.id" x-text="(local.LOCAL || local.delocal) + ' → Projeto: ' + (local.NOMEPROJETO || 'Sem projeto')"></option>
-              </template>
-            </select>
-          </template>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+              <button type="button"
+                x-show="nomeLocalBusca && codigoLocalDigitado"
+                @click="limparNomeLocal"
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none"
+                title="Limpar seleção"
+                tabindex="-1">×</button>
+              <button type="button"
+                @click="abrirDropdownNomesLocais(true)"
+                :disabled="!codigoLocalDigitado"
+                :class="[
+                  'focus:outline-none',
+                  codigoLocalDigitado 
+                    ? 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200' 
+                    : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                ]"
+                title="Abrir lista"
+                tabindex="-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {{-- Dropdown de sugestões --}}
+          <div x-show="showNomeLocalDropdown"
+            x-transition
+            class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-xs">
+            <template x-if="loadingNomesLocais">
+              <div class="p-2 text-gray-500 text-center">Buscando...</div>
+            </template>
+            <template x-if="!loadingNomesLocais && nomesLocaisLista.length === 0 && nomeLocalBusca.trim() !== ''">
+              <div class="p-2 text-gray-500 text-center">Nenhum resultado encontrado</div>
+            </template>
+            <template x-if="!loadingNomesLocais && nomesLocaisLista.length === 0 && nomeLocalBusca.trim() === ''">
+              <div class="p-2 text-gray-500 text-center" x-text="'Total: ' + locaisEncontrados.length + ' local(ais) disponível(is)'"></div>
+            </template>
+            <template x-for="(local, i) in nomesLocaisLista" :key="local.id">
+              <div @click="selecionarNomeLocal(local)"
+                @mouseover="highlightedNomeLocalIndex = i"
+                :class="['px-3 py-1.5 cursor-pointer', highlightedNomeLocalIndex === i ? 'bg-indigo-100 dark:bg-indigo-900' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+                <span class="text-gray-700 dark:text-gray-300" x-text="local.LOCAL || local.delocal"></span>
+              </div>
+            </template>
+          </div>
         </div>
       </div>
     </div>
@@ -193,7 +239,7 @@
         id="NMPLANTA"
         name="NMPLANTA"
         type="number"
-        tabindex="8"
+        tabindex="9"
         class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
 
@@ -213,15 +259,15 @@
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
     <div>
       <label for="MARCA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Marca</label>
-      <input x-model="formData.MARCA" id="MARCA" name="MARCA" type="text" tabindex="9" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <input x-model="formData.MARCA" id="MARCA" name="MARCA" type="text" tabindex="10" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
     <div>
       <label for="MODELO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Modelo</label>
-      <input x-model="formData.MODELO" id="MODELO" name="MODELO" type="text" tabindex="10" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <input x-model="formData.MODELO" id="MODELO" name="MODELO" type="text" tabindex="11" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
     <div>
       <label for="SITUACAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Situação *</label>
-      <select id="SITUACAO" name="SITUACAO" required tabindex="11"
+      <select id="SITUACAO" name="SITUACAO" required tabindex="12"
         class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500">
         @php
         $situacaoAtual = old('SITUACAO', $patrimonio->situacao ?? 'EM USO');
@@ -245,7 +291,7 @@
           @blur="normalizarMatriculaBusca()"
           type="text"
           placeholder="Digite matrícula ou nome"
-          tabindex="12"
+          tabindex="13"
           class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-10 focus:ring-2 focus:ring-indigo-500"
           autocomplete="off" />
         <input type="hidden" name="CDMATRFUNCIONARIO" :value="formData.CDMATRFUNCIONARIO" />
@@ -285,11 +331,11 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     <div>
       <label for="DTAQUISICAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Data de Aquisição</label>
-      <input x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" tabindex="13" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <input x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" tabindex="14" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
     <div>
       <label for="DTBAIXA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Data de Baixa</label>
-      <input x-model="formData.DTBAIXA" id="DTBAIXA" name="DTBAIXA" type="date" tabindex="14" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <input x-model="formData.DTBAIXA" id="DTBAIXA" name="DTBAIXA" type="date" tabindex="15" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
       <x-input-error class="mt-2" :messages="$errors->get('DTBAIXA')" />
     </div>
   </div>
@@ -583,6 +629,13 @@
       resultadosBusca: [], // Resultados brutos da busca (lupa ou digitação)
       resultadosBuscaGrouped: [], // Resultados agrupados por cdlocal
 
+      // Autocomplete Nome do Local
+      nomeLocalBusca: '', // Texto digitado pelo usuário no campo de nome
+      nomesLocaisLista: [], // Lista de sugestões de nomes
+      showNomeLocalDropdown: false, // Controla visibilidade do dropdown
+      loadingNomesLocais: false, // Flag de carregamento
+      highlightedNomeLocalIndex: -1, // Índice do item destacado
+
       // Variáveis antigas (manter compatibilidade)
       localSearch: '',
       nomeLocal: '',
@@ -875,6 +928,158 @@
           }
         });
       },
+
+      // === Autocomplete Nome do Local ===
+      async buscarNomesLocais() {
+        const termo = this.nomeLocalBusca.trim();
+
+        // Só busca se o código do local foi digitado
+        if (!this.codigoLocalDigitado) {
+          this.nomesLocaisLista = [];
+          this.highlightedNomeLocalIndex = -1;
+          return;
+        }
+
+        this.loadingNomesLocais = true;
+        try {
+          // Busca locais pelo código
+          const url = `/api/locais/buscar?termo=${encodeURIComponent(this.codigoLocalDigitado)}`;
+          const resp = await fetch(url);
+
+          if (resp.ok) {
+            let locais = await resp.json();
+
+            // Se há termo de busca, filtra pelo nome
+            if (termo) {
+              const termoLower = termo.toLowerCase();
+              locais = locais.filter(local => {
+                const nomeLocal = (local.LOCAL || local.delocal || '').toLowerCase();
+                return nomeLocal.includes(termoLower);
+              });
+            }
+
+            this.nomesLocaisLista = locais;
+            this.highlightedNomeLocalIndex = locais.length > 0 ? 0 : -1;
+
+            // Abrir dropdown se houver resultados
+            if (locais.length > 0) {
+              this.showNomeLocalDropdown = true;
+            }
+          }
+        } catch (e) {
+          console.error('Erro ao buscar nomes de locais:', e);
+        } finally {
+          this.loadingNomesLocais = false;
+        }
+      },
+
+      abrirDropdownNomesLocaisAoFocar() {
+        // Abre dropdown ao focar no input
+        if (!this.codigoLocalDigitado) {
+          return; // Não abre se não tiver código
+        }
+
+        this.showNomeLocalDropdown = true;
+
+        // Se o campo está vazio, busca todos os locais do código
+        if (this.nomeLocalBusca.trim() === '') {
+          this.buscarNomesLocais();
+        }
+      },
+
+      abrirDropdownNomesLocais(force = false) {
+        if (!this.codigoLocalDigitado) {
+          return; // Não abre se não tiver código
+        }
+
+        this.showNomeLocalDropdown = true;
+
+        // Se forçado (clique na lupa) ou campo vazio, busca todos do código
+        if (force || this.nomeLocalBusca.trim() === '') {
+          this.buscarNomesLocais();
+        }
+      },
+
+      selecionarNomeLocal(local) {
+        console.log('📍 [SELECIONAR NOME] Local selecionado:', local);
+
+        // Atualizar o campo de busca com o nome
+        this.nomeLocalBusca = local.LOCAL || local.delocal;
+
+        // Atualizar o local selecionado
+        this.localSelecionadoId = local.id;
+        this.formData.CDLOCAL = local.id;
+        this.localNome = local.LOCAL || local.delocal;
+
+        // Atualizar projeto associado
+        if (local.CDPROJETO) {
+          this.formData.CDPROJETO = local.CDPROJETO;
+          this.projetoAssociadoSearch = local.NOMEPROJETO ?
+            `${local.CDPROJETO} - ${local.NOMEPROJETO}` :
+            String(local.CDPROJETO);
+        }
+
+        // Fechar dropdown
+        this.showNomeLocalDropdown = false;
+        this.nomesLocaisLista = [];
+        this.highlightedNomeLocalIndex = -1;
+
+        console.log('✅ [SELECIONAR NOME] Atualizado:', {
+          nome: this.nomeLocalBusca,
+          id: this.localSelecionadoId,
+          cdlocal: this.formData.CDLOCAL,
+          projeto: this.projetoAssociadoSearch
+        });
+      },
+
+      selecionarNomeLocalEnter() {
+        if (!this.showNomeLocalDropdown) return;
+        if (this.highlightedNomeLocalIndex < 0 || this.highlightedNomeLocalIndex >= this.nomesLocaisLista.length) return;
+        this.selecionarNomeLocal(this.nomesLocaisLista[this.highlightedNomeLocalIndex]);
+      },
+
+      limparNomeLocal() {
+        this.nomeLocalBusca = '';
+        this.nomesLocaisLista = [];
+        this.highlightedNomeLocalIndex = -1;
+        this.showNomeLocalDropdown = false;
+
+        // Limpar também a seleção do local
+        this.localSelecionadoId = null;
+        this.formData.CDLOCAL = '';
+        this.localNome = '';
+        this.formData.CDPROJETO = '';
+        this.projetoAssociadoSearch = '';
+      },
+
+      navegarNomesLocais(delta) {
+        if (!this.showNomeLocalDropdown || this.nomesLocaisLista.length === 0) return;
+        const max = this.nomesLocaisLista.length - 1;
+
+        if (this.highlightedNomeLocalIndex === -1) {
+          this.highlightedNomeLocalIndex = 0;
+        } else {
+          this.highlightedNomeLocalIndex = Math.min(max, Math.max(0, this.highlightedNomeLocalIndex + delta));
+        }
+
+        // Scroll into view
+        this.$nextTick(() => {
+          const list = this.$root.querySelector('[x-show="showNomeLocalDropdown"]');
+          if (!list) return;
+          const items = list.querySelectorAll('[x-show="showNomeLocalDropdown"] > div');
+          const el = items[this.highlightedNomeLocalIndex];
+          if (el && typeof el.scrollIntoView === 'function') {
+            const parentRect = list.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            if (elRect.top < parentRect.top || elRect.bottom > parentRect.bottom) {
+              el.scrollIntoView({
+                block: 'nearest'
+              });
+            }
+          }
+        });
+      },
+
       // === Autocomplete Patrimônio ===
       async buscarPatrimonios() {
         const termo = this.patSearch.trim();
@@ -1388,9 +1593,11 @@
         if (codigo === '') {
           this.locaisEncontrados = [];
           this.localNome = '';
+          this.nomeLocalBusca = '';
           this.formData.CDLOCAL = '';
           this.formData.CDPROJETO = '';
           this.projetoAssociadoSearch = '';
+          this.localSelecionadoId = null;
           return;
         }
 
@@ -1399,29 +1606,49 @@
           if (!resp.ok) {
             this.locaisEncontrados = [];
             this.localNome = '';
+            this.nomeLocalBusca = '';
             return;
           }
 
           const locais = await resp.json();
           this.locaisEncontrados = locais;
 
-          // Se encontrou pelo menos 1, pegar o primeiro
-          if (locais.length > 0) {
+          // Se encontrou exatamente 1, selecionar automaticamente
+          if (locais.length === 1) {
             const primeiro = locais[0];
             this.localNome = primeiro.LOCAL || primeiro.delocal || '';
-            this.formData.CDLOCAL = primeiro.cdlocal;
+            this.nomeLocalBusca = this.localNome; // Preencher campo de nome
+            this.formData.CDLOCAL = primeiro.id; // Usar ID em vez de cdlocal
+            this.localSelecionadoId = primeiro.id;
+            this.formData.CDPROJETO = primeiro.CDPROJETO || '';
+            this.projetoAssociadoSearch = primeiro.CDPROJETO && primeiro.NOMEPROJETO ?
+              `${primeiro.CDPROJETO} - ${primeiro.NOMEPROJETO}` :
+              '';
+          } else if (locais.length > 1) {
+            // Múltiplos locais - limpar seleção e habilitar autocomplete
+            this.localNome = '';
+            this.nomeLocalBusca = '';
+            this.formData.CDLOCAL = '';
+            this.localSelecionadoId = null;
+
+            // Pegar projeto do primeiro (todos devem ter o mesmo)
+            const primeiro = locais[0];
             this.formData.CDPROJETO = primeiro.CDPROJETO || '';
             this.projetoAssociadoSearch = primeiro.CDPROJETO && primeiro.NOMEPROJETO ?
               `${primeiro.CDPROJETO} - ${primeiro.NOMEPROJETO}` :
               '';
           } else {
+            // Nenhum local encontrado
             this.localNome = '';
+            this.nomeLocalBusca = '';
             this.formData.CDLOCAL = '';
+            this.localSelecionadoId = null;
           }
         } catch (error) {
           console.error('Erro ao buscar local:', error);
           this.locaisEncontrados = [];
           this.localNome = '';
+          this.nomeLocalBusca = '';
         }
       },
 
@@ -1436,7 +1663,7 @@
        */
       buscarProjetoExistente() {
         const cdproj = String(this.novoProjeto.cdprojetoBusca || '').trim();
-        
+
         if (!cdproj) {
           console.log('🔍 [BUSCAR PROJETO] Campo vazio, limpando dados');
           // Cancelar timeout anterior se existir
@@ -1475,7 +1702,7 @@
         try {
           // Buscar na API de locais para ver se esse código de local já existe
           const responseLocal = await fetch(`/api/locais/buscar?termo=${encodeURIComponent(cdproj)}`);
-          
+
           if (!responseLocal.ok) {
             throw new Error(`Erro HTTP ${responseLocal.status}`);
           }
@@ -1485,31 +1712,31 @@
 
           // Procurar por um local que tenha código EXATAMENTE igual
           let localEncontrado = null;
-          
+
           if (Array.isArray(dataLocais)) {
             localEncontrado = dataLocais.find(l => String(l.cdlocal) === String(cdproj));
           }
 
           if (localEncontrado && localEncontrado.CDPROJETO) {
             console.log('✅ [BUSCAR PROJETO] Local encontrado com projeto associado:', localEncontrado);
-            
+
             // Este local já existe e tem um projeto associado
             // Preencher dados do projeto associado ao local
             this.novoProjeto.cdprojeto = localEncontrado.CDPROJETO;
             this.novoProjeto.nmProjeto = localEncontrado.NOMEPROJETO || 'Projeto não nomeado';
-            
+
             // Limpar campo de nome do local para o usuário preencher um NOVO nome
             this.novoProjeto.nomeLocal = '';
-            
+
             console.log('✅ [BUSCAR PROJETO] Projeto do local preenchido, focando no campo de nome do local');
-            
+
             // Focar no campo de nome do local
             this.$nextTick(() => {
               this.$refs.inputNomeLocal?.focus();
             });
           } else {
             console.log('ℹ️ [BUSCAR PROJETO] Local não encontrado - exibindo formulário para criar novo');
-            
+
             // Deixar os campos de criação aparecerem (mantém loading visível até aqui)
             this.novoProjeto.cdprojeto = '';
             this.novoProjeto.nmProjeto = '';
@@ -1517,7 +1744,7 @@
 
         } catch (error) {
           console.error('❌ [BUSCAR PROJETO] Erro:', error);
-          
+
           // Permitir criar novo (sem mensagem de erro)
           this.novoProjeto.cdprojeto = '';
           this.novoProjeto.nmProjeto = '';
@@ -1576,9 +1803,15 @@
         // 4. Abrir modal
         this.modalCriarProjetoOpen = true;
 
-        // 5. Focar no campo de código do local
+        // 5. Focar no campo de CÓDIGO DO PROJETO (busca)
         this.$nextTick(() => {
-          this.$refs.inputCodLocal?.focus();
+          const inputCodProjetoBusca = this.$refs.inputCodProjetoBusca;
+          if (inputCodProjetoBusca) {
+            inputCodProjetoBusca.focus();
+            console.log('✅ [MODAL CRIAR] Focus no input "Código do Projeto"');
+          } else {
+            console.warn('⚠️ [MODAL CRIAR] Input "Código do Projeto" não encontrado');
+          }
         });
 
         console.log('🟢 [MODAL CRIAR] Modal aberto com sucesso');
@@ -1613,6 +1846,17 @@
         this.erroCriacaoProjeto = '';
         this.salvandoCriacaoProjeto = false;
         this.carregandoProjeto = false;
+
+        // 🎯 AUTO-FOCUS NO CAMPO "NOME DO LOCAL" AO FECHAR MODAL
+        this.$nextTick(() => {
+          const nomeLocalInput = document.getElementById('NOMELOCAL_INPUT');
+          if (nomeLocalInput && !nomeLocalInput.disabled) {
+            nomeLocalInput.focus();
+            console.log('✅ [MODAL CRIAR] Focus no campo "Nome do Local"');
+          } else {
+            console.log('⚠️ [MODAL CRIAR] Campo "Nome do Local" desabilitado ou não encontrado');
+          }
+        });
 
         console.log('🔴 [MODAL CRIAR] Modal fechado');
       },
@@ -1652,7 +1896,7 @@
           }
 
           const cdlocal = String(this.novoProjeto.cdprojetoBusca || '').trim();
-          const cdprojeto = Number(this.novoProjeto.cdprojeto) || null;  // Manter como número, não string!
+          const cdprojeto = Number(this.novoProjeto.cdprojeto) || null; // Manter como número, não string!
 
           if (!cdlocal) {
             this.erroCriacaoProjeto = '❌ Código do projeto não encontrado';
@@ -1738,11 +1982,11 @@
             this.erroCriacaoProjeto = error.message || '❌ Erro ao criar local';
             this.salvandoCriacaoProjeto = false;
           }
-        } 
+        }
         // ===== CENÁRIO 2: Projeto NÃO ENCONTRADO (criar novo) =====
         else {
           const cdlocal = String(this.novoProjeto.cdlocal || '').trim();
-          const cdprojeto = Number(this.novoProjeto.cdprojeto) || null;  // Manter como número, não string!
+          const cdprojeto = Number(this.novoProjeto.cdprojeto) || null; // Manter como número, não string!
 
           // Validações
           if (!cdlocal) {
@@ -1934,7 +2178,7 @@
           // Para o dropdown final, filtrar apenas código exato
           // PRIORIZAR: Se há múltiplos, escolher o que tem projeto associado (descartando vazios)
           this.locaisEncontrados = todosLocais.filter(l => String(l.cdlocal) === codigo);
-          
+
           // Se há múltiplos com mesmo código, priorizar o que tem CDPROJETO preenchido
           if (this.locaisEncontrados.length > 1) {
             const comProjeto = this.locaisEncontrados.filter(l => l.CDPROJETO && String(l.CDPROJETO).trim() !== '');
@@ -2153,13 +2397,61 @@
 
 
       focusNext(currentElement) {
-        const focusable = Array.from(currentElement.closest('form').querySelectorAll('input:not([readonly]):not([disabled]), select:not([readonly]):not([disabled]), textarea:not([readonly]):not([disabled])'));
-        const currentIndex = focusable.indexOf(currentElement);
-        const nextElement = focusable[currentIndex + 1];
-        if (nextElement) {
-          nextElement.focus();
-        } else {
-          currentElement.closest('form').querySelector('button[type="submit"]')?.focus();
+        // Define a sequência exata de inputs segundo o fluxo definido
+        const sequencia = [
+          '#NUPATRIMONIO',      // 1. Nº Patrimônio
+          '#NUMOF',             // 2. Nº OC
+          '#NUSEQOBJ',          // 3. Código
+          // 4. Se código NÃO existir: Descrição do Código (DEOBJETO)
+          // 5. Observação (DEHISTORICO)
+          // 6. Botão + (abrindo espaço, com tabindex 6, pulará para o próximo)
+          '#CDLOCAL_INPUT',     // 7. Cód Local
+          '#NOMELOCAL_INPUT',   // 8. Nome Local
+          '#NMPLANTA',          // 9. Cód Termo
+          '#MARCA',             // 10. Marca
+          '#MODELO',            // 11. Modelo
+          '#SITUACAO',          // 12. Situação
+          '#matricula_busca',   // 13. Matrícula Responsável
+          '#DTAQUISICAO',       // 14. Data de Aquisição
+          '#DTBAIXA',           // 15. Data de Baixa
+        ];
+
+        const currentId = currentElement.id;
+        let currentIndex = sequencia.indexOf('#' + currentId);
+
+        // Lógica especial: se está em NUSEQOBJ (código) e código NÃO existe, pula para DEOBJETO
+        if (currentId === 'NUSEQOBJ' && !this.formData.NUSEQOBJ) {
+          const descricaoEl = document.getElementById('DEOBJETO');
+          if (descricaoEl && !descricaoEl.readOnly && this.isNovoCodigo) {
+            descricaoEl.focus();
+            return;
+          }
+        }
+
+        // Lógica: após DEHISTORICO (observação), pula para o botão + (que abrirá modal)
+        if (currentId === 'DEHISTORICO') {
+          const btnPlus = document.querySelector('button[title*="Criar novo local"]');
+          if (btnPlus) {
+            btnPlus.focus();
+            return;
+          }
+        }
+
+        // Buscar próximo elemento na sequência
+        if (currentIndex >= 0 && currentIndex < sequencia.length - 1) {
+          const nextId = sequencia[currentIndex + 1];
+          const nextElement = document.querySelector(nextId);
+          
+          if (nextElement && !nextElement.disabled && !nextElement.readOnly) {
+            nextElement.focus();
+            return;
+          }
+        }
+
+        // Se chegou ao final, focar no submit
+        const submitBtn = currentElement.closest('form')?.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.focus();
         }
       },
 
@@ -2415,6 +2707,18 @@
               console.log('🎉   Projeto:', projetoSalvo, '-', projetoNomeSalvo);
               console.log('🎉 ═══════════════════════════════════════════════════\n');
 
+              // ✅ AUTO-FOCUS NO CAMPO "NOME DO LOCAL" APÓS CRIAR
+              console.log('🟣 [FINAL] Auto-focando no campo "Nome do Local"');
+              this.$nextTick(() => {
+                const nomeLocalInput = document.getElementById('NOMELOCAL_INPUT');
+                if (nomeLocalInput) {
+                  nomeLocalInput.focus();
+                  console.log('✅ [FOCUS] Campo "Nome do Local" focado com sucesso');
+                } else {
+                  console.warn('⚠️ [FOCUS] Campo "Nome do Local" não encontrado');
+                }
+              });
+
               // ✅ DESATIVAR FLAG DE PROTEÇÃO APENAS NO SUCESSO
               console.log('🟣 [FINAL] Desativando processandoCriacaoLocal = false');
               this.processandoCriacaoLocal = false;
@@ -2627,6 +2931,22 @@
           } catch (e) {
             this.nomeLocal = '';
           }
+        });
+        // Watch para sincronizar quando locaisEncontrados muda (apenas 1 local = auto-preencher)
+        this.$watch('locaisEncontrados', (novoLista) => {
+          if (novoLista && novoLista.length === 1) {
+            const unico = novoLista[0];
+            // Auto-preencher nome quando houver apenas 1 local
+            this.nomeLocalBusca = unico.LOCAL || unico.delocal || '';
+            this.localNome = this.nomeLocalBusca;
+            this.localSelecionadoId = unico.id;
+            this.formData.CDLOCAL = unico.id;
+
+            // Desabilitar o input (já feito via :disabled no template)
+            console.log('✅ [AUTO-PREENCHER] 1 local encontrado:', this.nomeLocalBusca);
+          }
+        }, {
+          deep: false
         });
         // Se situação for BAIXA e não houver data, sugere hoje (apenas UX; ainda valida no backend)
         this.$watch('formData.SITUACAO', (val) => {

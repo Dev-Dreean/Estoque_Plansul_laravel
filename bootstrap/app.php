@@ -14,6 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'tela.access' => \App\Http\Middleware\CheckTelaAccess::class,
+            'can.delete' => \App\Http\Middleware\CheckDeletePermission::class,
+        ]);
+
+        // Exceções de CSRF para rotas API
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
         ]);
 
         // Confiar nos proxies da hospedagem (KingHost)

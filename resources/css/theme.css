@@ -1,14 +1,6 @@
-﻿/*
-  Refatorado: agora usamos apenas Tailwind (@apply) para estilização.
-  Mantemos as mesmas classes utilitárias usadas nas views, mas sem tokens CSS custom.
-  Ajuste de cores pode ser feito via tailwind.config.js (extend.colors) ou substituindo @apply.
-*/
+﻿/* Theme utilities */
 
 @layer utilities {
-  .bg-page {
-    @apply bg-gray-900 text-gray-100 dark:bg-gray-900;
-  }
-
   .bg-surface {
     @apply bg-gray-800;
   }

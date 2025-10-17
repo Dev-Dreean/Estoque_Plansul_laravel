@@ -24,7 +24,7 @@
                 </td>
                 <td class="px-6 py-4 flex items-center space-x-2">
                     <a href="{{ route('usuarios.edit', $usuario) }}" class="font-medium text-plansul-orange hover:underline">Editar</a>
-                    @if(Auth::id() !== $usuario->NUSEQUSUARIO)
+                    @if(Auth::user()->isSuperAdmin() && Auth::id() !== $usuario->NUSEQUSUARIO)
                     <form method="POST" action="{{ route('usuarios.destroy', $usuario) }}" onsubmit="return confirm('Tem certeza?');">
                         @csrf
                         @method('DELETE')

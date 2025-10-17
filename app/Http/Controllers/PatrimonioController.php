@@ -80,13 +80,15 @@ class PatrimonioController extends Controller
 
         $patrimonios = $query->paginate($perPage)->withQueryString();
 
-        // Busca os usuários para o filtro de admin
+        // Busca usuários para filtro (apenas Admin e Super Admin)
         $cadastradores = [];
-        if (Auth::user()->PERFIL === 'ADM') {
+        /** @var User $currentUser */
+        $currentUser = Auth::user();
+        if ($currentUser->isGod() || $currentUser->PERFIL === 'ADM') {
             $cadastradores = User::orderBy('NOMEUSER')->get(['CDMATRFUNCIONARIO', 'NOMEUSER']);
         }
 
-        // Busca os locais para o modal de relatório geral
+        // Busca locais para modal de relatório
         $locais = Tabfant::select('id as codigo', 'LOCAL as descricao')
             ->orderBy('descricao')
             ->get();
@@ -343,7 +345,7 @@ class PatrimonioController extends Controller
     {
         $termo = trim((string) $request->input('q', ''));
         $query = Tabfant::query();
-        
+
         // Se houver termo, filtrar por CDPROJETO ou NOMEPROJETO
         if ($termo !== '') {
             if (is_numeric($termo)) {
@@ -353,7 +355,7 @@ class PatrimonioController extends Controller
             }
         }
         // Se não houver termo, retorna TODOS (para preencher dropdown vazio)
-        
+
         $projetos = $query->orderBy('NOMEPROJETO')
             ->select(['CDPROJETO', 'NOMEPROJETO'])
             ->distinct()  // Evitar duplicatas
@@ -719,12 +721,12 @@ class PatrimonioController extends Controller
      */
     public function atribuir(Request $request): View
     {
-        // Query base para patrimônios
         $query = Patrimonio::query();
 
-        // Segurança: usuários não-ADM só visualizam patrimônios que eles cadastraram
+        // Filtra patrimônios por usuário (exceto Admin e Super Admin)
+        /** @var User|null $user */
         $user = Auth::user();
-        if ($user && ($user->PERFIL ?? null) !== 'ADM') {
+        if ($user && !$user->isGod() && ($user->PERFIL ?? null) !== 'ADM') {
             $nmLogin = (string) ($user->NMLOGIN ?? '');
             $nmUser  = (string) ($user->NOMEUSER ?? '');
             $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
@@ -783,13 +785,12 @@ class PatrimonioController extends Controller
      */
     public function atribuirCodigos(Request $request): View
     {
-        // Reutilizamos a lógica do método atribuir sem duplicar demasiadamente
-        // (poderíamos extrair para método privado, mas mantemos simples para clareza)
         $query = Patrimonio::query();
 
-        // Segurança: usuários não-ADM só visualizam patrimônios que eles cadastraram
+        // Filtra patrimônios por usuário (exceto Admin e Super Admin)
+        /** @var User|null $user */
         $user = Auth::user();
-        if ($user && ($user->PERFIL ?? null) !== 'ADM') {
+        if ($user && !$user->isGod() && ($user->PERFIL ?? null) !== 'ADM') {
             $nmLogin = (string) ($user->NMLOGIN ?? '');
             $nmUser  = (string) ($user->NOMEUSER ?? '');
             $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
@@ -1005,11 +1006,12 @@ class PatrimonioController extends Controller
 
     private function getPatrimoniosQuery(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
         $query = Patrimonio::with(['funcionario', 'local', 'creator']);
 
-        if ($user->PERFIL !== 'ADM') {
-            // Não-ADM: pode ver o que é responsável OU o que ele mesmo cadastrou (login ou nome), case-insensitive
+        // Filtra patrimônios por usuário (exceto Admin e Super Admin)
+        if (!$user->isGod() && $user->PERFIL !== 'ADM') {
             $nmLogin = (string) ($user->NMLOGIN ?? '');
             $nmUser  = (string) ($user->NOMEUSER ?? '');
             $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
@@ -1036,9 +1038,9 @@ class PatrimonioController extends Controller
         if ($request->filled('nmplanta')) {
             $query->where('NMPLANTA', $request->nmplanta);
         }
-        if ($request->filled('cadastrado_por') && $user->PERFIL === 'ADM') {
+        // Filtro por cadastrante (apenas Admin e Super Admin)
+        if ($request->filled('cadastrado_por') && ($user->isGod() || $user->PERFIL === 'ADM')) {
             if ($request->cadastrado_por === 'SISTEMA') {
-                // Registros importados / sem vínculo direto de usuário
                 $query->whereNull('CDMATRFUNCIONARIO');
             } else {
                 $query->where('CDMATRFUNCIONARIO', $request->cadastrado_por);
@@ -1409,7 +1411,7 @@ class PatrimonioController extends Controller
                 // Nota: tabfant não tem CDLOCAL, apenas LOCAL (nome do local)
                 // IMPORTANTE: Como tabfant tem incrementing=false, precisamos gerar o ID manualmente
                 $proximoId = (Tabfant::max('id') ?? 10000000) + 1;
-                
+
                 $novoTabfant = Tabfant::create([
                     'id' => $proximoId,  // ← CRÍTICO: Especificar ID manualmente!
                     'LOCAL' => $nomeLocal,  // Nome do local

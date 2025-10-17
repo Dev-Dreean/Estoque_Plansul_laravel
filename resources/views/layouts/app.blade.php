@@ -12,7 +12,7 @@
   <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
   <script>
-    // Early apply de tema: evita FOUC e aplica padrão conforme cor do sistema (Windows)
+    // Tema inicial
     (function() {
       try {
         var cookie = document.cookie.match(/(?:^|; )theme=([^;]+)/);
@@ -20,7 +20,7 @@
         var stored = localStorage.getItem('theme');
         var t = stored || cookieTheme;
         if (!t) {
-          // Sem preferência salva: usa preferência do sistema operacional
+          // Usa preferência do sistema se não houver armazenamento
           var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
           t = prefersDark ? 'dark' : 'light';
           try {
@@ -29,7 +29,8 @@
         }
         document.documentElement.setAttribute('data-theme', t);
       } catch (e) {
-        /* ignore */ }
+        /* ignore */
+      }
     })();
   </script>
 
@@ -86,15 +87,13 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Anti-autocomplete/autofill across the app (except login forms)
+    // Desativa autocomplete global (exceto login)
     (function() {
       const isLogin = /login|entrar/i.test(window.location.pathname);
-      if (isLogin) return; // allow browser to remember login if desired
+      if (isLogin) return;
 
-      // Set autocomplete off on all forms and inputs
-      document.querySelectorAll('form').forEach(f => {
-        f.setAttribute('autocomplete', 'off');
-      });
+      // Desativa autocomplete e correções automáticas
+      document.querySelectorAll('form').forEach(f => f.setAttribute('autocomplete', 'off'));
       document.querySelectorAll('input, textarea, select').forEach(el => {
         el.setAttribute('autocomplete', 'off');
         el.setAttribute('autocapitalize', 'off');
@@ -102,20 +101,15 @@
         el.setAttribute('spellcheck', 'false');
       });
 
-      // For Chromium-based browsers that ignore autocomplete off in some cases,
-      // periodically reset input values if the browser tries to restore them on bfcache.
+      // Evita restauração indesejada de valores em navegadores que usam bfcache
       window.addEventListener('pageshow', (e) => {
         if (e.persisted) {
           document.querySelectorAll('input:not([type="hidden"]), textarea').forEach(el => {
-            if (el.defaultValue && el.value !== '') {
-              // clear only if it looks like browser restored the value
-              el.value = '';
-            }
+            if (el.defaultValue && el.value !== '') el.value = '';
           });
         }
       });
 
-      // Prevent back-forward cache from restoring form values in some browsers
       window.addEventListener('unload', function() {});
     })();
   </script>

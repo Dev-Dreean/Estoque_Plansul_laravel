@@ -71,8 +71,8 @@
                                         </td>
                                         <td class="px-6 py-4 flex items-center space-x-2">
                                             <a href="{{ route('usuarios.edit', $usuario) }}" class="font-medium text-plansul-orange hover:underline">Editar</a>
-                                            @if(Auth::id() !== $usuario->NUSEQUSUARIO)
-                                            <form method="POST" action="{{ route('usuarios.destroy', $usuario) }}" onsubmit="return confirm('Tem certeza?');">
+                                            @if(Auth::user()->isSuperAdmin() && Auth::id() !== $usuario->NUSEQUSUARIO)
+                                            <form method="POST" action="{{ route('usuarios.destroy', $usuario) }}" onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="font-medium text-red-600 hover:underline">Deletar</button>

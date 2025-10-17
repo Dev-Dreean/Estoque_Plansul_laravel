@@ -1,5 +1,5 @@
 <?php
-// app/Models/Patrimonio.php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -40,7 +40,7 @@ class Patrimonio extends Model
         'FLCONFERIDO',
         'NUMOF',
         'CODOBJETO',
-        'NMPLANTA',
+        'NMPLANTA'
     ];
 
     protected $casts = [
@@ -51,7 +51,6 @@ class Patrimonio extends Model
         'DTLAUDO'     => 'date',
     ];
 
-    // ALTERAÇÃO AQUI: A relação agora é com Funcionario
     public function funcionario(): BelongsTo
     {
         return $this->belongsTo(Funcionario::class, 'CDMATRFUNCIONARIO', 'CDMATRFUNCIONARIO');
@@ -62,16 +61,16 @@ class Patrimonio extends Model
         return $this->belongsTo(Tabfant::class, 'CDLOCAL', 'id');
     }
 
-    /**
-     * Usuário (sistema) que realizou o cadastro.
-     * O campo 'USUARIO' na tabela armazena o login (NMLOGIN). Relacionamos via NMLOGIN -> NMLOGIN.
-     */
+    public function projeto()
+    {
+        return $this->belongsTo(Tabfant::class, 'CDPROJETO', 'CDPROJETO');
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'USUARIO', 'NMLOGIN');
     }
 
-    // Nome legível de quem cadastrou (usa relação creator, ou fallback resolvido via cache simples)
     public function getCadastradoPorNomeAttribute(): string
     {
         if ($this->relationLoaded('creator') && $this->creator && $this->creator->NOMEUSER) {
@@ -86,7 +85,6 @@ class Patrimonio extends Model
         return 'SISTEMA';
     }
 
-    // Datas formatadas PT-BR (evita Carbon::parse no Blade)
     public function getDtaquisicaoPtBrAttribute(): ?string
     {
         return $this->DTAQUISICAO ? $this->DTAQUISICAO->format('d/m/Y') : null;

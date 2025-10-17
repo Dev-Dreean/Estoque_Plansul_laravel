@@ -30,15 +30,29 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                             </svg>
                         </a>
+                        @if(Auth::user()->isSuperAdmin())
                         <form action="{{ route('projetos.destroy', $local) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja apagar este local?');" onclick="event.stopPropagation();">
                             @csrf
                             @method('DELETE')
+                            @if(request('search'))
+                            <input type="hidden" name="search" value="{{ request('search') }}">
+                            @endif
+                            @if(request('cdprojeto'))
+                            <input type="hidden" name="cdprojeto" value="{{ request('cdprojeto') }}">
+                            @endif
+                            @if(request('local'))
+                            <input type="hidden" name="local" value="{{ request('local') }}">
+                            @endif
+                            @if(request('tag'))
+                            <input type="hidden" name="tag" value="{{ request('tag') }}">
+                            @endif
                             <button type="submit" title="Apagar" class="text-red-600 dark:text-red-500">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                             </button>
                         </form>
+                        @endif
                     </div>
                 </td>
             </tr>

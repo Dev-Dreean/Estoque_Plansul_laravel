@@ -1,5 +1,12 @@
 <?php
-// DENTRO DE routes/web.php
+
+/**
+ * Application web routes
+ *
+ * This file defines HTTP routes for the application, organized into logical
+ * groups. Routes are loaded by the RouteServiceProvider within a group
+ * that contains the "web" middleware group.
+ */
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PatrimonioController;
@@ -55,12 +62,12 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
 
     // MOVI TODAS AS SUAS ROTAS PRINCIPAIS PARA DENTRO DESTE GRUPO
 
-    // Rota do Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
+    // Rota do Dashboard (NUSEQTELA: 1001)
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('tela.access:1001');
+    Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data')->middleware('tela.access:1001');
 
-    // Rotas do CRUD de Patrimônios e suas APIs
-    Route::resource('patrimonios', PatrimonioController::class);
+    // Rotas do CRUD de Patrimônios e suas APIs (NUSEQTELA: 1000)
+    Route::resource('patrimonios', PatrimonioController::class)->middleware(['tela.access:1000', 'can.delete']);
     Route::get('/patrimonios/lookup-codigo', [App\Http\Controllers\PatrimonioController::class, 'lookupCodigo'])->name('patrimonios.lookupCodigo');
     Route::resource('patrimonios', App\Http\Controllers\PatrimonioController::class);
     Route::get('/patrimonios/atribuir/termo', [PatrimonioController::class, 'atribuir'])->name('patrimonios.atribuir');
@@ -79,8 +86,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // Nova rota: pesquisa de funcionários
     Route::get('/api/funcionarios/pesquisar', [\App\Http\Controllers\FuncionarioController::class, 'pesquisar'])->name('api.funcionarios.pesquisar');
 
-    // Rotas de Projetos e suas APIs
-    Route::resource('projetos', ProjetoController::class)->middleware('admin');
+    // Rotas de Projetos e suas APIs (NUSEQTELA: 1003 - Cadastro de Projetos)
+    Route::resource('projetos', ProjetoController::class)->middleware(['admin', 'tela.access:1003', 'can.delete']);
     Route::get('projetos/{projeto}/duplicar', [ProjetoController::class, 'duplicate'])->name('projetos.duplicate')->middleware('admin');
     Route::get('/api/locais/lookup', [ProjetoController::class, 'lookup'])->name('projetos.lookup')->middleware('admin');
     Route::get('/api/projetos/nome/{codigo}', function ($codigo) {
@@ -93,8 +100,11 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::post('/api/projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarProjeto'])->name('api.projetos.criar');
     Route::post('/api/projetos/criar-associado', [App\Http\Controllers\PatrimonioController::class, 'criarProjetoAssociado'])->name('api.projetos.criar-associado');
     Route::get('/api/locais/buscar', [App\Http\Controllers\PatrimonioController::class, 'buscarLocais'])->name('api.locais.buscar');
-    Route::post('/api/locais/criar', [App\Http\Controllers\PatrimonioController::class, 'criarNovoLocal'])->name('api.locais.criar');
+    Route::get('/api/locais/debug', [App\Http\Controllers\PatrimonioController::class, 'debugLocaisPorCodigo'])->name('api.locais.debug');
+    Route::post('/api/locais/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalVinculadoProjeto'])->name('api.locais.criar');
+    Route::post('/api/locais/criar-novo', [App\Http\Controllers\PatrimonioController::class, 'criarNovoLocal'])->name('api.locais.criar-novo');
     Route::post('/api/locais-projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalProjeto'])->name('api.locais-projetos.criar');
+    Route::post('/api/locais-projetos/criar-simples', [ProjetoController::class, 'criarSimples'])->name('api.locais-projetos.criar-simples');
     Route::post('/api/locais/criar-com-projeto', [App\Http\Controllers\PatrimonioController::class, 'criarLocalComProjeto'])->name('api.locais.criar-com-projeto');
     Route::get('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'getLocaisPorProjeto'])->name('api.locais');
     Route::post('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'criarLocalPorProjeto'])->name('api.locais.criar-por-projeto');
@@ -109,9 +119,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Rotas de Usuários (Admin)
+    // Rotas de Usuários (Admin - NUSEQTELA: 1002 - Cadastro de Usuário)
     Route::middleware('admin')->group(function () {
-        Route::resource('usuarios', UserController::class);
+        Route::resource('usuarios', UserController::class)->middleware(['tela.access:1002', 'can.delete']);
         Route::get('usuarios/confirmacao', [UserController::class, 'confirmacao'])->name('usuarios.confirmacao');
         // APIs auxiliares do formulário de usuário
         Route::get('/api/usuarios/por-matricula', [UserController::class, 'porMatricula'])->name('api.usuarios.porMatricula');
@@ -164,4 +174,13 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
             'html_data_theme' => null,
         ]);
     })->name('debug.theme');
+
+    // Rotas protegidas para Cadastro de Tela (apenas administradores)
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/cadastro-tela', [\App\Http\Controllers\CadastroTelaController::class, 'index'])->name('cadastro-tela.index');
+        Route::post('/cadastro-tela', [\App\Http\Controllers\CadastroTelaController::class, 'store'])->name('cadastro-tela.store');
+        Route::post('/cadastro-tela/show-form/{nome}', [\App\Http\Controllers\CadastroTelaController::class, 'showForm'])->name('cadastro-tela.showForm');
+        Route::post('/cadastro-tela/gerar-vincular/{nome}', [\App\Http\Controllers\CadastroTelaController::class, 'gerarVincular'])->name('cadastro-tela.gerarVincular');
+        Route::post('/cadastro-tela/vincular-todas', [\App\Http\Controllers\CadastroTelaController::class, 'vincularTodas'])->name('cadastro-tela.vincularTodas');
+    });
 });

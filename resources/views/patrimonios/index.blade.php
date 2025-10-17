@@ -332,11 +332,11 @@
                   </td>
                   <td class="px-4 py-2">{{ $patrimonio->cadastrado_por_nome }}</td>
 
-                  @if(Auth::user()->PERFIL === 'ADM')
+                  @if(Auth::user()->isAdmin())
                   <td class="px-2 py-2">
                     <div class="flex items-center gap-2">
-                      @can('delete', $patrimonio)
-                      <form method="POST" action="{{ route('patrimonios.destroy', $patrimonio) }}" onsubmit="return confirm('Tem certeza que deseja deletar este item?');" @click.stop>
+                      @if(Auth::user()->isSuperAdmin())
+                      <form method="POST" action="{{ route('patrimonios.destroy', $patrimonio) }}" onsubmit="return confirm('Tem certeza que deseja excluir este patrimônio?');" @click.stop>
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="text-red-600 dark:text-red-500 hover:text-red-700" title="Excluir" aria-label="Excluir patrimônio">
@@ -349,7 +349,7 @@
                           </svg>
                         </button>
                       </form>
-                      @endcan
+                      @endif
                     </div>
                   </td>
                   @endif
@@ -357,7 +357,7 @@
                 @empty
                 <tr>
                   {{-- Corrigindo o colspan para o número correto de colunas --}}
-                  <td colspan="{{ Auth::user()->PERFIL === 'ADM' ? 16 : 15 }}"
+                  <td colspan="{{ Auth::user()->isAdmin() ? 16 : 15 }}"
                     class="px-6 py-4 text-center">Nenhum patrimônio encontrado para os
                     filtros atuais.</td>
                 </tr>
