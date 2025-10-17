@@ -1652,7 +1652,7 @@
           }
 
           const cdlocal = String(this.novoProjeto.cdprojetoBusca || '').trim();
-          const cdprojeto = String(this.novoProjeto.cdprojeto || '').trim();
+          const cdprojeto = Number(this.novoProjeto.cdprojeto) || null;  // Manter como número, não string!
 
           if (!cdlocal) {
             this.erroCriacaoProjeto = '❌ Código do projeto não encontrado';
@@ -1742,7 +1742,7 @@
         // ===== CENÁRIO 2: Projeto NÃO ENCONTRADO (criar novo) =====
         else {
           const cdlocal = String(this.novoProjeto.cdlocal || '').trim();
-          const cdprojeto = String(this.novoProjeto.cdprojeto || '').trim();
+          const cdprojeto = Number(this.novoProjeto.cdprojeto) || null;  // Manter como número, não string!
 
           // Validações
           if (!cdlocal) {
