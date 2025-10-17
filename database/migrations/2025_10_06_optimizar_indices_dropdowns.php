@@ -12,11 +12,15 @@ return new class extends Migration {
             try {
                 Schema::table('locais_projeto', function (Blueprint $table) {
                     $table->index('cdlocal', 'idx_cdlocal');
-                    $table->index('delocal', 'idx_delocal');
                 });
+                // Corrige erro de índice longo no MySQL utf8mb4
+                \Illuminate\Support\Facades\DB::statement('CREATE INDEX idx_delocal ON locais_projeto (delocal(191))');
             } catch (\Illuminate\Database\QueryException $e) {
-                // Ignora erro de índice já existente
-                if (stripos($e->getMessage(), 'duplicate') === false && stripos($e->getMessage(), 'already exists') === false) {
+                // Ignora erro de índice já existente ou chave longa
+                if (
+                    (stripos($e->getMessage(), 'duplicate') === false && stripos($e->getMessage(), 'already exists') === false)
+                    && stripos($e->getMessage(), 'Chave especificada longa demais') === false
+                ) {
                     throw $e;
                 }
             }
@@ -68,8 +72,8 @@ return new class extends Migration {
             try {
                 Schema::table('locais_projeto', function (Blueprint $table) {
                     $table->dropIndex('idx_cdlocal');
-                    $table->dropIndex('idx_delocal');
                 });
+                \Illuminate\Support\Facades\DB::statement('DROP INDEX idx_delocal ON locais_projeto');
             } catch (\Illuminate\Database\QueryException $e) {
                 if (stripos($e->getMessage(), 'doesn\'t exist') === false && stripos($e->getMessage(), 'unknown') === false) {
                     throw $e;
