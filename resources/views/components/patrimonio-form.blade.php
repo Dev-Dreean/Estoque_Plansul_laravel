@@ -99,7 +99,7 @@
             </button>
           </div>
         </div>
-        <div x-show="showCodigoDropdown" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm">
+        <div x-show="showCodigoDropdown" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm" style="max-height: 256px; top: auto; bottom: auto;">
           <template x-if="loadingCodigos">
             <div class="p-2 text-gray-500">Buscando...</div>
           </template>
@@ -395,18 +395,6 @@
 
         {{-- ✅ Quando projeto foi encontrado: mostrar campos desabilitados + campo de nome --}}
         <div x-show="novoProjeto.cdprojeto && !carregandoProjeto" class="space-y-4" x-effect="if(novoProjeto.cdprojeto && $refs.inputNomeLocal){ $nextTick(() => $refs.inputNomeLocal.focus()); }">
-          {{-- Código do Local (desabilitado) --}}
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Código do Local
-            </label>
-            <input type="text"
-              :value="novoProjeto.cdprojetoBusca"
-              disabled
-              class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed" />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Código identificado automaticamente</p>
-          </div>
-
           {{-- Projeto Associado (desabilitado) --}}
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -417,6 +405,18 @@
               disabled
               class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed" />
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Projeto vinculado ao local (identificado automaticamente)</p>
+          </div>
+
+          {{-- Código do Local (desabilitado) --}}
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Código do Local
+            </label>
+            <input type="text"
+              :value="novoProjeto.cdprojetoBusca"
+              disabled
+              class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed" />
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Código identificado automaticamente</p>
           </div>
 
           {{-- Nome do Local (ÚNICO editável) --}}
@@ -443,6 +443,21 @@
             </p>
           </div>
 
+          {{-- Projeto Associado (SELECT) --}}
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Projeto Associado *
+            </label>
+            <select x-model="novoProjeto.cdprojeto"
+              class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md">
+              <option value="">Selecione um projeto</option>
+              <template x-for="proj in projetosExistentes" :key="proj.CDPROJETO">
+                <option :value="proj.CDPROJETO" x-text="proj.CDPROJETO + ' - ' + proj.NOMEPROJETO"></option>
+              </template>
+            </select>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Projeto ao qual este local será associado</p>
+          </div>
+
           {{-- Código do Projeto --}}
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -465,21 +480,6 @@
               placeholder="Ex: Almoxarifado Central"
               class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Nome descritivo do local</p>
-          </div>
-
-          {{-- Projeto Associado --}}
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Projeto Associado *
-            </label>
-            <select x-model="novoProjeto.cdprojeto"
-              class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md">
-              <option value="">Selecione um projeto</option>
-              <template x-for="proj in projetosExistentes" :key="proj.CDPROJETO">
-                <option :value="proj.CDPROJETO" x-text="proj.CDPROJETO + ' - ' + proj.NOMEPROJETO"></option>
-              </template>
-            </select>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Projeto ao qual este local será associado</p>
           </div>
         </div>
       </div>
