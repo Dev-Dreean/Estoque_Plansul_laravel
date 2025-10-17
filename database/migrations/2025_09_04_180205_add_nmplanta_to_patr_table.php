@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('patr', function (Blueprint $table) {
-            // Adiciona a nova coluna para o Código do Termo
-            // Será do tipo INTEGER, pode ser nulo, e adicionado após a coluna CDPROJETO
-            $table->integer('NMPLANTA')->nullable()->after('CDPROJETO');
-        });
+        if (!Schema::hasColumn('patr', 'NMPLANTA')) {
+            Schema::table('patr', function (Blueprint $table) {
+                // Adiciona a nova coluna para o Código do Termo
+                // Será do tipo INTEGER, pode ser nulo, e adicionado após a coluna CDPROJETO
+                $table->integer('NMPLANTA')->nullable()->after('CDPROJETO');
+            });
+        }
     }
 
     /**
