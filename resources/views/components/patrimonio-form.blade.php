@@ -2983,7 +2983,7 @@
           await this.buscarProjetoELocais();
           if (targetCdLocal) this.formData.CDLOCAL = targetCdLocal;
 
-          // Carregar nome do projeto associado para exibição
+          // Carregar nome do projeto associado para exibição (NOVO: também preencher projetoSearch)
           try {
             const r = await fetch(`/api/projetos/pesquisar?q=${this.formData.CDPROJETO}`);
             if (r.ok) {
@@ -2991,6 +2991,8 @@
               const projeto = projetos.find(p => String(p.CDPROJETO) === String(this.formData.CDPROJETO));
               if (projeto) {
                 this.projetoAssociadoSearch = `${projeto.CDPROJETO} - ${projeto.NOMEPROJETO}`;
+                // 🆕 Preencher o campo projetoSearch para o novo dropdown
+                this.projetoSearch = `${projeto.CDPROJETO} - ${projeto.NOMEPROJETO}`;
               }
             }
           } catch (e) {
