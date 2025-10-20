@@ -22,11 +22,12 @@
         <input id="NUPATRIMONIO"
           x-model="patSearch"
           @focus="abrirDropdownPatrimonios()"
-          @blur.debounce.150ms="showPatDropdown=false"
-          @input.debounce.300ms="buscarPatrimonios()"
+          @blur.debounce.150ms="(function(){ showPatDropdown=false; buscarPatrimonio(); })()"
+          @input.debounce.300ms="(function(){ const t=String(patSearch||'').trim(); if(t.length>0){ showPatDropdown=true; buscarPatrimonios(); } else { showPatDropdown=false; patrimoniosLista=[]; highlightedPatIndex=-1; } })()"
           @keydown.down.prevent="navegarPatrimonios(1)"
           @keydown.up.prevent="navegarPatrimonios(-1)"
           @keydown.enter.prevent="selecionarPatrimonioEnter()"
+          @keydown.tab.prevent="selecionarPatrimonioTab($event)"
           @keydown.escape.prevent="showPatDropdown=false"
           name="NUPATRIMONIO"
           type="text"
@@ -79,6 +80,7 @@
           @keydown.down.prevent="navegarCodigos(1)"
           @keydown.up.prevent="navegarCodigos(-1)"
           @keydown.enter.prevent="selecionarCodigoEnter()"
+          @keydown.tab.prevent="selecionarCodigoTab($event)"
           @keydown.escape.prevent="showCodigoDropdown=false"
           type="text"
           tabindex="3"
@@ -159,6 +161,7 @@
           @keydown.down.prevent="navegarProjetos(1)"
           @keydown.up.prevent="navegarProjetos(-1)"
           @keydown.enter.prevent="selecionarProjetoEnter()"
+          @keydown.tab.prevent="selecionarProjetoTab($event)"
           @keydown.escape.prevent="showProjetoDropdown=false"
           type="text"
           tabindex="6"
@@ -399,6 +402,7 @@
           @keydown.down.prevent="navegarUsuarios(1)"
           @keydown.up.prevent="navegarUsuarios(-1)"
           @keydown.enter.prevent="selecionarUsuarioEnter()"
+          @keydown.tab.prevent="selecionarUsuarioTab($event)"
           @keydown.escape.prevent="showUserDropdown=false"
           @blur="normalizarMatriculaBusca()"
           type="text"
@@ -732,8 +736,14 @@
         MARCA: (config.old?.MARCA ?? config.patrimonio?.MARCA) || '',
         MODELO: (config.old?.MODELO ?? config.patrimonio?.MODELO) || '',
         SITUACAO: (config.old?.SITUACAO ?? config.patrimonio?.SITUACAO) || 'EM USO',
-        DTAQUISICAO: (config.old?.DTAQUISICAO ?? (config.patrimonio?.DTAQUISICAO ? config.patrimonio.DTAQUISICAO.split(' ')[0] : '')),
-        DTBAIXA: (config.old?.DTBAIXA ?? (config.patrimonio?.DTBAIXA ? config.patrimonio.DTBAIXA.split(' ')[0] : '')),
+        DTAQUISICAO: (config.old?.DTAQUISICAO ?? (config.patrimonio?.DTAQUISICAO ? (() => {
+          const d = config.patrimonio.DTAQUISICAO;
+          return d.includes('T') ? d.split('T')[0] : (d.includes(' ') ? d.split(' ')[0] : d);
+        })() : '')),
+        DTBAIXA: (config.old?.DTBAIXA ?? (config.patrimonio?.DTBAIXA ? (() => {
+          const d = config.patrimonio.DTBAIXA;
+          return d.includes('T') ? d.split('T')[0] : (d.includes(' ') ? d.split(' ')[0] : d);
+        })() : '')),
         CDMATRFUNCIONARIO: (config.old?.CDMATRFUNCIONARIO ?? config.patrimonio?.CDMATRFUNCIONARIO) || '',
       },
       // == ESTADO DA UI ==
@@ -886,6 +896,49 @@
           textarea.style.height = '32px';
         }
       },
+      selecionarDropdownInteligente(nomeDropdown, nomeSearch, nomeLista, callbackSelecao) {
+        /**
+         * Função genérica para selecionar automaticamente item do dropdown ao pressionar Tab
+         * @param {string} nomeDropdown - Propriedade que controla visibilidade (ex: 'showCodigoDropdown')
+         * @param {string} nomeSearch - Propriedade do termo digitado (ex: 'descricaoSearch')
+         * @param {string} nomeLista - Propriedade da lista de resultados (ex: 'codigosLista')
+         * @param {function} callbackSelecao - Função callback para selecionar o item
+         */
+        const termo = this[nomeSearch]?.toString().trim();
+        if (!termo) return false;
+
+        // Se há resultados na lista, seleciona o primeiro (mais relevante)
+        if (this[nomeLista] && this[nomeLista].length > 0) {
+          callbackSelecao(this[nomeLista][0]);
+          this[nomeDropdown] = false;
+          return true;
+        }
+
+        return false;
+      },
+      formatarData(valor) {
+        /**
+         * Converte data ISO (2011-12-11T02:00:00.000000Z) para formato yyyy-MM-dd
+         */
+        if (!valor) return '';
+
+        // Se já está no formato correto (yyyy-MM-dd), retorna
+        if (/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+          return valor;
+        }
+
+        // Tenta extrair a data de formatos ISO (2011-12-11T02:00:00.000000Z)
+        if (valor.includes('T')) {
+          return valor.split('T')[0];
+        }
+
+        // Tenta com espaço (2011-12-11 02:00:00)
+        if (valor.includes(' ')) {
+          return valor.split(' ')[0];
+        }
+
+        return valor;
+      },
       openSearchModal() {
         this.searchModalOpen = true;
         this.search();
@@ -920,8 +973,12 @@
             const data = await response.json();
             Object.keys(this.formData).forEach(key => {
               if (data.hasOwnProperty(key) && data[key] !== null) {
-                if (key.startsWith('DT')) this.formData[key] = data[key].split(' ')[0];
-                else this.formData[key] = data[key];
+                // Se é campo de data, formata corretamente
+                if (key.startsWith('DT')) {
+                  this.formData[key] = this.formatarData(data[key]);
+                } else {
+                  this.formData[key] = data[key];
+                }
               }
             });
             // Ajustes específicos de mapeamento entre API e formData atual
@@ -939,6 +996,18 @@
               await this.buscarProjetoELocais();
               this.formData.CDLOCAL = data.CDLOCAL;
             }
+
+            // Fecha o dropdown do patrimônio
+            this.showPatDropdown = false;
+
+            // Pula para o campo de Observações quando patrimônio é preenchido com sucesso
+            this.$nextTick(() => {
+              try {
+                document.getElementById('DEHISTORICO')?.focus();
+              } catch (e) {
+                console.warn('Erro ao focar campo de observações:', e);
+              }
+            });
           } else {
             const numPatrimonio = this.formData.NUPATRIMONIO;
             Object.keys(this.formData).forEach(key => {
@@ -1098,6 +1167,59 @@
         if (this.highlightedUserIndex < 0 || this.highlightedUserIndex >= this.usuarios.length) return;
         this.selecionarUsuario(this.usuarios[this.highlightedUserIndex]);
       },
+      selecionarUsuarioTab(event) {
+        const termo = this.userSearch.trim();
+        if (termo === '') return;
+
+        if (this.usuarios && this.usuarios.length > 0) {
+          this.selecionarUsuario(this.usuarios[0]);
+          this.$nextTick(() => {
+            try {
+              event.target?.form?.querySelector('[tabindex="14"]')?.focus();
+            } catch (e) {
+              console.warn('Erro ao focar próximo campo:', e);
+            }
+          });
+          return;
+        }
+
+        if (this.loadingUsers) {
+          setTimeout(() => {
+            this.selecionarUsuarioTab(event);
+          }, 150);
+          return;
+        }
+
+        // Força a busca agora
+        this.loadingUsers = true;
+        fetch(`/api/funcionarios/pesquisar?q=${encodeURIComponent(termo)}`)
+          .then(resp => {
+            if (resp.ok) return resp.json();
+            throw new Error('Erro na busca');
+          })
+          .then(data => {
+            this.usuarios = data || [];
+            if (this.usuarios.length > 0) {
+              this.selecionarUsuario(this.usuarios[0]);
+            }
+            try {
+              event.target?.form?.querySelector('[tabindex="14"]')?.focus();
+            } catch (e) {
+              console.warn('Erro ao focar próximo campo:', e);
+            }
+          })
+          .catch(e => {
+            console.error('Falha ao buscar usuários:', e);
+            try {
+              event.target?.form?.querySelector('[tabindex="14"]')?.focus();
+            } catch (err) {
+              console.warn('Erro ao focar próximo campo:', err);
+            }
+          })
+          .finally(() => {
+            this.loadingUsers = false;
+          });
+      },
       limparUsuario() {
         this.formData.CDMATRFUNCIONARIO = '';
         this.userSelectedName = '';
@@ -1183,6 +1305,59 @@
         if (!this.showProjetoDropdown) return;
         if (this.highlightedProjetoIndex < 0 || this.highlightedProjetoIndex >= this.projetosDisponiveisList.length) return;
         this.selecionarProjeto(this.projetosDisponiveisList[this.highlightedProjetoIndex]);
+      },
+      selecionarProjetoTab(event) {
+        const termo = this.projetoSearch.trim();
+        if (termo === '') return;
+
+        if (this.projetosDisponiveisList && this.projetosDisponiveisList.length > 0) {
+          this.selecionarProjeto(this.projetosDisponiveisList[0]);
+          this.$nextTick(() => {
+            try {
+              event.target?.form?.querySelector('[tabindex="7"]')?.focus();
+            } catch (e) {
+              console.warn('Erro ao focar próximo campo:', e);
+            }
+          });
+          return;
+        }
+
+        if (this.loadingProjetos) {
+          setTimeout(() => {
+            this.selecionarProjetoTab(event);
+          }, 150);
+          return;
+        }
+
+        // Força a busca agora
+        this.loadingProjetos = true;
+        fetch(`/api/projetos/pesquisar?q=${encodeURIComponent(termo)}`)
+          .then(resp => {
+            if (resp.ok) return resp.json();
+            throw new Error('Erro na busca');
+          })
+          .then(data => {
+            this.projetosDisponiveisList = data || [];
+            if (this.projetosDisponiveisList.length > 0) {
+              this.selecionarProjeto(this.projetosDisponiveisList[0]);
+            }
+            try {
+              event.target?.form?.querySelector('[tabindex="7"]')?.focus();
+            } catch (e) {
+              console.warn('Erro ao focar próximo campo:', e);
+            }
+          })
+          .catch(e => {
+            console.error('Falha ao buscar projetos:', e);
+            try {
+              event.target?.form?.querySelector('[tabindex="7"]')?.focus();
+            } catch (err) {
+              console.warn('Erro ao focar próximo campo:', err);
+            }
+          })
+          .finally(() => {
+            this.loadingProjetos = false;
+          });
       },
       limparProjeto() {
         this.formData.CDPROJETO = '';
@@ -1580,6 +1755,69 @@
         if (!this.showCodigoDropdown) return;
         if (this.highlightedCodigoIndex < 0 || this.highlightedCodigoIndex >= this.codigosLista.length) return;
         this.selecionarCodigo(this.codigosLista[this.highlightedCodigoIndex]);
+      },
+      selecionarCodigoTab(event) {
+        const termo = this.descricaoSearch.trim();
+        if (termo === '') {
+          return;
+        }
+
+        // Se já há resultados na lista, seleciona o primeiro
+        if (this.codigosLista && this.codigosLista.length > 0) {
+          this.selecionarCodigo(this.codigosLista[0]);
+          this.$nextTick(() => {
+            try {
+              event.target?.form?.querySelector('[tabindex="4"]')?.focus();
+            } catch (e) {
+              console.warn('Erro ao focar próximo campo:', e);
+            }
+          });
+          return;
+        }
+
+        // Se está carregando, aguarda e tenta novamente
+        if (this.loadingCodigos) {
+          setTimeout(() => {
+            this.selecionarCodigoTab(event);
+          }, 150);
+          return;
+        }
+
+        // Se não há resultados mas também não está carregando, força a busca agora
+        this.loadingCodigos = true;
+        fetch(`/api/codigos/pesquisar?q=${encodeURIComponent(termo)}`)
+          .then(resp => {
+            if (resp.ok) return resp.json();
+            throw new Error('Erro na busca');
+          })
+          .then(data => {
+            this.codigosLista = data || [];
+            if (this.codigosLista.length > 0) {
+              this.selecionarCodigo(this.codigosLista[0]);
+              try {
+                event.target?.form?.querySelector('[tabindex="4"]')?.focus();
+              } catch (e) {
+                console.warn('Erro ao focar próximo campo:', e);
+              }
+            } else {
+              try {
+                event.target?.form?.querySelector('[tabindex="4"]')?.focus();
+              } catch (e) {
+                console.warn('Erro ao focar próximo campo:', e);
+              }
+            }
+          })
+          .catch(e => {
+            console.error('Falha ao buscar códigos:', e);
+            try {
+              event.target?.form?.querySelector('[tabindex="4"]')?.focus();
+            } catch (err) {
+              console.warn('Erro ao focar próximo campo:', err);
+            }
+          })
+          .finally(() => {
+            this.loadingCodigos = false;
+          });
       },
       limparCodigo() {
         this.formData.NUSEQOBJ = '';
@@ -2866,6 +3104,61 @@
         if (!this.showPatDropdown) return;
         if (this.highlightedPatIndex < 0 || this.highlightedPatIndex >= this.patrimoniosLista.length) return;
         this.selecionarPatrimonio(this.patrimoniosLista[this.highlightedPatIndex]);
+      },
+      selecionarPatrimonioTab(event) {
+        const termo = this.patSearch.trim();
+        if (termo === '') return;
+
+        // Se já há resultados, seleciona o primeiro
+        if (this.patrimoniosLista && this.patrimoniosLista.length > 0) {
+          this.selecionarPatrimonio(this.patrimoniosLista[0]);
+          this.$nextTick(() => {
+            try {
+              event.target?.form?.querySelector('[tabindex="2"]')?.focus();
+            } catch (e) {
+              console.warn('Erro ao focar próximo campo:', e);
+            }
+          });
+          return;
+        }
+
+        // Se está carregando, aguarda
+        if (this.loadingPatrimonios) {
+          setTimeout(() => {
+            this.selecionarPatrimonioTab(event);
+          }, 150);
+          return;
+        }
+
+        // Força a busca agora
+        this.loadingPatrimonios = true;
+        fetch(`/api/patrimonios/pesquisar?q=${encodeURIComponent(termo)}`)
+          .then(resp => {
+            if (resp.ok) return resp.json();
+            throw new Error('Erro na busca');
+          })
+          .then(data => {
+            this.patrimoniosLista = data || [];
+            if (this.patrimoniosLista.length > 0) {
+              this.selecionarPatrimonio(this.patrimoniosLista[0]);
+            }
+            try {
+              event.target?.form?.querySelector('[tabindex="2"]')?.focus();
+            } catch (e) {
+              console.warn('Erro ao focar próximo campo:', e);
+            }
+          })
+          .catch(e => {
+            console.error('Falha ao buscar patrimônios:', e);
+            try {
+              event.target?.form?.querySelector('[tabindex="2"]')?.focus();
+            } catch (err) {
+              console.warn('Erro ao focar próximo campo:', err);
+            }
+          })
+          .finally(() => {
+            this.loadingPatrimonios = false;
+          });
       },
       limparPatrimonio() {
         this.formData.NUPATRIMONIO = '';
