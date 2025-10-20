@@ -356,11 +356,43 @@ class PatrimonioController extends Controller
         }
         // Se não houver termo, retorna TODOS (para preencher dropdown vazio)
 
-        $projetos = $query->orderBy('NOMEPROJETO')
+        // Ordenação inteligente: prioriza matches exatos, depois por código numérico
+        $projetos = $query
             ->select(['CDPROJETO', 'NOMEPROJETO'])
-            ->distinct()  // Evitar duplicatas
-            ->limit(50)  // Aumentar limite para trazer todos quando vazio
-            ->get();
+            ->distinct()
+            ->get()
+            ->sortBy(function ($projeto) use ($termo) {
+                $codigo = strtolower(trim((string) $projeto->CDPROJETO));
+                $nome = strtolower(trim((string) $projeto->NOMEPROJETO));
+                $termoLower = strtolower($termo);
+
+                // 🥇 Match exato do código
+                if ($codigo === $termoLower) {
+                    return 0;
+                }
+                // 🥈 Código começa com o termo
+                if (str_starts_with($codigo, $termoLower)) {
+                    return 10 + strlen($codigo);
+                }
+                // 🥉 Código contém o termo
+                if (str_contains($codigo, $termoLower)) {
+                    return 50 + strpos($codigo, $termoLower) + strlen($codigo);
+                }
+                // 📛 Nome começa com o termo
+                if (str_starts_with($nome, $termoLower)) {
+                    return 100 + strlen($nome);
+                }
+                // 📝 Nome contém o termo
+                if (str_contains($nome, $termoLower)) {
+                    return 200 + strpos($nome, $termoLower) + strlen($nome);
+                }
+                // Outros: ordenar por código numericamente
+                return 1000 + (int) $projeto->CDPROJETO;
+            })
+            ->values()
+            ->take(100) // Aumentar limite para 100 resultados
+            ->toArray();
+
         return response()->json($projetos);
     }
 
@@ -592,11 +624,7 @@ class PatrimonioController extends Controller
             });
         }
 
-        $locaisProjeto = $query->orderBy('cdlocal')
-            ->orderBy('delocal')
-            ->orderByDesc('id')  // Mais recentes primeiro
-            ->limit(100)
-            ->get();
+        $locaisProjeto = $query->get();
         Log::info('📦 [API] Locais_Projeto encontrados:', ['total' => $locaisProjeto->count()]);
 
         // Buscar informações do projeto na tabfant para cada local
@@ -618,6 +646,36 @@ class PatrimonioController extends Controller
                 'flativo' => $lp->flativo ?? false,
             ];
         });
+
+        // Ordenação inteligente: prioriza matches exatos do código
+        $locais = $locais->sortBy(function ($local) use ($termo) {
+            $codigo = strtolower(trim((string) $local['cdlocal']));
+            $nome = strtolower(trim((string) $local['delocal']));
+            $termoLower = strtolower($termo);
+
+            // 🥇 Match exato do código
+            if ($codigo === $termoLower) {
+                return 0;
+            }
+            // 🥈 Código começa com o termo
+            if (str_starts_with($codigo, $termoLower)) {
+                return 10 + strlen($codigo);
+            }
+            // 🥉 Código contém o termo
+            if (str_contains($codigo, $termoLower)) {
+                return 50 + strpos($codigo, $termoLower) + strlen($codigo);
+            }
+            // 📛 Nome começa com o termo
+            if (str_starts_with($nome, $termoLower)) {
+                return 100 + strlen($nome);
+            }
+            // 📝 Nome contém o termo
+            if (str_contains($nome, $termoLower)) {
+                return 200 + strpos($nome, $termoLower) + strlen($nome);
+            }
+            // Outros: ordenar por código
+            return 1000 + (is_numeric($codigo) ? (int) $codigo : 9999);
+        })->values()->take(100);
 
         Log::info('✅ [API BUSCAR LOCAIS] Resultados finais:', [
             'total' => $locais->count(),

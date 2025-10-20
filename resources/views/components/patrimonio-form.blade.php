@@ -13,8 +13,8 @@
 
 <div x-data='patrimonioForm({ patrimonio: @json($patrimonio), old: @json(old()) })' @keydown.enter.prevent="handleEnter($event)" class="space-y-4 text-sm">
 
-  {{-- GRUPO 1: N° Patrimônio, N° OC, Campo Vazio --}}
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  {{-- GRUPO 1: N° Patrimônio e N° OC --}}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div>
       <label for="NUPATRIMONIO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número do Patrimônio *</label>
       <div class="relative" @click.away="showPatDropdown=false">
@@ -62,10 +62,6 @@
     <div>
       <label for="NUMOF" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número da Ordem de Compra</label>
       <input x-model="formData.NUMOF" id="NUMOF" name="NUMOF" type="number" tabindex="2" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
-    </div>
-    <div>
-      <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Campo Extra</label>
-      <input id="campo_extra" name="campo_extra" type="text" disabled tabindex="-1" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 rounded-md cursor-not-allowed" />
     </div>
   </div>
 
@@ -2076,16 +2072,16 @@
        * Prioridade: Match exato do código → Começa com termo → Contém termo
        */
       ordenarPorProximidade(items, termo, fieldCodigo, fieldNome) {
-        const termoLower = String(termo).toLowerCase();
+        const termoLower = String(termo).toLowerCase().trim();
 
         // Calcular score para cada item
         const itemsComScore = items.map(item => {
-          const codigo = String(item[fieldCodigo] || '').toLowerCase();
-          const nome = String(item[fieldNome] || '').toLowerCase();
+          const codigo = String(item[fieldCodigo] || '').toLowerCase().trim();
+          const nome = String(item[fieldNome] || '').toLowerCase().trim();
 
           let score = 1000; // Default alto (pior)
 
-          // 🥇 Match exato do código
+          // 🥇 Match exato do código (prioridade máxima)
           if (codigo === termoLower) {
             score = 0;
           }
@@ -2118,9 +2114,17 @@
           };
         });
 
-        // Ordenar por score e retornar apenas os items
+        // Ordenar por score (menor primeiro = mais relevante)
         return itemsComScore
-          .sort((a, b) => a.score - b.score)
+          .sort((a, b) => {
+            // Se scores são iguais, ordenar por código alfabeticamente
+            if (a.score === b.score) {
+              const codigoA = String(a.item[fieldCodigo] || '');
+              const codigoB = String(b.item[fieldCodigo] || '');
+              return codigoA.localeCompare(codigoB, undefined, { numeric: true });
+            }
+            return a.score - b.score;
+          })
           .map(x => x.item);
       },
 
@@ -2129,15 +2133,15 @@
        * Prioridade: Match exato → Começa com termo → Contém termo
        */
       ordenarCodigosLocalPorProximidade(codigos, termo) {
-        const termoLower = String(termo).toLowerCase();
+        const termoLower = String(termo).toLowerCase().trim();
 
         // Calcular score para cada código
         const codigosComScore = codigos.map(codigo => {
-          const codigoStr = String(codigo).toLowerCase();
+          const codigoStr = String(codigo).toLowerCase().trim();
 
           let score = 1000; // Default alto (pior)
 
-          // 🥇 Match exato
+          // 🥇 Match exato (prioridade máxima)
           if (codigoStr === termoLower) {
             score = 0;
           }
@@ -2161,9 +2165,15 @@
           };
         });
 
-        // Ordenar por score e retornar apenas os códigos
+        // Ordenar por score (menor primeiro = mais relevante) e retornar apenas os códigos
         return codigosComScore
-          .sort((a, b) => a.score - b.score)
+          .sort((a, b) => {
+            // Se scores são iguais, ordenar numericamente
+            if (a.score === b.score) {
+              return String(a.codigo).localeCompare(String(b.codigo), undefined, { numeric: true });
+            }
+            return a.score - b.score;
+          })
           .map(x => x.codigo);
       },
 
@@ -2251,9 +2261,8 @@
           if (resp.ok) {
             let projetos = await resp.json();
 
-            // 🎯 Ordenar por proximidade
-            projetos = this.ordenarPorProximidade(projetos, termo, 'CDPROJETO', 'NOMEPROJETO');
-
+            // Backend já ordena, mas fazemos ordenação adicional no frontend para garantir
+            // (útil quando backend retorna muitos resultados)
             this.modalProjetosLista = projetos;
             this.highlightedModalProjetoIndex = this.modalProjetosLista.length > 0 ? 0 : -1;
           }
