@@ -148,12 +148,12 @@ class FilterService
         // 🥈 Começa com o termo
         if (str_starts_with($valorLower, $termo)) {
             $score = 10 + strlen($valorLower);
-            
+
             // Se for número, penalizar menos para manter números no topo
             if ($tipo === 'número' && is_numeric($valorLower)) {
                 $score = 5 + (int) $valorLower;
             }
-            
+
             return $score;
         }
 

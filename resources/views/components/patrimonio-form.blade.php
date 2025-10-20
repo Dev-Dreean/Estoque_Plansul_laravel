@@ -13,8 +13,9 @@
 
 <div x-data='patrimonioForm({ patrimonio: @json($patrimonio), old: @json(old()) })' @keydown.enter.prevent="handleEnter($event)" class="space-y-4 text-sm">
 
-  {{-- GRUPO 1: N° Patrimônio e N° OC --}}
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {{-- GRUPO 1: 4 Inputs lado a lado - Número Patrimônio, OC, Descrição e Código do Objeto --}}
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    {{-- Número do Patrimônio --}}
     <div>
       <label for="NUPATRIMONIO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número do Patrimônio *</label>
       <div class="relative" @click.away="showPatDropdown=false">
@@ -22,7 +23,7 @@
           x-model="patSearch"
           @focus="abrirDropdownPatrimonios()"
           @blur.debounce.150ms="showPatDropdown=false"
-          @input.debounce.300ms="(function(){ const t=String(patSearch||'').trim(); if(t.length>=3){ showPatDropdown=true; buscarPatrimonios(); } else { showPatDropdown=false; patrimoniosLista=[]; highlightedPatIndex=-1; } })()"
+          @input.debounce.300ms="buscarPatrimonios()"
           @keydown.down.prevent="navegarPatrimonios(1)"
           @keydown.up.prevent="navegarPatrimonios(-1)"
           @keydown.enter.prevent="selecionarPatrimonioEnter()"
@@ -32,7 +33,7 @@
           inputmode="numeric"
           tabindex="1"
           class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500"
-          placeholder="Informe o número do patrimônio"
+          placeholder="Informe o número"
           required />
         <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
           <button type="button" x-show="formData.NUPATRIMONIO" @click="limparPatrimonio" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none" title="Limpar seleção" tabindex="-1">×</button>
@@ -59,16 +60,15 @@
         </div>
       </div>
     </div>
+
+    {{-- Número da Ordem de Compra --}}
     <div>
       <label for="NUMOF" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número da Ordem de Compra</label>
       <input x-model="formData.NUMOF" id="NUMOF" name="NUMOF" type="number" tabindex="2" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
-  </div>
 
-  {{-- GRUPO 2: Descrição e Código do Objeto (INVERTIDOS) --}}
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
     {{-- Descrição do Objeto (busca com dropdown) --}}
-    <div class="md:col-span-3">
+    <div>
       <label for="DEOBJETO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Descrição do Objeto *</label>
       <div class="relative" @click.away="showCodigoDropdown=false">
         <input id="DEOBJETO"
@@ -83,7 +83,7 @@
           type="text"
           tabindex="3"
           class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500"
-          placeholder="Informe a descrição do objeto" required />
+          placeholder="Informe a descrição" required />
         {{-- Valor enviado (hidden) --}}
         <input type="hidden" name="NUSEQOBJ" :value="formData.NUSEQOBJ" />
         <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
@@ -94,25 +94,25 @@
             </svg>
           </button>
         </div>
-        <div x-show="showCodigoDropdown" x-transition class="absolute z-50 bottom-full mb-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm">
+        <div x-show="showCodigoDropdown" x-transition class="absolute z-50 bottom-full mb-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto text-xs">
           <template x-if="loadingCodigos">
-            <div class="p-2 text-gray-500">Buscando...</div>
+            <div class="p-2 text-gray-500 text-center">Buscando...</div>
           </template>
           <template x-if="!loadingCodigos && codigosLista.length === 0">
-            <div class="p-2 text-gray-500" x-text="String(descricaoSearch || '').trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
+            <div class="p-2 text-gray-500 text-center" x-text="String(descricaoSearch || '').trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
           </template>
           <template x-for="(c,i) in (codigosLista || [])" :key="c.CODOBJETO || i">
-            <div data-cod-item @click="selecionarCodigo(c)" @mouseover="highlightedCodigoIndex=i" :class="['px-3 py-2 cursor-pointer', highlightedCodigoIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
-              <span class="ml-2 text-gray-700 dark:text-gray-300" x-text="c.DESCRICAO"></span>
-              <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400 ml-2" x-text="' (' + c.CODOBJETO + ')'"></span>
+            <div data-cod-item @click="selecionarCodigo(c)" @mouseover="highlightedCodigoIndex=i" :class="['px-3 py-1.5 cursor-pointer text-xs', highlightedCodigoIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+              <span class="text-gray-700 dark:text-gray-300" x-text="c.DESCRICAO"></span>
+              <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400 ml-1" x-text="'(' + c.CODOBJETO + ')'"></span>
             </div>
           </template>
         </div>
-        <p class="mt-1 text-xs" x-bind:class="isNovoCodigo ? 'text-amber-600' : (formData.NUSEQOBJ ? 'text-green-600' : '')" x-text="codigoBuscaStatus"></p>
       </div>
     </div>
+
     {{-- Código do Objeto (preenchido automaticamente) --}}
-    <div class="md:col-span-1">
+    <div>
       <label for="NUSEQOBJ" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código do Objeto *</label>
       <input id="NUSEQOBJ"
         x-model="formData.NUSEQOBJ"
@@ -130,10 +130,18 @@
     </div>
   </div>
 
-  {{-- GRUPO 3: Observação --}}
+  {{-- GRUPO 3: Observação com Auto-Crescimento --}}
   <div>
-    <x-input-label for="DEHISTORICO" value="Observações" />
-    <textarea data-index="6" x-model="formData.DEHISTORICO" id="DEHISTORICO" name="DEHISTORICO" rows="2" tabindex="5" class="block mt-0.5 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm"></textarea>
+    <label for="DEHISTORICO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
+    <textarea
+      id="DEHISTORICO"
+      x-model="formData.DEHISTORICO"
+      @input="ajustarAltura($event)"
+      name="DEHISTORICO"
+      tabindex="5"
+      class="block w-full resize-none border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 text-xs overflow-hidden"
+      style="min-height: 32px; height: 32px; padding: 6px 8px; line-height: 1.5;"
+      placeholder="Digite suas observações..."></textarea>
   </div>
 
   {{-- GRUPO 4: Local, Cód. Termo e Projeto (REORDENADO) --}}
@@ -353,8 +361,8 @@
     </div>
   </div>
 
-  {{-- GRUPO 5: Marca, Modelo, Situação, Matrícula / Usuário --}}
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+  {{-- GRUPO 5: Marca, Modelo, Situação --}}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
     <div>
       <label for="MARCA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Marca do Patrimônio</label>
       <input x-model="formData.MARCA" id="MARCA" name="MARCA" type="text" tabindex="10" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
@@ -376,6 +384,10 @@
         <option value="À DISPOSIÇÃO" @if ($situacaoAtual=='À DISPOSIÇÃO' ) selected @endif>À DISPOSIÇÃO</option>
       </select>
     </div>
+  </div>
+
+  {{-- GRUPO 6: Matrícula do Responsável, Data de Aquisição e Data de Baixa --}}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     <div class="relative" @click.away="showUserDropdown=false">
       <label for="matricula_busca" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Matrícula do Responsável *</label>
       <div class="relative">
@@ -425,22 +437,20 @@
       <p class="mt-1 text-xs text-gray-500" x-show="formData.CDMATRFUNCIONARIO && userSelectedName">Selecionado: <span class="font-semibold" x-text="userSelectedName"></span></p>
       <x-input-error class="mt-2" :messages="$errors->get('CDMATRFUNCIONARIO')" />
     </div>
-  </div>
 
-  {{-- GRUPO 6: Datas --}}
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     <div>
-      <label for="DTAQUISICAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Data de Aquisição do Patrimônio</label>
-      <input x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" tabindex="14" class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <label for="DTAQUISICAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Data de Aquisição</label>
+      <input x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" tabindex="14" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
+
     <div>
-      <label for="DTBAIXA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Data de Baixa do Patrimônio</label>
+      <label for="DTBAIXA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Data de Baixa do Patrimônio</label>
       <input x-model="formData.DTBAIXA"
         id="DTBAIXA"
         name="DTBAIXA"
         type="date"
         tabindex="15"
-        class="block w-full h-8 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+        class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
       <x-input-error class="mt-2" :messages="$errors->get('DTBAIXA')" />
     </div>
   </div>
@@ -861,6 +871,19 @@
         } else if (idx === focusables.length - 1) {
           // Último campo: submete
           form.submit();
+        }
+      },
+      ajustarAltura(event) {
+        const textarea = event.target;
+        // Reseta para calcular o tamanho real do conteúdo
+        textarea.style.height = 'auto';
+        // Calcula a altura necessária baseado no scrollHeight
+        const scrollHeight = textarea.scrollHeight;
+        // Apenas muda a altura se for maior que o mínimo (32px)
+        if (scrollHeight > 32) {
+          textarea.style.height = scrollHeight + 'px';
+        } else {
+          textarea.style.height = '32px';
         }
       },
       openSearchModal() {
@@ -1454,20 +1477,29 @@
       // === Autocomplete Patrimônio ===
       async buscarPatrimonios() {
         const termo = this.patSearch.trim();
+
         if (termo === '') {
           this.patrimoniosLista = [];
           this.highlightedPatIndex = -1;
+          this.showPatDropdown = false; // Fechar apenas quando vazio
           return;
         }
+
+        // Abrir dropdown enquanto digita
+        this.showPatDropdown = true;
         this.loadingPatrimonios = true;
+
         try {
           const resp = await fetch(`/api/patrimonios/pesquisar?q=${encodeURIComponent(termo)}`);
           if (resp.ok) {
             this.patrimoniosLista = await resp.json();
             this.highlightedPatIndex = this.patrimoniosLista.length > 0 ? 0 : -1;
+            // Manter dropdown aberto mesmo com resultados
+            this.showPatDropdown = true;
           }
         } catch (e) {
           console.error('Falha busca patrimonios', e);
+          this.patrimoniosLista = [];
         } finally {
           this.loadingPatrimonios = false;
         }
@@ -2121,7 +2153,9 @@
             if (a.score === b.score) {
               const codigoA = String(a.item[fieldCodigo] || '');
               const codigoB = String(b.item[fieldCodigo] || '');
-              return codigoA.localeCompare(codigoB, undefined, { numeric: true });
+              return codigoA.localeCompare(codigoB, undefined, {
+                numeric: true
+              });
             }
             return a.score - b.score;
           })
@@ -2170,7 +2204,9 @@
           .sort((a, b) => {
             // Se scores são iguais, ordenar numericamente
             if (a.score === b.score) {
-              return String(a.codigo).localeCompare(String(b.codigo), undefined, { numeric: true });
+              return String(a.codigo).localeCompare(String(b.codigo), undefined, {
+                numeric: true
+              });
             }
             return a.score - b.score;
           })

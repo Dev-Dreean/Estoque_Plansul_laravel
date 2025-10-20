@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LocalProjeto; // ALTERADO: Usando o Model correto
+use App\Models\LocalProjeto;
 use App\Models\Tabfant;
+use App\Services\FilterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -14,26 +15,61 @@ class ProjetoController extends Controller
      */
     public function index(Request $request)
     {
-        $searchTerm = $request->input('search');
+        $searchTerm = trim((string) $request->input('search', ''));
 
-        // A consulta base já carrega o relacionamento para evitar N+1
-        $query = LocalProjeto::with('projeto')->orderBy('delocal');
+        // Buscar TODOS os locais com relacionamento
+        $query = LocalProjeto::with('projeto')
+            ->orderBy('delocal');
 
-        if ($searchTerm) {
-            // Suporta múltiplos termos/tags separados por vírgula
-            $terms = array_filter(array_map('trim', explode(',', $searchTerm)));
-            foreach ($terms as $term) {
-                $query->where(function ($q) use ($term) {
-                    $q->where('delocal', 'LIKE', "%{$term}%")
-                        ->orWhere('cdlocal', 'LIKE', "%{$term}%")
-                        ->orWhereHas('projeto', function ($subQuery) use ($term) {
-                            $subQuery->where('NOMEPROJETO', 'LIKE', "%{$term}%");
-                        });
-                });
-            }
-        }
+        $todos_locais = $query->get()
+            ->map(function ($local) {
+                return [
+                    'id' => $local->id,
+                    'cdlocal' => $local->cdlocal,
+                    'delocal' => $local->delocal,
+                    'projeto_nome' => $local->projeto?->NOMEPROJETO ?? '',
+                    'projeto_codigo' => $local->projeto?->CDPROJETO ?? '',
+                    '_model' => $local,  // Manter o modelo para paginar depois
+                ];
+            })
+            ->toArray();
 
-        $locais = $query->paginate(15)->withQueryString();
+        // Aplicar filtro inteligente
+        $filtrados = FilterService::filtrar(
+            $todos_locais,
+            $searchTerm,
+            ['cdlocal', 'delocal', 'projeto_nome'],  // campos de busca
+            ['cdlocal' => 'número', 'delocal' => 'texto', 'projeto_nome' => 'texto'],  // tipos
+            PHP_INT_MAX  // Sem limite inicial (paginação acontece depois)
+        );
+
+        // Reconstruir collection com paginação
+        $locais_modelo = collect(array_map(fn($f) => $f['_model'], $filtrados));
+
+        // Paginar manualmente
+        $page = (int) $request->input('page', 1);
+        $perPage = 15;
+        $total = count($locais_modelo);
+        $paginada = $locais_modelo->slice(($page - 1) * $perPage, $perPage);
+
+        // Usar o paginator do Laravel
+        $locais = \Illuminate\Pagination\Paginator::resolveCurrentPath()
+            ? new \Illuminate\Pagination\LengthAwarePaginator(
+                $paginada,
+                $total,
+                $perPage,
+                $page,
+                [
+                    'path' => $request->url(),
+                    'query' => $request->query(),
+                ]
+            )
+            : new \Illuminate\Pagination\LengthAwarePaginator(
+                $paginada,
+                $total,
+                $perPage,
+                $page
+            );
 
         if ($request->ajax()) {
             return view('projetos._table_partial', ['locais' => $locais])->render();
@@ -234,7 +270,6 @@ class ProjetoController extends Controller
                     'codigo' => $projeto->CDPROJETO,
                     'nome' => $projeto->NOMEPROJETO,
                 ] : null);
-                
         } catch (\Exception $e) {
             Log::error('❌ Erro ao criar local', [
                 'message' => $e->getMessage(),
