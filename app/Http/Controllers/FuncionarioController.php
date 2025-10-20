@@ -4,51 +4,31 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Funcionario;
+use App\Services\FilterService;
 
 class FuncionarioController extends Controller
 {
     /**
-     * Pesquisa funcionarios por termo (código ou nome) retornando até 10 resultados.
+     * Pesquisa funcionarios por termo (código ou nome) com sistema inteligente de filtros
      */
     public function pesquisar(Request $request)
     {
         $termo = trim($request->input('q', ''));
-        if ($termo === '') {
-            return response()->json([]);
-        }
 
-        $palavras = array_filter(explode(' ', $termo), fn($p) => $p !== '');
+        // Buscar todos os funcionários
+        $funcionarios = Funcionario::select(['CDMATRFUNCIONARIO', 'NMFUNCIONARIO'])
+            ->get()
+            ->toArray();
 
-        $query = Funcionario::query();
-
-        // Agrupa as palavras exigindo TODAS no nome
-        if (!empty($palavras)) {
-            $query->where(function ($q) use ($palavras) {
-                foreach ($palavras as $palavra) {
-                    $q->where('NMFUNCIONARIO', 'like', '%' . $palavra . '%');
-                }
-            });
-        }
-
-        // Se termo é numérico, adiciona OR para matrícula exata (mantendo bloco anterior)
-        if (is_numeric($termo)) {
-            $query->orWhere('CDMATRFUNCIONARIO', $termo);
-        }
-
-        // Ranking de relevância: 1 = matrícula exata, 2 = nome inicia com termo, 3 = demais
-        $query->orderByRaw(
-            "CASE \n" .
-                " WHEN CDMATRFUNCIONARIO = ? THEN 1 \n" .
-                " WHEN NMFUNCIONARIO LIKE ? THEN 2 \n" .
-                " ELSE 3 END",
-            [$termo, $termo . '%']
+        // Aplicar filtro inteligente
+        $filtrados = FilterService::filtrar(
+            $funcionarios,
+            $termo,
+            ['CDMATRFUNCIONARIO', 'NMFUNCIONARIO'],  // campos de busca
+            ['CDMATRFUNCIONARIO' => 'número', 'NMFUNCIONARIO' => 'texto'],  // tipos de campo
+            10  // limite
         );
 
-        $funcionarios = $query
-            ->select(['CDMATRFUNCIONARIO', 'NMFUNCIONARIO'])
-            ->limit(10)
-            ->get();
-
-        return response()->json($funcionarios);
+        return response()->json($filtrados);
     }
 }

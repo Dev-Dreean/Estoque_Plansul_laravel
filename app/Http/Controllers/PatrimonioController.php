@@ -49,21 +49,24 @@ class PatrimonioController extends Controller
     {
         try {
             $termo = trim((string) $request->input('q', ''));
-            if ($termo === '') return response()->json([]);
-            $q = ObjetoPatr::query();
-            if (is_numeric($termo)) {
-                $q->where('NUSEQOBJETO', 'like', "%{$termo}%");
-            } else {
-                $q->where('DEOBJETO', 'like', "%{$termo}%");
-            }
-            $registros = $q->orderBy('DEOBJETO')
-                ->select(['NUSEQOBJETO as CODOBJETO', 'DEOBJETO as DESCRICAO'])
-                ->limit(10)
-                ->get();
-            return response()->json($registros);
+
+            // Buscar todos os códigos
+            $codigos = ObjetoPatr::select(['NUSEQOBJETO as CODOBJETO', 'DEOBJETO as DESCRICAO'])
+                ->get()
+                ->toArray();
+
+            // Aplicar filtro inteligente
+            $filtrados = \App\Services\FilterService::filtrar(
+                $codigos,
+                $termo,
+                ['CODOBJETO', 'DESCRICAO'],  // campos de busca
+                ['CODOBJETO' => 'número', 'DESCRICAO' => 'texto'],  // tipos de campo
+                10  // limite
+            );
+
+            return response()->json($filtrados);
         } catch (\Throwable $e) {
             Log::error('Erro pesquisarCodigos: ' . $e->getMessage());
-            // Retorno seguro
             return response()->json([], 200);
         }
     }
@@ -320,13 +323,23 @@ class PatrimonioController extends Controller
 
     public function pesquisar(Request $request): JsonResponse
     {
-        $termo = $request->input('q', '');
-        $patrimonios = Patrimonio::query()
-            ->where('DEPATRIMONIO', 'like', "%{$termo}%")
-            ->orWhere('NUPATRIMONIO', 'like', "%{$termo}%")
-            ->select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO'])
-            ->limit(10)->get();
-        return response()->json($patrimonios);
+        $termo = trim((string) $request->input('q', ''));
+
+        // Buscar todos os patrimônios
+        $patrimonios = Patrimonio::select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO'])
+            ->get()
+            ->toArray();
+
+        // Aplicar filtro inteligente
+        $filtrados = \App\Services\FilterService::filtrar(
+            $patrimonios,
+            $termo,
+            ['NUPATRIMONIO', 'DEPATRIMONIO'],  // campos de busca
+            ['NUPATRIMONIO' => 'número', 'DEPATRIMONIO' => 'texto'],  // tipos de campo
+            10  // limite
+        );
+
+        return response()->json($filtrados);
     }
 
     // Método pesquisarUsuarios removido após migração para FuncionarioController::pesquisar
@@ -344,56 +357,23 @@ class PatrimonioController extends Controller
     public function pesquisarProjetos(Request $request): JsonResponse
     {
         $termo = trim((string) $request->input('q', ''));
-        $query = Tabfant::query();
 
-        // Se houver termo, filtrar por CDPROJETO ou NOMEPROJETO
-        if ($termo !== '') {
-            if (is_numeric($termo)) {
-                $query->where('CDPROJETO', 'like', "%{$termo}%");
-            } else {
-                $query->where('NOMEPROJETO', 'like', "%{$termo}%");
-            }
-        }
-        // Se não houver termo, retorna TODOS (para preencher dropdown vazio)
-
-        // Ordenação inteligente: prioriza matches exatos, depois por código numérico
-        $projetos = $query
-            ->select(['CDPROJETO', 'NOMEPROJETO'])
+        // Buscar todos os projetos
+        $projetos = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
             ->distinct()
             ->get()
-            ->sortBy(function ($projeto) use ($termo) {
-                $codigo = strtolower(trim((string) $projeto->CDPROJETO));
-                $nome = strtolower(trim((string) $projeto->NOMEPROJETO));
-                $termoLower = strtolower($termo);
-
-                // 🥇 Match exato do código
-                if ($codigo === $termoLower) {
-                    return 0;
-                }
-                // 🥈 Código começa com o termo
-                if (str_starts_with($codigo, $termoLower)) {
-                    return 10 + strlen($codigo);
-                }
-                // 🥉 Código contém o termo
-                if (str_contains($codigo, $termoLower)) {
-                    return 50 + strpos($codigo, $termoLower) + strlen($codigo);
-                }
-                // 📛 Nome começa com o termo
-                if (str_starts_with($nome, $termoLower)) {
-                    return 100 + strlen($nome);
-                }
-                // 📝 Nome contém o termo
-                if (str_contains($nome, $termoLower)) {
-                    return 200 + strpos($nome, $termoLower) + strlen($nome);
-                }
-                // Outros: ordenar por código numericamente
-                return 1000 + (int) $projeto->CDPROJETO;
-            })
-            ->values()
-            ->take(100) // Aumentar limite para 100 resultados
             ->toArray();
 
-        return response()->json($projetos);
+        // Aplicar filtro inteligente
+        $filtrados = \App\Services\FilterService::filtrar(
+            $projetos,
+            $termo,
+            ['CDPROJETO', 'NOMEPROJETO'],  // campos de busca
+            ['CDPROJETO' => 'número', 'NOMEPROJETO' => 'texto'],  // tipos de campo
+            100  // limite
+        );
+
+        return response()->json($filtrados);
     }
 
     /**
@@ -603,19 +583,8 @@ class PatrimonioController extends Controller
         $termo = trim($request->input('termo', ''));
         $cdprojeto = trim($request->input('cdprojeto', ''));
 
-        Log::info('🔍 [API BUSCAR LOCAIS] Termo recebido:', ['termo' => $termo, 'cdprojeto' => $cdprojeto]);
-
         // BUSCAR NA TABELA LOCAIS_PROJETO (tem o cdlocal)
-        // REMOVIDO filtro flativo para mostrar TODOS os locais (ativos e inativos)
         $query = LocalProjeto::query();
-
-        // Se tiver termo de busca, filtrar
-        if ($termo !== '') {
-            $query->where(function ($q) use ($termo) {
-                $q->where('cdlocal', 'LIKE', "%{$termo}%")
-                    ->orWhere('delocal', 'LIKE', "%{$termo}%");
-            });
-        }
 
         // Se tiver cdprojeto, filtrar apenas por esse projeto
         if ($cdprojeto !== '') {
@@ -625,11 +594,9 @@ class PatrimonioController extends Controller
         }
 
         $locaisProjeto = $query->get();
-        Log::info('📦 [API] Locais_Projeto encontrados:', ['total' => $locaisProjeto->count()]);
 
         // Buscar informações do projeto na tabfant para cada local
         $locais = $locaisProjeto->map(function ($lp) {
-            // Buscar dados do projeto na tabfant usando tabfant_id
             $tabfant = null;
             if ($lp->tabfant_id) {
                 $tabfant = Tabfant::find($lp->tabfant_id);
@@ -645,44 +612,18 @@ class PatrimonioController extends Controller
                 'tabfant_id' => $lp->tabfant_id,
                 'flativo' => $lp->flativo ?? false,
             ];
-        });
+        })->toArray();
 
-        // Ordenação inteligente: prioriza matches exatos do código
-        $locais = $locais->sortBy(function ($local) use ($termo) {
-            $codigo = strtolower(trim((string) $local['cdlocal']));
-            $nome = strtolower(trim((string) $local['delocal']));
-            $termoLower = strtolower($termo);
+        // Aplicar filtro inteligente
+        $filtrados = \App\Services\FilterService::filtrar(
+            $locais,
+            $termo,
+            ['cdlocal', 'delocal'],  // campos de busca
+            ['cdlocal' => 'número', 'delocal' => 'texto'],  // tipos de campo
+            100  // limite
+        );
 
-            // 🥇 Match exato do código
-            if ($codigo === $termoLower) {
-                return 0;
-            }
-            // 🥈 Código começa com o termo
-            if (str_starts_with($codigo, $termoLower)) {
-                return 10 + strlen($codigo);
-            }
-            // 🥉 Código contém o termo
-            if (str_contains($codigo, $termoLower)) {
-                return 50 + strpos($codigo, $termoLower) + strlen($codigo);
-            }
-            // 📛 Nome começa com o termo
-            if (str_starts_with($nome, $termoLower)) {
-                return 100 + strlen($nome);
-            }
-            // 📝 Nome contém o termo
-            if (str_contains($nome, $termoLower)) {
-                return 200 + strpos($nome, $termoLower) + strlen($nome);
-            }
-            // Outros: ordenar por código
-            return 1000 + (is_numeric($codigo) ? (int) $codigo : 9999);
-        })->values()->take(100);
-
-        Log::info('✅ [API BUSCAR LOCAIS] Resultados finais:', [
-            'total' => $locais->count(),
-            'amostra' => $locais->take(3)->toArray()
-        ]);
-
-        return response()->json($locais);
+        return response()->json($filtrados);
     }
 
     /**
