@@ -28,14 +28,24 @@ return new class extends Migration {
         // Projetos
         if (Schema::hasTable('tabfant')) {
             try {
+                // Usar DB::statement para índice com prefix em coluna texto grande
+                \Illuminate\Support\Facades\DB::statement('CREATE INDEX idx_nomeprojeto ON tabfant (NOMEPROJETO(100))');
+            } catch (\Illuminate\Database\QueryException $e) {
+                if (stripos($e->getMessage(), 'duplicate') === false && stripos($e->getMessage(), 'already exists') === false) {
+                    // Tenta com Schema se DB::statement falhar
+                    try {
+                        Schema::table('tabfant', function (Blueprint $table) {
+                            $table->index('CDPROJETO', 'idx_cdprojeto');
+                        });
+                    } catch (\Exception $e2) {}
+                }
+            }
+            try {
                 Schema::table('tabfant', function (Blueprint $table) {
-                    $table->index('NOMEPROJETO', 'idx_nomeprojeto');
                     $table->index('CDPROJETO', 'idx_cdprojeto');
                 });
             } catch (\Illuminate\Database\QueryException $e) {
-                if (stripos($e->getMessage(), 'duplicate') === false && stripos($e->getMessage(), 'already exists') === false) {
-                    throw $e;
-                }
+                // Índice já existe
             }
         }
         // Códigos

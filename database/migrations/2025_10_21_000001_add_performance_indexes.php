@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -13,64 +14,81 @@ return new class extends Migration
     public function up(): void
     {
         // Índices na tabela objeto_patr para busca de códigos
-        Schema::table('objeto_patr', function (Blueprint $table) {
-            // Índice para LIKE em NUSEQOBJETO (código)
-            if (!Schema::hasIndex('objeto_patr', 'idx_nuseqobjeto')) {
-                $table->index('NUSEQOBJETO', 'idx_nuseqobjeto');
+        if (Schema::hasTable('objeto_patr')) {
+            try {
+                DB::statement('ALTER TABLE `objeto_patr` ADD INDEX `idx_nuseqobjeto` (`NUSEQOBJETO`)');
+            } catch (\Exception $e) {
+                // Índice já existe
             }
-            // Índice para busca em DEOBJETO (descrição)
-            if (!Schema::hasIndex('objeto_patr', 'idx_deobjeto')) {
-                $table->index('DEOBJETO', 'idx_deobjeto');
-            }
-        });
+        }
 
         // Índices na tabela tabfant para busca de projetos
-        Schema::table('tabfant', function (Blueprint $table) {
-            // Índice crítico para LIKE em CDPROJETO (código)
-            if (!Schema::hasIndex('tabfant', 'idx_cdprojeto')) {
-                $table->index('CDPROJETO', 'idx_cdprojeto');
+        if (Schema::hasTable('tabfant')) {
+            try {
+                // Índice crítico para LIKE em CDPROJETO (código)
+                DB::statement('ALTER TABLE `tabfant` ADD INDEX `idx_cdprojeto` (`CDPROJETO`)');
+            } catch (\Exception $e) {
+                // Índice já existe
             }
-            // Índice para busca em NOMEPROJETO
-            if (!Schema::hasIndex('tabfant', 'idx_nomeprojeto')) {
-                $table->index('NOMEPROJETO', 'idx_nomeprojeto');
+            try {
+                // Índice com prefix para NOMEPROJETO (para evitar erro de key length)
+                DB::statement('ALTER TABLE `tabfant` ADD INDEX `idx_nomeprojeto` (`NOMEPROJETO`(100))');
+            } catch (\Exception $e) {
+                // Índice já existe
             }
-        });
+        }
 
         // Índices na tabela locais_projetos para relações
-        Schema::table('locais_projetos', function (Blueprint $table) {
-            // Índices compostos para filtros comuns
-            if (!Schema::hasIndex('locais_projetos', 'idx_cdlocal_flativo')) {
-                $table->index(['cdlocal', 'flativo'], 'idx_cdlocal_flativo');
+        if (Schema::hasTable('locais_projetos')) {
+            try {
+                DB::statement('ALTER TABLE `locais_projetos` ADD INDEX `idx_cdlocal_flativo` (`cdlocal`, `flativo`)');
+            } catch (\Exception $e) {
+                // Índice já existe
             }
-            if (!Schema::hasIndex('locais_projetos', 'idx_tabfant_flativo')) {
-                $table->index(['tabfant_id', 'flativo'], 'idx_tabfant_flativo');
+            try {
+                DB::statement('ALTER TABLE `locais_projetos` ADD INDEX `idx_tabfant_flativo` (`tabfant_id`, `flativo`)');
+            } catch (\Exception $e) {
+                // Índice já existe
             }
-            // Índice para busca em delocal
-            if (!Schema::hasIndex('locais_projetos', 'idx_delocal')) {
-                $table->index('delocal', 'idx_delocal');
+            try {
+                DB::statement('ALTER TABLE `locais_projetos` ADD INDEX `idx_delocal` (`delocal`(100))');
+            } catch (\Exception $e) {
+                // Índice já existe
             }
-        });
+        }
     }
-
     /**
      * Reverter migração
      */
     public function down(): void
     {
-        Schema::table('objeto_patr', function (Blueprint $table) {
-            $table->dropIndexIfExists('idx_nuseqobjeto');
-            $table->dropIndexIfExists('idx_deobjeto');
-        });
+        // Remover índices criados
+        if (Schema::hasTable('objeto_patr')) {
+            try {
+                DB::statement('ALTER TABLE `objeto_patr` DROP INDEX `idx_nuseqobjeto`');
+            } catch (\Exception $e) {}
+        }
 
-        Schema::table('tabfant', function (Blueprint $table) {
-            $table->dropIndexIfExists('idx_cdprojeto');
-            $table->dropIndexIfExists('idx_nomeprojeto');
-        });
+        if (Schema::hasTable('tabfant')) {
+            try {
+                DB::statement('ALTER TABLE `tabfant` DROP INDEX `idx_cdprojeto`');
+            } catch (\Exception $e) {}
+            try {
+                DB::statement('ALTER TABLE `tabfant` DROP INDEX `idx_nomeprojeto`');
+            } catch (\Exception $e) {}
+        }
 
-        Schema::table('locais_projetos', function (Blueprint $table) {
-            $table->dropIndexIfExists('idx_cdlocal_flativo');
-            $table->dropIndexIfExists('idx_tabfant_flativo');
-            $table->dropIndexIfExists('idx_delocal');
-        });
+        if (Schema::hasTable('locais_projetos')) {
+            try {
+                DB::statement('ALTER TABLE `locais_projetos` DROP INDEX `idx_cdlocal_flativo`');
+            } catch (\Exception $e) {}
+            try {
+                DB::statement('ALTER TABLE `locais_projetos` DROP INDEX `idx_tabfant_flativo`');
+            } catch (\Exception $e) {}
+            try {
+                DB::statement('ALTER TABLE `locais_projetos` DROP INDEX `idx_delocal`');
+            } catch (\Exception $e) {}
+        }
     }
 };
+
