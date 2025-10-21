@@ -358,8 +358,9 @@ class PatrimonioController extends Controller
     {
         $termo = trim((string) $request->input('q', ''));
 
-        // Buscar todos os projetos
+        // Buscar todos os projetos (excluindo código 0 - "Não se aplica")
         $projetos = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
+            ->where('CDPROJETO', '!=', 0)  // Excluir código 0
             ->distinct()
             ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')  // Ordenação numérica
             ->get()
