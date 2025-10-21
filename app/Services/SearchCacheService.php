@@ -3,101 +3,66 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class SearchCacheService
 {
-    // Cache keys
-    const CACHE_PROJETOS = 'search:projetos:all';
-    const CACHE_CODIGOS = 'search:codigos:all';
-    const CACHE_LOCAIS_PREFIX = 'search:locais:projeto:';
-    const CACHE_PATRIMONIO = 'search:patrimonio:all';
-    
-    // Cache TTL em minutos
-    const CACHE_TTL = 60;
+    public const CACHE_PROJETOS = 'search_projetos';
+    public const CACHE_CODIGOS = 'search_codigos';
+    public const CACHE_PATRIMONIO = 'search_patrimonio';
+    public const CACHE_TTL = 3600; // 1 hora
 
     /**
-     * Busca e cacheia todos os projetos
+     * Obter todos os projetos com cache
      */
-    public static function getProjetos($force = false): array
+    public static function getProjetos(bool $refresh = false): array
     {
-        if (!$force && Cache::has(self::CACHE_PROJETOS)) {
-            return Cache::get(self::CACHE_PROJETOS);
+        if ($refresh) {
+            Cache::forget(self::CACHE_PROJETOS);
         }
 
-        $projetos = DB::table('tabfant')
-            ->select('CDPROJETO', 'NOMEPROJETO')
-            ->where('CDPROJETO', '!=', 0)
-            ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')
-            ->get()
-            ->toArray();
-
-        Cache::put(self::CACHE_PROJETOS, $projetos, now()->addMinutes(self::CACHE_TTL));
-        return $projetos;
+        return Cache::remember(self::CACHE_PROJETOS, self::CACHE_TTL, function () {
+            return \App\Models\Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
+                ->where('CDPROJETO', '!=', 0)
+                ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')
+                ->get()
+                ->toArray();
+        });
     }
 
     /**
-     * Busca e cacheia todos os códigos
+     * Obter todos os códigos com cache
      */
-    public static function getCodigos($force = false): array
+    public static function getCodigos(bool $refresh = false): array
     {
-        if (!$force && Cache::has(self::CACHE_CODIGOS)) {
-            return Cache::get(self::CACHE_CODIGOS);
+        if ($refresh) {
+            Cache::forget(self::CACHE_CODIGOS);
         }
 
-        $codigos = DB::table('objeto_patr')
-            ->select('NUSEQOBJETO as CODOBJETO', 'DEOBJETO as DESCRICAO')
-            ->orderBy('NUSEQOBJETO')
-            ->get()
-            ->toArray();
-
-        Cache::put(self::CACHE_CODIGOS, $codigos, now()->addMinutes(self::CACHE_TTL));
-        return $codigos;
+        return Cache::remember(self::CACHE_CODIGOS, self::CACHE_TTL, function () {
+            return \App\Models\ObjetoPatr::select(['NUSEQOBJETO as CODOBJETO', 'DEOBJETO as DESCRICAO'])
+                ->get()
+                ->toArray();
+        });
     }
 
     /**
-     * Busca e cacheia locais de um projeto
+     * Gerar chave de cache para códigos por termo
      */
-    public static function getLocaisPorProjeto($tabfant_id, $force = false): array
+    public static function codigosKey(string $termo): string
     {
-        $cacheKey = self::CACHE_LOCAIS_PREFIX . $tabfant_id;
-        
-        if (!$force && Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
-        }
-
-        $locais = DB::table('locais_projeto')
-            ->where('tabfant_id', $tabfant_id)
-            ->where('flativo', true)
-            ->select('id', 'cdlocal', 'delocal')
-            ->orderBy('delocal')
-            ->get()
-            ->toArray();
-
-        Cache::put($cacheKey, $locais, now()->addMinutes(self::CACHE_TTL));
-        return $locais;
+        return 'search_codigos_' . md5($termo);
     }
 
     /**
-     * Busca e cacheia patrimônios
+     * Armazenar resultado em cache com callback
      */
-    public static function getPatrimonios($force = false): array
+    public static function remember(string $key, callable $callback): mixed
     {
-        if (!$force && Cache::has(self::CACHE_PATRIMONIO)) {
-            return Cache::get(self::CACHE_PATRIMONIO);
-        }
-
-        $patrimonios = DB::table('patrimonio')
-            ->select('NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO')
-            ->get()
-            ->toArray();
-
-        Cache::put(self::CACHE_PATRIMONIO, $patrimonios, now()->addMinutes(self::CACHE_TTL));
-        return $patrimonios;
+        return Cache::remember($key, self::CACHE_TTL, $callback);
     }
 
     /**
-     * Invalida cache de projetos
+     * Invalidar cache de projetos
      */
     public static function invalidateProjetos(): void
     {
@@ -105,7 +70,7 @@ class SearchCacheService
     }
 
     /**
-     * Invalida cache de códigos
+     * Invalidar cache de códigos
      */
     public static function invalidateCodigos(): void
     {
@@ -113,15 +78,7 @@ class SearchCacheService
     }
 
     /**
-     * Invalida cache de um projeto específico
-     */
-    public static function invalidateLocaisProjeto($tabfant_id): void
-    {
-        Cache::forget(self::CACHE_LOCAIS_PREFIX . $tabfant_id);
-    }
-
-    /**
-     * Invalida cache de patrimônios
+     * Invalidar cache de patrimônio
      */
     public static function invalidatePatrimonio(): void
     {
@@ -129,95 +86,12 @@ class SearchCacheService
     }
 
     /**
-     * Busca rápida em array usando índice
+     * Invalidar todos os caches
      */
-    public static function filtrarRapido(array $dados, string $termo, array $campos): array
+    public static function invalidateAll(): void
     {
-        if (empty($termo)) {
-            return array_slice($dados, 0, 30);
-        }
-
-        $termo_lower = strtolower($termo);
-        $resultados = [];
-
-        foreach ($dados as $item) {
-            foreach ($campos as $campo) {
-                if (isset($item->{$campo}) && stripos((string)$item->{$campo}, $termo_lower) === 0) {
-                    $resultados[] = $item;
-                    break;
-                }
-            }
-        }
-
-        return array_slice($resultados, 0, 30);
-    }
-
-    /**
-     * Busca por magnitude em números
-     */
-    public static function filtrarPorMagnitude(array $dados, string $termo, string $campoNumero): array
-    {
-        if (!is_numeric($termo)) {
-            return [];
-        }
-
-        $termo_len = strlen($termo);
-        $termo_num = (int)$termo;
-        $resultados = [];
-
-        foreach ($dados as $item) {
-            $codigo = (int)($item->{$campoNumero} ?? 0);
-            $codigo_str = (string)$codigo;
-
-            // Prefixo exato
-            if (strpos($codigo_str, $termo) === 0) {
-                $resultados[] = $item;
-                continue;
-            }
-
-            // Magnitude checks
-            if ($termo_len === 1) {
-                $min = $termo_num * 10;
-                $max = $min + 9;
-                if ($codigo >= $min && $codigo <= $max) {
-                    $resultados[] = $item;
-                    continue;
-                }
-
-                $min = $termo_num * 100;
-                $max = $min + 99;
-                if ($codigo >= $min && $codigo <= $max) {
-                    $resultados[] = $item;
-                    continue;
-                }
-
-                $min = $termo_num * 1000;
-                $max = $min + 999;
-                if ($codigo >= $min && $codigo <= $max) {
-                    $resultados[] = $item;
-                }
-            } else if ($termo_len === 2) {
-                $min = $termo_num * 10;
-                $max = $min + 9;
-                if ($codigo >= $min && $codigo <= $max) {
-                    $resultados[] = $item;
-                    continue;
-                }
-
-                $min = $termo_num * 100;
-                $max = $min + 99;
-                if ($codigo >= $min && $codigo <= $max) {
-                    $resultados[] = $item;
-                }
-            } else if ($termo_len === 3) {
-                $min = $termo_num * 10;
-                $max = $min + 9;
-                if ($codigo >= $min && $codigo <= $max) {
-                    $resultados[] = $item;
-                }
-            }
-        }
-
-        return array_slice($resultados, 0, 30);
+        self::invalidateProjetos();
+        self::invalidateCodigos();
+        self::invalidatePatrimonio();
     }
 }
