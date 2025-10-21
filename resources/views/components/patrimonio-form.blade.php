@@ -483,7 +483,7 @@
             </div>
           </div>
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Clique para ver os primeiros 50 projetos em ordem numérica ou digite para buscar
+            Clique para ver todos os projetos em ordem numérica ou digite para buscar
           </p>
         </div>
 
@@ -2385,7 +2385,7 @@
       },
 
       async selecionarModalProjeto(projeto) {
-        console.log('📌 [MODAL] Projeto selecionado:', projeto);
+        console.log('Projeto selecionado:', projeto);
 
         // Atualizar dados do projeto
         this.novoProjeto.cdprojeto = projeto.CDPROJETO;
