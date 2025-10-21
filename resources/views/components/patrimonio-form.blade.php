@@ -286,76 +286,19 @@
           </div>
         </div>
 
-        {{-- Dropdown/Input Nome do Local com Autocomplete --}}
-        <div class="flex-grow relative" @click.away="showNomeLocalDropdown=false">
-          <div class="relative">
-            <input type="text"
-              id="NOMELOCAL_INPUT"
-              x-model="nomeLocalBusca"
-              @focus="abrirDropdownNomesLocaisAoFocar()"
-              @blur.debounce.150ms="showNomeLocalDropdown=false"
-              @input.debounce.300ms="(function(){ buscarNomesLocais(); })()"
-              @keydown.down.prevent="navegarNomesLocais(1)"
-              @keydown.up.prevent="navegarNomesLocais(-1)"
-              @keydown.enter.prevent="selecionarNomeLocalEnter()"
-              @keydown.escape.prevent="showNomeLocalDropdown=false"
-              :disabled="!codigoLocalDigitado || locaisEncontrados.length === 1"
-              :placeholder="!codigoLocalDigitado ? 'Selecione um código primeiro' : (locaisEncontrados.length === 1 ? 'Preenchido automaticamente ✓' : 'Selecione ou digite o nome')"
-              tabindex="8"
-              :class="[
-                'block w-full h-8 text-xs rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500 border',
-                !codigoLocalDigitado || locaisEncontrados.length === 1
-                  ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 text-gray-600 cursor-not-allowed'
-                  : 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 text-gray-700'
-              ]"
-              autocomplete="off" />
-
-            <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
-              <button type="button"
-                x-show="nomeLocalBusca && codigoLocalDigitado"
-                @click="limparNomeLocal"
-                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none"
-                title="Limpar seleção"
-                tabindex="-1">×</button>
-              <button type="button"
-                @click="abrirDropdownNomesLocais(true)"
-                :disabled="!codigoLocalDigitado"
-                :class="[
-                  'focus:outline-none',
-                  codigoLocalDigitado 
-                    ? 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200' 
-                    : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-                ]"
-                title="Abrir lista"
-                tabindex="-1">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {{-- Dropdown de sugestões --}}
-          <div x-show="showNomeLocalDropdown"
-            x-transition
-            class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-xs">
-            <template x-if="loadingNomesLocais">
-              <div class="p-2 text-gray-500 text-center">Buscando...</div>
-            </template>
-            <template x-if="!loadingNomesLocais && nomesLocaisLista.length === 0 && nomeLocalBusca.trim() !== ''">
-              <div class="p-2 text-gray-500 text-center">Nenhum resultado encontrado</div>
-            </template>
-            <template x-if="!loadingNomesLocais && nomesLocaisLista.length === 0 && nomeLocalBusca.trim() === ''">
-              <div class="p-2 text-gray-500 text-center" x-text="'Total: ' + locaisEncontrados.length + ' local(ais) disponível(is)'"></div>
-            </template>
-            <template x-for="(local, i) in nomesLocaisLista" :key="local.id">
-              <div @click="selecionarNomeLocal(local)"
-                @mouseover="highlightedNomeLocalIndex = i"
-                :class="['px-3 py-1.5 cursor-pointer', highlightedNomeLocalIndex === i ? 'bg-indigo-100 dark:bg-indigo-900' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
-                <span class="text-gray-700 dark:text-gray-300" x-text="local.LOCAL || local.delocal"></span>
-              </div>
-            </template>
-          </div>
+        {{-- Nome do Local - Campo Somente Leitura (Auto-preenchido) --}}
+        <div class="flex-grow relative">
+          <input type="text"
+            id="NOMELOCAL_INPUT"
+            x-model="nomeLocalBusca"
+            readonly
+            :placeholder="!codigoLocalDigitado ? 'Será preenchido automaticamente' : 'Preenchido automaticamente ✓'"
+            tabindex="-1"
+            class="block w-full h-8 text-xs rounded-md shadow-sm border
+              bg-gray-100 dark:bg-gray-700 dark:text-gray-300 text-gray-600 
+              border-gray-300 dark:border-gray-600
+              cursor-not-allowed"
+            />
         </div>
       </div>
     </div>
@@ -805,13 +748,6 @@
       loadingCodigosLocais: false,
       showCodigoLocalDropdown: false,
       highlightedCodigoLocalIndex: -1,
-
-      // Autocomplete Nome do Local
-      nomeLocalBusca: '', // Texto digitado pelo usuário no campo de nome
-      nomesLocaisLista: [], // Lista de sugestões de nomes
-      showNomeLocalDropdown: false, // Controla visibilidade do dropdown
-      loadingNomesLocais: false, // Flag de carregamento
-      highlightedNomeLocalIndex: -1, // Índice do item destacado
 
       // Variáveis antigas (manter compatibilidade)
       localSearch: '',
@@ -1378,8 +1314,6 @@
         this.codigoLocalDigitado = '';
         this.localNome = '';
         this.locaisEncontrados = [];
-        this.nomeLocalBusca = '';
-        this.nomesLocaisLista = [];
         this.codigosLocaisFiltrados = [];
       },
       navegarProjetos(delta) {
@@ -1505,12 +1439,10 @@
         this.codigoLocalDigitado = '';
         this.formData.CDLOCAL = '';
         this.localNome = '';
-        this.nomeLocalBusca = '';  // Limpar campo de nome também
         this.codigosLocaisFiltrados = [];
         this.showCodigoLocalDropdown = false;
         this.highlightedCodigoLocalIndex = -1;
         this.locaisEncontrados = [];
-        this.nomesLocaisLista = [];
       },
       navegarCodigosLocais(delta) {
         if (!this.showCodigoLocalDropdown || this.codigosLocaisFiltrados.length === 0) return;
@@ -1526,157 +1458,6 @@
           if (!list) return;
           const items = list.querySelectorAll('[x-for*="codigosLocaisFiltrados"]');
           const el = items[this.highlightedCodigoLocalIndex];
-          if (el && typeof el.scrollIntoView === 'function') {
-            const parentRect = list.getBoundingClientRect();
-            const elRect = el.getBoundingClientRect();
-            if (elRect.top < parentRect.top || elRect.bottom > parentRect.bottom) {
-              el.scrollIntoView({
-                block: 'nearest'
-              });
-            }
-          }
-        });
-      },
-
-      // === Autocomplete Nome do Local ===
-      async buscarNomesLocais() {
-        const termo = this.nomeLocalBusca.trim();
-
-        // Só busca se o código do local foi digitado
-        if (!this.codigoLocalDigitado) {
-          this.nomesLocaisLista = [];
-          this.highlightedNomeLocalIndex = -1;
-          return;
-        }
-
-        this.loadingNomesLocais = true;
-        try {
-          // Busca locais pelo código
-          const url = `/api/locais/buscar?termo=${encodeURIComponent(this.codigoLocalDigitado)}`;
-          const resp = await fetch(url);
-
-          if (resp.ok) {
-            let locais = await resp.json();
-
-            // Se há termo de busca, filtra pelo nome
-            if (termo) {
-              const termoLower = termo.toLowerCase();
-              locais = locais.filter(local => {
-                const nomeLocal = (local.LOCAL || local.delocal || '').toLowerCase();
-                return nomeLocal.includes(termoLower);
-              });
-            }
-
-            this.nomesLocaisLista = locais;
-            this.highlightedNomeLocalIndex = locais.length > 0 ? 0 : -1;
-
-            // Abrir dropdown se houver resultados
-            if (locais.length > 0) {
-              this.showNomeLocalDropdown = true;
-            }
-          }
-        } catch (e) {
-          console.error('Erro ao buscar nomes de locais:', e);
-        } finally {
-          this.loadingNomesLocais = false;
-        }
-      },
-
-      abrirDropdownNomesLocaisAoFocar() {
-        // Abre dropdown ao focar no input
-        if (!this.codigoLocalDigitado) {
-          return; // Não abre se não tiver código
-        }
-
-        this.showNomeLocalDropdown = true;
-
-        // Se o campo está vazio, busca todos os locais do código
-        if (this.nomeLocalBusca.trim() === '') {
-          this.buscarNomesLocais();
-        }
-      },
-
-      abrirDropdownNomesLocais(force = false) {
-        if (!this.codigoLocalDigitado) {
-          return; // Não abre se não tiver código
-        }
-
-        this.showNomeLocalDropdown = true;
-
-        // Se forçado (clique na lupa) ou campo vazio, busca todos do código
-        if (force || this.nomeLocalBusca.trim() === '') {
-          this.buscarNomesLocais();
-        }
-      },
-
-      selecionarNomeLocal(local) {
-        console.log('📍 [SELECIONAR NOME] Local selecionado:', local);
-
-        // Atualizar o campo de busca com o nome
-        this.nomeLocalBusca = local.LOCAL || local.delocal;
-
-        // Atualizar o local selecionado
-        this.localSelecionadoId = local.id;
-        this.formData.CDLOCAL = local.id;
-        this.localNome = local.LOCAL || local.delocal;
-
-        // Atualizar projeto associado
-        if (local.CDPROJETO) {
-          this.formData.CDPROJETO = local.CDPROJETO;
-          this.projetoAssociadoSearch = local.NOMEPROJETO ?
-            `${local.CDPROJETO} - ${local.NOMEPROJETO}` :
-            String(local.CDPROJETO);
-        }
-
-        // Fechar dropdown
-        this.showNomeLocalDropdown = false;
-        this.nomesLocaisLista = [];
-        this.highlightedNomeLocalIndex = -1;
-
-        console.log('✅ [SELECIONAR NOME] Atualizado:', {
-          nome: this.nomeLocalBusca,
-          id: this.localSelecionadoId,
-          cdlocal: this.formData.CDLOCAL,
-          projeto: this.projetoAssociadoSearch
-        });
-      },
-
-      selecionarNomeLocalEnter() {
-        if (!this.showNomeLocalDropdown) return;
-        if (this.highlightedNomeLocalIndex < 0 || this.highlightedNomeLocalIndex >= this.nomesLocaisLista.length) return;
-        this.selecionarNomeLocal(this.nomesLocaisLista[this.highlightedNomeLocalIndex]);
-      },
-
-      limparNomeLocal() {
-        this.nomeLocalBusca = '';
-        this.nomesLocaisLista = [];
-        this.highlightedNomeLocalIndex = -1;
-        this.showNomeLocalDropdown = false;
-
-        // Limpar também a seleção do local
-        this.localSelecionadoId = null;
-        this.formData.CDLOCAL = '';
-        this.localNome = '';
-        this.formData.CDPROJETO = '';
-        this.projetoAssociadoSearch = '';
-      },
-
-      navegarNomesLocais(delta) {
-        if (!this.showNomeLocalDropdown || this.nomesLocaisLista.length === 0) return;
-        const max = this.nomesLocaisLista.length - 1;
-
-        if (this.highlightedNomeLocalIndex === -1) {
-          this.highlightedNomeLocalIndex = 0;
-        } else {
-          this.highlightedNomeLocalIndex = Math.min(max, Math.max(0, this.highlightedNomeLocalIndex + delta));
-        }
-
-        // Scroll into view
-        this.$nextTick(() => {
-          const list = this.$root.querySelector('[x-show="showNomeLocalDropdown"]');
-          if (!list) return;
-          const items = list.querySelectorAll('[x-show="showNomeLocalDropdown"] > div');
-          const el = items[this.highlightedNomeLocalIndex];
           if (el && typeof el.scrollIntoView === 'function') {
             const parentRect = list.getBoundingClientRect();
             const elRect = el.getBoundingClientRect();
