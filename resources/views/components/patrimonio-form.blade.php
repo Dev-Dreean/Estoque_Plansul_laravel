@@ -183,7 +183,7 @@
           <template x-if="!loadingProjetos && projetosDisponiveisList.length === 0">
             <div class="p-2 text-gray-500" x-text="String(projetoSearch || '').trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
           </template>
-          <template x-for="(p,i) in (projetosDisponiveisList || [])" :key="p.CDPROJETO || i">
+          <template x-for="(p,i) in (projetosDisponiveisList || [])" :key="'proj-' + i">
             <div data-proj-item @click="selecionarProjeto(p)" @mouseover="highlightedProjetoIndex=i" :class="['px-3 py-2 cursor-pointer', highlightedProjetoIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
               <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="p.CDPROJETO"></span>
               <span class="ml-2 text-gray-700 dark:text-gray-300" x-text="' - ' + p.NOMEPROJETO"></span>
@@ -632,7 +632,7 @@
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Projeto Associado</label>
         <select x-model="editarLocalProjeto" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md">
           <option value="">Selecione um projeto</option>
-          <template x-for="proj in projetosExistentes" :key="proj.CDPROJETO">
+          <template x-for="(proj, idx) in projetosExistentes" :key="'edit-proj-' + idx">
             <option :value="proj.CDPROJETO" x-text="proj.CDPROJETO + ' - ' + proj.NOMEPROJETO"></option>
           </template>
         </select>
