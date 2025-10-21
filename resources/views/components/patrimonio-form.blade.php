@@ -1,4 +1,4 @@
-@props(['patrimonio' => null])
+﻿@props(['patrimonio' => null])
 
 @if ($errors->any())
 <div class="mb-3 bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded-lg relative text-sm" role="alert">
@@ -297,8 +297,7 @@
             class="block w-full h-8 text-xs rounded-md shadow-sm border
               bg-gray-100 dark:bg-gray-700 dark:text-gray-300 text-gray-600 
               border-gray-300 dark:border-gray-600
-              cursor-not-allowed"
-            />
+              cursor-not-allowed" />
         </div>
       </div>
     </div>
@@ -547,8 +546,15 @@
                 <template x-for="(codigo, i) in modalCodigosLocaisFiltrados" :key="codigo">
                   <div @click="selecionarModalCodigoLocal(codigo)"
                     @mouseover="highlightedModalCodigoLocalIndex = i"
-                    :class="['px-3 py-2 cursor-pointer', highlightedModalCodigoLocalIndex === i ? 'bg-indigo-100 dark:bg-indigo-900' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
-                    <span class="font-mono text-indigo-600 dark:text-indigo-400" x-text="codigo"></span>
+                    :class="['px-3 py-2 cursor-pointer border-b border-gray-200 dark:border-gray-700 last:border-b-0', highlightedModalCodigoLocalIndex === i ? 'bg-indigo-100 dark:bg-indigo-900' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+                    <div class="flex items-start justify-between gap-2">
+                      <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400 flex-shrink-0" x-text="codigo"></span>
+                      <div class="flex-grow text-sm text-gray-700 dark:text-gray-300">
+                        <template x-for="nome in modalCodigosLocaisMap[codigo]" :key="nome">
+                          <div class="text-xs ml-2" x-text="'• ' + nome"></div>
+                        </template>
+                      </div>
+                    </div>
                   </div>
                 </template>
               </div>
@@ -798,6 +804,7 @@
       modalCodigoLocalSearch: '',
       modalCodigosLocaisDisponiveis: [], // Todos os códigos disponíveis do projeto
       modalCodigosLocaisFiltrados: [], // Códigos filtrados pela busca
+      modalCodigosLocaisMap: {}, // Mapa: { cdlocal: ['nome1', 'nome2', ...] }
       showModalCodigoLocalDropdown: false,
       highlightedModalCodigoLocalIndex: -1,
       carregandoCodigosLocaisModal: false,
@@ -1367,7 +1374,9 @@
               this.codigosLocaisFiltrados = locais.sort((a, b) => {
                 const codigoA = String(a.cdlocal).toLowerCase().trim();
                 const codigoB = String(b.cdlocal).toLowerCase().trim();
-                return codigoA.localeCompare(codigoB, undefined, { numeric: true });
+                return codigoA.localeCompare(codigoB, undefined, {
+                  numeric: true
+                });
               });
             } else {
               // Manter apenas aqueles que começam com o termo ou contêm
@@ -1379,7 +1388,9 @@
               this.codigosLocaisFiltrados = filtrados.sort((a, b) => {
                 const codigoA = String(a.cdlocal).toLowerCase().trim();
                 const codigoB = String(b.cdlocal).toLowerCase().trim();
-                return codigoA.localeCompare(codigoB, undefined, { numeric: true });
+                return codigoA.localeCompare(codigoB, undefined, {
+                  numeric: true
+                });
               });
             }
             this.highlightedCodigoLocalIndex = this.codigosLocaisFiltrados.length > 0 ? 0 : -1;
@@ -1402,29 +1413,29 @@
       },
       selecionarCodigoLocal(codigo) {
         console.log('✅ [SELECIONAR CÓDIGO] Código selecionado:', codigo);
-        
+
         // 1️⃣ Atualizar o código do local
         this.codigoLocalDigitado = String(codigo.cdlocal);
         this.formData.CDLOCAL = String(codigo.cdlocal);
-        
+
         // 2️⃣ 🆕 PREENCHER AUTOMATICAMENTE O NOME DO LOCAL
         // Este é o campo visível que o usuário vê
         const nomeLocal = codigo.LOCAL || codigo.delocal || '';
-        this.nomeLocalBusca = nomeLocal;  // Campo visível no input
-        this.localNome = nomeLocal;        // Variável interna
-        
+        this.nomeLocalBusca = nomeLocal; // Campo visível no input
+        this.localNome = nomeLocal; // Variável interna
+
         // 3️⃣ Preencher ID do local selecionado
         this.localSelecionadoId = codigo.id;
-        
+
         // 4️⃣ Fechar dropdown do código
         this.showCodigoLocalDropdown = false;
-        
+
         console.log('✅ [SELECIONAR CÓDIGO] Nome preenchido:', {
           nomeLocalBusca: this.nomeLocalBusca,
           localNome: this.localNome,
           codigoLocalDigitado: this.codigoLocalDigitado
         });
-        
+
         // 5️⃣ Buscar todos os locais com este código para validação
         // Isso mantém a lista de locais para caso haja múltiplos
         this.buscarLocalPorCodigo();
@@ -1919,7 +1930,7 @@
         this.formData.CDPROJETO = '';
         this.projetoAssociadoSearch = '';
       },
-      
+
       // === Funções para Projetos Associados ===
       selecionarProjetoAssociado(projeto) {
         this.formData.CDPROJETO = projeto.CDPROJETO;
@@ -2402,8 +2413,12 @@
       /**
        * Carregar códigos de locais já existentes do projeto selecionado
        */
+      /**
+       * Carregar códigos de locais já existentes do projeto selecionado
+       * Agora com informações de nomes associados
+       */
       async carregarCodigosLocaisDoProjeto(cdprojeto) {
-        console.log('� [MODAL] Carregando códigos do projeto:', cdprojeto);
+        console.log('[MODAL] Carregando códigos do projeto:', cdprojeto);
 
         this.carregandoCodigosLocaisModal = true;
         try {
@@ -2412,27 +2427,42 @@
           if (resp.ok) {
             const locais = await resp.json();
 
-            // Extrair códigos únicos
-            const codigosUnicos = [...new Set(locais.map(l => String(l.cdlocal)))].sort();
+            // Agrupar nomes por código de local
+            const mapaCodigosNomes = {};
+            locais.forEach(local => {
+              const cod = String(local.cdlocal || '');
+              const nome = String(local.LOCAL || local.delocal || '');
+              
+              if (!mapaCodigosNomes[cod]) {
+                mapaCodigosNomes[cod] = [];
+              }
+              
+              // Evitar duplicatas
+              if (!mapaCodigosNomes[cod].includes(nome)) {
+                mapaCodigosNomes[cod].push(nome);
+              }
+            });
+
+            // Salvar o mapa completo
+            this.modalCodigosLocaisMap = mapaCodigosNomes;
+
+            // Extrair códigos únicos e ordenar
+            const codigosUnicos = Object.keys(mapaCodigosNomes).sort();
 
             this.modalCodigosLocaisDisponiveis = codigosUnicos;
             this.modalCodigosLocaisFiltrados = codigosUnicos;
 
-            console.log('✅ [MODAL] Códigos carregados:', codigosUnicos.length);
+            console.log(' [MODAL] Códigos carregados:', codigosUnicos.length, 'com nomes:', mapaCodigosNomes);
           }
         } catch (e) {
-          console.error('❌ [MODAL] Erro ao carregar códigos:', e);
+          console.error(' [MODAL] Erro ao carregar códigos:', e);
           this.modalCodigosLocaisDisponiveis = [];
           this.modalCodigosLocaisFiltrados = [];
+          this.modalCodigosLocaisMap = {};
         } finally {
           this.carregandoCodigosLocaisModal = false;
         }
       },
-
-      /**
-       * Filtrar códigos conforme usuário digita
-       * Ordena por proximidade - matches exatos primeiro, depois semelhantes
-       */
       filtrarModalCodigosLocais() {
         const termo = String(this.modalCodigoLocalSearch || '').trim();
 
