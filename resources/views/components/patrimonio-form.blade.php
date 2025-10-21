@@ -2341,6 +2341,9 @@
             if (resp.ok) {
               projetos = await resp.json();
               
+              console.log('📊 [MODAL] Total de projetos retornados:', projetos.length);
+              console.log('🔢 [MODAL] Códigos retornados:', projetos.map(p => p.CDPROJETO).join(', '));
+              
               // Ordenar por código numérico
               projetos = projetos.sort((a, b) => {
                 const cda = parseInt(String(a.CDPROJETO || '').replace(/\D/g, '') || '0');
@@ -2348,8 +2351,12 @@
                 return cda - cdb;
               });
 
+              console.log('✅ [MODAL] Após ordenação:', projetos.map(p => p.CDPROJETO).slice(0, 15).join(', '), '...');
+
               // Limitar aos primeiros 50
               projetos = projetos.slice(0, 50);
+              
+              console.log('✂️ [MODAL] Após slice(0,50):', projetos.length, 'projetos');
             }
           } else {
             // Com termo de busca, faz a busca normalmente
