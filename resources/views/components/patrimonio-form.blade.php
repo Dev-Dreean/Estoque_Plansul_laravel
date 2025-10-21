@@ -824,6 +824,8 @@
       loadingModalProjetos: false,
       showModalProjetoDropdown: false,
       highlightedModalProjetoIndex: -1,
+      modalProjetosCache: null, // Cache dos primeiros 50 projetos
+      modalProjetosCacheTime: null, // Timestamp do cache
       // Dropdown de Código do Local (Modal)
       modalCodigoLocalSearch: '',
       modalCodigosLocaisDisponiveis: [], // Todos os códigos disponíveis do projeto
@@ -832,6 +834,7 @@
       showModalCodigoLocalDropdown: false,
       highlightedModalCodigoLocalIndex: -1,
       carregandoCodigosLocaisModal: false,
+      modalCodigosLocaisCache: {}, // Cache por projeto: { cdprojeto: { map, disponiveis, timestamp } }
       // Controle
       erroCriacaoProjeto: '',
       salvandoCriacaoProjeto: false,
@@ -2355,6 +2358,14 @@
       async buscarModalProjetos() {
         const termo = String(this.modalProjetoSearch || '').trim();
 
+        // ⚡ Se não tem termo, usa cache (se disponível e válido)
+        if (termo === '' && this.modalProjetosCache && (Date.now() - this.modalProjetosCacheTime) < 3600000) {
+          console.log('✅ [MODAL] Usando cache de projetos (3600s)');
+          this.modalProjetosLista = this.modalProjetosCache;
+          this.highlightedModalProjetoIndex = this.modalProjetosLista.length > 0 ? 0 : -1;
+          return;
+        }
+
         this.loadingModalProjetos = true;
         try {
           let projetos = [];
@@ -2373,6 +2384,11 @@
 
               console.log('✂️ [MODAL] Após slice(0,50):', projetos.length, 'projetos');
               console.log('✅ [MODAL] Primeiros 50 códigos:', projetos.map(p => p.CDPROJETO).join(', '));
+
+              // ⚡ Salvar em cache
+              this.modalProjetosCache = projetos;
+              this.modalProjetosCacheTime = Date.now();
+              console.log('💾 [MODAL] Cache de projetos salvo');
             }
           } else {
             // Com termo de busca, faz a busca normalmente
@@ -2395,8 +2411,15 @@
       abrirModalDropdownProjeto(force = false) {
         this.showModalProjetoDropdown = true;
         if (force || this.modalProjetoSearch.trim() === '') {
-          // Se force ou se vazio, buscar
-          this.buscarModalProjetos();
+          // ⚡ Se tem cache válido e vazio, usa cache (INSTANTÂNEO)
+          if (!force && this.modalProjetosCache && (Date.now() - this.modalProjetosCacheTime) < 3600000) {
+            console.log('⚡ [MODAL] Cache disponível - mostrando instantaneamente!');
+            this.modalProjetosLista = this.modalProjetosCache;
+            this.highlightedModalProjetoIndex = this.modalProjetosLista.length > 0 ? 0 : -1;
+          } else {
+            // Se não tem cache ou está expirado, buscar
+            this.buscarModalProjetos();
+          }
         }
       },
 
@@ -2460,6 +2483,16 @@
       async carregarCodigosLocaisDoProjeto(cdprojeto) {
         console.log('[MODAL] Carregando códigos do projeto:', cdprojeto);
 
+        // ⚡ Verificar cache (válido por 1 hora)
+        if (this.modalCodigosLocaisCache[cdprojeto] && 
+            (Date.now() - this.modalCodigosLocaisCache[cdprojeto].timestamp) < 3600000) {
+          console.log('✅ [MODAL] Usando cache de locais para projeto:', cdprojeto);
+          this.modalCodigosLocaisMap = this.modalCodigosLocaisCache[cdprojeto].map;
+          this.modalCodigosLocaisDisponiveis = this.modalCodigosLocaisCache[cdprojeto].disponiveis;
+          this.modalCodigosLocaisFiltrados = [...this.modalCodigosLocaisCache[cdprojeto].disponiveis];
+          return;
+        }
+
         this.carregandoCodigosLocaisModal = true;
         try {
           // Buscar todos os locais deste projeto
@@ -2483,12 +2516,19 @@
               }
             });
 
-            // Salvar o mapa completo
-            this.modalCodigosLocaisMap = mapaCodigosNomes;
-
             // Extrair códigos únicos e ordenar
             const codigosUnicos = Object.keys(mapaCodigosNomes).sort();
 
+            // Salvar em cache
+            this.modalCodigosLocaisCache[cdprojeto] = {
+              map: mapaCodigosNomes,
+              disponiveis: codigosUnicos,
+              timestamp: Date.now()
+            };
+            console.log('💾 [MODAL] Cache de locais salvo para projeto:', cdprojeto);
+
+            // Atualizar variáveis
+            this.modalCodigosLocaisMap = mapaCodigosNomes;
             this.modalCodigosLocaisDisponiveis = codigosUnicos;
             this.modalCodigosLocaisFiltrados = codigosUnicos;
 
