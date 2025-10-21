@@ -2341,13 +2341,13 @@
             const resp = await fetch(`/api/projetos/pesquisar?q=`);
             if (resp.ok) {
               projetos = await resp.json();
-              
+
               console.log('📊 [MODAL] Total de projetos retornados:', projetos.length);
               console.log('🔢 [MODAL] Códigos retornados:', projetos.map(p => p.CDPROJETO).join(', '));
-              
+
               // API já retorna ordenado numericamente, apenas limita aos primeiros 50
               projetos = projetos.slice(0, 50);
-              
+
               console.log('✂️ [MODAL] Após slice(0,50):', projetos.length, 'projetos');
               console.log('✅ [MODAL] Primeiros 50 códigos:', projetos.map(p => p.CDPROJETO).join(', '));
             }

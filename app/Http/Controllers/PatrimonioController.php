@@ -19,6 +19,7 @@ use App\Models\HistoricoMovimentacao;
 use App\Models\TermoCodigo;
 use App\Services\CodigoService;
 use Illuminate\Validation\ValidationException;
+use App\Services\SearchCacheService;
 
 class PatrimonioController extends Controller
 {
@@ -50,21 +51,29 @@ class PatrimonioController extends Controller
         try {
             $termo = trim((string) $request->input('q', ''));
 
-            // Buscar todos os códigos
-            $codigos = ObjetoPatr::select(['NUSEQOBJETO as CODOBJETO', 'DEOBJETO as DESCRICAO'])
-                ->get()
-                ->toArray();
+            // Sem termo, retorna vazio (evita trazer tudo)
+            if (empty($termo)) {
+                return response()->json([]);
+            }
 
-            // Aplicar filtro inteligente
-            $filtrados = \App\Services\FilterService::filtrar(
-                $codigos,
-                $termo,
-                ['CODOBJETO', 'DESCRICAO'],  // campos de busca
-                ['CODOBJETO' => 'número', 'DESCRICAO' => 'texto'],  // tipos de campo
-                10  // limite
-            );
+            // ⚡ CACHE: Verifica se já foi buscado recentemente
+            $cacheKey = SearchCacheService::codigosKey($termo);
+            $codigos = SearchCacheService::remember($cacheKey, function () use ($termo) {
+                // ⚡ OTIMIZADO: Buscar apenas no BD com LIKE, sem trazer tudo
+                $query = ObjetoPatr::select(['NUSEQOBJETO as CODOBJETO', 'DEOBJETO as DESCRICAO']);
 
-            return response()->json($filtrados);
+                // Se é numérico, busca exato no código
+                if (is_numeric($termo)) {
+                    $query->where('NUSEQOBJETO', 'like', "$termo%");
+                } else {
+                    // Se é texto, busca na descrição
+                    $query->where('DEOBJETO', 'like', "%$termo%");
+                }
+
+                return $query->limit(15)->get()->toArray();
+            });
+
+            return response()->json($codigos);
         } catch (\Throwable $e) {
             Log::error('Erro pesquisarCodigos: ' . $e->getMessage());
             return response()->json([], 200);
@@ -358,58 +367,127 @@ class PatrimonioController extends Controller
     {
         $termo = trim((string) $request->input('q', ''));
 
-        // Buscar todos os projetos (excluindo código 0 - "Não se aplica")
-        $projetos = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
-            ->where('CDPROJETO', '!=', 0)  // Excluir código 0
-            ->distinct()
-            ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')  // Ordenação numérica
-            ->get()
-            ->toArray();
+        // ⚡ CACHE: Verifica se já foi buscado recentemente
+        $cacheKey = SearchCacheService::projetosKey($termo);
+        $projetos = SearchCacheService::remember($cacheKey, function () use ($termo) {
+            // ⚡ OTIMIZADO: Construir query eficiente direto no BD
+            $query = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
+                ->where('CDPROJETO', '!=', 0);
 
-        // Se há termo numérico, aplicar busca inteligente por magnitude
-        if ($termo !== '' && is_numeric($termo)) {
-            $filtrados = $this->buscarProjetosPorMagnitude($projetos, $termo);
-        } else if ($termo !== '') {
-            // Busca por nome
-            $termo_lower = strtolower($termo);
-            $filtrados = array_filter($projetos, function($p) use ($termo_lower) {
-                return strpos(strtolower($p['NOMEPROJETO']), $termo_lower) !== false
-                    || strpos($p['CDPROJETO'], $termo_lower) !== false;
-            });
-            $filtrados = array_values($filtrados); // Re-indexar array
-        } else {
-            // Sem filtro, retorna todos
-            $filtrados = $projetos;
-        }
+            // Sem termo, retorna apenas os primeiros 30
+            if (empty($termo)) {
+                return $query->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')
+                    ->limit(30)
+                    ->get()
+                    ->toArray();
+            }
 
-        // Limitar a 30 resultados
-        $filtrados = array_slice($filtrados, 0, 30);
+            // Se numérico, busca por magnitude
+            if (is_numeric($termo)) {
+                return $this->pesquisarProjetosNumerico($termo);
+            }
 
-        return response()->json($filtrados);
+            // Se texto, busca no nome do projeto
+            return $query->where('NOMEPROJETO', 'like', "%$termo%")
+                ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')
+                ->limit(30)
+                ->get()
+                ->toArray();
+        });
+
+        return response()->json($projetos);
     }
 
     /**
-     * Busca projetos por magnitude numérica
-     * Se digitar 8: retorna 8, 80-89, 800-899, 8000-8999
-     * Se digitar 80: retorna 80-89, 800-899, 8000-8999
+     * ⚡ Busca numérica otimizada com magnitude
+     * Busca diretamente no BD em vez de trazer tudo
+     */
+    private function pesquisarProjetosNumerico($termo): array
+    {
+        $termo_num = (int)$termo;
+        $termo_len = strlen($termo);
+        $resultados = [];
+
+        // Busca exata ou prefix match primeiro
+        $query = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
+            ->where('CDPROJETO', '!=', 0)
+            ->where('CDPROJETO', 'like', "$termo%")
+            ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')
+            ->limit(30)
+            ->get()
+            ->toArray();
+
+        $resultados = array_merge($resultados, $query);
+
+        // Se ainda há espaço e tamanho 1, busca magnitudes
+        if (count($resultados) < 30 && $termo_len === 1) {
+            // Décimos: 8 -> 80-89
+            $min = $termo_num * 10;
+            $max = $min + 9;
+            $query = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
+                ->where('CDPROJETO', '!=', 0)
+                ->whereBetween('CDPROJETO', [$min, $max])
+                ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')
+                ->limit(30 - count($resultados))
+                ->get()
+                ->toArray();
+            $resultados = array_merge($resultados, $query);
+        }
+
+        // Centenas: 8 -> 800-899 ou 80 -> 800-899
+        if (count($resultados) < 30 && $termo_len <= 2) {
+            $min = $termo_num * 100;
+            $max = $min + 99;
+            $query = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
+                ->where('CDPROJETO', '!=', 0)
+                ->whereBetween('CDPROJETO', [$min, $max])
+                ->whereNotIn('CDPROJETO', array_column($resultados, 'CDPROJETO'))
+                ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')
+                ->limit(30 - count($resultados))
+                ->get()
+                ->toArray();
+            $resultados = array_merge($resultados, $query);
+        }
+
+        // Milhares: 8 -> 8000-8999 ou 80 -> 8000-8999
+        if (count($resultados) < 30 && $termo_len <= 2) {
+            $min = $termo_num * 1000;
+            $max = $min + 999;
+            $query = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
+                ->where('CDPROJETO', '!=', 0)
+                ->whereBetween('CDPROJETO', [$min, $max])
+                ->whereNotIn('CDPROJETO', array_column($resultados, 'CDPROJETO'))
+                ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')
+                ->limit(30 - count($resultados))
+                ->get()
+                ->toArray();
+            $resultados = array_merge($resultados, $query);
+        }
+
+        return array_slice($resultados, 0, 30);
+    }
+
+    /**
+     * ⚡ FUNÇÃO OBSOLETA - Mantida para compatibilidade retroativa
+     * Busca por magnitude já integrada em pesquisarProjetosNumerico()
      */
     private function buscarProjetosPorMagnitude($projetos, $termo): array
     {
         $termo_len = strlen($termo);
         $termo_num = (int)$termo;
-        
+
         $resultados = [];
-        
+
         foreach ($projetos as $projeto) {
             $codigo = (int)$projeto['CDPROJETO'];
             $codigo_str = (string)$codigo;
-            
+
             // Verificar se começa com o termo
             if (strpos($codigo_str, $termo) === 0) {
                 $resultados[] = $projeto;
                 continue;
             }
-            
+
             // Verificar magnitudes (décimos, centenas, milhares)
             // Décimos: 8 -> 80-89
             if ($termo_len === 1) {
@@ -419,7 +497,7 @@ class PatrimonioController extends Controller
                     $resultados[] = $projeto;
                     continue;
                 }
-                
+
                 // Centenas: 8 -> 800-899
                 $min = $termo_num * 100;
                 $max = $min + 99;
@@ -427,7 +505,7 @@ class PatrimonioController extends Controller
                     $resultados[] = $projeto;
                     continue;
                 }
-                
+
                 // Milhares: 8 -> 8000-8999
                 $min = $termo_num * 1000;
                 $max = $min + 999;
@@ -444,7 +522,7 @@ class PatrimonioController extends Controller
                     $resultados[] = $projeto;
                     continue;
                 }
-                
+
                 // Milhares: 80 -> 8000-8999
                 $min = $termo_num * 100;
                 $max = $min + 99;
@@ -461,55 +539,46 @@ class PatrimonioController extends Controller
                 }
             }
         }
-        
+
         return $resultados;
     }
 
     /**
-     * Busca projetos associados a um local específico.
-     * Retorna os projetos vinculados ao local informado pelo cdlocal.
+     * ⚡ Busca projetos associados a um local específico - OTIMIZADO + CACHE
+     * Retorna apenas os campos necessários, com filtros no SQL
      */
     public function buscarProjetosPorLocal($cdlocal): JsonResponse
     {
         try {
-            // Buscar TODOS os projetos vinculados a este local
-            $locaisProjetos = LocalProjeto::with('projeto')
-                ->where('cdlocal', $cdlocal)
-                ->where('flativo', true)
-                ->whereHas('projeto')
-                ->get();
-
-            $projetos = [];
-            foreach ($locaisProjetos as $localProjeto) {
-                if ($localProjeto->projeto) {
-                    $projetos[] = [
-                        'id' => $localProjeto->id,
-                        'CDPROJETO' => $localProjeto->projeto->CDPROJETO,
-                        'NOMEPROJETO' => $localProjeto->projeto->NOMEPROJETO,
-                        'tabfant_id' => $localProjeto->tabfant_id
-                    ];
-                }
-            }
-
-            // Remover duplicatas por CDPROJETO
-            $projetosUnicos = collect($projetos)->unique('CDPROJETO')->values()->all();
-
-            // Se veio um termo de busca (q), filtra pelo código ou nome
             $q = trim((string) request()->query('q', ''));
-            if ($q !== '' && strlen($q) < 3) {
-                return response()->json([]);
-            }
-            if ($q !== '') {
-                $projetosUnicos = array_filter($projetosUnicos, function ($projeto) use ($q) {
-                    return stripos((string) $projeto['CDPROJETO'], $q) !== false ||
-                        stripos((string) $projeto['NOMEPROJETO'], $q) !== false;
-                });
-                $projetosUnicos = array_values($projetosUnicos);
-            }
-            // Limitar a 5 resultados
-            $projetosUnicos = array_slice($projetosUnicos, 0, 5);
 
-            return response()->json($projetosUnicos);
+            // ⚡ CACHE: Verifica se já foi buscado recentemente
+            $cacheKey = SearchCacheService::projetosLocalKey($cdlocal, $q);
+            $projetos = SearchCacheService::remember($cacheKey, function () use ($cdlocal, $q) {
+                // ⚡ OTIMIZADO: Usar join em vez de relação + foreach
+                $query = LocalProjeto::select('locais_projetos.id', 'tabfant.CDPROJETO', 'tabfant.NOMEPROJETO', 'locais_projetos.tabfant_id')
+                    ->join('tabfant', 'locais_projetos.tabfant_id', '=', 'tabfant.id')
+                    ->where('locais_projetos.cdlocal', $cdlocal)
+                    ->where('locais_projetos.flativo', true)
+                    ->distinct()
+                    ->orderByRaw('CAST(tabfant.CDPROJETO AS UNSIGNED) ASC');
+
+                // Aplicar filtro de busca direto no SQL se houver
+                if ($q !== '') {
+                    if (strlen($q) < 2) {
+                        return [];
+                    }
+                    if (is_numeric($q)) {
+                        $query->where('tabfant.CDPROJETO', 'like', "$q%");
+                    } else {
+                        $query->where('tabfant.NOMEPROJETO', 'like', "%$q%");
+                    }
+                }
+
+                return $query->limit(5)->get()->toArray();
+            });
+
+            return response()->json($projetos);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Erro ao buscar projetos por local', [
                 'cdlocal' => $cdlocal,
@@ -665,54 +734,65 @@ class PatrimonioController extends Controller
     }
 
     /**
-     * Busca locais disponíveis por código ou nome
+     * ⚡ Busca locais disponíveis - OTIMIZADO com JOIN + CACHE
+     * Busca diretamente no SQL sem trazer tudo e filtrar em PHP
      */
     public function buscarLocais(Request $request): JsonResponse
     {
         $termo = trim($request->input('termo', ''));
         $cdprojeto = trim($request->input('cdprojeto', ''));
 
-        // BUSCAR NA TABELA LOCAIS_PROJETO (tem o cdlocal)
-        $query = LocalProjeto::query();
+        // ⚡ CACHE: Verifica se já foi buscado recentemente
+        $cacheKey = SearchCacheService::locaisKey($termo, $cdprojeto);
+        $locais = SearchCacheService::remember($cacheKey, function () use ($termo, $cdprojeto) {
+            // ⚡ OTIMIZADO: Usar JOIN em vez de wheresHas + map + find
+            $query = LocalProjeto::select(
+                'locais_projetos.id',
+                'locais_projetos.cdlocal',
+                'locais_projetos.delocal',
+                'tabfant.CDPROJETO',
+                'tabfant.NOMEPROJETO',
+                'locais_projetos.tabfant_id',
+                'locais_projetos.flativo'
+            )
+            ->join('tabfant', 'locais_projetos.tabfant_id', '=', 'tabfant.id')
+            ->where('locais_projetos.flativo', true)
+            ->distinct();
 
-        // Se tiver cdprojeto, filtrar apenas por esse projeto
-        if ($cdprojeto !== '') {
-            $query->whereHas('projeto', function ($q) use ($cdprojeto) {
-                $q->where('CDPROJETO', $cdprojeto);
-            });
-        }
-
-        $locaisProjeto = $query->get();
-
-        // Buscar informações do projeto na tabfant para cada local
-        $locais = $locaisProjeto->map(function ($lp) {
-            $tabfant = null;
-            if ($lp->tabfant_id) {
-                $tabfant = Tabfant::find($lp->tabfant_id);
+            // Se tiver cdprojeto, filtrar apenas por esse projeto
+            if ($cdprojeto !== '') {
+                $query->where('tabfant.CDPROJETO', $cdprojeto);
             }
 
-            return [
-                'id' => $lp->id,
-                'cdlocal' => $lp->cdlocal,
-                'LOCAL' => $lp->delocal,
-                'delocal' => $lp->delocal,
-                'CDPROJETO' => $tabfant ? $tabfant->CDPROJETO : null,
-                'NOMEPROJETO' => $tabfant ? $tabfant->NOMEPROJETO : null,
-                'tabfant_id' => $lp->tabfant_id,
-                'flativo' => $lp->flativo ?? false,
-            ];
-        })->toArray();
+            // Aplicar filtro de busca direto no SQL
+            if ($termo !== '') {
+                if (is_numeric($termo)) {
+                    $query->where('locais_projetos.cdlocal', 'like', "$termo%");
+                } else {
+                    $query->where('locais_projetos.delocal', 'like', "%$termo%");
+                }
+            }
 
-        // Aplicar filtro inteligente
-        $filtrados = \App\Services\FilterService::filtrar(
-            $locais,
-            $termo,
-            ['cdlocal', 'delocal'],  // campos de busca
-            ['cdlocal' => 'número', 'delocal' => 'texto'],  // tipos de campo
-            100  // limite
-        );
+            // Limitar para evitar trazer dados demais
+            return $query->limit(100)
+                ->orderBy('locais_projetos.cdlocal')
+                ->get()
+                ->map(function ($lp) {
+                    return [
+                        'id' => $lp->id,
+                        'cdlocal' => $lp->cdlocal,
+                        'LOCAL' => $lp->delocal,
+                        'delocal' => $lp->delocal,
+                        'CDPROJETO' => $lp->CDPROJETO,
+                        'NOMEPROJETO' => $lp->NOMEPROJETO,
+                        'tabfant_id' => $lp->tabfant_id,
+                        'flativo' => $lp->flativo ?? false,
+                    ];
+                })
+                ->toArray();
+        });
 
-        return response()->json($filtrados);
+        return response()->json($locais);
     }
 
     /**
