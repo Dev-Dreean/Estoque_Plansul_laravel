@@ -366,16 +366,103 @@ class PatrimonioController extends Controller
             ->get()
             ->toArray();
 
-        // Aplicar filtro inteligente
-        $filtrados = \App\Services\FilterService::filtrar(
-            $projetos,
-            $termo,
-            ['CDPROJETO', 'NOMEPROJETO'],  // campos de busca
-            ['CDPROJETO' => 'número', 'NOMEPROJETO' => 'texto'],  // tipos de campo
-            100  // limite
-        );
+        // Se há termo numérico, aplicar busca inteligente por magnitude
+        if ($termo !== '' && is_numeric($termo)) {
+            $filtrados = $this->buscarProjetosPorMagnitude($projetos, $termo);
+        } else if ($termo !== '') {
+            // Busca por nome
+            $termo_lower = strtolower($termo);
+            $filtrados = array_filter($projetos, function($p) use ($termo_lower) {
+                return strpos(strtolower($p['NOMEPROJETO']), $termo_lower) !== false
+                    || strpos($p['CDPROJETO'], $termo_lower) !== false;
+            });
+            $filtrados = array_values($filtrados); // Re-indexar array
+        } else {
+            // Sem filtro, retorna todos
+            $filtrados = $projetos;
+        }
+
+        // Limitar a 30 resultados
+        $filtrados = array_slice($filtrados, 0, 30);
 
         return response()->json($filtrados);
+    }
+
+    /**
+     * Busca projetos por magnitude numérica
+     * Se digitar 8: retorna 8, 80-89, 800-899, 8000-8999
+     * Se digitar 80: retorna 80-89, 800-899, 8000-8999
+     */
+    private function buscarProjetosPorMagnitude($projetos, $termo): array
+    {
+        $termo_len = strlen($termo);
+        $termo_num = (int)$termo;
+        
+        $resultados = [];
+        
+        foreach ($projetos as $projeto) {
+            $codigo = (int)$projeto['CDPROJETO'];
+            $codigo_str = (string)$codigo;
+            
+            // Verificar se começa com o termo
+            if (strpos($codigo_str, $termo) === 0) {
+                $resultados[] = $projeto;
+                continue;
+            }
+            
+            // Verificar magnitudes (décimos, centenas, milhares)
+            // Décimos: 8 -> 80-89
+            if ($termo_len === 1) {
+                $min = $termo_num * 10;
+                $max = $min + 9;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                    continue;
+                }
+                
+                // Centenas: 8 -> 800-899
+                $min = $termo_num * 100;
+                $max = $min + 99;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                    continue;
+                }
+                
+                // Milhares: 8 -> 8000-8999
+                $min = $termo_num * 1000;
+                $max = $min + 999;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                }
+            }
+            // Dezenas: 80 -> 800-899, 8000-8999
+            else if ($termo_len === 2) {
+                // Centenas: 80 -> 800-899
+                $min = $termo_num * 10;
+                $max = $min + 9;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                    continue;
+                }
+                
+                // Milhares: 80 -> 8000-8999
+                $min = $termo_num * 100;
+                $max = $min + 99;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                }
+            }
+            // Centenas: 800 -> 8000-8999
+            else if ($termo_len === 3) {
+                $min = $termo_num * 10;
+                $max = $min + 9;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                }
+            }
+        }
+        
+        return $resultados;
     }
 
     /**
