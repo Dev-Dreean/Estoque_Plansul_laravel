@@ -3,100 +3,221 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
-/**
- * ⚡ Serviço de cache ultra-rápido para buscas frequentes
- * Reduz queries ao banco em até 95% para buscas repetidas
- */
 class SearchCacheService
 {
-    /**
-     * TTL padrão: 6 horas para dados que mudam pouco
-     */
-    private const CACHE_TTL = 3600 * 6;
+    // Cache keys
+    const CACHE_PROJETOS = 'search:projetos:all';
+    const CACHE_CODIGOS = 'search:codigos:all';
+    const CACHE_LOCAIS_PREFIX = 'search:locais:projeto:';
+    const CACHE_PATRIMONIO = 'search:patrimonio:all';
+    
+    // Cache TTL em minutos
+    const CACHE_TTL = 60;
 
     /**
-     * Prefix para todas as chaves de cache
+     * Busca e cacheia todos os projetos
      */
-    private const CACHE_PREFIX = 'search_cache:';
-
-    /**
-     * ⚡ Busca em cache ou banco de dados
-     */
-    public static function remember(string $key, callable $callback, int $ttl = self::CACHE_TTL)
+    public static function getProjetos($force = false): array
     {
-        $cacheKey = self::CACHE_PREFIX . $key;
-
-        // Tenta buscar do cache em memória
-        $cached = Cache::store('array')->get($cacheKey);
-        if ($cached !== null) {
-            return $cached;
+        if (!$force && Cache::has(self::CACHE_PROJETOS)) {
+            return Cache::get(self::CACHE_PROJETOS);
         }
 
-        // Se não está em cache, executa callback e armazena
-        $result = $callback();
+        $projetos = DB::table('tabfant')
+            ->select('CDPROJETO', 'NOMEPROJETO')
+            ->where('CDPROJETO', '!=', 0)
+            ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')
+            ->get()
+            ->toArray();
 
-        // Armazena em cache (array é mais rápido que redis para dados pequenos)
-        Cache::store('array')->put($cacheKey, $result, $ttl);
+        Cache::put(self::CACHE_PROJETOS, $projetos, now()->addMinutes(self::CACHE_TTL));
+        return $projetos;
+    }
 
-        // Também tenta cache persistente se disponível
-        try {
-            Cache::put($cacheKey, $result, $ttl);
-        } catch (\Exception $e) {
-            // Se falhar, ignora - o array cache já tem o resultado
+    /**
+     * Busca e cacheia todos os códigos
+     */
+    public static function getCodigos($force = false): array
+    {
+        if (!$force && Cache::has(self::CACHE_CODIGOS)) {
+            return Cache::get(self::CACHE_CODIGOS);
         }
 
-        return $result;
+        $codigos = DB::table('objeto_patr')
+            ->select('NUSEQOBJETO as CODOBJETO', 'DEOBJETO as DESCRICAO')
+            ->orderBy('NUSEQOBJETO')
+            ->get()
+            ->toArray();
+
+        Cache::put(self::CACHE_CODIGOS, $codigos, now()->addMinutes(self::CACHE_TTL));
+        return $codigos;
     }
 
     /**
-     * Limpa cache de uma chave específica
+     * Busca e cacheia locais de um projeto
      */
-    public static function forget(string $key): void
+    public static function getLocaisPorProjeto($tabfant_id, $force = false): array
     {
-        $cacheKey = self::CACHE_PREFIX . $key;
-        Cache::forget($cacheKey);
-        Cache::store('array')->forget($cacheKey);
+        $cacheKey = self::CACHE_LOCAIS_PREFIX . $tabfant_id;
+        
+        if (!$force && Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
+        $locais = DB::table('locais_projeto')
+            ->where('tabfant_id', $tabfant_id)
+            ->where('flativo', true)
+            ->select('id', 'cdlocal', 'delocal')
+            ->orderBy('delocal')
+            ->get()
+            ->toArray();
+
+        Cache::put($cacheKey, $locais, now()->addMinutes(self::CACHE_TTL));
+        return $locais;
     }
 
     /**
-     * Limpa TODO o cache de buscas
+     * Busca e cacheia patrimônios
      */
-    public static function flushAll(): void
+    public static function getPatrimonios($force = false): array
     {
-        // Limpa prefixo específico (não afeta outros caches)
-        Cache::flush();
+        if (!$force && Cache::has(self::CACHE_PATRIMONIO)) {
+            return Cache::get(self::CACHE_PATRIMONIO);
+        }
+
+        $patrimonios = DB::table('patrimonio')
+            ->select('NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO')
+            ->get()
+            ->toArray();
+
+        Cache::put(self::CACHE_PATRIMONIO, $patrimonios, now()->addMinutes(self::CACHE_TTL));
+        return $patrimonios;
     }
 
     /**
-     * Gera chave de cache para busca de códigos
+     * Invalida cache de projetos
      */
-    public static function codigosKey(string $termo): string
+    public static function invalidateProjetos(): void
     {
-        return "codigos:".md5($termo);
+        Cache::forget(self::CACHE_PROJETOS);
     }
 
     /**
-     * Gera chave de cache para busca de projetos
+     * Invalida cache de códigos
      */
-    public static function projetosKey(string $termo): string
+    public static function invalidateCodigos(): void
     {
-        return "projetos:".md5($termo);
+        Cache::forget(self::CACHE_CODIGOS);
     }
 
     /**
-     * Gera chave de cache para busca de locais
+     * Invalida cache de um projeto específico
      */
-    public static function locaisKey(string $termo, string $cdprojeto = ''): string
+    public static function invalidateLocaisProjeto($tabfant_id): void
     {
-        return "locais:".md5($termo.$cdprojeto);
+        Cache::forget(self::CACHE_LOCAIS_PREFIX . $tabfant_id);
     }
 
     /**
-     * Gera chave de cache para projetos de um local
+     * Invalida cache de patrimônios
      */
-    public static function projetosLocalKey(string $cdlocal, string $q = ''): string
+    public static function invalidatePatrimonio(): void
     {
-        return "projetos_local:".md5($cdlocal.$q);
+        Cache::forget(self::CACHE_PATRIMONIO);
+    }
+
+    /**
+     * Busca rápida em array usando índice
+     */
+    public static function filtrarRapido(array $dados, string $termo, array $campos): array
+    {
+        if (empty($termo)) {
+            return array_slice($dados, 0, 30);
+        }
+
+        $termo_lower = strtolower($termo);
+        $resultados = [];
+
+        foreach ($dados as $item) {
+            foreach ($campos as $campo) {
+                if (isset($item->{$campo}) && stripos((string)$item->{$campo}, $termo_lower) === 0) {
+                    $resultados[] = $item;
+                    break;
+                }
+            }
+        }
+
+        return array_slice($resultados, 0, 30);
+    }
+
+    /**
+     * Busca por magnitude em números
+     */
+    public static function filtrarPorMagnitude(array $dados, string $termo, string $campoNumero): array
+    {
+        if (!is_numeric($termo)) {
+            return [];
+        }
+
+        $termo_len = strlen($termo);
+        $termo_num = (int)$termo;
+        $resultados = [];
+
+        foreach ($dados as $item) {
+            $codigo = (int)($item->{$campoNumero} ?? 0);
+            $codigo_str = (string)$codigo;
+
+            // Prefixo exato
+            if (strpos($codigo_str, $termo) === 0) {
+                $resultados[] = $item;
+                continue;
+            }
+
+            // Magnitude checks
+            if ($termo_len === 1) {
+                $min = $termo_num * 10;
+                $max = $min + 9;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $item;
+                    continue;
+                }
+
+                $min = $termo_num * 100;
+                $max = $min + 99;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $item;
+                    continue;
+                }
+
+                $min = $termo_num * 1000;
+                $max = $min + 999;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $item;
+                }
+            } else if ($termo_len === 2) {
+                $min = $termo_num * 10;
+                $max = $min + 9;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $item;
+                    continue;
+                }
+
+                $min = $termo_num * 100;
+                $max = $min + 99;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $item;
+                }
+            } else if ($termo_len === 3) {
+                $min = $termo_num * 10;
+                $max = $min + 9;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $item;
+                }
+            }
+        }
+
+        return array_slice($resultados, 0, 30);
     }
 }
