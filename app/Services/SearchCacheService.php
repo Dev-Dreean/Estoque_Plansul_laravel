@@ -46,6 +46,22 @@ class SearchCacheService
     }
 
     /**
+     * Obter todos os patrimônios com cache
+     */
+    public static function getPatrimonios(bool $refresh = false): array
+    {
+        if ($refresh) {
+            Cache::forget(self::CACHE_PATRIMONIO);
+        }
+
+        return Cache::remember(self::CACHE_PATRIMONIO, self::CACHE_TTL, function () {
+            return \App\Models\Patrimonio::select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO'])
+                ->get()
+                ->toArray();
+        });
+    }
+
+    /**
      * Gerar chave de cache para códigos por termo
      */
     public static function codigosKey(string $termo): string
