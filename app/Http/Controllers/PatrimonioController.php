@@ -361,6 +361,7 @@ class PatrimonioController extends Controller
         // Buscar todos os projetos
         $projetos = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
             ->distinct()
+            ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')  // Ordenação numérica
             ->get()
             ->toArray();
 

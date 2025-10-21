@@ -483,7 +483,7 @@
             </div>
           </div>
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Clique para ver todos os projetos em ordem numérica ou digite para buscar
+            Clique para ver os primeiros 50 projetos em ordem numérica ou digite para buscar
           </p>
         </div>
 
@@ -2325,7 +2325,8 @@
 
       /**
        * Buscar projetos para o dropdown do modal
-       * Se vazio: mostra primeiros 50 em ordem numérica
+       * A API já retorna ordenado numericamente
+       * Se vazio: mostra primeiros 50
        * Se tem termo: busca por matching
        */
       async buscarModalProjetos() {
@@ -2344,19 +2345,11 @@
               console.log('📊 [MODAL] Total de projetos retornados:', projetos.length);
               console.log('🔢 [MODAL] Códigos retornados:', projetos.map(p => p.CDPROJETO).join(', '));
               
-              // Ordenar por código numérico
-              projetos = projetos.sort((a, b) => {
-                const cda = parseInt(String(a.CDPROJETO || '').replace(/\D/g, '') || '0');
-                const cdb = parseInt(String(b.CDPROJETO || '').replace(/\D/g, '') || '0');
-                return cda - cdb;
-              });
-
-              console.log('✅ [MODAL] Após ordenação:', projetos.map(p => p.CDPROJETO).slice(0, 15).join(', '), '...');
-
-              // Limitar aos primeiros 50
+              // API já retorna ordenado numericamente, apenas limita aos primeiros 50
               projetos = projetos.slice(0, 50);
               
               console.log('✂️ [MODAL] Após slice(0,50):', projetos.length, 'projetos');
+              console.log('✅ [MODAL] Primeiros 50 códigos:', projetos.map(p => p.CDPROJETO).join(', '));
             }
           } else {
             // Com termo de busca, faz a busca normalmente
