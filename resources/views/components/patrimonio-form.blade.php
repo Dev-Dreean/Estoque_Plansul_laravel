@@ -444,7 +444,7 @@
               @keydown.up.prevent="navegarModalProjetos(-1)"
               @keydown.enter.prevent="selecionarModalProjetoEnter()"
               @keydown.escape.prevent="showModalProjetoDropdown = false"
-              placeholder="Clique para ver os 50 primeiros projetos ou digite para filtrar"
+              placeholder="Digite o código ou nome do projeto"
               class="w-full h-10 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md pr-10" />
 
             {{-- Botão limpar e lupa --}}
@@ -476,16 +476,14 @@
                 <div @click="selecionarModalProjeto(p)"
                   @mouseover="highlightedModalProjetoIndex = i"
                   :class="['px-3 py-2 cursor-pointer border-b border-gray-200 dark:border-gray-700 last:border-b-0', highlightedModalProjetoIndex === i ? 'bg-indigo-100 dark:bg-indigo-900' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
-                  <div class="flex items-center gap-2">
-                    <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400 flex-shrink-0" x-text="p.CDPROJETO"></span>
-                    <span class="text-gray-700 dark:text-gray-300 flex-grow" x-text="' - ' + p.NOMEPROJETO"></span>
-                  </div>
+                  <span class="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400" x-text="p.CDPROJETO"></span>
+                  <span class="ml-2 text-gray-700 dark:text-gray-300" x-text="' - ' + p.NOMEPROJETO"></span>
                 </div>
               </template>
             </div>
           </div>
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Primeiro selecione o projeto para o qual deseja criar um novo local
+            Clique para ver os primeiros 50 projetos em ordem numérica ou digite para buscar
           </p>
         </div>
 
@@ -2325,7 +2323,8 @@
 
       /**
        * Buscar projetos para o dropdown do modal
-       * Ordena por proximidade - matches exatos primeiro, depois semelhantes
+       * Se vazio: mostra primeiros 50 em ordem numérica
+       * Se tem termo: busca por matching
        */
       async buscarModalProjetos() {
         const termo = String(this.modalProjetoSearch || '').trim();
@@ -2333,35 +2332,35 @@
         this.loadingModalProjetos = true;
         try {
           let projetos = [];
-          
+
           if (termo === '') {
-            // Se vazio, buscar todos e mostrar os primeiros 50 ordenados
+            // Quando vazio, buscar todos os projetos (sem filtro)
             const resp = await fetch(`/api/projetos/pesquisar?q=`);
             if (resp.ok) {
               projetos = await resp.json();
+              
+              // Ordenar por código numérico
+              projetos = projetos.sort((a, b) => {
+                const cda = parseInt(String(a.CDPROJETO || '').replace(/\D/g, '') || '0');
+                const cdb = parseInt(String(b.CDPROJETO || '').replace(/\D/g, '') || '0');
+                return cda - cdb;
+              });
+
+              // Limitar aos primeiros 50
+              projetos = projetos.slice(0, 50);
             }
           } else {
-            // Se tem termo, filtrar
+            // Com termo de busca, faz a busca normalmente
             const resp = await fetch(`/api/projetos/pesquisar?q=${encodeURIComponent(termo)}`);
             if (resp.ok) {
               projetos = await resp.json();
             }
           }
 
-          // Ordenar alfabéticamente e numericamente
-          projetos.sort((a, b) => {
-            const nomeA = String(a.NOMEPROJETO || '').toLowerCase();
-            const nomeB = String(b.NOMEPROJETO || '').toLowerCase();
-            return nomeA.localeCompare(nomeB, 'pt-BR', { numeric: true });
-          });
-
-          // Limitar aos primeiros 50 resultados
-          this.modalProjetosLista = projetos.slice(0, 50);
+          this.modalProjetosLista = projetos;
           this.highlightedModalProjetoIndex = this.modalProjetosLista.length > 0 ? 0 : -1;
-
-          console.log('[MODAL] Projetos carregados:', this.modalProjetosLista.length, '/ Total:', projetos.length);
         } catch (e) {
-          console.error('❌ Erro ao buscar projetos:', e);
+          console.error('Erro ao buscar projetos:', e);
           this.modalProjetosLista = [];
         } finally {
           this.loadingModalProjetos = false;
@@ -2370,8 +2369,10 @@
 
       abrirModalDropdownProjeto(force = false) {
         this.showModalProjetoDropdown = true;
-        // Sempre buscar (mesmo que vazio) para mostrar os 50 primeiros
-        this.buscarModalProjetos();
+        if (force || this.modalProjetoSearch.trim() === '') {
+          // Se force ou se vazio, buscar
+          this.buscarModalProjetos();
+        }
       },
 
       async selecionarModalProjeto(projeto) {
