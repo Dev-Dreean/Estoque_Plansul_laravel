@@ -472,7 +472,7 @@
               <template x-if="!loadingModalProjetos && modalProjetosLista.length === 0">
                 <div class="p-2 text-gray-500 text-center" x-text="modalProjetoSearch.trim() === '' ? 'Nenhum projeto disponível' : 'Nenhum resultado'"></div>
               </template>
-              <template x-for="(p, i) in modalProjetosLista" :key="p.CDPROJETO">
+              <template x-for="(p, i) in modalProjetosLista" :key="'modal-proj-' + i">
                 <div @click="selecionarModalProjeto(p)"
                   @mouseover="highlightedModalProjetoIndex = i"
                   :class="['px-3 py-2 cursor-pointer border-b border-gray-200 dark:border-gray-700 last:border-b-0', highlightedModalProjetoIndex === i ? 'bg-indigo-100 dark:bg-indigo-900' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
