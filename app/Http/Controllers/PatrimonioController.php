@@ -44,27 +44,25 @@ class PatrimonioController extends Controller
         }
     }
 
-    // Autocomplete de códigos de objeto (CODOBJETO) - COM CACHE
+    // Autocomplete de códigos de objeto (CODOBJETO)
     public function pesquisarCodigos(Request $request): JsonResponse
     {
         try {
             $termo = trim((string) $request->input('q', ''));
-            
-            // Buscar do cache
-            $codigos = \App\Services\SearchCacheService::getCodigos();
 
-            if ($termo !== '') {
-                // Filtro rápido em memória
-                $filtrados = array_filter($codigos, function ($codigo) use ($termo) {
-                    $termo_lower = strtolower($termo);
-                    return stripos((string)$codigo->CODOBJETO, $termo_lower) === 0 ||
-                           stripos((string)$codigo->DESCRICAO, $termo_lower) !== false;
-                });
-                $filtrados = array_values($filtrados);
-                $filtrados = array_slice($filtrados, 0, 10);
-            } else {
-                $filtrados = array_slice($codigos, 0, 10);
-            }
+            // Buscar todos os códigos
+            $codigos = ObjetoPatr::select(['NUSEQOBJETO as CODOBJETO', 'DEOBJETO as DESCRICAO'])
+                ->get()
+                ->toArray();
+
+            // Aplicar filtro inteligente
+            $filtrados = \App\Services\FilterService::filtrar(
+                $codigos,
+                $termo,
+                ['CODOBJETO', 'DESCRICAO'],  // campos de busca
+                ['CODOBJETO' => 'número', 'DESCRICAO' => 'texto'],  // tipos de campo
+                10  // limite
+            );
 
             return response()->json($filtrados);
         } catch (\Throwable $e) {
@@ -328,24 +326,23 @@ class PatrimonioController extends Controller
         try {
             $termo = trim((string) $request->input('q', ''));
 
-            // Buscar do cache
-            $patrimonios = \App\Services\SearchCacheService::getPatrimonios();
+            // Buscar todos os patrimônios
+            $patrimonios = Patrimonio::select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO'])
+                ->get()
+                ->toArray();
 
-            if ($termo !== '') {
-                $termo_lower = strtolower($termo);
-                $filtrados = array_filter($patrimonios, function ($p) use ($termo_lower) {
-                    return stripos((string)$p->NUPATRIMONIO, $termo_lower) === 0 ||
-                           stripos((string)$p->DEPATRIMONIO, $termo_lower) !== false;
-                });
-                $filtrados = array_values($filtrados);
-                $filtrados = array_slice($filtrados, 0, 10);
-            } else {
-                $filtrados = array_slice($patrimonios, 0, 10);
-            }
+            // Aplicar filtro inteligente
+            $filtrados = \App\Services\FilterService::filtrar(
+                $patrimonios,
+                $termo,
+                ['NUPATRIMONIO', 'DEPATRIMONIO'],  // campos de busca
+                ['NUPATRIMONIO' => 'número', 'DEPATRIMONIO' => 'texto'],  // tipos de campo
+                10  // limite
+            );
 
             return response()->json($filtrados);
-        } catch (\Throwable $e) {
-            Log::error('Erro pesquisar patrimonio: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Erro pesquisar: ' . $e->getMessage());
             return response()->json([], 200);
         }
     }
@@ -359,32 +356,39 @@ class PatrimonioController extends Controller
     }
 
     /**
-     * Autocomplete de projetos com cache e busca inteligente.
-     * Limite: 30 resultados para performance.
+     * Autocomplete de projetos. Busca por código numérico parcial ou parte do nome.
+     * Limite: 10 resultados para performance.
      */
     public function pesquisarProjetos(Request $request): JsonResponse
     {
         $termo = trim((string) $request->input('q', ''));
 
-        // Buscar do cache
-        $projetos = \App\Services\SearchCacheService::getProjetos();
+        // Buscar todos os projetos (excluindo código 0 - "Não se aplica")
+        $projetos = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
+            ->where('CDPROJETO', '!=', 0)  // Excluir código 0
+            ->distinct()
+            ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')  // Ordenação numérica
+            ->get()
+            ->toArray();
 
+        // Se há termo numérico, aplicar busca inteligente por magnitude
         if ($termo !== '' && is_numeric($termo)) {
-            // Busca inteligente por magnitude
-            $filtrados = \App\Services\SearchCacheService::filtrarPorMagnitude($projetos, $termo, 'CDPROJETO');
+            $filtrados = $this->buscarProjetosPorMagnitude($projetos, $termo);
         } else if ($termo !== '') {
             // Busca por nome
             $termo_lower = strtolower($termo);
             $filtrados = array_filter($projetos, function ($p) use ($termo_lower) {
-                return stripos((string)$p->NOMEPROJETO, $termo_lower) !== false ||
-                       stripos((string)$p->CDPROJETO, $termo_lower) === 0;
+                return strpos(strtolower($p['NOMEPROJETO']), $termo_lower) !== false
+                    || strpos($p['CDPROJETO'], $termo_lower) !== false;
             });
-            $filtrados = array_values($filtrados);
-            $filtrados = array_slice($filtrados, 0, 30);
+            $filtrados = array_values($filtrados); // Re-indexar array
         } else {
             // Sem filtro, retorna todos
-            $filtrados = array_slice($projetos, 0, 30);
+            $filtrados = $projetos;
         }
+
+        // Limitar a 30 resultados
+        $filtrados = array_slice($filtrados, 0, 30);
 
         return response()->json($filtrados);
     }
@@ -394,38 +398,120 @@ class PatrimonioController extends Controller
      * Se digitar 8: retorna 8, 80-89, 800-899, 8000-8999
      * Se digitar 80: retorna 80-89, 800-899, 8000-8999
      */
-    
+    private function buscarProjetosPorMagnitude($projetos, $termo): array
+    {
+        $termo_len = strlen($termo);
+        $termo_num = (int)$termo;
+
+        $resultados = [];
+
+        foreach ($projetos as $projeto) {
+            $codigo = (int)$projeto['CDPROJETO'];
+            $codigo_str = (string)$codigo;
+
+            // Verificar se começa com o termo
+            if (strpos($codigo_str, $termo) === 0) {
+                $resultados[] = $projeto;
+                continue;
+            }
+
+            // Verificar magnitudes (décimos, centenas, milhares)
+            // Décimos: 8 -> 80-89
+            if ($termo_len === 1) {
+                $min = $termo_num * 10;
+                $max = $min + 9;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                    continue;
+                }
+
+                // Centenas: 8 -> 800-899
+                $min = $termo_num * 100;
+                $max = $min + 99;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                    continue;
+                }
+
+                // Milhares: 8 -> 8000-8999
+                $min = $termo_num * 1000;
+                $max = $min + 999;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                }
+            }
+            // Dezenas: 80 -> 800-899, 8000-8999
+            else if ($termo_len === 2) {
+                // Centenas: 80 -> 800-899
+                $min = $termo_num * 10;
+                $max = $min + 9;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                    continue;
+                }
+
+                // Milhares: 80 -> 8000-8999
+                $min = $termo_num * 100;
+                $max = $min + 99;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                }
+            }
+            // Centenas: 800 -> 8000-8999
+            else if ($termo_len === 3) {
+                $min = $termo_num * 10;
+                $max = $min + 9;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                }
+            }
+        }
+
+        return $resultados;
+    }
+
     /**
-     * Busca projetos associados a um local específico com cache otimizado.
+     * Busca projetos associados a um local específico.
+     * Retorna os projetos vinculados ao local informado pelo cdlocal.
      */
     public function buscarProjetosPorLocal($cdlocal): JsonResponse
     {
         try {
-            // Buscar de forma eficiente com select específico
-            $locaisProjetos = DB::table('locais_projeto as lp')
-                ->join('tabfant as t', 'lp.tabfant_id', '=', 't.id')
-                ->where('lp.cdlocal', $cdlocal)
-                ->where('lp.flativo', true)
-                ->select('lp.id', 't.CDPROJETO', 't.NOMEPROJETO', 'lp.tabfant_id')
-                ->distinct()
+            // Buscar TODOS os projetos vinculados a este local
+            $locaisProjetos = LocalProjeto::with('projeto')
+                ->where('cdlocal', $cdlocal)
+                ->where('flativo', true)
+                ->whereHas('projeto')
                 ->get();
 
-            $projetosUnicos = $locaisProjetos->unique('CDPROJETO')->values()->toArray();
+            $projetos = [];
+            foreach ($locaisProjetos as $localProjeto) {
+                if ($localProjeto->projeto) {
+                    $projetos[] = [
+                        'id' => $localProjeto->id,
+                        'CDPROJETO' => $localProjeto->projeto->CDPROJETO,
+                        'NOMEPROJETO' => $localProjeto->projeto->NOMEPROJETO,
+                        'tabfant_id' => $localProjeto->tabfant_id
+                    ];
+                }
+            }
 
-            // Se veio um termo de busca (q), filtra
+            // Remover duplicatas por CDPROJETO
+            $projetosUnicos = collect($projetos)->unique('CDPROJETO')->values()->all();
+
+            // Se veio um termo de busca (q), filtra pelo código ou nome
             $q = trim((string) request()->query('q', ''));
             if ($q !== '' && strlen($q) < 3) {
                 return response()->json([]);
             }
             if ($q !== '') {
-                $q_lower = strtolower($q);
-                $projetosUnicos = array_filter($projetosUnicos, function ($projeto) use ($q_lower) {
-                    return stripos((string) $projeto->CDPROJETO, $q_lower) === 0 ||
-                           stripos((string) $projeto->NOMEPROJETO, $q_lower) !== false;
+                $projetosUnicos = array_filter($projetosUnicos, function ($projeto) use ($q) {
+                    return stripos((string) $projeto['CDPROJETO'], $q) !== false ||
+                        stripos((string) $projeto['NOMEPROJETO'], $q) !== false;
                 });
                 $projetosUnicos = array_values($projetosUnicos);
             }
-            
+            // Limitar a 5 resultados
             $projetosUnicos = array_slice($projetosUnicos, 0, 5);
 
             return response()->json($projetosUnicos);
@@ -504,9 +590,6 @@ class PatrimonioController extends Controller
                 'usuario' => Auth::id()
             ]);
 
-            // Invalidar cache de projetos
-            \App\Services\SearchCacheService::invalidateProjetos();
-
             return response()->json([
                 'CDPROJETO' => $projeto->CDPROJETO,
                 'NOMEPROJETO' => $projeto->NOMEPROJETO,
@@ -528,35 +611,21 @@ class PatrimonioController extends Controller
     {
         $projeto = Tabfant::where('CDPROJETO', $cdprojeto)->first(['id']);
         if (!$projeto) {
-            return response()->json([]);
+            return response()->json([]); // projeto não encontrado => sem locais
         }
-
-        // Buscar do cache
-        $locais = \App\Services\SearchCacheService::getLocaisPorProjeto($projeto->id);
-        $locais = array_map(function($item) {
-            return (object)[
-                'id' => $item->id,
-                'LOCAL' => $item->delocal,
-                'cdlocal' => $item->cdlocal
-            ];
-        }, $locais);
-
         $term = trim(request()->query('q', ''));
-        if ($term !== '') {
-            $term_lower = strtolower($term);
-            $locais = array_filter($locais, function ($item) use ($term_lower) {
-                return stripos((string)$item->cdlocal, $term_lower) === 0 ||
-                       stripos((string)$item->LOCAL, $term_lower) !== false;
-            });
-            $locais = array_values($locais);
-        }
-
-        $locais = array_slice($locais, 0, 30);
+        $locais = LocalProjeto::where('tabfant_id', $projeto->id)
+            ->when($term !== '', function ($q) use ($term) {
+                $q->where('delocal', 'like', "%{$term}%");
+            })
+            ->orderBy('delocal')
+            ->limit(30)
+            ->get(['id', 'delocal as LOCAL', 'cdlocal']);
         return response()->json($locais);
     }
 
     /**
-     * Cria um novo local para o projeto (filial) informado com invalidação de cache.
+     * Cria um novo local para o projeto (filial) informado.
      */
     public function criarLocal(Request $request, $cdprojeto): JsonResponse
     {
@@ -571,16 +640,17 @@ class PatrimonioController extends Controller
             return response()->json(['error' => 'Projeto não encontrado.'], 404);
         }
 
-        // Buscar máximo do banco diretamente
-        $maxCdLocal = DB::table('locais_projeto')
-            ->where('tabfant_id', $projeto->id)
+        // Calcula automaticamente o próximo cdlocal baseado apenas nos locais deste projeto
+        $maxCdLocal = LocalProjeto::where('tabfant_id', $projeto->id)
             ->max('cdlocal') ?? 0;
 
         $nextCdLocal = (int) $maxCdLocal + 1;
 
+        // Log para debug
         Log::info('Criando local para projeto', [
             'cdprojeto' => $cdprojeto,
             'tabfant_id' => $projeto->id,
+            'max_cdlocal_atual' => $maxCdLocal,
             'next_cdlocal' => $nextCdLocal,
             'delocal' => $request->delocal
         ]);
@@ -592,9 +662,6 @@ class PatrimonioController extends Controller
             'flativo' => true,
         ]);
 
-        // Invalidar cache do projeto
-        \App\Services\SearchCacheService::invalidateLocaisProjeto($projeto->id);
-
         return response()->json([
             'id' => $local->id,
             'LOCAL' => $local->delocal,
@@ -603,52 +670,52 @@ class PatrimonioController extends Controller
     }
 
     /**
-     * Busca locais disponíveis por código ou nome com otimização
+     * Busca locais disponíveis por código ou nome
      */
     public function buscarLocais(Request $request): JsonResponse
     {
         $termo = trim($request->input('termo', ''));
         $cdprojeto = trim($request->input('cdprojeto', ''));
 
-        // Query otimizada com select apenas do necessário
-        $query = DB::table('locais_projeto as lp')
-            ->select('lp.id', 'lp.cdlocal', 'lp.delocal', 'lp.tabfant_id', 't.CDPROJETO', 't.NOMEPROJETO')
-            ->leftJoin('tabfant as t', 'lp.tabfant_id', '=', 't.id')
-            ->where('lp.flativo', true);
+        // BUSCAR NA TABELA LOCAIS_PROJETO (tem o cdlocal)
+        $query = LocalProjeto::query();
 
         // Se tiver cdprojeto, filtrar apenas por esse projeto
         if ($cdprojeto !== '') {
-            $query->where('t.CDPROJETO', $cdprojeto);
+            $query->whereHas('projeto', function ($q) use ($cdprojeto) {
+                $q->where('CDPROJETO', $cdprojeto);
+            });
         }
 
         $locaisProjeto = $query->get();
 
-        // Formatar dados
+        // Buscar informações do projeto na tabfant para cada local
         $locais = $locaisProjeto->map(function ($lp) {
+            $tabfant = null;
+            if ($lp->tabfant_id) {
+                $tabfant = Tabfant::find($lp->tabfant_id);
+            }
+
             return [
                 'id' => $lp->id,
                 'cdlocal' => $lp->cdlocal,
                 'LOCAL' => $lp->delocal,
                 'delocal' => $lp->delocal,
-                'CDPROJETO' => $lp->CDPROJETO,
-                'NOMEPROJETO' => $lp->NOMEPROJETO,
+                'CDPROJETO' => $tabfant ? $tabfant->CDPROJETO : null,
+                'NOMEPROJETO' => $tabfant ? $tabfant->NOMEPROJETO : null,
                 'tabfant_id' => $lp->tabfant_id,
-                'flativo' => true,
+                'flativo' => $lp->flativo ?? false,
             ];
         })->toArray();
 
-        // Filtro em memória
-        if ($termo !== '') {
-            $termo_lower = strtolower($termo);
-            $filtrados = array_filter($locais, function ($item) use ($termo_lower) {
-                return stripos((string)$item['cdlocal'], $termo_lower) === 0 ||
-                       stripos((string)$item['delocal'], $termo_lower) !== false;
-            });
-            $filtrados = array_values($filtrados);
-            $filtrados = array_slice($filtrados, 0, 100);
-        } else {
-            $filtrados = array_slice($locais, 0, 100);
-        }
+        // Aplicar filtro inteligente
+        $filtrados = \App\Services\FilterService::filtrar(
+            $locais,
+            $termo,
+            ['cdlocal', 'delocal'],  // campos de busca
+            ['cdlocal' => 'número', 'delocal' => 'texto'],  // tipos de campo
+            100  // limite
+        );
 
         return response()->json($filtrados);
     }
@@ -1042,11 +1109,7 @@ class PatrimonioController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        // Select específico para melhorar performance
-        $query = Patrimonio::select([
-            'NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO', 'MODELO',
-            'CDMATRFUNCIONARIO', 'USUARIO', 'CDPROJETO', 'NMPLANTA', 'NUMOF'
-        ])->with(['funcionario', 'local.projeto', 'creator']);
+        $query = Patrimonio::with(['funcionario', 'local.projeto', 'creator']);
 
         // Filtra patrimônios por usuário (exceto Admin e Super Admin)
         if (!$user->isGod() && $user->PERFIL !== 'ADM') {
