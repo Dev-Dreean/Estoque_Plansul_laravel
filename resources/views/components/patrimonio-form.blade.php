@@ -743,6 +743,7 @@
       // === SISTEMA SIMPLIFICADO DE LOCAIS ===
       codigoLocalDigitado: '', // Código digitado pelo usuário
       localNome: '', // ✅ Nome do local (preenchido automaticamente)
+      nomeLocalBusca: '', // ✅ Valor para o campo readonly x-model
       locaisEncontrados: [], // Array de locais retornados pela API
       localSelecionadoId: null, // ID do local selecionado no dropdown
       mostrarDropdownBusca: false, // Controla visibilidade do dropdown de busca
@@ -1450,6 +1451,7 @@
         this.codigoLocalDigitado = '';
         this.formData.CDLOCAL = '';
         this.localNome = '';
+        this.nomeLocalBusca = '';
         this.codigosLocaisFiltrados = [];
         this.showCodigoLocalDropdown = false;
         this.highlightedCodigoLocalIndex = -1;
