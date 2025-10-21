@@ -1469,28 +1469,30 @@
       selecionarCodigoLocal(codigo) {
         console.log('✅ [SELECIONAR CÓDIGO] Código selecionado:', codigo);
         
-        // Atualiza o código
+        // 1️⃣ Atualizar o código do local
         this.codigoLocalDigitado = String(codigo.cdlocal);
         this.formData.CDLOCAL = String(codigo.cdlocal);
         
-        // 🆕 Preencher automaticamente o nome do local
+        // 2️⃣ 🆕 PREENCHER AUTOMATICAMENTE O NOME DO LOCAL
+        // Este é o campo visível que o usuário vê
         const nomeLocal = codigo.LOCAL || codigo.delocal || '';
-        this.localNome = nomeLocal;
-        this.nomeLocalBusca = nomeLocal;
+        this.nomeLocalBusca = nomeLocal;  // Campo visível no input
+        this.localNome = nomeLocal;        // Variável interna
         
-        // Preencher ID do local selecionado
+        // 3️⃣ Preencher ID do local selecionado
         this.localSelecionadoId = codigo.id;
         
-        // Fechar dropdown do código
+        // 4️⃣ Fechar dropdown do código
         this.showCodigoLocalDropdown = false;
         
-        // 🆕 Se há apenas um local com este código, desabilitar o campo de nome automaticamente
-        if (this.locaisEncontrados && this.locaisEncontrados.length === 1) {
-          console.log('✅ [SELECIONAR CÓDIGO] Único local encontrado, desabilitando campo de nome');
-          // O campo será desabilitado via :disabled no template
-        }
+        console.log('✅ [SELECIONAR CÓDIGO] Nome preenchido:', {
+          nomeLocalBusca: this.nomeLocalBusca,
+          localNome: this.localNome,
+          codigoLocalDigitado: this.codigoLocalDigitado
+        });
         
-        // Chamar a função original para processar (buscar nomes, etc)
+        // 5️⃣ Buscar todos os locais com este código para validação
+        // Isso mantém a lista de locais para caso haja múltiplos
         this.buscarLocalPorCodigo();
       },
       selecionarCodigoLocalEnter() {
@@ -1499,14 +1501,15 @@
         this.selecionarCodigoLocal(this.codigosLocaisFiltrados[this.highlightedCodigoLocalIndex]);
       },
       limparCodigoLocal() {
+        console.log('🧹 [LIMPAR CÓDIGO LOCAL] Limpando tudo');
         this.codigoLocalDigitado = '';
         this.formData.CDLOCAL = '';
         this.localNome = '';
+        this.nomeLocalBusca = '';  // Limpar campo de nome também
         this.codigosLocaisFiltrados = [];
         this.showCodigoLocalDropdown = false;
         this.highlightedCodigoLocalIndex = -1;
         this.locaisEncontrados = [];
-        this.nomeLocalBusca = '';
         this.nomesLocaisLista = [];
       },
       navegarCodigosLocais(delta) {
@@ -2260,8 +2263,7 @@
           const resp = await fetch(`/api/locais/buscar?termo=${encodeURIComponent(codigo)}`);
           if (!resp.ok) {
             this.locaisEncontrados = [];
-            this.localNome = '';
-            this.nomeLocalBusca = '';
+            // NÃO limpar nomeLocalBusca aqui - já foi preenchido em selecionarCodigoLocal
             return;
           }
 
@@ -2271,8 +2273,12 @@
           // Se encontrou exatamente 1, selecionar automaticamente
           if (locais.length === 1) {
             const primeiro = locais[0];
-            this.localNome = primeiro.LOCAL || primeiro.delocal || '';
-            this.nomeLocalBusca = this.localNome; // Preencher campo de nome
+            // 🆕 MANTER o nome que foi preenchido em selecionarCodigoLocal
+            // Só sobrescrever se não estiver preenchido
+            if (!this.nomeLocalBusca) {
+              this.nomeLocalBusca = primeiro.LOCAL || primeiro.delocal || '';
+            }
+            this.localNome = this.nomeLocalBusca;
             this.formData.CDLOCAL = primeiro.id; // Usar ID em vez de cdlocal
             this.localSelecionadoId = primeiro.id;
             this.formData.CDPROJETO = primeiro.CDPROJETO || '';
@@ -2280,9 +2286,10 @@
               `${primeiro.CDPROJETO} - ${primeiro.NOMEPROJETO}` :
               '';
           } else if (locais.length > 1) {
-            // Múltiplos locais - limpar seleção e habilitar autocomplete
-            this.localNome = '';
-            this.nomeLocalBusca = '';
+            // Múltiplos locais - MAS MANTER O NOME PREENCHIDO
+            // O nomeLocalBusca já foi definido em selecionarCodigoLocal
+            // NÃO zeramos aqui para manter o preenchimento automático
+            this.localNome = this.nomeLocalBusca;
             this.formData.CDLOCAL = '';
             this.localSelecionadoId = null;
 
@@ -2294,16 +2301,15 @@
               '';
           } else {
             // Nenhum local encontrado
-            this.localNome = '';
-            this.nomeLocalBusca = '';
+            // NÃO limpar nomeLocalBusca - deixar para o usuário decidir
+            this.localNome = this.nomeLocalBusca; // Manter o que foi preenchido
             this.formData.CDLOCAL = '';
             this.localSelecionadoId = null;
           }
         } catch (error) {
           console.error('Erro ao buscar local:', error);
           this.locaisEncontrados = [];
-          this.localNome = '';
-          this.nomeLocalBusca = '';
+          // NÃO limpar nomeLocalBusca aqui - deixar o preenchimento
         }
       },
 
