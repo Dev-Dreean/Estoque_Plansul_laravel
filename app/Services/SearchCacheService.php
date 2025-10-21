@@ -94,4 +94,85 @@ class SearchCacheService
         self::invalidateCodigos();
         self::invalidatePatrimonio();
     }
+
+    /**
+     * Filtra projetos por magnitude numérica
+     * Se digitar 8: retorna 8, 80-89, 800-899, 8000-8999
+     * Se digitar 80: retorna 80-89, 800-899, 8000-8999
+     * Se digitar 800: retorna 800-899, 8000-8999
+     */
+    public static function filtrarPorMagnitude(array $projetos, string $termo, string $campoNumerico = 'CDPROJETO'): array
+    {
+        if (empty($termo) || !is_numeric($termo)) {
+            return $projetos;
+        }
+
+        $termo_len = strlen($termo);
+        $termo_num = (int)$termo;
+        $resultados = [];
+
+        foreach ($projetos as $projeto) {
+            $codigo = (int)$projeto[$campoNumerico];
+            $codigo_str = (string)$codigo;
+
+            // Verificar se começa com o termo
+            if (strpos($codigo_str, $termo) === 0) {
+                $resultados[] = $projeto;
+                continue;
+            }
+
+            // Verificar magnitudes (décimos, centenas, milhares)
+            // Décimos: 8 -> 80-89
+            if ($termo_len === 1) {
+                $min = $termo_num * 10;
+                $max = $min + 9;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                    continue;
+                }
+
+                // Centenas: 8 -> 800-899
+                $min = $termo_num * 100;
+                $max = $min + 99;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                    continue;
+                }
+
+                // Milhares: 8 -> 8000-8999
+                $min = $termo_num * 1000;
+                $max = $min + 999;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                }
+            }
+            // Dezenas: 80 -> 800-899, 8000-8999
+            else if ($termo_len === 2) {
+                // Centenas: 80 -> 800-899
+                $min = $termo_num * 10;
+                $max = $min + 9;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                    continue;
+                }
+
+                // Milhares: 80 -> 8000-8999
+                $min = $termo_num * 100;
+                $max = $min + 99;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                }
+            }
+            // Centenas: 800 -> 8000-8999
+            else if ($termo_len === 3) {
+                $min = $termo_num * 10;
+                $max = $min + 9;
+                if ($codigo >= $min && $codigo <= $max) {
+                    $resultados[] = $projeto;
+                }
+            }
+        }
+
+        return $resultados;
+    }
 }
