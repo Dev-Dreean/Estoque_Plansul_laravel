@@ -1087,23 +1087,35 @@
       },
       selecionarUsuario(u) {
         // Sempre envia só a matrícula para o campo oculto
-        this.formData.CDMATRFUNCIONARIO = String(u.CDMATRFUNCIONARIO).replace(/[^0-9]/g, '');
-        let nomeLimpo = String(u.NOMEUSER || '').replace(/\d{2}\/\d{2}\/\d{4}/, '').replace(/\s+\d+\s*$/, '').replace(/[^A-Za-zÀ-ÿ\s]/g, '');
-        nomeLimpo = nomeLimpo.trim();
-        this.userSelectedName = `${u.CDMATRFUNCIONARIO} - ${nomeLimpo}`;
+        const matricula = String(u.CDMATRFUNCIONARIO || '').trim();
+        this.formData.CDMATRFUNCIONARIO = matricula.replace(/[^0-9]/g, '');
+        
+        // Limpar o nome: remover datas (dd/mm/yyyy), números ao final, caracteres especiais
+        let nomeLimpo = String(u.NOMEUSER || '').trim();
+        // Remove datas no padrão dd/mm/yyyy
+        nomeLimpo = nomeLimpo.replace(/\d{2}\/\d{2}\/\d{4}/g, '');
+        // Remove múltiplos espaços e números ao final
+        nomeLimpo = nomeLimpo.replace(/\s+\d+\s*$/, '');
+        // Remove múltiplos espaços consecutivos
+        nomeLimpo = nomeLimpo.replace(/\s+/g, ' ');
+        // Remove caracteres especiais mantendo apenas letras, acentos e espaço
+        nomeLimpo = nomeLimpo.replace(/[^A-Za-zÀ-ÿ\s]/g, '').trim();
+        
+        this.userSelectedName = `${matricula} - ${nomeLimpo}`;
         this.userSearch = this.userSelectedName;
         this.showUserDropdown = false;
       },
       // Sanitiza o campo visível removendo datas/números após o nome e garante que o hidden receba só a matrícula
       normalizarMatriculaBusca() {
         let s = String(this.userSearch || '');
-        // Corta qualquer data (ex: 10/02/1998) e o que vem depois
-        const dateIdx = s.search(/\d{2}\/\d{2}\/\d{4}/);
-        if (dateIdx >= 0) s = s.slice(0, dateIdx);
+        // Remover datas no padrão dd/mm/yyyy
+        s = s.replace(/\d{2}\/\d{2}\/\d{4}/g, '');
         // Remove números soltos no final (ex: "   0")
         s = s.replace(/\s+\d+\s*$/, '');
+        // Remove múltiplos espaços
+        s = s.replace(/\s+/g, ' ').trim();
         // Mantém apenas "mat - nome" quando houver mais lixo depois
-        const m = s.match(/^(\d+)\s*-\s*([^\d\/]+?)(?:\s+\d.*)?$/);
+        const m = s.match(/^(\d{1,12})\s*-\s*([^\d]+?)(?:\s+.*)?$/);
         if (m) {
           s = `${m[1]} - ${m[2].trim()}`;
         }
@@ -3272,11 +3284,22 @@
         // Pré-carregar descrição do código quando já houver código (edição)
         if (this.formData.NUSEQOBJ) {
           this.codigoSearch = String(this.formData.NUSEQOBJ);
-          await this.buscarCodigo();
+          // Buscar a descrição do objeto via API
+          try {
+            const resp = await fetch(`/api/codigos/buscar/${this.formData.NUSEQOBJ}`);
+            if (resp.ok) {
+              const data = await resp.json();
+              if (data && data.descricao) {
+                this.formData.DEOBJETO = data.descricao;
+                this.descricaoSearch = data.descricao;
+              }
+            }
+          } catch (e) {
+            console.warn('Erro ao buscar descrição do código:', e);
+          }
         }
         // Pré-carregar o código do local e projeto associado quando já houver CDLOCAL
         if (this.formData.CDLOCAL) {
-          this.localSearch = String(this.formData.CDLOCAL);
           // Buscar nome do local e projeto associado
           try {
             const r = await fetch(`/api/locais/buscar?termo=${this.formData.CDLOCAL}`);
@@ -3284,13 +3307,17 @@
               const locais = await r.json();
               const local = locais.find(l => String(l.cdlocal) === String(this.formData.CDLOCAL));
               if (local) {
-                this.nomeLocal = local.LOCAL || local.delocal;
+                // Preencher o novo sistema de dropdown de código local
+                this.codigoLocalDigitado = String(local.cdlocal);
+                this.nomeLocalBusca = local.LOCAL || local.delocal || '';
+                this.nomeLocal = this.nomeLocalBusca;
                 this.localSelecionadoId = local.id; // Definir ID do local selecionado
 
                 // Carregar projeto associado se existir
                 if (local.CDPROJETO) {
                   this.formData.CDPROJETO = local.CDPROJETO;
                   if (local.NOMEPROJETO) {
+                    this.projetoSearch = `${local.CDPROJETO} - ${local.NOMEPROJETO}`;
                     this.projetoAssociadoSearch = `${local.CDPROJETO} - ${local.NOMEPROJETO}`;
                   }
                 }
