@@ -22,7 +22,7 @@
         <input id="NUPATRIMONIO"
           x-model="patSearch"
           @focus="abrirDropdownPatrimonios()"
-          @blur.debounce.150ms="(function(){ showPatDropdown=false; buscarPatrimonio(); })()"
+          @blur.debounce.150ms="showPatDropdown=false"
           @input.debounce.300ms="(function(){ const t=String(patSearch||'').trim(); if(t.length>0){ showPatDropdown=true; buscarPatrimonios(); } else { showPatDropdown=false; patrimoniosLista=[]; highlightedPatIndex=-1; } })()"
           @keydown.down.prevent="navegarPatrimonios(1)"
           @keydown.up.prevent="navegarPatrimonios(-1)"
@@ -923,7 +923,13 @@
           const response = await fetch(`/api/patrimonios/buscar/${this.formData.NUPATRIMONIO}`);
           if (response.ok) {
             const data = await response.json();
+            // Lista de campos que NÃO devem ser preenchidos automaticamente
+            const camposNaoAutos = ['CDPROJETO', 'CDLOCAL', 'NUSEQOBJ', 'DEOBJETO'];
+
             Object.keys(this.formData).forEach(key => {
+              // Pular campos que devem ser preenchidos manualmente
+              if (camposNaoAutos.includes(key)) return;
+
               if (data.hasOwnProperty(key) && data[key] !== null) {
                 // Se é campo de data, formata corretamente
                 if (key.startsWith('DT')) {
@@ -944,20 +950,14 @@
               this.formData.DEOBJETO = data.DEPATRIMONIO || '';
               this.codigoBuscaStatus = this.formData.NUSEQOBJ ? 'Código encontrado e preenchido automaticamente.' : '';
             }
-            if (this.formData.CDPROJETO) {
-              await this.buscarProjetoELocais();
-              this.formData.CDLOCAL = data.CDLOCAL;
-            }
 
-            // Fecha o dropdown do patrimônio
-            this.showPatDropdown = false;
-
-            // Pula para o campo de Observações quando patrimônio é preenchido com sucesso
+            // NÃO preencher automaticamente o projeto - o usuário deve selecionar manualmente
+            // Apenas focar no campo de Descrição do Objeto para o fluxo continuar
             this.$nextTick(() => {
               try {
-                document.getElementById('DEHISTORICO')?.focus();
+                document.getElementById('DEOBJETO')?.focus();
               } catch (e) {
-                console.warn('Erro ao focar campo de observações:', e);
+                console.warn('Erro ao focar campo de descrição do objeto:', e);
               }
             });
           } else {
@@ -1250,8 +1250,20 @@
         this.formData.CDLOCAL = '';
         this.codigoLocalDigitado = '';
         this.localNome = '';
+        this.nomeLocalBusca = '';
         this.locaisEncontrados = [];
-        // IMPORTANTE: Não limpar os campos de código do objeto - apenas recarregar os locais baseado no novo projeto
+        this.codigosLocaisFiltrados = [];
+        // IMPORTANTE: Carregar os locais disponíveis para o novo projeto e focar no campo de código do local
+        this.$nextTick(() => {
+          try {
+            // Abre o dropdown de códigos de locais e carrega todos disponíveis para este projeto
+            this.abrirDropdownCodigosLocais(true);
+            // Foca no campo CDLOCAL_INPUT para o usuário começar a digitar/selecionar
+            document.getElementById('CDLOCAL_INPUT')?.focus();
+          } catch (e) {
+            console.warn('Erro ao preparar campo de código do local:', e);
+          }
+        });
       },
       selecionarProjetoEnter() {
         if (!this.showProjetoDropdown) return;
@@ -1494,8 +1506,10 @@
           return;
         }
 
-        // Abrir dropdown enquanto digita
-        this.showPatDropdown = true;
+        // Abrir dropdown enquanto digita (apenas se ainda não está fechado)
+        if (this.showPatDropdown !== false || this.patrimoniosLista.length === 0) {
+          this.showPatDropdown = true;
+        }
         this.loadingPatrimonios = true;
 
         try {
@@ -1503,8 +1517,10 @@
           if (resp.ok) {
             this.patrimoniosLista = await resp.json();
             this.highlightedPatIndex = this.patrimoniosLista.length > 0 ? 0 : -1;
-            // Manter dropdown aberto mesmo com resultados
-            this.showPatDropdown = true;
+            // Manter dropdown aberto apenas se houver resultados e não foi fechado manualmente
+            if (this.patrimoniosLista.length > 0 && this.showPatDropdown !== false) {
+              this.showPatDropdown = true;
+            }
           }
         } catch (e) {
           console.error('Falha busca patrimonios', e);
@@ -2930,6 +2946,10 @@
         });
       },
       abrirDropdownPatrimonios(force = false) {
+        // Se há um patrimônio já selecionado, não abre novamente
+        if (this.formData.NUPATRIMONIO && !force) {
+          return;
+        }
         this.showPatDropdown = true;
         if (this.patSearch.trim() !== '') {
           this.buscarPatrimonios();
@@ -2938,7 +2958,8 @@
       selecionarPatrimonio(p) {
         this.formData.NUPATRIMONIO = p.NUPATRIMONIO;
         this.patSearch = p.NUPATRIMONIO;
-        this.showPatDropdown = false;
+        this.showPatDropdown = false; // FECHAR O DROPDOWN ANTES DE BUSCAR
+        this.patrimoniosLista = []; // Limpar a lista para evitar reabertura
         this.buscarPatrimonio();
       },
       selecionarPatrimonioEnter() {
