@@ -221,6 +221,9 @@ class PatrimonioController extends Controller
     {
         $this->authorize('update', $patrimonio);
 
+        // Carregar relações para exibir dados corretos no formulário
+        $patrimonio->load(['local', 'local.projeto', 'funcionario']);
+
         // TODO: Substitua estes arrays pelas suas consultas reais ao banco de dados.
         $projetos = Tabfant::select('CDPROJETO', 'NOMEPROJETO')->distinct()->orderBy('NOMEPROJETO')->get();
 
@@ -314,7 +317,7 @@ class PatrimonioController extends Controller
 
     public function buscarPorNumero($numero): JsonResponse
     {
-        $patrimonio = Patrimonio::where('NUPATRIMONIO', $numero)->first();
+        $patrimonio = Patrimonio::with(['local', 'local.projeto', 'funcionario'])->where('NUPATRIMONIO', $numero)->first();
         if ($patrimonio) {
             return response()->json($patrimonio);
         }
@@ -718,6 +721,35 @@ class PatrimonioController extends Controller
         );
 
         return response()->json($filtrados);
+    }
+
+    /**
+     * Busca um local específico por ID e retorna informações completas
+     * Inclui qual projeto ele realmente pertence (para sincronização de dados desincronizados)
+     */
+    public function buscarLocalPorId($id): JsonResponse
+    {
+        try {
+            $local = LocalProjeto::with('projeto')->find($id);
+
+            if (!$local) {
+                return response()->json(['error' => 'Local não encontrado'], 404);
+            }
+
+            return response()->json([
+                'id' => $local->id,
+                'cdlocal' => $local->cdlocal,
+                'delocal' => $local->delocal,
+                'LOCAL' => $local->delocal,
+                'CDPROJETO' => $local->projeto?->CDPROJETO,
+                'NOMEPROJETO' => $local->projeto?->NOMEPROJETO,
+                'tabfant_id' => $local->tabfant_id,
+                'flativo' => $local->flativo ?? true,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Erro ao buscar local por ID:', ['id' => $id, 'erro' => $e->getMessage()]);
+            return response()->json(['error' => 'Erro ao buscar local'], 500);
+        }
     }
 
     /**

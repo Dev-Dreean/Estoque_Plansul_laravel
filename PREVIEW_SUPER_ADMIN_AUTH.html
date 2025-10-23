@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview - Autenticação Super Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        .preview-container {
+            max-width: 900px;
+            margin: 40px auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900">
+    <div class="preview-container">
+        
+        <!-- Header -->
+        <div class="mb-10">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                🔐 Preview - Autenticação de Super Admin
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">
+                Visualização da interface com o novo campo de confirmação de senha
+            </p>
+        </div>
+
+        <!-- Cenário 1: Criar Novo Usuário -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8">
+            <div class="bg-blue-50 dark:bg-blue-900/20 px-6 py-4 border-b border-blue-200 dark:border-blue-800">
+                <h2 class="text-xl font-semibold text-blue-900 dark:text-blue-200">
+                    ✏️ Cenário 1: Criar Novo Super Admin
+                </h2>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <!-- Campo de Nome -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Nome Completo *
+                    </label>
+                    <input type="text" placeholder="João da Silva" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                        dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Campo de Perfil -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Perfil *
+                    </label>
+                    <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                        dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option>Usuário Padrão</option>
+                        <option>Administrador</option>
+                        <option selected>Super Administrador</option>
+                    </select>
+                </div>
+
+                <!-- ⚠️ Campo de Confirmação (NOVO) -->
+                <div class="border border-yellow-300 dark:border-yellow-700 rounded-lg p-4 bg-yellow-50 dark:bg-yellow-900/20">
+                    <div class="flex items-start gap-3">
+                        <div class="flex-shrink-0 pt-1">
+                            <svg class="h-5 w-5 text-yellow-600 dark:text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
+                                ✅ Confirmação de Segurança Necessária
+                            </h4>
+                            <p class="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+                                Para conceder ou promover um usuário a <strong>Super Administrador</strong>, 
+                                é necessário informar sua senha como confirmação de segurança.
+                            </p>
+                            <div class="mt-3">
+                                <label class="block text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-2">
+                                    Sua Senha de Super Admin *
+                                </label>
+                                <input type="password" placeholder="Digite sua senha para confirmar..." 
+                                    class="w-full px-3 py-2 border border-yellow-300 dark:border-yellow-700 rounded-lg 
+                                    dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                                <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                                    ⚠️ Esta ação será registrada em log para auditoria
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botão -->
+                <div class="flex gap-3 pt-4">
+                    <button class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:underline">
+                        Cancelar
+                    </button>
+                    <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg 
+                        font-medium transition-colors">
+                        ✓ Criar Usuário
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cenário 2: Promover Usuário -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8">
+            <div class="bg-purple-50 dark:bg-purple-900/20 px-6 py-4 border-b border-purple-200 dark:border-purple-800">
+                <h2 class="text-xl font-semibold text-purple-900 dark:text-purple-200">
+                    ⬆️ Cenário 2: Promover Admin para Super Admin
+                </h2>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <!-- Campo de Nome (readonly) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Nome Completo
+                    </label>
+                    <input type="text" value="Maria Santos" readonly
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                        dark:bg-gray-800 dark:text-white bg-gray-100 cursor-not-allowed">
+                </div>
+
+                <!-- Campo de Perfil (MUDANDO) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Perfil *
+                    </label>
+                    <select class="w-full px-3 py-2 border-2 border-orange-400 rounded-lg 
+                        dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <option>Usuário Padrão</option>
+                        <option selected>Administrador</option>
+                        <option style="color: #059669;">✓ Super Administrador (NOVO)</option>
+                    </select>
+                    <p class="text-sm text-orange-600 dark:text-orange-400 mt-1 font-medium">
+                        ⚠️ Mudança detectada - Campo de confirmação será exigido
+                    </p>
+                </div>
+
+                <!-- ⚠️ Campo de Confirmação (NOVO) -->
+                <div class="border border-red-300 dark:border-red-700 rounded-lg p-4 bg-red-50 dark:bg-red-900/20 animate-pulse">
+                    <div class="flex items-start gap-3">
+                        <div class="flex-shrink-0 pt-1">
+                            <svg class="h-6 w-6 text-red-600 dark:text-red-500 animate-bounce" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold text-red-800 dark:text-red-200">
+                                🔒 ATENÇÃO: Operação Crítica de Segurança
+                            </h4>
+                            <p class="text-sm text-red-700 dark:text-red-300 mt-1">
+                                Você está prestes a <strong>promover um usuário para Super Administrador</strong>. 
+                                Isto é uma operação crítica que concede acesso total ao sistema.
+                            </p>
+                            <div class="mt-3">
+                                <label class="block text-sm font-bold text-red-800 dark:text-red-200 mb-2">
+                                    Sua Senha de Super Admin para Confirmar *
+                                </label>
+                                <input type="password" placeholder="Digite sua senha para autorizar esta promoção..." 
+                                    autofocus
+                                    class="w-full px-3 py-2 border-2 border-red-400 rounded-lg 
+                                    dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 
+                                    focus:border-red-500 font-semibold">
+                                <p class="text-xs text-red-600 dark:text-red-400 mt-2 font-semibold">
+                                    🔴 Campo obrigatório | ⏱️ Verifique sua senha com cuidado | 
+                                    📋 Esta ação será auditada
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensagens de Status -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- ❌ Erro (Senha Incorreta) -->
+                    <div class="border border-red-300 dark:border-red-700 rounded-lg p-3 bg-red-50 dark:bg-red-900/20">
+                        <p class="text-sm text-red-700 dark:text-red-300">
+                            <strong>❌ Erro:</strong> Senha de Super Admin incorreta. Operação cancelada.
+                        </p>
+                    </div>
+
+                    <!-- ✅ Sucesso (quando senha correta) -->
+                    <div class="border border-green-300 dark:border-green-700 rounded-lg p-3 bg-green-50 dark:bg-green-900/20">
+                        <p class="text-sm text-green-700 dark:text-green-300">
+                            <strong>✅ Sucesso:</strong> Usuário promovido para Super Admin!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Botões -->
+                <div class="flex gap-3 pt-4">
+                    <button class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:underline">
+                        Cancelar
+                    </button>
+                    <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg 
+                        font-bold transition-colors cursor-not-allowed opacity-50" disabled>
+                        ⚠️ Atualizar Usuário (campo de senha obrigatório)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cenário 3: Editar Super Admin Existente -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8">
+            <div class="bg-green-50 dark:bg-green-900/20 px-6 py-4 border-b border-green-200 dark:border-green-800">
+                <h2 class="text-xl font-semibold text-green-900 dark:text-green-200">
+                    ✅ Cenário 3: Editar Super Admin Existente (SEM senha extra)
+                </h2>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <!-- Campo de Nome -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Nome Completo *
+                    </label>
+                    <input type="text" value="Pedro Oliveira" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                        dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Campo de Perfil (JÁ é Super Admin) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Perfil *
+                    </label>
+                    <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                        dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option>Usuário Padrão</option>
+                        <option>Administrador</option>
+                        <option selected>Super Administrador</option>
+                    </select>
+                    <p class="text-sm text-green-600 dark:text-green-400 mt-1">
+                        ✓ Usuário já é Super Admin - Senha de confirmação NÃO necessária
+                    </p>
+                </div>
+
+                <!-- Campo de Senha (opcional) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Senha
+                    </label>
+                    <input type="password" placeholder="Deixe em branco para não alterar"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                        dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Deixe em branco para manter a senha atual
+                    </p>
+                </div>
+
+                <!-- 🎉 Notificação -->
+                <div class="border border-green-300 dark:border-green-700 rounded-lg p-3 bg-green-50 dark:bg-green-900/20">
+                    <p class="text-sm text-green-700 dark:text-green-300">
+                        <strong>✅ Campo de confirmação oculto:</strong> Como este usuário já é Super Admin, 
+                        você pode editar suas informações normalmente sem precisar fornecer sua senha novamente.
+                    </p>
+                </div>
+
+                <!-- Botões -->
+                <div class="flex gap-3 pt-4">
+                    <button class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:underline">
+                        Cancelar
+                    </button>
+                    <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg 
+                        font-medium transition-colors">
+                        ✓ Atualizar Usuário
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legenda -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                📚 Legenda e Explicação
+            </h3>
+            
+            <div class="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+                <div class="flex gap-3">
+                    <span class="text-xl">🟨</span>
+                    <div>
+                        <strong>Campo Amarelo (Criação):</strong> Novo campo solicitando senha. 
+                        Aparece ao criar novo Super Admin.
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <span class="text-xl">🟥</span>
+                    <div>
+                        <strong>Campo Vermelho (Promoção):</strong> Alerta em destaque ao promover 
+                        usuário para Super Admin. Exige confirmação com senha.
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <span class="text-xl">🟩</span>
+                    <div>
+                        <strong>Sem Campo (Edição):</strong> Ao editar Super Admin já existente, 
+                        o campo não aparece - operação normal.
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <span class="text-xl">⚠️</span>
+                    <div>
+                        <strong>Avisos Visuais:</strong> Ícones de alerta reforçam a importância da ação 
+                        de segurança.
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <span class="text-xl">🔒</span>
+                    <div>
+                        <strong>Validação:</strong> Senha é validada no servidor contra hash armazenado. 
+                        Operação é cancelada se incorreta.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fluxo de Segurança -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                🔐 Fluxo de Segurança
+            </h3>
+            
+            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white text-xs font-bold">1</span>
+                    <span><strong>Usuário seleciona perfil "Super Administrador"</strong></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white text-xs font-bold">2</span>
+                    <span><strong>Sistema detecta mudança e mostra campo de senha</strong> (Alpine.js)</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white text-xs font-bold">3</span>
+                    <span><strong>Usuário digita sua senha de Super Admin</strong></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white text-xs font-bold">4</span>
+                    <span><strong>Usuário clica "Criar/Atualizar"</strong></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white text-xs font-bold">5</span>
+                    <span><strong>Backend valida senha com Hash::check()</strong></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-xs font-bold">✓</span>
+                    <span><strong>Senha correta:</strong> Operação concluída com sucesso</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold">✗</span>
+                    <span><strong>Senha incorreta:</strong> Erro exibido, operação cancelada</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

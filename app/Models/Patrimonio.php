@@ -51,6 +51,8 @@ class Patrimonio extends Model
         'DTLAUDO'     => 'date',
     ];
 
+    protected $appends = ['projeto_correto'];
+
     public function funcionario(): BelongsTo
     {
         return $this->belongsTo(Funcionario::class, 'CDMATRFUNCIONARIO', 'CDMATRFUNCIONARIO');
@@ -110,5 +112,20 @@ class Patrimonio extends Model
     public function getDtoperacaoPtBrAttribute(): ?string
     {
         return $this->DTOPERACAO ? $this->DTOPERACAO->format('d/m/Y') : null;
+    }
+
+    /**
+     * Retorna o CDPROJETO correto - preferindo o do local se disponível
+     * Isso garante consistência entre o grid e o formulário de edição
+     */
+    public function getProjetoCorretoAttribute(): ?string
+    {
+        // Se o local está carregado e tem projeto, usar dele
+        if ($this->relationLoaded('local') && $this->local && $this->local->relationLoaded('projeto') && $this->local->projeto) {
+            return $this->local->projeto->CDPROJETO;
+        }
+
+        // Senão, retornar o CDPROJETO armazenado diretamente
+        return $this->CDPROJETO;
     }
 }

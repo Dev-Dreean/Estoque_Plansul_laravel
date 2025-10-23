@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Str;
+
 /**
- * Serviço de Filtros Inteligentes
+ * Serviço de Filtros Inteligentes (Versão 2.0 - Melhorada)
  * 
- * Centraliza a lógica de busca e ordenação com sistema de scoring.
+ * Centraliza a lógica de busca e ordenação com sistema de scoring aprimorado.
  * Funciona com qualquer array de items e qualquer estrutura de dados.
  * 
  * @example
@@ -19,10 +21,10 @@ namespace App\Services;
 class FilterService
 {
     /**
-     * Realizar busca inteligente com scoring
+     * Realizar busca inteligente com scoring aprimorado
      * 
      * @param array $items Items para buscar
-     * @param string $termo Termo de busca
+     * @param string $termo Termo de busca (suporta múltiplos termos separados por vírgula)
      * @param array $searchFields Campos onde buscar: ['codigo', 'nome', ...]
      * @param array $fieldTypes Tipos de campos: ['codigo' => 'número', 'nome' => 'texto']
      * @param int $limit Limite de resultados
@@ -42,14 +44,16 @@ class FilterService
             return array_slice($items, 0, $limit);
         }
 
-        $termoLower = strtolower($termo);
+        // Dividir múltiplos termos por vírgula
+        $termos = array_map('trim', explode(',', $termo));
+        $termos = array_filter($termos); // Remove vazios
 
         // Calcular score para cada item
         $itemsComScore = collect($items)
-            ->map(function ($item) use ($termo, $termoLower, $searchFields, $fieldTypes) {
+            ->map(function ($item) use ($termos, $searchFields, $fieldTypes) {
                 $score = self::calcularScore(
                     $item,
-                    $termoLower,
+                    $termos,
                     $searchFields,
                     $fieldTypes
                 );
@@ -80,17 +84,31 @@ class FilterService
     }
 
     /**
-     * Calcular score de um item em relação a um termo
-     * 
-     * @param mixed $item Item para avaliar
-     * @param string $termoLower Termo em lowercase
-     * @param array $searchFields Campos onde buscar
-     * @param array $fieldTypes Tipos de campos
-     * @return int Score (menor = mais relevante)
+     * Normalizar string para busca (remove acentos, espaços extras, etc)
+     */
+    private static function normalizar(string $str): string
+    {
+        // Remove acentos
+        $str = preg_replace('/[áàâãä]/i', 'a', $str);
+        $str = preg_replace('/[éèêë]/i', 'e', $str);
+        $str = preg_replace('/[íìîï]/i', 'i', $str);
+        $str = preg_replace('/[óòôõö]/i', 'o', $str);
+        $str = preg_replace('/[úùûü]/i', 'u', $str);
+        $str = preg_replace('/[ç]/i', 'c', $str);
+
+        // Remove espaços extras
+        $str = trim(preg_replace('/\s+/', ' ', $str));
+
+        return strtolower($str);
+    }
+
+    /**
+     * Calcular score de um item em relação a múltiplos termos
+     * Todos os termos devem estar presentes (busca AND)
      */
     private static function calcularScore(
         $item,
-        string $termoLower,
+        array $termos,
         array $searchFields,
         array $fieldTypes
     ): int {
@@ -99,36 +117,50 @@ class FilterService
             return PHP_INT_MAX;
         }
 
-        $melhorScore = PHP_INT_MAX;
+        $scoreTotal = 0;
 
-        foreach ($searchFields as $field) {
-            $valor = self::obterValor($item, $field);
-            $tipo = $fieldTypes[$field] ?? 'texto';
+        // Cada termo deve estar presente no item
+        foreach ($termos as $termo) {
+            $termo = self::normalizar($termo);
 
-            $score = self::calcularScoreCampo($valor, $termoLower, $tipo);
-            $melhorScore = min($melhorScore, $score);
+            $melhorScore = PHP_INT_MAX;
 
-            // Se encontrou match exato, parar a busca
-            if ($score === 0) {
-                break;
+            foreach ($searchFields as $field) {
+                $valor = self::obterValor($item, $field);
+                $tipo = $fieldTypes[$field] ?? 'texto';
+
+                $score = self::calcularScoreCampo($valor, $termo, $tipo);
+                $melhorScore = min($melhorScore, $score);
+
+                // Se encontrou match exato, parar a busca neste campo
+                if ($score === 0) {
+                    break;
+                }
             }
+
+            // Se um termo não foi encontrado, eliminar o item
+            if ($melhorScore === PHP_INT_MAX) {
+                return PHP_INT_MAX;
+            }
+
+            $scoreTotal += $melhorScore;
         }
 
-        return $melhorScore;
+        return $scoreTotal;
     }
 
     /**
-     * Calcular score de um campo específico
+     * Calcular score de um campo específico (versão melhorada)
      * 
      * Sistema de pontuação:
      * - 0: Match exato
-     * - 10-99: Começa com termo
-     * - 50-199: Contém termo
-     * - 100-299: Nome começa/contém (para campos secundários)
-     * - 500+: Distância de Levenshtein
+     * - 5-15: Começa com termo (números têm penalidade menor)
+     * - 20-50: Contém termo (com posição considerada)
+     * - 100-200: Distância de Levenshtein pequena
+     * - PHP_INT_MAX: Não encontrado
      * 
      * @param mixed $valor Valor do campo
-     * @param string $termo Termo em lowercase
+     * @param string $termo Termo normalizado
      * @param string $tipo Tipo do campo: 'número' ou 'texto'
      * @return int Score
      */
@@ -138,39 +170,43 @@ class FilterService
             return PHP_INT_MAX;
         }
 
-        $valorLower = strtolower(trim((string) $valor));
+        $valorNorm = self::normalizar((string) $valor);
 
         // 🥇 Match exato
-        if ($valorLower === $termo) {
+        if ($valorNorm === $termo) {
             return 0;
         }
 
-        // 🥈 Começa com o termo
-        if (str_starts_with($valorLower, $termo)) {
-            $score = 10 + strlen($valorLower);
-
-            // Se for número, penalizar menos para manter números no topo
-            if ($tipo === 'número' && is_numeric($valorLower)) {
-                $score = 5 + (int) $valorLower;
+        // 🥈 Começa com o termo (muito prioritário)
+        if (str_starts_with($valorNorm, $termo)) {
+            // Para números, dar prioridade aos que começam
+            if ($tipo === 'número' && is_numeric($valorNorm)) {
+                $score = 5 + strlen($valorNorm) + intval($valorNorm) / 1000;
+            } else {
+                $score = 10 + strlen($valorNorm);
             }
-
-            return $score;
+            return (int) $score;
         }
 
         // 🥉 Contém o termo
-        if (str_contains($valorLower, $termo)) {
-            $posicao = strpos($valorLower, $termo);
-            $score = 50 + $posicao + strlen($valorLower);
-            return $score;
+        if (str_contains($valorNorm, $termo)) {
+            $posicao = strpos($valorNorm, $termo);
+            // Quanto mais perto do início, melhor o score
+            $score = 20 + $posicao + (strlen($valorNorm) / 2);
+            return (int) $score;
         }
 
-        // ❓ Distância de Levenshtein (similaridade)
-        $distancia = self::distanciaLevenshtein($valorLower, $termo);
-        if ($distancia <= 2) {  // Muito similar
-            return 100 + $distancia;
+        // ❓ Distância de Levenshtein (similaridade fuzzy)
+        $distancia = self::distanciaLevenshtein($valorNorm, $termo);
+
+        // Aceitar matches muito similares (até 2 caracteres de diferença)
+        if ($distancia <= 2) {
+            return 100 + ($distancia * 10);
         }
-        if ($distancia <= 5) {  // Razoavelmente similar
-            return 200 + $distancia;
+
+        // Se o termo é muito curto, ser mais permissivo
+        if (strlen($termo) <= 2 && $distancia <= 3) {
+            return 150 + ($distancia * 15);
         }
 
         return PHP_INT_MAX;  // Não encontrado

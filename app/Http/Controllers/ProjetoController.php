@@ -16,6 +16,13 @@ class ProjetoController extends Controller
     public function index(Request $request)
     {
         $searchTerm = trim((string) $request->input('search', ''));
+        $sortField = trim((string) $request->input('sort', ''));
+        $sortDirection = trim((string) $request->input('direction', 'asc'));
+
+        // Validar direção de ordenação
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
 
         // Buscar TODOS os locais com relacionamento
         $query = LocalProjeto::with('projeto')
@@ -38,10 +45,31 @@ class ProjetoController extends Controller
         $filtrados = FilterService::filtrar(
             $todos_locais,
             $searchTerm,
-            ['cdlocal', 'delocal', 'projeto_nome'],  // campos de busca
-            ['cdlocal' => 'número', 'delocal' => 'texto', 'projeto_nome' => 'texto'],  // tipos
+            ['cdlocal', 'delocal', 'projeto_codigo', 'projeto_nome'],  // campos de busca
+            ['cdlocal' => 'número', 'delocal' => 'texto', 'projeto_codigo' => 'número', 'projeto_nome' => 'texto'],  // tipos
             PHP_INT_MAX  // Sem limite inicial (paginação acontece depois)
         );
+
+        // Aplicar ordenação se especificada
+        if ($sortField && in_array($sortField, ['cdlocal', 'delocal', 'projeto_codigo', 'projeto_nome'])) {
+            usort($filtrados, function ($a, $b) use ($sortField, $sortDirection) {
+                $valorA = $a[$sortField] ?? '';
+                $valorB = $b[$sortField] ?? '';
+
+                // Para números, comparar numericamente
+                if (is_numeric($valorA) && is_numeric($valorB)) {
+                    $resultado = $valorA <=> $valorB;
+                } else {
+                    // Para textos, comparar case-insensitively
+                    $valorA_lower = strtolower((string) $valorA);
+                    $valorB_lower = strtolower((string) $valorB);
+                    $resultado = strcmp($valorA_lower, $valorB_lower);
+                }
+
+                // Inverter resultado se descendente
+                return $sortDirection === 'desc' ? -$resultado : $resultado;
+            });
+        }
 
         // Reconstruir collection com paginação
         $locais_modelo = collect(array_map(fn($f) => $f['_model'], $filtrados));
@@ -72,10 +100,18 @@ class ProjetoController extends Controller
             );
 
         if ($request->ajax()) {
-            return view('projetos._table_partial', ['locais' => $locais])->render();
+            return view('projetos._table_partial', [
+                'locais' => $locais,
+                'sortField' => $sortField,
+                'sortDir' => $sortDirection
+            ])->render();
         }
 
-        return view('projetos.index', ['locais' => $locais]);
+        return view('projetos.index', [
+            'locais' => $locais,
+            'sortField' => $sortField,
+            'sortDir' => $sortDirection
+        ]);
     }
 
     /**
@@ -164,6 +200,36 @@ class ProjetoController extends Controller
 
         return redirect()->route('projetos.index', $filtros)
             ->with('success', 'Local apagado com sucesso.');
+    }
+
+    /**
+     * Delete multiple locals at once
+     */
+    public function deleteMultiple(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:locais_projeto,id'
+        ]);
+
+        $ids = $request->input('ids');
+
+        try {
+            LocalProjeto::whereIn('id', $ids)->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Locais removidos com sucesso.',
+                'count' => count($ids)
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Erro ao deletar múltiplos locais', ['ids' => $ids, 'error' => $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao remover locais: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

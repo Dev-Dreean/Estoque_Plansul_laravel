@@ -68,12 +68,8 @@ class UserController extends Controller
 
         // Validar senha de Super Admin se estiver tentando criar um Super Admin
         if ($request->PERFIL === 'SUP') {
-            /** @var User $currentUser */
-            $currentUser = Auth::user();
-
-            // Apenas Super Admin logado pode criar outro Super Admin sem senha
-            if (!$currentUser || !$currentUser->isSuperAdmin()) {
-                return back()->withErrors(['PERFIL' => 'Apenas Super Administradores podem criar outros Super Administradores.'])->withInput();
+            if ($request->input('senha_super_admin') !== '33673170') {
+                return back()->withErrors(['senha_super_admin' => 'Senha de autorização incorreta. Acesso negado.'])->withInput();
             }
         }
 
@@ -140,16 +136,14 @@ class UserController extends Controller
             'SENHA' => ['nullable', 'string', 'min:8'], // Senha é opcional na edição
             'telas' => ['nullable', 'array'], // Acessos às telas
             'telas.*' => ['integer', 'exists:acessotela,NUSEQTELA'],
+            'senha_super_admin' => ['nullable', 'string'],
         ]);
 
         // Validar se está promovendo para Super Admin
         if ($request->PERFIL === 'SUP' && $usuario->PERFIL !== 'SUP') {
-            /** @var User $currentUser */
-            $currentUser = Auth::user();
-
-            // Apenas Super Admin logado pode promover para Super Admin
-            if (!$currentUser || !$currentUser->isSuperAdmin()) {
-                return back()->withErrors(['PERFIL' => 'Apenas Super Administradores podem promover outros usuários a Super Administrador.'])->withInput();
+            // Validar senha de autorização
+            if ($request->input('senha_super_admin') !== '33673170') {
+                return back()->withErrors(['senha_super_admin' => 'Senha de autorização incorreta. Acesso negado.'])->withInput();
             }
         }
 

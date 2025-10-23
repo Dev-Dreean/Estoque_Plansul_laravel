@@ -243,7 +243,6 @@
             'CODOBJETO' => $patrimonios->every(fn($p)=> blank($p->CODOBJETO)),
             'NMPLANTA' => $patrimonios->every(fn($p)=> blank($p->NMPLANTA)),
             'NUSERIE' => $patrimonios->every(fn($p)=> blank($p->NUSERIE)),
-            'CDPROJETO' => $patrimonios->every(fn($p)=> blank($p->CDPROJETO)),
             'MODELO' => $patrimonios->every(fn($p)=> blank($p->MODELO)),
             'MARCA' => $patrimonios->every(fn($p)=> blank($p->MARCA)),
             'COR' => $patrimonios->every(fn($p)=> blank($p->COR)),
@@ -285,8 +284,8 @@
                     <th class="{{ $shrink('CODOBJETO') }} py-3">Cód. Objeto</th>
                     <th class="{{ $shrink('NMPLANTA') }} py-3">Cód. Termo</th>
                     <th class="{{ $shrink('NUSERIE') }} py-3">Nº Série</th>
-                    <th class="{{ $shrink('CDPROJETO') }} py-3">Cód. Projeto</th>
-                    <th class="px-4 py-3">Projeto associado</th>
+                    <th class="px-4 py-3">Projeto Associado</th>
+                    <th class="px-4 py-3">Código Local</th>
                     <th class="{{ $shrink('MODELO') }} py-3">Modelo</th>
                     <th class="{{ $shrink('MARCA') }} py-3">Marca</th>
                     <th class="{{ $shrink('COR') }} py-3">Cor</th>
@@ -296,7 +295,7 @@
                     <th class="{{ $shrink('DTOPERACAO') }} py-3">Dt. Cadastro</th>
                     <th class="px-4 py-3">Matrícula (Responsável)</th>
                     <th class="{{ $shrink('USUARIO') }} py-3">Cadastrado Por</th>
-                    @if(Auth::user()->PERFIL === 'ADM')
+                    @if(Auth::user()->isAdmin())
                     <th class="px-4 py-3">Ações</th>
                     @endif
                   </tr>
@@ -307,19 +306,42 @@
 
                   {{-- A ordem agora está 100% correta para corresponder ao seu thead --}}
                   <td class="px-4 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
-                  <td class="{{ $shrink('NUMOF') }} py-2">{{ $patrimonio->NUMOF ?? ($colVazia['NUMOF'] ? '' : '') }}</td>
-                  <td class="{{ $shrink('CODOBJETO') }} py-2">{{ $patrimonio->CODOBJETO ?? ($colVazia['CODOBJETO'] ? '' : '') }}</td>
-                  <td class="{{ $shrink('NMPLANTA') }} py-2 font-bold">{{ $patrimonio->NMPLANTA ?? ($colVazia['NMPLANTA'] ? '' : '') }}</td>
-                  <td class="{{ $shrink('NUSERIE') }} py-2">{{ $patrimonio->NUSERIE ?? ($colVazia['NUSERIE'] ? '' : '') }}</td>
-                  <td class="{{ $shrink('CDPROJETO') }} py-2">{{ $patrimonio->CDPROJETO ?? ($colVazia['CDPROJETO'] ? '' : '') }}</td>
-                  <td class="px-4 py-2">{{ $patrimonio->local?->LOCAL ?? '' }}</td>
-                  <td class="{{ $shrink('MODELO') }} py-2">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,10,'...') : ($colVazia['MODELO'] ? '' : '') }}</td>
-                  <td class="{{ $shrink('MARCA') }} py-2">{{ $patrimonio->MARCA ?? ($colVazia['MARCA'] ? '' : '') }}</td>
-                  <td class="{{ $shrink('COR') }} py-2">{{ $patrimonio->COR ?? ($colVazia['COR'] ? '' : '') }}</td>
-                  <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">{{ Str::limit($patrimonio->DEPATRIMONIO,10,'...') }}</td>
-                  <td class="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO }}</td>
-                  <td class="{{ $shrink('DTAQUISICAO') }} py-2">{{ $patrimonio->dtaquisicao_pt_br ?? ($colVazia['DTAQUISICAO'] ? '' : '') }}</td>
-                  <td class="{{ $shrink('DTOPERACAO') }} py-2">{{ $patrimonio->dtoperacao_pt_br ?? ($colVazia['DTOPERACAO'] ? '' : '') }}</td>
+                  <td class="{{ $shrink('NUMOF') }} py-2">{{ $patrimonio->NUMOF ?? '—' }}</td>
+                  <td class="{{ $shrink('CODOBJETO') }} py-2">{{ $patrimonio->CODOBJETO ?? '—' }}</td>
+                  <td class="{{ $shrink('NMPLANTA') }} py-2 font-bold">{{ $patrimonio->NMPLANTA ?? '—' }}</td>
+                  <td class="{{ $shrink('NUSERIE') }} py-2">{{ $patrimonio->NUSERIE ?? '—' }}</td>
+
+                  {{-- Projeto Associado: Código Projeto + Nome Projeto --}}
+                  <td class="px-4 py-2">
+                    @if($patrimonio->local && $patrimonio->local->projeto)
+                    <div class="leading-tight">
+                      <span class="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400">{{ $patrimonio->local->projeto->CDPROJETO }}</span>
+                      <div class="text-[10px] text-gray-600 dark:text-gray-400 truncate max-w-[130px]">{{ $patrimonio->local->projeto->NOMEPROJETO }}</div>
+                    </div>
+                    @else
+                    <span class="text-gray-400 text-[10px]">—</span>
+                    @endif
+                  </td>
+
+                  {{-- Código Local: Dinâmico com código + nome do local --}}
+                  <td class="px-4 py-2">
+                    @if($patrimonio->local)
+                    <div class="leading-tight">
+                      <span class="font-mono text-xs font-semibold text-green-600 dark:text-green-400">{{ $patrimonio->local->cdlocal }}</span>
+                      <div class="text-[10px] text-gray-600 dark:text-gray-400 truncate max-w-[120px]">{{ $patrimonio->local->delocal }}</div>
+                    </div>
+                    @else
+                    <span class="text-gray-400 text-[10px]">—</span>
+                    @endif
+                  </td>
+
+                  <td class="{{ $shrink('MODELO') }} py-2">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,10,'...') : '—' }}</td>
+                  <td class="{{ $shrink('MARCA') }} py-2">{{ $patrimonio->MARCA ?? '—' }}</td>
+                  <td class="{{ $shrink('COR') }} py-2">{{ $patrimonio->COR ?? '—' }}</td>
+                  <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">{{ $patrimonio->DEPATRIMONIO ? Str::limit($patrimonio->DEPATRIMONIO,10,'...') : '—' }}</td>
+                  <td class="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO ?? '—' }}</td>
+                  <td class="{{ $shrink('DTAQUISICAO') }} py-2">{{ $patrimonio->dtaquisicao_pt_br ?? '—' }}</td>
+                  <td class="{{ $shrink('DTOPERACAO') }} py-2">{{ $patrimonio->dtoperacao_pt_br ?? '—' }}</td>
                   <td class="px-4 py-2">
                     @if($patrimonio->CDMATRFUNCIONARIO)
                     <div class="leading-tight">
@@ -330,7 +352,7 @@
                     <span class="text-gray-400 text-[10px]">—</span>
                     @endif
                   </td>
-                  <td class="px-4 py-2">{{ $patrimonio->cadastrado_por_nome }}</td>
+                  <td class="px-4 py-2">{{ $patrimonio->cadastrado_por_nome ?? '—' }}</td>
 
                   @if(Auth::user()->isAdmin())
                   <td class="px-2 py-2">
