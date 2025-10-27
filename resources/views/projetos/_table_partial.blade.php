@@ -63,42 +63,9 @@
                         @change="toggleTodos($event.target.checked)"
                         class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 cursor-pointer">
                 </th>
-                <th class="px-4 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none transition"
-                    @click="Array.from(document.querySelectorAll('[data-search-container]')).forEach(el => el.__x_scope.searchTagFilterProjetos.ordenarPor('cdlocal'))">
-                    <div class="flex items-center gap-2">
-                        Cód. Local
-                        <template x-if="'{{ $sortField }}' === 'cdlocal' && '{{ $sortDir }}' === 'asc'">
-                            <span class="text-blue-600 dark:text-blue-400">↑</span>
-                        </template>
-                        <template x-if="'{{ $sortField }}' === 'cdlocal' && '{{ $sortDir }}' === 'desc'">
-                            <span class="text-blue-600 dark:text-blue-400">↓</span>
-                        </template>
-                    </div>
-                </th>
-                <th class="px-4 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none transition"
-                    @click="Array.from(document.querySelectorAll('[data-search-container]')).forEach(el => el.__x_scope.searchTagFilterProjetos.ordenarPor('delocal'))">
-                    <div class="flex items-center gap-2">
-                        Nome do Local
-                        <template x-if="'{{ $sortField }}' === 'delocal' && '{{ $sortDir }}' === 'asc'">
-                            <span class="text-blue-600 dark:text-blue-400">↑</span>
-                        </template>
-                        <template x-if="'{{ $sortField }}' === 'delocal' && '{{ $sortDir }}' === 'desc'">
-                            <span class="text-blue-600 dark:text-blue-400">↓</span>
-                        </template>
-                    </div>
-                </th>
-                <th class="px-4 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 select-none transition"
-                    @click="Array.from(document.querySelectorAll('[data-search-container]')).forEach(el => el.__x_scope.searchTagFilterProjetos.ordenarPor('projeto_nome'))">
-                    <div class="flex items-center gap-2">
-                        Projeto Associado
-                        <template x-if="'{{ $sortField }}' === 'projeto_nome' && '{{ $sortDir }}' === 'asc'">
-                            <span class="text-blue-600 dark:text-blue-400">↑</span>
-                        </template>
-                        <template x-if="'{{ $sortField }}' === 'projeto_nome' && '{{ $sortDir }}' === 'desc'">
-                            <span class="text-blue-600 dark:text-blue-400">↓</span>
-                        </template>
-                    </div>
-                </th>
+                <th class="px-4 py-3">Cód. Local</th>
+                <th class="px-4 py-3">Nome do Local</th>
+                <th class="px-4 py-3">Projeto Associado</th>
                 <th class="px-4 py-3">Ações</th>
             </tr>
         </thead>

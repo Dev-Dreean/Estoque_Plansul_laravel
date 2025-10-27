@@ -15,6 +15,7 @@ use App\Http\Controllers\ProjetoController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RelatorioBensController;
+use App\Http\Controllers\DuplicatePatrimonioController;
 
 /*
 |--------------------------------------------------------------------------

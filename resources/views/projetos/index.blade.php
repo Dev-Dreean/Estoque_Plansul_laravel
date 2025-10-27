@@ -1,10 +1,9 @@
 <x-app-layout>
     <div class="py-12"
-        data-search-container
         x-data="searchTagFilterProjetos('{{ route('projetos.index') }}')"
         @init="init()"> {{-- Inicializa as tags ao carregar --}}
         <div class="w-full sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-m sm:rounded-lg">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="flex justify-between items-center mb-4">
                         <div class="w-1/2">
@@ -49,12 +48,9 @@
                         </a>
                     </div>
                     {{-- 3. Área da tabela que será atualizada dinamicamente --}}
-                    <div id="table-container" 
-                        x-data="tableMultiSelect()"
-                        x-html="tableHtml"
-                        @table:update="Object.assign($data, $event.detail)">
+                    <div id="table-container" x-html="tableHtml">
                         {{-- O conteúdo inicial da tabela é carregado aqui --}}
-                        @include('projetos._table_partial', ['locais' => $locais, 'sortField' => '', 'sortDir' => 'asc'])
+                        @include('projetos._table_partial', ['locais' => $locais])
                     </div>
                 </div>
             </div>
@@ -69,10 +65,6 @@
                 inputValue: '',
                 tags: [],
                 tableHtml: document.getElementById('table-container').innerHTML,
-                ordenacao: {
-                    campo: null,
-                    direcao: 'asc'  // 'asc' ou 'desc'
-                },
                 init() {
                     // Restaura as tags da URL ao carregar a página
                     const params = new URLSearchParams(window.location.search);
@@ -99,17 +91,6 @@
                         this.search();
                     }
                 },
-                ordenarPor(campo) {
-                    // Se clicou no mesmo campo, alterna a direção
-                    if (this.ordenacao.campo === campo) {
-                        this.ordenacao.direcao = this.ordenacao.direcao === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        // Se é novo campo, começa em ascendente
-                        this.ordenacao.campo = campo;
-                        this.ordenacao.direcao = 'asc';
-                    }
-                    this.search();
-                },
                 search() {
                     // Monta a URL com os parâmetros de busca (tags + input)
                     let params = [];
@@ -118,13 +99,7 @@
                     } else {
                         params = [...this.tags];
                     }
-                    let url = `${baseUrl}?search=${encodeURIComponent(params.join(','))}`;
-                    
-                    // Adiciona parâmetros de ordenação
-                    if (this.ordenacao.campo) {
-                        url += `&sort=${this.ordenacao.campo}&direction=${this.ordenacao.direcao}`;
-                    }
-                    
+                    const url = `${baseUrl}?search=${encodeURIComponent(params.join(','))}`;
                     fetch(url, {
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',

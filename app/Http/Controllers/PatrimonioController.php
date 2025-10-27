@@ -166,6 +166,15 @@ class PatrimonioController extends Controller
             'DTBAIXA' => 'required_if:SITUACAO,BAIXA|nullable|date',
         ]);
 
+        // ✅ VERIFICAR DUPLICATAS: Impedir criar patrimônio com nº que já existe
+        $nupatrimonio = (int) $validated['NUPATRIMONIO'];
+        $jaExiste = Patrimonio::where('NUPATRIMONIO', $nupatrimonio)->exists();
+        if ($jaExiste) {
+            throw ValidationException::withMessages([
+                'NUPATRIMONIO' => "Já existe um patrimônio com o número $nupatrimonio! Não é permitido criar duplicatas."
+            ]);
+        }
+
         // 2) Garantir existência do ObjetoPatr (tabela objetopatr)
         //    O Model ObjetoPatr usa PK 'NUSEQOBJETO'.
         $codigo = (int) $validated['NUSEQOBJ'];
@@ -189,7 +198,7 @@ class PatrimonioController extends Controller
         // 3) Criar o patrimônio associando o código recém-verificado/criado
         $usuarioCriador = Auth::user()->NMLOGIN ?? Auth::user()->NOMEUSER ?? 'SISTEMA';
         $dadosPatrimonio = [
-            'NUPATRIMONIO' => (int) $validated['NUPATRIMONIO'],
+            'NUPATRIMONIO' => $nupatrimonio,
             'CODOBJETO' => $codigo, // campo da tabela patr
             // Usaremos a descrição do objeto como DEPATRIMONIO para manter compatibilidade atual do front
             'DEPATRIMONIO' => $objeto->DEOBJETO ?? $request->input('DEOBJETO'),
@@ -236,14 +245,93 @@ class PatrimonioController extends Controller
     public function update(Request $request, Patrimonio $patrimonio): RedirectResponse
     {
         $this->authorize('update', $patrimonio);
+
+        // 🔍 Debug: Log de todos os dados recebidos
+        Log::info('🔍 [UPDATE] Dados recebidos do formulário', [
+            'request_all' => $request->all(),
+            'NUSEQPATR' => $patrimonio->NUSEQPATR,
+        ]);
+
         $validatedData = $this->validatePatrimonio($request);
+
+        // ✅ Log dos dados antes da atualização
+        Log::info('Patrimônio UPDATE: Dados antes da atualização', [
+            'NUSEQPATR' => $patrimonio->NUSEQPATR,
+            'NUPATRIMONIO_old' => $patrimonio->NUPATRIMONIO,
+            'CODOBJETO_old' => $patrimonio->CODOBJETO,
+            'DEPATRIMONIO_old' => $patrimonio->DEPATRIMONIO,
+            'CDLOCAL_old' => $patrimonio->CDLOCAL,
+            'CDPROJETO_old' => $patrimonio->CDPROJETO,
+            'CDMATRFUNCIONARIO_old' => $patrimonio->CDMATRFUNCIONARIO,
+            'SITUACAO_old' => $patrimonio->SITUACAO,
+        ]);
+        Log::info('Patrimônio UPDATE: Dados validados para atualizar', [
+            'NUSEQPATR' => $patrimonio->NUSEQPATR,
+            'validated_data' => $validatedData,
+        ]);
 
         // Detectar alterações relevantes
         $oldProjeto = $patrimonio->CDPROJETO;
         $oldSituacao = $patrimonio->SITUACAO;
+        $oldLocal = $patrimonio->CDLOCAL;
+
+        // 🔍 Debug: Log antes do update
+        Log::info('🔍 [UPDATE] Chamando $patrimonio->update()', [
+            'validated_data' => $validatedData,
+        ]);
+
         $patrimonio->update($validatedData);
+
+        // 🔍 Debug: Recarregar do banco para verificar se salvou
+        $patrimonio->refresh();
+
         $newProjeto = $patrimonio->CDPROJETO;
         $newSituacao = $patrimonio->SITUACAO;
+        $newLocal = $patrimonio->CDLOCAL;
+
+        // ✅ Log dos dados após a atualização
+        Log::info('Patrimônio UPDATE: Dados após a atualização', [
+            'NUSEQPATR' => $patrimonio->NUSEQPATR,
+            'NUPATRIMONIO_after' => $patrimonio->NUPATRIMONIO,
+            'CODOBJETO_after' => $patrimonio->CODOBJETO,
+            'DEPATRIMONIO_after' => $patrimonio->DEPATRIMONIO,
+            'CDLOCAL_after' => $newLocal,
+            'CDPROJETO_after' => $newProjeto,
+            'CDMATRFUNCIONARIO_after' => $patrimonio->CDMATRFUNCIONARIO,
+            'SITUACAO_after' => $newSituacao,
+        ]);
+
+        // Registrar histórico quando o Local mudar
+        if ($newLocal != $oldLocal) {
+            try {
+                $coAutor = null;
+                $actorMat = Auth::user()->CDMATRFUNCIONARIO ?? null;
+                $ownerMat = $patrimonio->CDMATRFUNCIONARIO;
+                if (!empty($actorMat) && !empty($ownerMat) && $actorMat != $ownerMat) {
+                    $coAutor = User::where('CDMATRFUNCIONARIO', $ownerMat)->value('NMLOGIN');
+                }
+                HistoricoMovimentacao::create([
+                    'TIPO' => 'local',
+                    'CAMPO' => 'CDLOCAL',
+                    'VALOR_ANTIGO' => $oldLocal,
+                    'VALOR_NOVO' => $newLocal,
+                    'NUPATR' => $patrimonio->NUPATRIMONIO,
+                    'CODPROJ' => $newProjeto,
+                    'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+                    'CO_AUTOR' => $coAutor,
+                    'DTOPERACAO' => now(),
+                ]);
+                Log::info('Histórico LOCAL registrado', [
+                    'CDLOCAL_old' => $oldLocal,
+                    'CDLOCAL_new' => $newLocal
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('Falha ao gravar histórico de local', [
+                    'patrimonio' => $patrimonio->NUSEQPATR,
+                    'erro' => $e->getMessage()
+                ]);
+            }
+        }
 
         // Registrar histórico quando o Projeto mudar
         if ($newProjeto != $oldProjeto) {
@@ -264,6 +352,10 @@ class PatrimonioController extends Controller
                     'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
                     'CO_AUTOR' => $coAutor,
                     'DTOPERACAO' => now(),
+                ]);
+                Log::info('Histórico PROJETO registrado', [
+                    'CDPROJETO_old' => $oldProjeto,
+                    'CDPROJETO_new' => $newProjeto
                 ]);
             } catch (\Throwable $e) {
                 Log::warning('Falha ao gravar histórico de projeto', [
@@ -293,6 +385,10 @@ class PatrimonioController extends Controller
                     'CO_AUTOR' => $coAutor,
                     'DTOPERACAO' => now(),
                 ]);
+                Log::info('Histórico SITUAÇÃO registrado', [
+                    'SITUACAO_old' => $oldSituacao,
+                    'SITUACAO_new' => $newSituacao
+                ]);
             } catch (\Throwable $e) {
                 Log::warning('Falha ao gravar histórico (situação)', [
                     'patrimonio' => $patrimonio->NUSEQPATR,
@@ -311,6 +407,64 @@ class PatrimonioController extends Controller
         $this->authorize('delete', $patrimonio);
         $patrimonio->delete();
         return redirect()->route('patrimonios.index')->with('success', 'Patrimônio deletado com sucesso!');
+    }
+
+    /**
+     * 🔍 Exibe tela de duplicatas - patrimônios com mesmo número
+     */
+    public function duplicatas(): View
+    {
+        // Encontrar todos os patrimonios que aparecem mais de uma vez
+        $duplicatas = Patrimonio::select('NUPATRIMONIO')
+            ->groupBy('NUPATRIMONIO')
+            ->havingRaw('COUNT(*) > 1')
+            ->orderBy('NUPATRIMONIO')
+            ->get()
+            ->pluck('NUPATRIMONIO')
+            ->toArray();
+
+        // Se não há duplicatas, retornar mensagem
+        if (empty($duplicatas)) {
+            return view('patrimonios.duplicatas', ['grupos' => [], 'temDuplicatas' => false]);
+        }
+
+        // Buscar os dados completos dos patrimonios duplicados agrupados
+        $grupos = [];
+        foreach ($duplicatas as $numero) {
+            $grupo = Patrimonio::where('NUPATRIMONIO', $numero)
+                ->with('funcionario', 'localProjeto', 'localProjeto.projeto')
+                ->orderBy('NUSEQPATR', 'desc') // Mais recente primeiro (maior ID)
+                ->get();
+
+            $grupos[$numero] = $grupo;
+        }
+
+        return view('patrimonios.duplicatas', [
+            'grupos' => $grupos,
+            'temDuplicatas' => count($grupos) > 0,
+            'totalDuplicatas' => count($grupos),
+        ]);
+    }
+
+    /**
+     * 🗑️ Deleta um patrimônio (versão para duplicatas)
+     * Usado na tela de removição de duplicatas
+     */
+    public function deletarDuplicata(Request $request, Patrimonio $patrimonio): RedirectResponse
+    {
+        $this->authorize('delete', $patrimonio);
+
+        $numero = $patrimonio->NUPATRIMONIO;
+        Log::info('Deletando duplicata de patrimônio', [
+            'NUSEQPATR' => $patrimonio->NUSEQPATR,
+            'NUPATRIMONIO' => $numero,
+            'deletado_por' => Auth::user()->NMLOGIN
+        ]);
+
+        $patrimonio->delete();
+
+        return redirect()->route('patrimonios.duplicatas')
+            ->with('success', "Duplicata nº $numero deletada com sucesso!");
     }
 
     // --- MÉTODOS DE API PARA O FORMULÁRIO DINÂMICO ---
@@ -1240,6 +1394,11 @@ class PatrimonioController extends Controller
 
     private function validatePatrimonio(Request $request): array
     {
+        // 🔍 Debug inicial
+        Log::info('🔍 [VALIDATE] Início da validação', [
+            'request_all' => $request->all(),
+        ]);
+
         // 1) Validar campos básicos; aceitar tanto o fluxo novo (NUSEQOBJ/DEOBJETO)
         // quanto o legado (CODOBJETO/DEPATRIMONIO)
         $data = $request->validate([
@@ -1263,6 +1422,10 @@ class PatrimonioController extends Controller
             'DTBAIXA' => 'required_if:SITUACAO,BAIXA|nullable|date',
             // Matricula precisa existir na tabela funcionarios
             'CDMATRFUNCIONARIO' => 'required|integer|exists:funcionarios,CDMATRFUNCIONARIO',
+        ]);
+
+        Log::info('🔍 [VALIDATE] Dados após validação inicial', [
+            'data' => $data,
         ]);
 
         // 2) Resolver o código do objeto a partir de NUSEQOBJ (preferencial) ou CODOBJETO (fallback)
@@ -1298,6 +1461,47 @@ class PatrimonioController extends Controller
         $data['CODOBJETO'] = $codigo;
         $data['DEPATRIMONIO'] = $objeto->DEOBJETO; // mantém compatibilidade de exibição no index/relatórios
         unset($data['NUSEQOBJ'], $data['DEOBJETO']);
+
+        Log::info('🔍 [VALIDATE] Após mapear código do objeto', [
+            'CODOBJETO' => $data['CODOBJETO'],
+            'DEPATRIMONIO' => $data['DEPATRIMONIO'],
+        ]);
+
+        // 5) ✨ SINCRONIZAÇÃO PROJETO-LOCAL: Se CDLOCAL foi informado, sincronizar CDPROJETO
+        if (!empty($data['CDLOCAL'])) {
+            $localProjeto = LocalProjeto::find($data['CDLOCAL']);
+            if ($localProjeto) {
+                if ($localProjeto->tabfant_id) {
+                    $projeto = Tabfant::find($localProjeto->tabfant_id);
+                    if ($projeto) {
+                        // Sincronizar o CDPROJETO com o projeto do local
+                        $data['CDPROJETO'] = $projeto->CDPROJETO;
+                        Log::info('Patrimônio: Sincronizando projeto com local', [
+                            'CDLOCAL' => $data['CDLOCAL'],
+                            'CDPROJETO_novo' => $projeto->CDPROJETO,
+                            'local_nome' => $localProjeto->delocal
+                        ]);
+                    }
+                } else {
+                    // Local sem projeto associado - permitir, mas deixar CDPROJETO vazio se necessário
+                    if (empty($data['CDPROJETO'])) {
+                        Log::warning('Patrimônio: Local sem projeto associado', [
+                            'CDLOCAL' => $data['CDLOCAL'],
+                            'local_nome' => $localProjeto->delocal
+                        ]);
+                    }
+                }
+            } else {
+                // Local não encontrado
+                throw ValidationException::withMessages([
+                    'CDLOCAL' => 'Local não encontrado ou inválido.'
+                ]);
+            }
+        }
+
+        Log::info('🔍 [VALIDATE] Dados finais que serão retornados', [
+            'final_data' => $data,
+        ]);
 
         return $data;
     }

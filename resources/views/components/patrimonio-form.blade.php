@@ -1,4 +1,4 @@
-﻿@props(['patrimonio' => null])
+@props(['patrimonio' => null])
 
 @if ($errors->any())
 <div class="mb-3 bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded-lg relative text-sm" role="alert">
@@ -271,7 +271,7 @@
               </div>
             </template>
             <template x-if="!loadingCodigosLocais && codigosLocaisFiltrados.length === 0">
-              <div class="p-3 text-gray-500 text-center" x-text="codigoLocalDigitado.trim() === '' ? 'Nenhum local disponível para este projeto' : 'Nenhum resultado encontrado'"></div>
+              <div class="p-3 text-gray-500 text-center" x-text="String(codigoLocalDigitado || '').trim() === '' ? 'Nenhum local disponível para este projeto' : 'Nenhum resultado encontrado'"></div>
             </template>
             <template x-for="(codigo, i) in codigosLocaisFiltrados" :key="codigo.id || codigo.cdlocal">
               <div @click="selecionarCodigoLocal(codigo)"
@@ -326,15 +326,12 @@
     </div>
     <div>
       <label for="SITUACAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Situação do Patrimônio *</label>
-      <select id="SITUACAO" name="SITUACAO" required tabindex="12"
+      <select id="SITUACAO" name="SITUACAO" x-model="formData.SITUACAO" required tabindex="12"
         class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500">
-        @php
-        $situacaoAtual = old('SITUACAO', $patrimonio->situacao ?? 'EM USO');
-        @endphp
-        <option value="EM USO" @if ($situacaoAtual=='EM USO' ) selected @endif>EM USO</option>
-        <option value="CONSERTO" @if ($situacaoAtual=='CONSERTO' ) selected @endif>CONSERTO</option>
-        <option value="BAIXA" @if ($situacaoAtual=='BAIXA' ) selected @endif>BAIXA</option>
-        <option value="À DISPOSIÇÃO" @if ($situacaoAtual=='À DISPOSIÇÃO' ) selected @endif>À DISPOSIÇÃO</option>
+        <option value="EM USO">EM USO</option>
+        <option value="CONSERTO">CONSERTO</option>
+        <option value="BAIXA">BAIXA</option>
+        <option value="À DISPOSIÇÃO">À DISPOSIÇÃO</option>
       </select>
     </div>
   </div>
@@ -625,7 +622,7 @@
         NUMOF: (config.old?.NUMOF ?? config.patrimonio?.NUMOF) || '',
         // Novo fluxo de Código/Descrição do Código
         NUSEQOBJ: (config.old?.NUSEQOBJ ?? config.patrimonio?.CODOBJETO) || '',
-        DEOBJETO: (config.old?.DEOBJETO ?? '') || '',
+        DEOBJETO: (config.old?.DEOBJETO ?? (config.patrimonio?.DEOBJETO || config.patrimonio?.DEPATRIMONIO)) || '',
         // Mantemos DEPATRIMONIO somente para compatibilidade de carregamento de patrimônio existente (não é mais o campo de edição de descrição do código)
         DEPATRIMONIO: (config.old?.DEPATRIMONIO ?? config.patrimonio?.DEPATRIMONIO) || '',
         DEHISTORICO: (config.old?.DEHISTORICO ?? config.patrimonio?.DEHISTORICO) || '',
@@ -662,7 +659,7 @@
       showUserDropdown: false,
       userSelectedName: '',
       // Autocomplete Descrição (antes chamado de Código)
-      descricaoSearch: (config.old?.DEOBJETO ?? config.patrimonio?.DEOBJETO) || '',
+      descricaoSearch: (config.old?.DEOBJETO ?? (config.patrimonio?.DEOBJETO || config.patrimonio?.DEPATRIMONIO)) || '',
       codigosLista: [],
       loadingCodigos: false,
       showCodigoDropdown: false,
@@ -1555,14 +1552,14 @@
       abrirDropdownCodigosLocais(force = false) {
         this.showCodigoLocalDropdown = true;
         // Se clicou na lupa ou focou no campo, sempre buscar todos os códigos
-        if (force || this.codigoLocalDigitado.trim() === '') {
+        if (force || String(this.codigoLocalDigitado || '').trim() === '') {
           this.buscarCodigosLocaisFiltrados();
-        } else if (this.codigoLocalDigitado.trim() !== '') {
+        } else if (String(this.codigoLocalDigitado || '').trim() !== '') {
           this.buscarCodigosLocaisFiltrados();
         }
       },
       selecionarCodigoLocal(codigo) {
-        console.log('✅ [SELECIONAR CÓDIGO] Código selecionado:', codigo);
+        console.log('✅ [SELECIONAR CÓDIGO] Código selecionado:', codigo.cdlocal, '→ ID:', codigo.id);
 
         // 1️⃣ Atualizar o código do local
         this.codigoLocalDigitado = String(codigo.cdlocal);
@@ -1579,12 +1576,6 @@
 
         // 4️⃣ Fechar dropdown do código
         this.showCodigoLocalDropdown = false;
-
-        console.log('✅ [SELECIONAR CÓDIGO] Nome preenchido:', {
-          nomeLocalBusca: this.nomeLocalBusca,
-          localNome: this.localNome,
-          codigoLocalDigitado: this.codigoLocalDigitado
-        });
 
         // 5️⃣ Buscar todos os locais com este código para validação
         // Isso mantém a lista de locais para caso haja múltiplos
@@ -2233,12 +2224,14 @@
               `${primeiro.CDPROJETO} - ${primeiro.NOMEPROJETO}` :
               '';
           } else if (locais.length > 1) {
-            // Múltiplos locais - MAS MANTER O NOME PREENCHIDO
+            // Múltiplos locais - MAS MANTER O CDLOCAL QUE FOI SELECIONADO
+            // O CDLOCAL já foi definido em selecionarCodigoLocal
             // O nomeLocalBusca já foi definido em selecionarCodigoLocal
             // NÃO zeramos aqui para manter o preenchimento automático
             this.localNome = this.nomeLocalBusca;
-            this.formData.CDLOCAL = '';
-            this.localSelecionadoId = null;
+            // IMPORTANTE: NÃO LIMPAR formData.CDLOCAL - já foi atribuído em selecionarCodigoLocal!
+            // this.formData.CDLOCAL = ''; ← REMOVIDO!
+            // this.localSelecionadoId = null; ← REMOVIDO!
 
             // Pegar projeto do primeiro (todos devem ter o mesmo)
             const primeiro = locais[0];
@@ -2246,6 +2239,7 @@
             this.projetoAssociadoSearch = primeiro.CDPROJETO && primeiro.NOMEPROJETO ?
               `${primeiro.CDPROJETO} - ${primeiro.NOMEPROJETO}` :
               '';
+            console.log(`ℹ️ [BUSCAR LOCAL POR CÓDIGO] ${locais.length} locais encontrados com código ${this.codigoLocalDigitado}, mantendo CDLOCAL = ${this.formData.CDLOCAL}`);
           } else {
             // Nenhum local encontrado
             // NÃO limpar nomeLocalBusca - deixar para o usuário decidir
@@ -3314,12 +3308,18 @@
         console.log('🚀 [INIT] Inicializando formulário...');
         console.log('='.repeat(80));
         console.log('📌 Modo:', this.isEditMode() ? 'EDIÇÃO' : 'CRIAÇÃO');
-        console.log('📌 Dados do formulário:', JSON.stringify({
+        console.log('📌 Dados do formulário (formData):', JSON.stringify({
           NUPATRIMONIO: this.formData.NUPATRIMONIO,
+          NUSEQOBJ: this.formData.NUSEQOBJ,
+          DEOBJETO: this.formData.DEOBJETO,
           CDPROJETO: this.formData.CDPROJETO,
           CDLOCAL: this.formData.CDLOCAL,
-          NUSEQOBJ: this.formData.NUSEQOBJ,
+          CDMATRFUNCIONARIO: this.formData.CDMATRFUNCIONARIO,
+          SITUACAO: this.formData.SITUACAO,
+          MARCA: this.formData.MARCA,
+          MODELO: this.formData.MODELO,
         }, null, 2));
+        console.log('📌 descricaoSearch:', this.descricaoSearch);
 
         // Se é modo EDIÇÃO e há patrimônio carregado
         if (this.isEditMode()) {
