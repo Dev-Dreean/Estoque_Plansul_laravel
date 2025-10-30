@@ -23,30 +23,6 @@ use Illuminate\Validation\ValidationException;
 class PatrimonioController extends Controller
 {
 
-    /**
-     * Retorna o próximo número de patrimônio disponível (sequencial)
-     */
-    public function proximoNumeroPatrimonio(): JsonResponse
-    {
-        try {
-            // Encontrar o maior NUPATRIMONIO atualmente
-            $ultimoNumero = Patrimonio::max('NUPATRIMONIO') ?? 0;
-            $proximoNumero = $ultimoNumero + 1;
-
-            return response()->json([
-                'success' => true,
-                'proximoNumero' => $proximoNumero,
-                'ultimoNumero' => $ultimoNumero
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Erro ao obter próximo número de patrimônio: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao gerar número sequencial'
-            ], 500);
-        }
-    }
-
     public function buscarCodigoObjeto($codigo)
     {
         try {
@@ -92,6 +68,33 @@ class PatrimonioController extends Controller
         } catch (\Throwable $e) {
             Log::error('Erro pesquisarCodigos: ' . $e->getMessage());
             return response()->json([], 200);
+        }
+    }
+
+    /**
+     * Gera o próximo número sequencial de patrimônio
+     */
+    public function proximoNumeroPatrimonio(): JsonResponse
+    {
+        try {
+            $ultimoNumero = Patrimonio::max('NUPATRIMONIO') ?? 0;
+            $proximoNumero = $ultimoNumero + 1;
+
+            Log::info('Próximo número de patrimônio gerado', [
+                'ultimo' => $ultimoNumero,
+                'proximo' => $proximoNumero
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'numero' => $proximoNumero
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Erro ao gerar próximo número de patrimônio: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao gerar número de patrimônio'
+            ], 500);
         }
     }
 
@@ -743,35 +746,21 @@ class PatrimonioController extends Controller
             ]);
 
             if ($cdlocal && $delocal) {
-                // Verificar se já existe um local com o mesmo nome NO MESMO PROJETO (case-insensitive)
-                $nomeUppercase = strtoupper($delocal);
-                $localExistente = LocalProjeto::whereRaw('UPPER(delocal) = ?', [$nomeUppercase])
-                    ->where('tabfant_id', $projeto->id)
-                    ->first();
+                $novoLocal = LocalProjeto::create([
+                    'cdlocal' => $cdlocal,
+                    'delocal' => $delocal,
+                    'tabfant_id' => $projeto->id,
+                    'flativo' => true,
+                ]);
 
-                if (!$localExistente) {
-                    $novoLocal = LocalProjeto::create([
-                        'cdlocal' => $cdlocal,
-                        'delocal' => $delocal,
-                        'tabfant_id' => $projeto->id,
-                        'flativo' => true,
-                    ]);
-
-                    \Illuminate\Support\Facades\Log::info('Local criado para novo projeto', [
-                        'local_id' => $novoLocal->id,
-                        'cdlocal' => $cdlocal,
-                        'delocal' => $delocal,
-                        'projeto_id' => $projeto->id,
-                        'projeto_codigo' => $projeto->CDPROJETO,
-                        'projeto_nome' => $projeto->NOMEPROJETO
-                    ]);
-                } else {
-                    \Illuminate\Support\Facades\Log::warning('Local NÃO criado - já existe local com mesmo nome no projeto', [
-                        'cdlocal' => $cdlocal,
-                        'delocal' => $delocal,
-                        'projeto_id' => $projeto->id
-                    ]);
-                }
+                \Illuminate\Support\Facades\Log::info('Local criado para novo projeto', [
+                    'local_id' => $novoLocal->id,
+                    'cdlocal' => $cdlocal,
+                    'delocal' => $delocal,
+                    'projeto_id' => $projeto->id,
+                    'projeto_codigo' => $projeto->CDPROJETO,
+                    'projeto_nome' => $projeto->NOMEPROJETO
+                ]);
             } else {
                 \Illuminate\Support\Facades\Log::warning('Local NÃO criado - dados insuficientes', [
                     'cdlocal' => $cdlocal,
@@ -833,18 +822,6 @@ class PatrimonioController extends Controller
         $projeto = Tabfant::where('CDPROJETO', $cdprojeto)->first(['id']);
         if (!$projeto) {
             return response()->json(['error' => 'Projeto não encontrado.'], 404);
-        }
-
-        // Verificar se já existe um local com o mesmo nome NO MESMO PROJETO (case-insensitive)
-        $nomeUppercase = strtoupper($request->delocal);
-        $localExistente = LocalProjeto::whereRaw('UPPER(delocal) = ?', [$nomeUppercase])
-            ->where('tabfant_id', $projeto->id)
-            ->first();
-
-        if ($localExistente) {
-            return response()->json([
-                'error' => "Já existe um local com o nome '{$nomeUppercase}' neste projeto. Por favor, escolha outro nome."
-            ], 409); // 409 Conflict
         }
 
         // Calcula automaticamente o próximo cdlocal baseado apenas nos locais deste projeto
@@ -1025,18 +1002,6 @@ class PatrimonioController extends Controller
             ->max('cdlocal') ?? 0;
 
         $nextCdLocal = (int) $maxCdLocal + 1;
-
-        // Verificar se já existe um local com o mesmo nome NO MESMO PROJETO (case-insensitive)
-        $nomeUppercase = strtoupper($request->delocal);
-        $localExistente = LocalProjeto::whereRaw('UPPER(delocal) = ?', [$nomeUppercase])
-            ->where('tabfant_id', $projeto->id)
-            ->first();
-
-        if ($localExistente) {
-            return response()->json([
-                'error' => "Já existe um local com o nome '{$nomeUppercase}' neste projeto. Por favor, escolha outro nome."
-            ], 409); // 409 Conflict
-        }
 
         Log::info('Criando local com projeto informado', [
             'projeto_busca' => $request->projeto,
@@ -1722,21 +1687,6 @@ class PatrimonioController extends Controller
                 $tabfantId = $projeto->id;
             }
 
-            // Verificar se já existe um local com o mesmo nome NO MESMO PROJETO (case-insensitive)
-            if ($tabfantId) {
-                $nomeUppercase = strtoupper($delocal);
-                $localExistente = LocalProjeto::whereRaw('UPPER(delocal) = ?', [$nomeUppercase])
-                    ->where('tabfant_id', $tabfantId)
-                    ->first();
-
-                if ($localExistente) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Já existe um local com o nome '{$nomeUppercase}' neste projeto."
-                    ]);
-                }
-            }
-
             // Criar o local
             $local = LocalProjeto::create([
                 'cdlocal' => $cdlocal,
@@ -1818,19 +1768,6 @@ class PatrimonioController extends Controller
             // Usar o MESMO código do local base (não incrementar)
             // Múltiplos locais podem ter o mesmo CDLOCAL mas nomes diferentes
             $novoCdlocal = $cdlocalBase;
-
-            // Verificar se já existe um local com o mesmo nome NO MESMO PROJETO (case-insensitive)
-            $nomeUppercase = strtoupper($nomeLocal);
-            $localExistente = LocalProjeto::whereRaw('UPPER(delocal) = ?', [$nomeUppercase])
-                ->where('tabfant_id', $projeto->id)
-                ->first();
-
-            if ($localExistente) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "Já existe um local com o nome '{$nomeUppercase}' neste projeto."
-                ], 409);
-            }
 
             DB::beginTransaction();
             try {
@@ -2033,6 +1970,7 @@ class PatrimonioController extends Controller
                 ]);
             }
 
+            // Se foi fornecido nome do local, criar/atualizar local
             // Se foi fornecido nome do local, criar apenas se NÃO houver projeto
             if ($nomeLocal && !$projeto) {
                 $local = LocalProjeto::create([
@@ -2052,35 +1990,22 @@ class PatrimonioController extends Controller
                 // Pegar o nome do local - prioridade: nomeLocal > nomeLocalAtual > "Local {cdlocal}"
                 $nomeLocalParaAssociacao = $nomeLocal ?: ($nomeLocalAtual ?: "Local {$cdlocal}");
 
-                // Verificar se já existe um local com o mesmo nome NO MESMO PROJETO (case-insensitive)
-                $nomeUppercase = strtoupper($nomeLocalParaAssociacao);
-                $localExistente = LocalProjeto::whereRaw('UPPER(delocal) = ?', [$nomeUppercase])
-                    ->where('tabfant_id', $projeto->id)
-                    ->first();
+                // Criar apenas a associação local-projeto
+                $local = LocalProjeto::create([
+                    'cdlocal' => $cdlocal,
+                    'delocal' => $nomeLocalParaAssociacao,
+                    'tabfant_id' => $projeto->id,
+                    'flativo' => true,
+                ]);
 
-                if (!$localExistente) {
-                    // Criar apenas a associação local-projeto
-                    $local = LocalProjeto::create([
-                        'cdlocal' => $cdlocal,
-                        'delocal' => $nomeLocalParaAssociacao,
-                        'tabfant_id' => $projeto->id,
-                        'flativo' => true,
-                    ]);
-
-                    \Illuminate\Support\Facades\Log::info('Nova associação local-projeto criada:', [
-                        'id' => $local->id,
-                        'cdlocal' => $local->cdlocal,
-                        'delocal' => $local->delocal,
-                        'tabfant_id' => $local->tabfant_id,
-                        'projeto_codigo' => $projeto->CDPROJETO,
-                        'projeto_nome' => $projeto->NOMEPROJETO
-                    ]);
-                } else {
-                    \Illuminate\Support\Facades\Log::warning('Local NÃO criado - já existe com mesmo nome no projeto', [
-                        'delocal' => $nomeLocalParaAssociacao,
-                        'tabfant_id' => $projeto->id
-                    ]);
-                }
+                \Illuminate\Support\Facades\Log::info('Nova associação local-projeto criada:', [
+                    'id' => $local->id,
+                    'cdlocal' => $local->cdlocal,
+                    'delocal' => $local->delocal,
+                    'tabfant_id' => $local->tabfant_id,
+                    'projeto_codigo' => $projeto->CDPROJETO,
+                    'projeto_nome' => $projeto->NOMEPROJETO
+                ]);
             }
 
             DB::commit();
