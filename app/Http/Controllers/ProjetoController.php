@@ -99,14 +99,16 @@ class ProjetoController extends Controller
             'tabfant_id' => 'required|exists:tabfant,id', // Valida se o projeto selecionado existe
         ]);
 
-        // Verificar se já existe um local com o mesmo nome (uppercase)
+        // Verificar se já existe um local com o mesmo nome NO MESMO PROJETO (case-insensitive)
         $nomeUppercase = strtoupper($request->delocal);
-        $localExistente = LocalProjeto::whereRaw('UPPER(delocal) = ?', [$nomeUppercase])->first();
+        $localExistente = LocalProjeto::whereRaw('UPPER(delocal) = ?', [$nomeUppercase])
+            ->where('tabfant_id', $request->tabfant_id)
+            ->first();
 
         if ($localExistente) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', "Já existe um local com o nome '{$nomeUppercase}'. Por favor, escolha outro nome.");
+                ->with('error', "Já existe um local com o nome '{$nomeUppercase}' neste projeto. Por favor, escolha outro nome.");
         }
 
         LocalProjeto::create([
@@ -152,16 +154,17 @@ class ProjetoController extends Controller
             'tabfant_id' => 'required|exists:tabfant,id',
         ]);
 
-        // Verificar se já existe outro local com o mesmo nome (uppercase), excluindo o atual
+        // Verificar se já existe outro local com o mesmo nome NO MESMO PROJETO (excluindo o atual)
         $nomeUppercase = strtoupper($request->delocal);
         $localExistente = LocalProjeto::whereRaw('UPPER(delocal) = ?', [$nomeUppercase])
             ->where('id', '!=', $projeto->id)
+            ->where('tabfant_id', $request->tabfant_id)
             ->first();
 
         if ($localExistente) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', "Já existe outro local com o nome '{$nomeUppercase}'. Por favor, escolha outro nome.");
+                ->with('error', "Já existe outro local com o nome '{$nomeUppercase}' neste projeto. Por favor, escolha outro nome.");
         }
 
         $projeto->update([
