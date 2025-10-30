@@ -99,6 +99,16 @@ class ProjetoController extends Controller
             'tabfant_id' => 'required|exists:tabfant,id', // Valida se o projeto selecionado existe
         ]);
 
+        // Verificar se já existe um local com o mesmo nome (uppercase)
+        $nomeUppercase = strtoupper($request->delocal);
+        $localExistente = LocalProjeto::whereRaw('UPPER(delocal) = ?', [$nomeUppercase])->first();
+
+        if ($localExistente) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', "Já existe um local com o nome '{$nomeUppercase}'. Por favor, escolha outro nome.");
+        }
+
         LocalProjeto::create([
             'delocal' => $request->delocal,
             'cdlocal' => $request->cdlocal,
@@ -141,6 +151,18 @@ class ProjetoController extends Controller
             'cdlocal' => 'required|integer',
             'tabfant_id' => 'required|exists:tabfant,id',
         ]);
+
+        // Verificar se já existe outro local com o mesmo nome (uppercase), excluindo o atual
+        $nomeUppercase = strtoupper($request->delocal);
+        $localExistente = LocalProjeto::whereRaw('UPPER(delocal) = ?', [$nomeUppercase])
+            ->where('id', '!=', $projeto->id)
+            ->first();
+
+        if ($localExistente) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', "Já existe outro local com o nome '{$nomeUppercase}'. Por favor, escolha outro nome.");
+        }
 
         $projeto->update([
             'delocal' => $request->delocal,

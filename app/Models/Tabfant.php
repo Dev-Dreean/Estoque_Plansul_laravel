@@ -49,4 +49,12 @@ class Tabfant extends Model
         'CDPROJETO',
         'LOCAL',
     ];
+
+    /**
+     * Mutator para converter LOCAL para UPPERCASE ao salvar
+     */
+    public function setLOCALAttribute($value)
+    {
+        $this->attributes['LOCAL'] = strtoupper($value);
+    }
 }

@@ -53,6 +53,54 @@ class Patrimonio extends Model
 
     protected $appends = ['projeto_correto'];
 
+    /**
+     * Mutators para converter campos em UPPERCASE ao salvar
+     */
+    public function setSITUACAOAttribute($value)
+    {
+        $this->attributes['SITUACAO'] = strtoupper($value);
+    }
+
+    public function setMARCAAttribute($value)
+    {
+        $this->attributes['MARCA'] = strtoupper($value);
+    }
+
+    public function setMODELOAttribute($value)
+    {
+        $this->attributes['MODELO'] = strtoupper($value);
+    }
+
+    public function setCARACTERISTICASAttribute($value)
+    {
+        $this->attributes['CARACTERISTICAS'] = strtoupper($value);
+    }
+
+    public function setDIMENSAOAttribute($value)
+    {
+        $this->attributes['DIMENSAO'] = strtoupper($value);
+    }
+
+    public function setCORAttribute($value)
+    {
+        $this->attributes['COR'] = strtoupper($value);
+    }
+
+    public function setDEPATRIMONIOAttribute($value)
+    {
+        $this->attributes['DEPATRIMONIO'] = strtoupper($value);
+    }
+
+    public function setDEHISTORICOAttribute($value)
+    {
+        $this->attributes['DEHISTORICO'] = strtoupper($value);
+    }
+
+    public function setNUSERIEAttribute($value)
+    {
+        $this->attributes['NUSERIE'] = strtoupper($value);
+    }
+
     public function funcionario(): BelongsTo
     {
         return $this->belongsTo(Funcionario::class, 'CDMATRFUNCIONARIO', 'CDMATRFUNCIONARIO');

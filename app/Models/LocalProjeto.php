@@ -12,6 +12,14 @@ class LocalProjeto extends Model
     protected $guarded = []; // Permite inserção em massa para todos os campos
 
     /**
+     * Mutator para converter nome do local para UPPERCASE ao salvar
+     */
+    public function setDelocalAttribute($value)
+    {
+        $this->attributes['delocal'] = strtoupper($value);
+    }
+
+    /**
      * Um Local pertence a um Projeto (Tabfant).
      */
     public function projeto(): BelongsTo

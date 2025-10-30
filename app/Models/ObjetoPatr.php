@@ -27,6 +27,14 @@ class ObjetoPatr extends Model
 
     protected $fillable = ['NUSEQOBJETO', 'NUSEQTIPOPATR', 'DEOBJETO'];
 
+    /**
+     * Mutator para converter DEOBJETO em UPPERCASE ao salvar
+     */
+    public function setDEOBJETOAttribute($value)
+    {
+        $this->attributes['DEOBJETO'] = strtoupper($value);
+    }
+
     public function tipo()
     {
         return $this->belongsTo(TipoPatr::class, 'NUSEQTIPOPATR', 'NUSEQTIPOPATR');
