@@ -2644,18 +2644,12 @@
             body: JSON.stringify(payload)
           });
 
-          if (!response.ok) {
-            let serverMsg = '';
-            try {
-              const errData = await response.clone().json();
-              serverMsg = errData.message || JSON.stringify(errData.errors || errData);
-            } catch (_) {
-              serverMsg = await response.text();
-            }
-            throw new Error(`Erro HTTP ${response.status}: ${serverMsg}`);
-          }
-
           const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            let errorMsg = data.message || 'Erro ao criar local';
+            throw new Error(errorMsg);
+          }
 
           if (data.success) {
             console.log('✅ [MODAL] Local criado com sucesso! Preenchendo formulário...');

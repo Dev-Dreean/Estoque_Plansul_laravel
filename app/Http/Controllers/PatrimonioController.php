@@ -1805,7 +1805,7 @@ class PatrimonioController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => "Já existe um local com o nome '{$nomeUppercase}' neste projeto."
-                ]);
+                ], 409);
             }
 
             DB::beginTransaction();
