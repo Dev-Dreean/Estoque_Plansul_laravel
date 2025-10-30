@@ -23,6 +23,30 @@ use Illuminate\Validation\ValidationException;
 class PatrimonioController extends Controller
 {
 
+    /**
+     * Retorna o próximo número de patrimônio disponível (sequencial)
+     */
+    public function proximoNumeroPatrimonio(): JsonResponse
+    {
+        try {
+            // Encontrar o maior NUPATRIMONIO atualmente
+            $ultimoNumero = Patrimonio::max('NUPATRIMONIO') ?? 0;
+            $proximoNumero = $ultimoNumero + 1;
+
+            return response()->json([
+                'success' => true,
+                'proximoNumero' => $proximoNumero,
+                'ultimoNumero' => $ultimoNumero
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao obter próximo número de patrimônio: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao gerar número sequencial'
+            ], 500);
+        }
+    }
+
     public function buscarCodigoObjeto($codigo)
     {
         try {

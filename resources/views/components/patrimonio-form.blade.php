@@ -18,33 +18,16 @@
     {{-- Número do Patrimônio --}}
     <div>
       <label for="NUPATRIMONIO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número do Patrimônio *</label>
-      <div class="relative" @click.away="showPatDropdown=false">
-        <input id="NUPATRIMONIO"
-          x-model="patSearch"
-          @focus="abrirDropdownPatrimonios()"
-          @blur.debounce.150ms="showPatDropdown=false"
-          @input.debounce.300ms="(function(){ const t=String(patSearch||'').trim(); if(t.length>0){ showPatDropdown=true; buscarPatrimonios(); } else { showPatDropdown=false; patrimoniosLista=[]; highlightedPatIndex=-1; } })()"
-          @keydown.down.prevent="navegarPatrimonios(1)"
-          @keydown.up.prevent="navegarPatrimonios(-1)"
-          @keydown.enter.prevent="selecionarPatrimonioEnter()"
-          @keydown.tab.prevent="selecionarPatrimonioTab($event)"
-          @keydown.escape.prevent="showPatDropdown=false"
-          name="NUPATRIMONIO"
-          type="text"
-          inputmode="numeric"
-          tabindex="1"
-          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500"
-          placeholder="Informe o número"
-          required />
-        <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
-          <button type="button" x-show="formData.NUPATRIMONIO" @click="limparPatrimonio" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none" title="Limpar seleção" tabindex="-1">×</button>
-          <button type="button" @click="abrirDropdownPatrimonios(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" tabindex="-1">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-            </svg>
-          </button>
-        </div>
-        <div x-show="showPatDropdown" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-xs">
+      <input id="NUPATRIMONIO"
+        x-model="formData.NUPATRIMONIO"
+        name="NUPATRIMONIO"
+        type="text"
+        inputmode="numeric"
+        tabindex="-1"
+        disabled
+        class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-md shadow-sm bg-gray-100 cursor-not-allowed"
+        placeholder="Gerado automaticamente"
+        required />
           <template x-if="loadingPatrimonios">
             <div class="p-2 text-gray-500 text-center text-xs">Buscando...</div>
           </template>
@@ -65,7 +48,7 @@
     {{-- Número da Ordem de Compra --}}
     <div>
       <label for="NUMOF" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número da Ordem de Compra</label>
-      <input x-model="formData.NUMOF" id="NUMOF" name="NUMOF" type="number" tabindex="2" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <input x-model="formData.NUMOF" id="NUMOF" name="NUMOF" type="number" tabindex="2" x-ref="numofInput" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
 
     {{-- Descrição do Objeto (busca com dropdown) --}}
@@ -3314,6 +3297,27 @@
           MODELO: this.formData.MODELO,
         }, null, 2));
         console.log('📌 descricaoSearch:', this.descricaoSearch);
+
+        // Se é modo CRIAÇÃO (novo patrimônio), gerar número sequencial
+        if (!this.isEditMode()) {
+          try {
+            const response = await fetch('/api/patrimonios/proximo-numero');
+            if (response.ok) {
+              const data = await response.json();
+              if (data.success) {
+                this.formData.NUPATRIMONIO = data.proximoNumero;
+                console.log('✅ [INIT] Número de patrimônio gerado:', this.formData.NUPATRIMONIO);
+                
+                // Dar focus no input NUMOF
+                await this.$nextTick();
+                this.$refs.numofInput?.focus();
+                console.log('✅ [INIT] Focus aplicado ao campo NUMOF');
+              }
+            }
+          } catch (e) {
+            console.error('❌ [INIT] Erro ao obter próximo número:', e);
+          }
+        }
 
         // Se é modo EDIÇÃO e há patrimônio carregado
         if (this.isEditMode()) {

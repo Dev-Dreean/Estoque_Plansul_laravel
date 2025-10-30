@@ -80,6 +80,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::post('/patrimonios/atribuir-codigo', [PatrimonioController::class, 'atribuirCodigo'])->name('patrimonios.atribuirCodigo');
     Route::post('/patrimonios/desatribuir-codigo', [PatrimonioController::class, 'desatribuirCodigo'])->name('patrimonios.desatribuirCodigo');
     Route::get('/api/patrimonios/disponiveis', [PatrimonioController::class, 'getPatrimoniosDisponiveis'])->name('api.patrimonios.disponiveis');
+    Route::get('/api/patrimonios/proximo-numero', [PatrimonioController::class, 'proximoNumeroPatrimonio'])->name('api.patrimonios.proximo-numero');
     Route::get('/api/patrimonios/buscar/{numero}', [PatrimonioController::class, 'buscarPorNumero'])->name('api.patrimonios.buscar');
     Route::get('/api/patrimonios/pesquisar', [PatrimonioController::class, 'pesquisar'])->name('api.patrimonios.pesquisar');
     // Autocomplete Usuários
