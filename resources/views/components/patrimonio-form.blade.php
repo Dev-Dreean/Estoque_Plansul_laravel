@@ -18,7 +18,7 @@
     {{-- Número do Patrimônio (GERADO AUTOMATICAMENTE - READ ONLY) --}}
     <div>
       <label for="NUPATRIMONIO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nº Patrimônio (Automático) *</label>
-      <input 
+      <input
         id="NUPATRIMONIO"
         x-model="formData.NUPATRIMONIO"
         name="NUPATRIMONIO"
@@ -3312,17 +3312,17 @@
         try {
           console.log('📊 [GERAR NUM] Carregando próximo número de patrimônio...');
           const response = await fetch('/api/patrimonios/proximo-numero');
-          
+
           if (!response.ok) {
             console.error('❌ [GERAR NUM] Erro ao buscar próximo número');
             return;
           }
-          
+
           const data = await response.json();
           if (data.success && data.numero) {
             this.formData.NUPATRIMONIO = String(data.numero);
             console.log('✅ [GERAR NUM] Próximo número gerado:', data.numero);
-            
+
             // Dar focus no campo NUMOF após gerar o número
             this.$nextTick(() => {
               setTimeout(() => {

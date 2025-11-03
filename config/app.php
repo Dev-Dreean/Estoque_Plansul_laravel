@@ -123,5 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Application City
+    |--------------------------------------------------------------------------
+    |
+    | Nome da cidade usado nos documentos de termos de responsabilidade
+    |
+    */
+
+    'cidade' => env('APP_CIDADE', 'Curitiba'),
+
 
 ];

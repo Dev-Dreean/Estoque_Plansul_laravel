@@ -1081,6 +1081,7 @@ class PatrimonioController extends Controller
         }
 
         // Ordenação
+        $query->orderBy('NMPLANTA', 'asc');
         $query->orderBy('NUPATRIMONIO', 'asc');
 
         // Paginação configurável
@@ -1089,8 +1090,13 @@ class PatrimonioController extends Controller
         if ($perPage > 100) $perPage = 100;
 
         $patrimonios = $query->paginate($perPage);
+        
+        // Agrupar por NMPLANTA para exibição
+        $patrimonios_grouped = $patrimonios->groupBy(function($item) {
+            return $item->NMPLANTA ?? '__sem_termo__';
+        });
 
-        return view('patrimonios.atribuir', compact('patrimonios'));
+        return view('patrimonios.atribuir', compact('patrimonios', 'patrimonios_grouped'));
     }
 
     /**
@@ -1134,14 +1140,20 @@ class PatrimonioController extends Controller
             $query->where('CDPROJETO', $request->filtro_projeto);
         }
 
+        $query->orderBy('NMPLANTA', 'asc');
         $query->orderBy('NUPATRIMONIO', 'asc');
         $perPage = (int) $request->input('per_page', 15);
         if ($perPage < 10) $perPage = 10;
         if ($perPage > 100) $perPage = 100;
         $patrimonios = $query->paginate($perPage);
 
+        // Agrupar por NMPLANTA para exibição
+        $patrimonios_grouped = $patrimonios->groupBy(function($item) {
+            return $item->NMPLANTA ?? '__sem_termo__';
+        });
+
         // Reutiliza a mesma view principal de atribuição; evita duplicação e problemas de alias
-        return view('patrimonios.atribuir', compact('patrimonios'));
+        return view('patrimonios.atribuir', compact('patrimonios', 'patrimonios_grouped'));
     }
 
     /**

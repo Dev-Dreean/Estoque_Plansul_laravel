@@ -87,11 +87,15 @@
                   <span id="contador-selecionados-tabs" class="text-[11px] text-muted" x-text="contadorTexto"></span>
                 </template>
 
-                <!-- Direita: Gerar Planilha Termo -->
-                <div class="ml-auto">
+                <!-- Direita: Gerar Planilha Termo e Termo DOCX -->
+                <div class="ml-auto flex gap-2">
                   <button type="button" @click="$dispatch('open-termo-modal')" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center" title="Gerar Planilha Termo">
                     <x-heroicon-o-printer class="w-5 h-5 mr-2" />
                     <span>Gerar Planilha Termo</span>
+                  </button>
+                  <button type="button" @click="downloadTermoDocx()" x-show="selectedPatrimonios.length > 0" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center" title="Baixar Termo de Responsabilidade (DOCX)">
+                    <x-heroicon-o-document-text class="w-5 h-5 mr-2" />
+                    <span>Termo DOCX</span>
                   </button>
                 </div>
               </div>
@@ -125,57 +129,143 @@
                     <th class="px-4 py-3">Modelo</th>
                     <th class="px-4 py-3">Situação</th>
                     <th class="px-4 py-3">Código Termo</th>
+                    <th class="px-4 py-3 text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @forelse($patrimonios as $patrimonio)
-                  <tr data-row-id="{{ $patrimonio->NUSEQPATR }}" class="tr-hover text-sm cursor-pointer transition-colors" :class="{'!border-green-500 bg-green-50 dark:bg-gray-700/40': selectedPatrimonios.includes('{{ $patrimonio->NUSEQPATR }}')}">
-                    <td class="td px-4 py-3">
-                      @if((!request('status') || request('status')=='disponivel') && empty($patrimonio->NMPLANTA))
-                      <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
-                        type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
-                      @elseif(request('status')=='indisponivel' && !empty($patrimonio->NMPLANTA))
-                      <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
-                        type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
-                      @endif
-                    </td>
-                    <td class="td font-medium text-gray-900 dark:text-white">
-                      {{ $patrimonio->NUPATRIMONIO }}
-                    </td>
-                    <td class="td">
-                      {{ Str::limit($patrimonio->DEPATRIMONIO, 50) }}
-                    </td>
-                    <td class="td">
-                      {{ $patrimonio->MODELO ?? 'N/A' }}
-                    </td>
-                    <td class="td">
-                      @if(empty($patrimonio->NMPLANTA))
-                      <span class="badge-green">Disponível</span>
-                      @else
-                      <span class="badge-red">Atribuído</span>
-                      @endif
-                    </td>
-                    <td class="td" data-col="codigo-termo">
-                      @if($patrimonio->NMPLANTA)
-                      <span class="badge-indigo font-mono">{{ $patrimonio->NMPLANTA }}</span>
-                      @else
-                      <span class="text-muted">—</span>
-                      @endif
-                    </td>
-                  </tr>
+                  @forelse($patrimonios_grouped as $grupo_codigo => $grupo_patrimonios)
+                    @php
+                      $grupo_id = 'grupo_' . ($grupo_codigo === '__sem_termo__' ? 'sem_termo' : $grupo_codigo);
+                      $item_count = $grupo_patrimonios->count();
+                      $is_sem_termo = $grupo_codigo === '__sem_termo__';
+                    @endphp
+                    
+                    {{-- Cabeçalho Colapsável do Grupo --}}
+                    <tr class="group-header border-b-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer" 
+                        data-group-id="{{ $grupo_id }}"
+                        @click="toggleGroup('{{ $grupo_id }}')" 
+                        :data-expanded="groupState['{{ $grupo_id }}'] === true ? 'true' : 'false'">
+                      <td colspan="7" class="px-4 py-4">
+                        <div class="flex items-center justify-between gap-4">
+                          {{-- Ícone de Expandir + Info do Grupo --}}
+                          <div class="flex items-center gap-4 flex-1 min-w-0">
+                            <button type="button" 
+                              class="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition transform"
+                              :class="{ 'rotate-180': groupState['{{ $grupo_id }}'] === true }"
+                              @click.stop="toggleGroup('{{ $grupo_id }}')">
+                              <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                              </svg>
+                            </button>
+
+                            <div class="flex items-center gap-3 flex-1 min-w-0">
+                              @if(!$is_sem_termo)
+                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 flex-shrink-0">
+                                  <span class="text-sm font-semibold text-indigo-800 dark:text-indigo-300">Termo {{ $grupo_codigo }}</span>
+                                </span>
+                              @else
+                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-800 flex-shrink-0">
+                                  <span class="text-sm font-semibold text-amber-800 dark:text-amber-300">Sem Termo</span>
+                                </span>
+                              @endif
+                              
+                              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                                <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $item_count }}</span>
+                                <span class="text-xs text-gray-600 dark:text-gray-400">{{ $item_count === 1 ? 'item' : 'itens' }}</span>
+                              </span>
+                            </div>
+                          </div>
+
+                          {{-- Botão de Download do Grupo (à direita) --}}
+                          <div class="flex-shrink-0">
+                            @if(!$is_sem_termo && $grupo_patrimonios->first()?->CDMATRFUNCIONARIO)
+                              <form method="POST" action="{{ route('termos.docx.batch') }}" style="display: inline;" @click.stop>
+                                @csrf
+                                @foreach($grupo_patrimonios as $p)
+                                  <input type="hidden" name="ids[]" value="{{ $p->NUSEQPATR }}">
+                                @endforeach
+                                <button type="submit" 
+                                  class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition whitespace-nowrap"
+                                  title="Baixar Termo DOCX para todo o grupo">
+                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                  </svg>
+                                  <span>Baixar</span>
+                                </button>
+                              </form>
+                            @endif
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    {{-- Detalhes do Grupo (Linhas dos Itens) --}}
+                    <template x-if="groupState['{{ $grupo_id }}'] === true">
+                      @foreach($grupo_patrimonios as $patrimonio)
+                      <tr class="group-details border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800 transition" 
+                          data-group-id="{{ $grupo_id }}"
+                          data-row-id="{{ $patrimonio->NUSEQPATR }}">
+                        <td class="px-4 py-3 text-gray-500 dark:text-gray-400">
+                          <div class="flex items-center justify-center">
+                            @if((!request('status') || request('status')=='disponivel') && empty($patrimonio->NMPLANTA))
+                              <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
+                                type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
+                            @elseif(request('status')=='indisponivel' && !empty($patrimonio->NMPLANTA))
+                              <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
+                                type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
+                            @endif
+                          </div>
+                        </td>
+                        <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                          {{ $patrimonio->NUPATRIMONIO }}
+                        </td>
+                        <td class="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs truncate" :title="'{{ $patrimonio->DEPATRIMONIO }}'">
+                          {{ Str::limit($patrimonio->DEPATRIMONIO, 50) }}
+                        </td>
+                        <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                          {{ $patrimonio->MODELO ?? '—' }}
+                        </td>
+                        <td class="px-4 py-3">
+                          @if(empty($patrimonio->NMPLANTA))
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 text-xs font-medium">
+                              <span class="w-2 h-2 rounded-full bg-green-600 dark:bg-green-400"></span>
+                              Disponível
+                            </span>
+                          @else
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 text-xs font-medium">
+                              <span class="w-2 h-2 rounded-full bg-red-600 dark:bg-red-400"></span>
+                              Atribuído
+                            </span>
+                          @endif
+                        </td>
+                        <td class="px-4 py-3">
+                          @if($patrimonio->NMPLANTA)
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 font-mono text-sm font-semibold text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                              {{ $patrimonio->NMPLANTA }}
+                            </span>
+                          @else
+                            <span class="text-gray-400 dark:text-gray-500">—</span>
+                          @endif
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          {{-- Espaço reservado para ações futuras --}}
+                        </td>
+                      </tr>
+                      @endforeach
+                    </template>
                   @empty
                   <tr>
-                    <td colspan="6" class="px-6 py-8 text-center">
-                      <div class="text-gray-700 dark:text-gray-300">
-                        <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                          <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                    <td colspan="7" class="px-6 py-12 text-center">
+                      <div class="flex flex-col items-center justify-center text-gray-600 dark:text-gray-400">
+                        <svg class="w-12 h-12 mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
                         </svg>
-                        <h3 class="mt-2 text-sm font-medium">Nenhum patrimônio encontrado</h3>
-                        <p class="mt-1 text-sm">
+                        <h3 class="text-base font-semibold mb-1">Nenhum patrimônio encontrado</h3>
+                        <p class="text-sm">
                           @if(request('status') == 'indisponivel')
-                          Não há patrimônios atribuídos ou nenhum atende aos filtros aplicados.
+                            Não há patrimônios atribuídos ou nenhum atende aos filtros aplicados.
                           @else
-                          Não há patrimônios disponíveis para atribuição ou nenhum atende aos filtros aplicados.
+                            Não há patrimônios disponíveis para atribuição ou nenhum atende aos filtros aplicados.
                           @endif
                         </p>
                       </div>
@@ -278,6 +368,7 @@
         atribuindo: false,
         erroCodigo: false,
         gerandoCodigo: false,
+        groupState: {}, // Estado dos grupos (expandido/colapsado)
         // Estados de listagem de cÃ³digos removidos (modal removido)
         init() {
           this.updateCounter();
@@ -325,6 +416,45 @@
             selectAll.indeterminate = checkboxes.length > 0 && checkboxes.length < allCheckboxes.length;
           }
           this.selectedPatrimonios = Array.from(checkboxes).map(cb => cb.value);
+        },
+        async downloadTermoDocx() {
+          if (this.selectedPatrimonios.length === 0) {
+            alert('Selecione pelo menos um patrimônio para gerar o termo.');
+            return;
+          }
+
+          try {
+            // Criar form oculto para POST com os IDs selecionados
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route("termos.docx.batch") }}';
+            form.style.display = 'none';
+
+            // CSRF Token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = '{{ csrf_token() }}';
+            form.appendChild(csrfInput);
+
+            // IDs dos patrimônios
+            this.selectedPatrimonios.forEach(id => {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = 'ids[]';
+              input.value = id;
+              form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+
+            // Remover form após submit
+            setTimeout(() => form.remove(), 100);
+          } catch (e) {
+            console.error('Erro ao gerar termo DOCX:', e);
+            alert('Erro ao gerar documento. Tente novamente.');
+          }
         },
         confirmarAtribuicao() {
           const checkboxes = document.querySelectorAll('.patrimonio-checkbox:checked');
@@ -471,6 +601,16 @@
             }
           });
           return result;
+        },
+        toggleGroup(groupId) {
+          this.groupState[groupId] = !this.groupState[groupId];
+          this.$nextTick(() => {
+            // Atualizar icone de rotação
+            const header = document.querySelector(`tr[data-group-id="${groupId}"]`);
+            if (header) {
+              header.style.transition = 'background-color 0.2s ease';
+            }
+          });
         }
       }
     }
