@@ -6,14 +6,25 @@ use App\Models\User;
 use App\Models\Patrimonio;
 use App\Models\Funcionario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
+/**
+ * Testes para o TermoDocxController
+ * 
+ * Valida a geração de documentos DOCX para termos de responsabilidade
+ */
 class TermoDocxControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    /** @var User */
     protected User $user;
+    
+    /** @var Funcionario */
     protected Funcionario $funcionario;
+    
+    /** @var Patrimonio */
     protected Patrimonio $patrimonio;
 
     protected function setUp(): void
@@ -42,19 +53,21 @@ class TermoDocxControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_requires_authentication_to_download_termo()
+    public function it_requires_authentication_to_download_termo(): void
     {
+        /** @var TestResponse $response */
         $response = $this->get(route('termos.docx.download', $this->patrimonio->NUSEQPATR));
 
         $response->assertRedirect(route('login'));
     }
 
     /** @test */
-    public function it_downloads_termo_for_single_patrimonio()
+    public function it_downloads_termo_for_single_patrimonio(): void
     {
         // Criar template mock (se não existir)
         $this->createMockTemplate();
 
+        /** @var TestResponse $response */
         $response = $this->actingAs($this->user)
             ->get(route('termos.docx.download', $this->patrimonio->NUSEQPATR));
 
@@ -70,7 +83,7 @@ class TermoDocxControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_downloads_termo_for_multiple_patrimonios()
+    public function it_downloads_termo_for_multiple_patrimonios(): void
     {
         $this->createMockTemplate();
 
@@ -87,6 +100,7 @@ class TermoDocxControllerTest extends TestCase
 
         // Teste individual para cada patrimônio
         foreach ([$this->patrimonio, $patrimonio2, $patrimonio3] as $p) {
+            /** @var TestResponse $response */
             $response = $this->actingAs($this->user)
                 ->get(route('termos.docx.single', $p->NUSEQPATR));
 
@@ -96,14 +110,14 @@ class TermoDocxControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_validates_required_ids_for_batch_download()
+    public function it_validates_required_ids_for_batch_download(): void
     {
         // Método descontinuado - teste removido
         $this->assertTrue(true);
     }
 
     /** @test */
-    public function it_prevents_mixing_different_funcionarios()
+    public function it_prevents_mixing_different_funcionarios(): void
     {
         $this->createMockTemplate();
 
@@ -121,7 +135,7 @@ class TermoDocxControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_enforces_authorization_policy()
+    public function it_enforces_authorization_policy(): void
     {
         // Criar outro usuário sem permissão
         /** @var User $outroUser */
@@ -130,6 +144,7 @@ class TermoDocxControllerTest extends TestCase
             'CDMATRFUNCIONARIO' => '88888'
         ]);
 
+        /** @var TestResponse $response */
         $response = $this->actingAs($outroUser)
             ->get(route('termos.docx.download', $this->patrimonio->NUSEQPATR));
 
@@ -137,8 +152,9 @@ class TermoDocxControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_returns_404_for_non_existent_patrimonio()
+    public function it_returns_404_for_non_existent_patrimonio(): void
     {
+        /** @var TestResponse $response */
         $response = $this->actingAs($this->user)
             ->get(route('termos.docx.single', 999999));
 
@@ -146,7 +162,7 @@ class TermoDocxControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_respects_max_items_limit()
+    public function it_respects_max_items_limit(): void
     {
         $this->createMockTemplate();
 
@@ -155,7 +171,7 @@ class TermoDocxControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_handles_patrimonios_without_funcionario()
+    public function it_handles_patrimonios_without_funcionario(): void
     {
         $this->createMockTemplate();
 
@@ -165,6 +181,7 @@ class TermoDocxControllerTest extends TestCase
         ]);
 
         // Super Admin deve conseguir acessar
+        /** @var TestResponse $response */
         $response = $this->actingAs($this->user)
             ->get(route('termos.docx.single', $patrimonioSemFunc->NUSEQPATR));
 
@@ -173,6 +190,8 @@ class TermoDocxControllerTest extends TestCase
 
     /**
      * Helper para criar template mock
+     * 
+     * @return void
      */
     protected function createMockTemplate(): void
     {
