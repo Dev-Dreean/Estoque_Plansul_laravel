@@ -61,11 +61,14 @@ class TermoDocxController extends Controller
     }
 
     /**
+     * DESCONTINUADO: Método removido - use downloadSingle para cada patrimônio
      * Gera termo para múltiplos patrimônios (lote)
      * 
+     * @deprecated Use downloadSingle para cada ID
      * @param Request $request
      * @return BinaryFileResponse
      */
+    /*
     public function downloadBatch(Request $request): BinaryFileResponse
     {
         $validated = $request->validate([
@@ -110,6 +113,73 @@ class TermoDocxController extends Controller
             abort(403, 'Você não tem permissão para gerar termo de um ou mais itens');
         } catch (\Throwable $e) {
             Log::error('Erro ao gerar termo em lote', [
+                'ids' => $validated['ids'] ?? [],
+                'user' => Auth::id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            abort(500, 'Erro ao gerar documento. Por favor, tente novamente.');
+        }
+    }
+    */
+
+    /**
+     * Gera um ÚNICO documento com TODOS os patrimônios selecionados
+     * Preenchendo as variáveis do template e incluindo todos os itens
+     * 
+     * @param Request $request
+     * @return BinaryFileResponse
+     */
+    public function downloadZip(Request $request): BinaryFileResponse
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1|max:' . self::MAX_ITEMS_PER_DOCUMENT,
+            'ids.*' => 'required|integer|exists:patr,NUSEQPATR'
+        ], [
+            'ids.required' => 'Selecione pelo menos um patrimônio para gerar o termo',
+            'ids.array' => 'Dados inválidos recebidos',
+            'ids.min' => 'Selecione pelo menos um patrimônio',
+            'ids.max' => 'Máximo de ' . self::MAX_ITEMS_PER_DOCUMENT . ' itens',
+            'ids.*.exists' => 'Um ou mais itens não foram encontrados',
+            'ids.*.integer' => 'ID de patrimônio inválido'
+        ]);
+
+        try {
+            $items = Patrimonio::with(['funcionario', 'local.projeto'])
+                ->whereIn('NUSEQPATR', $validated['ids'])
+                ->orderBy('CDMATRFUNCIONARIO')
+                ->get();
+
+            if ($items->isEmpty()) {
+                abort(404, 'Nenhum patrimônio encontrado');
+            }
+
+            // Autorizar acesso a todos os itens
+            foreach ($items as $item) {
+                $this->authorize('view', $item);
+            }
+
+            // Usar o primeiro funcionário para nomeação do arquivo
+            $funcionario = $items->first()->funcionario;
+            $filename = $this->generateFilename($funcionario, 'lote');
+
+            Log::info('Documento de Termo Gerado', [
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->name,
+                'ip' => request()->ip(),
+                'quantidade_patrimonios' => $items->count(),
+                'funcionario' => $funcionario->NOMFUNC ?? 'N/A',
+                'filename' => $filename,
+                'timestamp' => now()->toIso8601String()
+            ]);
+
+            // Gerar documento único com todos os itens
+            return $this->generateDocument($items, $funcionario, $filename);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            abort(403, 'Você não tem permissão para gerar termo de um ou mais itens');
+        } catch (\Throwable $e) {
+            Log::error('Erro ao gerar documento de termos', [
                 'ids' => $validated['ids'] ?? [],
                 'user' => Auth::id(),
                 'error' => $e->getMessage(),

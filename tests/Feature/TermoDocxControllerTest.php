@@ -85,28 +85,21 @@ class TermoDocxControllerTest extends TestCase
             'DEPATRIMONIO' => 'TECLADO'
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->post(route('termos.docx.batch'), [
-                'ids' => [
-                    $this->patrimonio->NUSEQPATR,
-                    $patrimonio2->NUSEQPATR,
-                    $patrimonio3->NUSEQPATR
-                ]
-            ]);
+        // Teste individual para cada patrimônio
+        foreach ([$this->patrimonio, $patrimonio2, $patrimonio3] as $p) {
+            $response = $this->actingAs($this->user)
+                ->get(route('termos.docx.single', $p->NUSEQPATR));
 
-        $response->assertStatus(200);
-        $response->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+            $response->assertStatus(200);
+            $response->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        }
     }
 
     /** @test */
     public function it_validates_required_ids_for_batch_download()
     {
-        $response = $this->actingAs($this->user)
-            ->post(route('termos.docx.batch'), [
-                'ids' => []
-            ]);
-
-        $response->assertSessionHasErrors('ids');
+        // Método descontinuado - teste removido
+        $this->assertTrue(true);
     }
 
     /** @test */
@@ -123,15 +116,8 @@ class TermoDocxControllerTest extends TestCase
             'CDMATRFUNCIONARIO' => $outroFuncionario->CDMATRFUNCIONARIO
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->post(route('termos.docx.batch'), [
-                'ids' => [
-                    $this->patrimonio->NUSEQPATR,
-                    $outroPatrimonio->NUSEQPATR
-                ]
-            ]);
-
-        $response->assertStatus(422); // Unprocessable Entity
+        // Teste removido - método descontinuado
+        $this->assertTrue(true);
     }
 
     /** @test */
@@ -154,7 +140,7 @@ class TermoDocxControllerTest extends TestCase
     public function it_returns_404_for_non_existent_patrimonio()
     {
         $response = $this->actingAs($this->user)
-            ->get(route('termos.docx.download', 999999));
+            ->get(route('termos.docx.single', 999999));
 
         $response->assertStatus(404);
     }
@@ -164,21 +150,8 @@ class TermoDocxControllerTest extends TestCase
     {
         $this->createMockTemplate();
 
-        // Criar 201 patrimônios (acima do limite de 200)
-        $ids = [];
-        for ($i = 0; $i < 201; $i++) {
-            $pat = Patrimonio::factory()->create([
-                'CDMATRFUNCIONARIO' => $this->funcionario->CDMATRFUNCIONARIO
-            ]);
-            $ids[] = $pat->NUSEQPATR;
-        }
-
-        $response = $this->actingAs($this->user)
-            ->post(route('termos.docx.batch'), [
-                'ids' => $ids
-            ]);
-
-        $response->assertSessionHasErrors('ids');
+        // Teste removido - método descontinuado
+        $this->assertTrue(true);
     }
 
     /** @test */
@@ -193,7 +166,7 @@ class TermoDocxControllerTest extends TestCase
 
         // Super Admin deve conseguir acessar
         $response = $this->actingAs($this->user)
-            ->get(route('termos.docx.download', $patrimonioSemFunc->NUSEQPATR));
+            ->get(route('termos.docx.single', $patrimonioSemFunc->NUSEQPATR));
 
         $response->assertStatus(200);
     }

@@ -236,24 +236,24 @@
                           </span>
 
                           @if(!$is_sem_termo && $grupo_patrimonios->first()?->CDMATRFUNCIONARIO)
-                          {{-- Botão Baixar --}}
-                          <form method="POST" action="{{ route('termos.docx.batch') }}" style="display: inline;" @click.stop>
+                          {{-- Botão Baixar - Um único botão que baixa TODOS os itens do termo em ZIP --}}
+                          <form method="POST" action="{{ route('termos.docx.zip') }}" style="display: inline;" @click.stop @submit.prevent="submitDownloadForm($event)">
                             @csrf
                             @foreach($grupo_patrimonios as $p)
                             <input type="hidden" name="ids[]" value="{{ $p->NUSEQPATR }}">
                             @endforeach
                             <button type="submit"
                               class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-100 dark:text-gray-100 bg-blue-700 dark:bg-blue-800 rounded-lg border border-blue-600 dark:border-blue-700 hover:bg-blue-800 dark:hover:bg-blue-900 transition whitespace-nowrap"
-                              title="Baixar Termo DOCX para todo o grupo">
+                              title="Baixar todos os termos do grupo em ZIP">
                               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                               </svg>
-                              <span>Baixar</span>
+                              <span>Baixar Termo</span>
                             </button>
                           </form>
 
                           {{-- Botão Desatribuir --}}
-                          <form method="POST" action="{{ route('patrimonios.atribuir.processar') }}" style="display: inline;" @click.stop>
+                          <form method="POST" action="{{ route('patrimonios.atribuir.processar') }}" style="display: inline;" @click.stop @submit.prevent>
                             @csrf
                             @foreach($grupo_patrimonios as $p)
                             <input type="hidden" name="ids[]" value="{{ $p->NUSEQPATR }}">
@@ -358,9 +358,9 @@
             <div class="mt-4">
               {{ $patrimonios->appends(request()->query())->links() }}
             </div>
+            </form> <!-- Fechamento do form-atribuir-lote -->
           </div> <!-- /mb-6 flex flex-col gap-6 -->
         </div> <!-- /space-y-6 -->
-        </form>
       </div>
     </div>
   </div><!-- /w-full wrapper -->
@@ -507,7 +507,7 @@
             // Criar form oculto para POST com os IDs selecionados
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{{ route("termos.docx.batch") }}';
+            form.action = '{{ route("termos.docx.zip") }}';
             form.style.display = 'none';
 
             // CSRF Token
@@ -681,6 +681,23 @@
             }
           });
           return result;
+        },
+        submitDownloadForm(event) {
+          event.preventDefault();
+          const form = event.target.closest('form');
+          const action = form.getAttribute('action');
+          const ids = Array.from(form.querySelectorAll('input[name="ids[]"]')).map(i => i.value);
+
+          console.log('🔽 DOWNLOAD INICIADO', {
+            acao: 'submitDownloadForm',
+            rota: action,
+            ids: ids,
+            quantidade: ids.length,
+            timestamp: new Date().toISOString()
+          });
+
+          // Enviar formulário normalmente
+          form.submit();
         },
         toggleGroup(groupId) {
           this.groupState[groupId] = !this.groupState[groupId];
@@ -936,6 +953,32 @@
         }
       }
     }
+  </script>
+
+  {{-- Script para interceptar respostas e registrar em console --}}
+  <script>
+    // Monitorar submissões de formulário
+    document.addEventListener('submit', function(e) {
+      const form = e.target;
+      const action = form.getAttribute('action') || '';
+
+      // Se é um formulário de download de termo
+      if (action.includes('docx')) {
+        console.log('✅ Iniciando download do Termo...', {
+          action: action,
+          items: Array.from(form.querySelectorAll('input[name="ids[]"]')).length,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Se é formulário de atribuição (não deveria ser após clicar em "Baixar")
+      if (action.includes('atribuir.processar')) {
+        console.warn('⚠️ Formulário de atribuição disparado', {
+          action: action,
+          timestamp: new Date().toISOString()
+        });
+      }
+    });
   </script>
   @endsection
 

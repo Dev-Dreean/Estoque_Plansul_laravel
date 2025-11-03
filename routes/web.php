@@ -160,7 +160,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         Route::post('/codigos', [\App\Http\Controllers\TermoController::class, 'criarCodigo'])->name('codigos.store');
         Route::get('/codigos/sugestao', [\App\Http\Controllers\TermoController::class, 'sugestaoCodigo'])->name('codigos.sugestao');
         // Rotas DOCX usando PhpWord TemplateProcessor
-        Route::post('/docx/batch', [\App\Http\Controllers\TermoDocxController::class, 'downloadBatch'])->name('docx.batch');
+        Route::post('/docx/zip', [\App\Http\Controllers\TermoDocxController::class, 'downloadZip'])->name('docx.zip');
         Route::get('/docx/{id}', [\App\Http\Controllers\TermoDocxController::class, 'downloadSingle'])->name('docx.single');
     });
 

@@ -1173,6 +1173,27 @@ class PatrimonioController extends Controller
         if ($request->filled('codigo_termo')) {
             $rules['codigo_termo'] = 'required|integer|min:1';
         }
+
+        // Log para verificar se o campo ids (ou patrimonios) está faltando ou vazio
+        $fieldName = $request->has('ids') ? 'ids' : 'patrimonios';
+        if (!$request->has($fieldName) || empty($request->input($fieldName))) {
+            Log::warning('Erro de validação: campo de patrimônios obrigatório não foi preenchido', [
+                'usuario' => Auth::user()?->NMLOGIN ?? 'Desconhecido',
+                'user_id' => Auth::id(),
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'timestamp' => now()->toDateTimeString(),
+                'field_sent' => $fieldName,
+                'request_data' => $request->except(['password', 'password_confirmation']), // evita registrar senhas
+                'operacao' => 'atribuicao',
+            ]);
+        }
+
+        // Se recebeu 'ids' ao invés de 'patrimonios', renomear para validação consistente
+        if ($request->has('ids') && !$request->has('patrimonios')) {
+            $request->merge(['patrimonios' => $request->input('ids')]);
+        }
+
         $request->validate($rules);
 
         try {
@@ -1225,6 +1246,19 @@ class PatrimonioController extends Controller
 
             $message = "Código de termo {$codigoTermo} atribuído a {$updated} patrimônio(s) com sucesso!";
 
+            // Log detalhado quando a mensagem de sucesso/erro é exibida
+            Log::info('Atribuição de Termo Processada', [
+                'usuario' => Auth::user()?->NMLOGIN ?? 'Desconhecido',
+                'usuario_id' => Auth::id(),
+                'codigo_termo' => $codigoTermo,
+                'patrimonios_solicitados' => count($patrimoniosIds),
+                'patrimonios_atualizados' => $updated,
+                'patrimonios_ja_atribuidos' => $jaAtribuidos,
+                'ids_patrimonio' => $patrimoniosIds,
+                'timestamp' => now()->toDateTimeString(),
+                'mensagem' => $message
+            ]);
+
             // Histórico de atribuição de termo
             if ($updated > 0) {
                 try {
@@ -1272,6 +1306,26 @@ class PatrimonioController extends Controller
      */
     private function processarDesatribuicao(Request $request): RedirectResponse
     {
+        // Log para verificar se o campo ids (ou patrimonios) está faltando ou vazio
+        $fieldName = $request->has('ids') ? 'ids' : 'patrimonios';
+        if (!$request->has($fieldName) || empty($request->input($fieldName))) {
+            Log::warning('Erro de validação: campo de patrimônios obrigatório não foi preenchido (desatribuição)', [
+                'usuario' => Auth::user()?->NMLOGIN ?? 'Desconhecido',
+                'user_id' => Auth::id(),
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'timestamp' => now()->toDateTimeString(),
+                'field_sent' => $fieldName,
+                'request_data' => $request->except(['password', 'password_confirmation']),
+                'operacao' => 'desatribuicao',
+            ]);
+        }
+
+        // Se recebeu 'ids' ao invés de 'patrimonios', renomear para validação consistente
+        if ($request->has('ids') && !$request->has('patrimonios')) {
+            $request->merge(['patrimonios' => $request->input('ids')]);
+        }
+
         $request->validate([
             'patrimonios' => 'required|array|min:1',
             'patrimonios.*' => 'integer|exists:PATR,NUSEQPATR'
