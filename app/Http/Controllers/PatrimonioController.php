@@ -1090,9 +1090,9 @@ class PatrimonioController extends Controller
         if ($perPage > 100) $perPage = 100;
 
         $patrimonios = $query->paginate($perPage);
-        
+
         // Agrupar por NMPLANTA para exibição
-        $patrimonios_grouped = $patrimonios->groupBy(function($item) {
+        $patrimonios_grouped = $patrimonios->groupBy(function ($item) {
             return $item->NMPLANTA ?? '__sem_termo__';
         });
 
@@ -1148,7 +1148,7 @@ class PatrimonioController extends Controller
         $patrimonios = $query->paginate($perPage);
 
         // Agrupar por NMPLANTA para exibição
-        $patrimonios_grouped = $patrimonios->groupBy(function($item) {
+        $patrimonios_grouped = $patrimonios->groupBy(function ($item) {
             return $item->NMPLANTA ?? '__sem_termo__';
         });
 

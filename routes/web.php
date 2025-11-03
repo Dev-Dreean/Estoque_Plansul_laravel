@@ -159,10 +159,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         Route::get('/codigos', [\App\Http\Controllers\TermoController::class, 'listarCodigos'])->name('codigos.index');
         Route::post('/codigos', [\App\Http\Controllers\TermoController::class, 'criarCodigo'])->name('codigos.store');
         Route::get('/codigos/sugestao', [\App\Http\Controllers\TermoController::class, 'sugestaoCodigo'])->name('codigos.sugestao');
-
-        // Rotas para geração de DOCX (Termo de Responsabilidade)
-        Route::get('/docx/{id}', [\App\Http\Controllers\TermoDocxController::class, 'downloadSingle'])->name('docx.download');
-        Route::post('/docx', [\App\Http\Controllers\TermoDocxController::class, 'downloadBatch'])->name('docx.batch');
+        // Rotas DOCX usando PhpWord TemplateProcessor
+        Route::post('/docx/batch', [\App\Http\Controllers\TermoDocxController::class, 'downloadBatch'])->name('docx.batch');
+        Route::get('/docx/{id}', [\App\Http\Controllers\TermoDocxController::class, 'downloadSingle'])->name('docx.single');
     });
 
     // Rota de Histórico

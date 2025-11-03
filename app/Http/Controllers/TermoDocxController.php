@@ -72,9 +72,12 @@ class TermoDocxController extends Controller
             'ids' => 'required|array|min:1|max:' . self::MAX_ITEMS_PER_DOCUMENT,
             'ids.*' => 'required|integer|exists:patr,NUSEQPATR'
         ], [
-            'ids.required' => 'Nenhum item selecionado',
+            'ids.required' => 'Selecione pelo menos um patrimônio para gerar o termo',
+            'ids.array' => 'Dados inválidos recebidos',
+            'ids.min' => 'Selecione pelo menos um patrimônio',
             'ids.max' => 'Máximo de ' . self::MAX_ITEMS_PER_DOCUMENT . ' itens por documento',
-            'ids.*.exists' => 'Um ou mais itens não foram encontrados'
+            'ids.*.exists' => 'Um ou mais itens não foram encontrados',
+            'ids.*.integer' => 'ID de patrimônio inválido'
         ]);
 
         try {

@@ -115,147 +115,226 @@
             <!-- Tabela (estrutura idêntica ao index) -->
             <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0">
               <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-10">
+                {{-- MODO DISPONÍVEIS: Tabela Normal --}}
+                @if(!request('status') || request('status')=='disponivel')
+                <thead class="text-xs text-gray-100 uppercase bg-gray-700 dark:bg-gray-700 dark:text-gray-100 border-b border-gray-600 dark:border-gray-600">
                   <tr>
-                    <th class="px-4 py-3">
-                      @if(!request('status') || request('status')=='disponivel')
-                      <input type="checkbox" id="selectAll" @change="toggleAll($event)" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600">
-                      @elseif(request('status')=='indisponivel')
-                      <span class="sr-only">Selecionar</span>
-                      @endif
+                    <th class="px-4 py-3" style="width: 50px;">
+                      <input type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600" @change="toggleAllCheckboxes($event)">
                     </th>
                     <th class="px-4 py-3">Nº Pat.</th>
-                    <th class="px-4 py-3">Descrição</th>
+                    <th class="px-4 py-3">Itens</th>
                     <th class="px-4 py-3">Modelo</th>
                     <th class="px-4 py-3">Situação</th>
-                    <th class="px-4 py-3">Código Termo</th>
-                    <th class="px-4 py-3 text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @forelse($patrimonios_grouped as $grupo_codigo => $grupo_patrimonios)
-                    @php
-                      $grupo_id = 'grupo_' . ($grupo_codigo === '__sem_termo__' ? 'sem_termo' : $grupo_codigo);
-                      $item_count = $grupo_patrimonios->count();
-                      $is_sem_termo = $grupo_codigo === '__sem_termo__';
-                    @endphp
-                    
-                    {{-- Cabeçalho Colapsável do Grupo --}}
-                    <tr class="group-header border-b-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer" 
-                        data-group-id="{{ $grupo_id }}"
-                        @click="toggleGroup('{{ $grupo_id }}')" 
-                        :data-expanded="groupState['{{ $grupo_id }}'] === true ? 'true' : 'false'">
-                      <td colspan="7" class="px-4 py-4">
-                        <div class="flex items-center justify-between gap-4">
-                          {{-- Ícone de Expandir + Info do Grupo --}}
-                          <div class="flex items-center gap-4 flex-1 min-w-0">
-                            <button type="button" 
-                              class="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition transform"
-                              :class="{ 'rotate-180': groupState['{{ $grupo_id }}'] === true }"
-                              @click.stop="toggleGroup('{{ $grupo_id }}')">
-                              <svg class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                              </svg>
-                            </button>
-
-                            <div class="flex items-center gap-3 flex-1 min-w-0">
-                              @if(!$is_sem_termo)
-                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-indigo-100 dark:bg-indigo-950 border border-indigo-300 dark:border-indigo-700 flex-shrink-0">
-                                  <span class="text-sm font-semibold text-indigo-900 dark:text-indigo-200">Termo {{ $grupo_codigo }}</span>
-                                </span>
-                              @else
-                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-100 dark:bg-amber-950 border border-amber-300 dark:border-amber-700 flex-shrink-0">
-                                  <span class="text-sm font-semibold text-amber-900 dark:text-amber-200">Sem Termo</span>
-                                </span>
-                              @endif
-                              
-                              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 flex-shrink-0">
-                                <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ $item_count }}</span>
-                                <span class="text-xs text-gray-600 dark:text-gray-400">{{ $item_count === 1 ? 'item' : 'itens' }}</span>
-                              </span>
-                            </div>
-                          </div>
-
-                          {{-- Botão de Download do Grupo (à direita) --}}
-                          <div class="flex-shrink-0">
-                            @if(!$is_sem_termo && $grupo_patrimonios->first()?->CDMATRFUNCIONARIO)
-                              <form method="POST" action="{{ route('termos.docx.batch') }}" style="display: inline;" @click.stop>
-                                @csrf
-                                @foreach($grupo_patrimonios as $p)
-                                  <input type="hidden" name="ids[]" value="{{ $p->NUSEQPATR }}">
-                                @endforeach
-                                <button type="submit" 
-                                  class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-blue-900 dark:text-blue-200 bg-blue-100 dark:bg-blue-950 rounded-lg border border-blue-300 dark:border-blue-700 hover:bg-blue-200 dark:hover:bg-blue-900 transition whitespace-nowrap"
-                                  title="Baixar Termo DOCX para todo o grupo">
-                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                  </svg>
-                                  <span>Baixar</span>
-                                </button>
-                              </form>
-                            @endif
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-
-                    {{-- Detalhes do Grupo (Linhas dos Itens) --}}
-                    @foreach($grupo_patrimonios as $patrimonio)
-                    <tr class="group-details border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800 transition" 
-                        data-group-id="{{ $grupo_id }}"
-                        data-row-id="{{ $patrimonio->NUSEQPATR }}"
-                        x-show="groupState['{{ $grupo_id }}'] === true"
-                        style="display: none;">
-                      <td class="px-4 py-3 text-gray-500 dark:text-gray-400">
-                        <div class="flex items-center justify-center">
-                          @if((!request('status') || request('status')=='disponivel') && empty($patrimonio->NMPLANTA))
-                            <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
-                              type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
-                          @elseif(request('status')=='indisponivel' && !empty($patrimonio->NMPLANTA))
-                            <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
-                              type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
-                          @endif
-                        </div>
-                      </td>
-                      <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
-                        {{ $patrimonio->NUPATRIMONIO }}
-                      </td>
-                      <td class="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs truncate" :title="'{{ $patrimonio->DEPATRIMONIO }}'">
-                        {{ Str::limit($patrimonio->DEPATRIMONIO, 50) }}
-                      </td>
-                      <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
-                        {{ $patrimonio->MODELO ?? '—' }}
-                      </td>
-                      <td class="px-4 py-3">
+                  @forelse($patrimonios as $patrimonio)
+                  <tr class="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                    data-row-id="{{ $patrimonio->NUSEQPATR }}">
+                    <td class="px-4 py-3 text-gray-500 dark:text-gray-400">
+                      <div class="flex items-center justify-center">
                         @if(empty($patrimonio->NMPLANTA))
-                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 text-xs font-medium">
-                            <span class="w-2 h-2 rounded-full bg-green-600 dark:bg-green-400"></span>
-                            Disponível
-                          </span>
-                        @else
-                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 text-xs font-medium">
-                            <span class="w-2 h-2 rounded-full bg-red-600 dark:bg-red-400"></span>
-                            Atribuído
-                          </span>
+                        <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
+                          type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
                         @endif
-                      </td>
-                      <td class="px-4 py-3">
-                        @if($patrimonio->NMPLANTA)
-                          <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 font-mono text-sm font-semibold text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                            {{ $patrimonio->NMPLANTA }}
-                          </span>
-                        @else
-                          <span class="text-gray-400 dark:text-gray-500">—</span>
-                        @endif
-                      </td>
-                      <td class="px-4 py-3 text-right">
-                        {{-- Espaço reservado para ações futuras --}}
-                      </td>
-                    </tr>
-                    @endforeach
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                      {{ $patrimonio->NUPATRIMONIO }}
+                    </td>
+                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs truncate" :title="'{{ $patrimonio->DEPATRIMONIO }}'">
+                      {{ Str::limit($patrimonio->DEPATRIMONIO, 50) }}
+                    </td>
+                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                      {{ $patrimonio->MODELO ?? '—' }}
+                    </td>
+                    <td class="px-4 py-3">
+                      @if(empty($patrimonio->NMPLANTA))
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-xs font-medium">
+                        <span class="w-2 h-2 rounded-full bg-green-600 dark:bg-green-400"></span>
+                        Disponível
+                      </span>
+                      @endif
+                    </td>
+                  </tr>
                   @empty
                   <tr>
-                    <td colspan="7" class="px-6 py-12 text-center">
+                    <td colspan="5" class="px-6 py-12 text-center">
+                      <div class="flex flex-col items-center justify-center text-gray-600 dark:text-gray-400">
+                        <svg class="w-12 h-12 mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <h3 class="text-base font-semibold mb-1">Nenhum patrimônio encontrado</h3>
+                        <p class="text-sm">Não há patrimônios disponíveis para atribuição ou nenhum atende aos filtros aplicados.</p>
+                      </div>
+                    </td>
+                  </tr>
+                  @endforelse
+                </tbody>
+                {{-- MODO ATRIBUÍDOS: Tabela Agrupada por Termo --}}
+                @else
+                <tbody>
+                  @forelse($patrimonios_grouped as $grupo_codigo => $grupo_patrimonios)
+                  @php
+                  $grupo_id = 'grupo_' . ($grupo_codigo === '__sem_termo__' ? 'sem_termo' : $grupo_codigo);
+                  $item_count = $grupo_patrimonios->count();
+                  $is_sem_termo = $grupo_codigo === '__sem_termo__';
+                  @endphp
+
+                  {{-- Cabeçalho Colapsável do Grupo --}}
+                  <tr class="group-header border-b-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer"
+                    data-group-id="{{ $grupo_id }}"
+                    @click="toggleGroup('{{ $grupo_id }}')"
+                    :data-expanded="groupState['{{ $grupo_id }}'] === true ? 'true' : 'false'">
+                    <td colspan="5" class="px-4 py-4">
+                      <div class="flex items-center justify-between gap-4">
+                        {{-- Ícone de Expandir + Info do Grupo --}}
+                        <div class="flex items-center gap-4 flex-1 min-w-0">
+                          <button type="button"
+                            class="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition transform"
+                            :class="{ 'rotate-180': groupState['{{ $grupo_id }}'] === true }"
+                            @click.stop="toggleGroup('{{ $grupo_id }}')">
+                            <svg class="w-4 h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                          </button>
+
+                          <div class="flex items-center gap-3 flex-1 min-w-0">
+                            @if(!$is_sem_termo)
+                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-gray-700 dark:bg-gray-700 border border-gray-600 dark:border-gray-600 flex-shrink-0">
+                              <span class="text-sm font-semibold text-gray-100 dark:text-gray-100">Termo {{ $grupo_codigo }}</span>
+                            </span>
+                            @else
+                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-100 dark:bg-amber-900 border border-amber-300 dark:border-amber-700 flex-shrink-0">
+                              <span class="text-sm font-semibold text-amber-900 dark:text-amber-100">Sem Termo</span>
+                            </span>
+                            @endif
+
+                            {{-- Lista de itens como badges individuais --}}
+                            <div class="flex flex-wrap gap-2 flex-shrink">
+                              @foreach($grupo_patrimonios->pluck('DEPATRIMONIO')->take(5) as $item)
+                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-purple-900/40 dark:bg-purple-900/40 text-purple-200 dark:text-purple-200 border border-purple-600/50 dark:border-purple-600/50 whitespace-nowrap">
+                                {{ Str::limit($item, 30) }}
+                              </span>
+                              @endforeach
+                              @if($item_count > 5)
+                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-700 dark:bg-gray-700 text-gray-200 dark:text-gray-200 border border-gray-600/50 dark:border-gray-600/50">
+                                +{{ $item_count - 5 }} mais
+                              </span>
+                              @endif
+                            </div>
+                          </div>
+                        </div>
+
+                        {{-- Botões de Ação (Baixar e Desatribuir) --}}
+                        <div class="flex-shrink-0 flex gap-2 items-center">
+                          {{-- Badge de Quantidade --}}
+                          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-transparent dark:bg-transparent border-2 border-white dark:border-white">
+                            <span class="text-sm font-bold text-purple-300 dark:text-purple-300">{{ $item_count }}</span>
+                            <span class="text-xs font-semibold text-purple-300 dark:text-purple-300">{{ $item_count === 1 ? 'item' : 'itens' }}</span>
+                          </span>
+
+                          @if(!$is_sem_termo && $grupo_patrimonios->first()?->CDMATRFUNCIONARIO)
+                          {{-- Botão Baixar --}}
+                          <form method="POST" action="{{ route('termos.docx.batch') }}" style="display: inline;" @click.stop>
+                            @csrf
+                            @foreach($grupo_patrimonios as $p)
+                            <input type="hidden" name="ids[]" value="{{ $p->NUSEQPATR }}">
+                            @endforeach
+                            <button type="submit"
+                              class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-100 dark:text-gray-100 bg-blue-700 dark:bg-blue-800 rounded-lg border border-blue-600 dark:border-blue-700 hover:bg-blue-800 dark:hover:bg-blue-900 transition whitespace-nowrap"
+                              title="Baixar Termo DOCX para todo o grupo">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                              </svg>
+                              <span>Baixar</span>
+                            </button>
+                          </form>
+
+                          {{-- Botão Desatribuir --}}
+                          <form method="POST" action="{{ route('patrimonios.atribuir.processar') }}" style="display: inline;" @click.stop>
+                            @csrf
+                            @foreach($grupo_patrimonios as $p)
+                            <input type="hidden" name="ids[]" value="{{ $p->NUSEQPATR }}">
+                            @endforeach
+                            <input type="hidden" name="desatribuir" value="1">
+                            <button type="submit"
+                              class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-100 dark:text-gray-100 bg-red-700 dark:bg-red-800 rounded-lg border border-red-600 dark:border-red-700 hover:bg-red-800 dark:hover:bg-red-900 transition whitespace-nowrap"
+                              title="Desatribuir todos os itens do termo"
+                              onclick="return confirm('Tem certeza que deseja desatribuir todos os itens deste termo?')">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                              </svg>
+                              <span>Desatribuir</span>
+                            </button>
+                          </form>
+                          @endif
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {{-- Header do Grupo (Colunas) --}}
+                  <tr class="text-xs text-gray-100 uppercase bg-gray-700 dark:bg-gray-700 dark:text-gray-100 border-b border-gray-600 dark:border-gray-600"
+                    x-show="groupState['{{ $grupo_id }}'] === true"
+                    style="display: none;">
+                    <th class="px-4 py-3">
+                      @if(!request('status') || request('status')=='disponivel')
+                      <input type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600" @change="toggleGroupCheckboxes('{{ $grupo_id }}', $event)">
+                      @endif
+                    </th>
+                    <th class="px-4 py-3">Nº Pat.</th>
+                    <th class="px-4 py-3">Itens</th>
+                    <th class="px-4 py-3">Modelo</th>
+                    <th class="px-4 py-3">Situação</th>
+                  </tr>
+
+                  {{-- Detalhes do Grupo (Linhas dos Itens) --}}
+                  @foreach($grupo_patrimonios as $patrimonio)
+                  <tr class="group-details border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                    data-group-id="{{ $grupo_id }}"
+                    data-row-id="{{ $patrimonio->NUSEQPATR }}"
+                    x-show="groupState['{{ $grupo_id }}'] === true"
+                    style="display: none;">
+                    <td class="px-4 py-3 text-gray-500 dark:text-gray-400">
+                      <div class="flex items-center justify-center">
+                        @if((!request('status') || request('status')=='disponivel') && empty($patrimonio->NMPLANTA))
+                        <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
+                          type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
+                        @elseif(request('status')=='indisponivel' && !empty($patrimonio->NMPLANTA))
+                        <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
+                          type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
+                        @endif
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                      {{ $patrimonio->NUPATRIMONIO }}
+                    </td>
+                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs truncate" :title="'{{ $patrimonio->DEPATRIMONIO }}'">
+                      {{ Str::limit($patrimonio->DEPATRIMONIO, 50) }}
+                    </td>
+                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+                      {{ $patrimonio->MODELO ?? '—' }}
+                    </td>
+                    <td class="px-4 py-3">
+                      @if(empty($patrimonio->NMPLANTA))
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-xs font-medium">
+                        <span class="w-2 h-2 rounded-full bg-green-600 dark:bg-green-400"></span>
+                        Disponível
+                      </span>
+                      @else
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 text-xs font-medium">
+                        <span class="w-2 h-2 rounded-full bg-red-600 dark:bg-red-400"></span>
+                        Atribuído
+                      </span>
+                      @endif
+                    </td>
+                  </tr>
+                  @endforeach
+                  @empty
+                  <tr>
+                    <td colspan="5" class="px-6 py-12 text-center">
                       <div class="flex flex-col items-center justify-center text-gray-600 dark:text-gray-400">
                         <svg class="w-12 h-12 mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
@@ -263,9 +342,9 @@
                         <h3 class="text-base font-semibold mb-1">Nenhum patrimônio encontrado</h3>
                         <p class="text-sm">
                           @if(request('status') == 'indisponivel')
-                            Não há patrimônios atribuídos ou nenhum atende aos filtros aplicados.
+                          Não há patrimônios atribuídos ou nenhum atende aos filtros aplicados.
                           @else
-                            Não há patrimônios disponíveis para atribuição ou nenhum atende aos filtros aplicados.
+                          Não há patrimônios disponíveis para atribuição ou nenhum atende aos filtros aplicados.
                           @endif
                         </p>
                       </div>
@@ -273,6 +352,7 @@
                   </tr>
                   @endforelse
                 </tbody>
+                @endif
               </table>
             </div>
             <div class="mt-4">
