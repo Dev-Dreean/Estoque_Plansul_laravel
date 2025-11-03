@@ -8,25 +8,25 @@
           <strong class="font-bold">Sucesso!</strong>
           <span class="block sm:inline">{{ session('success') }}</span>
         </div>
-        @endif
+        
         @if(session('error'))
         <div class="mb-4 bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded relative" role="alert">
           <strong class="font-bold">Erro!</strong>
           <span class="block sm:inline">{{ session('error') }}</span>
         </div>
-        @endif
+        
         @if(session('warning'))
         <div class="mb-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded relative" role="alert">
           <strong class="font-bold">Atenção!</strong>
           <span class="block sm:inline">{{ session('warning') }}</span>
         </div>
-        @endif
+        
         @if($errors->any())
         <div class="mb-4 bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded relative" role="alert">
           <strong class="font-bold">Erro de Validação!</strong>
           <span class="block sm:inline">{{ $errors->first() }}</span>
         </div>
-        @endif
+        
 
         <div class="section">
           <div class="section-body">
@@ -137,7 +137,7 @@
                         @if(empty($patrimonio->NMPLANTA))
                         <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
                           type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
-                        @endif
+                        
                       </div>
                     </td>
                     <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
@@ -155,7 +155,7 @@
                         <span class="w-2 h-2 rounded-full bg-green-600 dark:bg-green-400"></span>
                         Disponível
                       </span>
-                      @endif
+                      
                     </td>
                   </tr>
                   @empty
@@ -209,7 +209,7 @@
                             <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-100 dark:bg-amber-900 border border-amber-300 dark:border-amber-700 flex-shrink-0">
                               <span class="text-sm font-semibold text-amber-900 dark:text-amber-100">Sem Termo</span>
                             </span>
-                            @endif
+                            
 
                             {{-- Lista de itens como badges individuais --}}
                             <div class="flex flex-wrap gap-2 flex-shrink">
@@ -222,7 +222,7 @@
                               <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-700 dark:bg-gray-700 text-gray-200 dark:text-gray-200 border border-gray-600/50 dark:border-gray-600/50">
                                 +{{ $item_count - 5 }} mais
                               </span>
-                              @endif
+                              
                             </div>
                           </div>
                         </div>
@@ -269,7 +269,7 @@
                               <span>Desatribuir</span>
                             </button>
                           </form>
-                          @endif
+                          
                         </div>
                       </div>
                     </td>
@@ -282,7 +282,7 @@
                     <th class="px-4 py-3">
                       @if(!request('status') || request('status')=='disponivel')
                       <input type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600" @change="toggleGroupCheckboxes('{{ $grupo_id }}', $event)">
-                      @endif
+                      
                     </th>
                     <th class="px-4 py-3">Nº Pat.</th>
                     <th class="px-4 py-3">Itens</th>
@@ -305,7 +305,7 @@
                         @elseif(request('status')=='indisponivel' && !empty($patrimonio->NMPLANTA))
                         <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
                           type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
-                        @endif
+                        
                       </div>
                     </td>
                     <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
@@ -328,7 +328,7 @@
                         <span class="w-2 h-2 rounded-full bg-red-600 dark:bg-red-400"></span>
                         Atribuído
                       </span>
-                      @endif
+                      
                     </td>
                   </tr>
                   @endforeach
@@ -345,14 +345,14 @@
                           Não há patrimônios atribuídos ou nenhum atende aos filtros aplicados.
                           @else
                           Não há patrimônios disponíveis para atribuição ou nenhum atende aos filtros aplicados.
-                          @endif
+                          
                         </p>
                       </div>
                     </td>
                   </tr>
                   @endforelse
                 </tbody>
-                @endif
+                
               </table>
             </div>
             <div class="mt-4">
@@ -736,7 +736,7 @@
       </div>
     </template>
   </div>
-  @endif
+  
   @if(request('status')=='indisponivel')
   <div x-data="footerDesatribuir()" x-init="init()" class="flex items-center justify-end gap-4">
     <div class="flex items-center gap-3 flex-wrap">
@@ -753,7 +753,7 @@
       <p class="text-xs text-gray-300" x-show="state==='idle'">Selecione os patrimônios e clique em Desatribuir.</p>
     </div>
   </div>
-  @endif
+  
 
   <script>
     function footerAcoes() {
