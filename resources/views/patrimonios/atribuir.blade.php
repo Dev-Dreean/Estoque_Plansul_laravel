@@ -278,9 +278,6 @@
                     <th class="px-4 py-3">Itens</th>
                     <th class="px-4 py-3">Modelo</th>
                     <th class="px-4 py-3">Situação</th>
-                    @if(request('status')=='indisponivel')
-                    <th class="px-4 py-3">Ação</th>
-                    @endif
                   </tr>
 
                   {{-- Detalhes do Grupo (Linhas dos Itens) --}}
@@ -327,12 +324,11 @@
                     <td class="px-4 py-3">
                       <button type="button" 
                         @click.stop="desatribuirItem({{ $patrimonio->NUSEQPATR }})"
-                        class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-red-600 hover:bg-red-700 text-white transition"
+                        class="inline-flex items-center justify-center w-6 h-6 rounded hover:bg-red-100 dark:hover:bg-red-900 text-red-600 dark:text-red-400 transition"
                         title="Desatribuir este item">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
-                        <span>Remover</span>
                       </button>
                     </td>
                     @endif
