@@ -93,10 +93,12 @@
                     <x-heroicon-o-printer class="w-5 h-5 mr-2" />
                     <span>Gerar Planilha Termo</span>
                   </button>
+                  @if(request('status')=='indisponivel')
                   <button type="button" @click="downloadTermoDocx()" x-show="selectedPatrimonios.length > 0" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center" title="Baixar Termo de Responsabilidade (DOCX)">
                     <x-heroicon-o-document-text class="w-5 h-5 mr-2" />
                     <span>Termo DOCX</span>
                   </button>
+                  @endif
                 </div>
               </div>
 
@@ -682,6 +684,13 @@
               }, 3000);
               this.selectedPatrimonios = [];
               this.updateCounter();
+              
+              // Redirecionar para aba de atribuídos após 1.5s
+              setTimeout(() => {
+                const currentUrl = new URL(window.location);
+                currentUrl.searchParams.set('status', 'indisponivel');
+                window.location.href = currentUrl.toString();
+              }, 1500);
             } else {
               alert('Falha ao atribuir.');
             }
