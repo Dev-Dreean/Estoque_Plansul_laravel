@@ -278,6 +278,9 @@
                     <th class="px-4 py-3">Itens</th>
                     <th class="px-4 py-3">Modelo</th>
                     <th class="px-4 py-3">Situação</th>
+                    @if(request('status')=='indisponivel')
+                    <th class="px-4 py-3">Ação</th>
+                    @endif
                   </tr>
 
                   {{-- Detalhes do Grupo (Linhas dos Itens) --}}
@@ -320,6 +323,19 @@
                       </span>
                       @endif
                     </td>
+                    @if(request('status')=='indisponivel' && !empty($patrimonio->NMPLANTA))
+                    <td class="px-4 py-3">
+                      <button type="button" 
+                        @click.stop="desatribuirItem({{ $patrimonio->NUSEQPATR }})"
+                        class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-red-600 hover:bg-red-700 text-white transition"
+                        title="Desatribuir este item">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        <span>Remover</span>
+                      </button>
+                    </td>
+                    @endif
                   </tr>
                   @endforeach
                   @empty
@@ -475,7 +491,9 @@
           checkboxes.forEach(cb => {
             cb.checked = source.checked;
             // Dispara evento change para notificar o footerAcoes()
-            cb.dispatchEvent(new Event('change', { bubbles: true }));
+            cb.dispatchEvent(new Event('change', {
+              bubbles: true
+            }));
           });
           this.updateCounter();
         },
@@ -597,18 +615,41 @@
               alert(json.message || 'Erro ao desatribuir');
               return;
             }
-            // Recarregar página para refletir as mudanças
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000);
-
-            // Recarregar página para refletir as mudanças
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000);
+            // Redireciona imediatamente para página de disponíveis
+            window.location.href = "{{ route('patrimonios.atribuir.codigos', ['status' => 'disponivel']) }}";
           } catch (e) {
             console.error('Erro ao desatribuir grupo:', e);
             alert('Erro ao desatribuir itens. Tente novamente.');
+          }
+        },
+        async desatribuirItem(id) {
+          if (!confirm('Tem certeza que deseja remover este item do termo?')) {
+            return;
+          }
+
+          try {
+            // Usar a rota nova de desatribuição via AJAX
+            const res = await fetch("{{ route('patrimonios.desatribuirCodigo') }}", {
+              method: 'POST',
+              headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                ids: [id]
+              })
+            });
+            const json = await res.json();
+            if (!res.ok) {
+              alert(json.message || 'Erro ao desatribuir');
+              return;
+            }
+            // Redireciona imediatamente para página de disponíveis
+            window.location.href = "{{ route('patrimonios.atribuir.codigos', ['status' => 'disponivel']) }}";
+          } catch (e) {
+            console.error('Erro ao desatribuir item:', e);
+            alert('Erro ao desatribuir item. Tente novamente.');
           }
         },
         // FUNÇÃO LEGADA - NÃO USE MAIS
@@ -921,6 +962,8 @@
               }
             });
             this.limparSelecao();
+            // Redireciona imediatamente para página de disponíveis
+            window.location.href = "{{ route('patrimonios.atribuir.codigos', ['status' => 'disponivel']) }}";
           } catch (e) {
             console.error(e);
             alert('Erro inesperado');
