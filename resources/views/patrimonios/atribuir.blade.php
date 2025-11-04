@@ -569,6 +569,8 @@
             return;
           }
 
+          console.log('Desatribuindo IDs:', ids);
+
           if (!confirm('Tem certeza que deseja desatribuir todos os itens deste termo?')) {
             return;
           }
@@ -602,6 +604,12 @@
             desatribuirInput.name = 'desatribuir';
             desatribuirInput.value = '1';
             form.appendChild(desatribuirInput);
+
+            console.log('Form data:', {
+              _token: '{{ csrf_token() }}',
+              ids: Array.from(form.querySelectorAll('input[name="ids[]"]')).map(i => i.value),
+              desatribuir: '1'
+            });
 
             document.body.appendChild(form);
             form.submit();
