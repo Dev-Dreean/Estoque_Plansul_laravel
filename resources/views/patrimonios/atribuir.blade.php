@@ -827,10 +827,8 @@
               }
             });
             this.qtdSelecionados = 0;
-            // Redireciona para aba de atribuídos após 1.5 segundos
-            setTimeout(() => {
-              window.location.href = "{{ route('patrimonios.atribuir.codigos', ['status' => 'indisponivel']) }}";
-            }, 1500);
+            // Redireciona imediatamente para aba de atribuídos
+            window.location.href = "{{ route('patrimonios.atribuir.codigos', ['status' => 'indisponivel']) }}";
             this.state = 'generated';
           } catch (e) {
             console.error(e);
