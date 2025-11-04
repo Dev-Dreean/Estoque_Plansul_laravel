@@ -122,7 +122,7 @@
                 <thead class="text-xs text-gray-100 uppercase bg-gray-700 dark:bg-gray-700 dark:text-gray-100 border-b border-gray-600 dark:border-gray-600">
                   <tr>
                     <th class="px-4 py-3" style="width: 50px;">
-                      <input type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600" @change="toggleAllCheckboxes($event)">
+                      <input type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600" @change="toggleAll($event)">
                     </th>
                     <th class="px-4 py-3">Nº Pat.</th>
                     <th class="px-4 py-3">Itens</th>
