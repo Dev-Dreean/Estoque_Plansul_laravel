@@ -762,6 +762,10 @@
         wireCheckboxListener() {
           const update = () => {
             this.qtdSelecionados = document.querySelectorAll("input.patrimonio-checkbox[name='ids[]']:checked").length;
+            // Auto-gerar código quando houver seleção
+            if (this.qtdSelecionados > 0 && !this.generatedCode && this.state === 'idle') {
+              this.gerar();
+            }
           };
           document.addEventListener('change', e => {
             if (e.target.matches("input.patrimonio-checkbox[name='ids[]']")) update();
