@@ -576,134 +576,43 @@
           }
 
           try {
-            // Criar form oculto para POST com os IDs do grupo
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{{ route("patrimonios.atribuir.processar") }}';
-            form.style.display = 'none';
-
-            // CSRF Token
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = '_token';
-            csrfInput.value = '{{ csrf_token() }}';
-            form.appendChild(csrfInput);
-
-            // IDs dos patrimônios do grupo
-            ids.forEach(id => {
-              const input = document.createElement('input');
-              input.type = 'hidden';
-              input.name = 'ids[]';
-              input.value = id;
-              form.appendChild(input);
+            // Usar a rota nova de desatribuição via AJAX
+            const res = await fetch("{{ route('patrimonios.desatribuirCodigo') }}", {
+              method: 'POST',
+              headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                ids: ids
+              })
             });
+            const json = await res.json();
+            if (!res.ok) {
+              alert(json.message || 'Erro ao desatribuir');
+              return;
+            }
+            // Recarregar página para refletir as mudanças
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
 
-            // Flag para desatribuir
-            const desatribuirInput = document.createElement('input');
-            desatribuirInput.type = 'hidden';
-            desatribuirInput.name = 'desatribuir';
-            desatribuirInput.value = '1';
-            form.appendChild(desatribuirInput);
-
-            document.body.appendChild(form);
-            form.submit();
-
-            // Remover form após submit
-            setTimeout(() => form.remove(), 100);
+            // Recarregar página para refletir as mudanças
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
           } catch (e) {
             console.error('Erro ao desatribuir grupo:', e);
             alert('Erro ao desatribuir itens. Tente novamente.');
           }
         },
-        confirmarAtribuicao() {
-          const checkboxes = document.querySelectorAll('.patrimonio-checkbox:checked');
-          if (checkboxes.length === 0) {
-            alert('Selecione pelo menos um patrimônio para atribuir.');
-            return;
-          }
-          if (!this.codigoTermo) {
-            this.erroCodigo = true;
-            return;
-          }
-          this.erroCodigo = false;
-          this.selectedPatrimonios = Array.from(checkboxes).map(cb => cb.value);
-          this.processarAtribuicao();
-        },
-        async processarAtribuicao() {
-          if (!this.codigoTermo || this.selectedPatrimonios.length === 0) return;
-          this.atribuindo = true;
-          try {
-            console.log('Iniciando atribuição com IDs:', this.selectedPatrimonios);
-            const res = await fetch("{{ route('patrimonios.atribuir.processar') }}", {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-              },
-              body: JSON.stringify({
-                patrimonios: this.selectedPatrimonios,
-                codigo_termo: this.codigoTermo
-              })
-            });
-            console.log('Resposta recebida:', res.status, res.ok);
-            if (res.ok) {
-              const json = await res.json().catch(() => ({
-                updated_ids: this.selectedPatrimonios
-              }));
-              console.log('JSON resposta:', json);
-              // Atualiza linhas afetadas inline
-              this.selectedPatrimonios.forEach(id => {
-                const row = document.querySelector(`tr[data-row-id='${id}']`);
-                if (row) {
-                  // Status chip
-                  const statusTd = row.children[4];
-                  if (statusTd) {
-                    statusTd.innerHTML = '<span class="inline-flex items-center rounded-full bg-red-600/15 px-2 py-0.5 text-[11px] font-medium text-red-400 ring-1 ring-inset ring-red-500/30">Atribuído</span>';
-                  }
-                  // Código termo
-                  const codigoTd = row.children[5];
-                  if (codigoTd) {
-                    codigoTd.innerHTML = `<span class=\"inline-flex items-center h-6 px-2 rounded bg-indigo-600/20 text-indigo-300 text-[11px] font-medium border border-indigo-500/30 font-mono\">${this.codigoTermo}</span>`;
-                  }
-                  // Checkbox (remove)
-                  const cb = row.querySelector('input.patrimonio-checkbox');
-                  cb?.remove();
-                  row.classList.add('row-just-updated');
-                  setTimeout(() => row.classList.remove('row-just-updated'), 3000);
-                }
-              });
-              window.dispatchEvent(new CustomEvent('toast', {
-                detail: {
-                  type: 'success',
-                  message: 'Código atribuído com sucesso',
-                  code: this.codigoTermo,
-                  count: (json.updated_ids || this.selectedPatrimonios).length
-                }
-              }));
-              this.updatedIds = [...this.selectedPatrimonios];
-              setTimeout(() => {
-                this.updatedIds = [];
-                document.querySelectorAll('.row-just-updated').forEach(r => r.classList.remove('row-just-updated'));
-              }, 3000);
-              this.selectedPatrimonios = [];
-              this.updateCounter();
-
-              // Redirecionar para aba de atribuídos após 2s
-              console.log('Redirecionando em 2s para status=indisponivel');
-              setTimeout(() => {
-                console.log('Executando redirecionamento agora');
-                window.location.href = "{{ route('patrimonios.atribuir.codigos', ['status' => 'indisponivel']) }}";
-              }, 2000);
-            } else {
-              console.log('Resposta não OK:', res.status);
-              alert('Falha ao atribuir.');
-            }
-          } catch (e) {
-            console.error('Erro na atribuição:', e);
-            alert('Erro inesperado.');
-          } finally {
-            this.atribuindo = false;
-          }
+        // FUNÇÃO LEGADA - NÃO USE MAIS
+        // Use o novo fluxo: footerAcoes() -> gerar() -> atribuir()
+        async processarAtribuicaoLegacy() {
+          // Esta função não deve ser chamada mais
+          console.warn('processarAtribuicao() legado não deve ser chamado!');
+          return;
         },
         async gerarCodigo() {
           this.erroCodigo = false;
@@ -727,37 +636,11 @@
           else params.delete('codigo');
           window.location.href = '{{ route("patrimonios.atribuir.codigos") }}?' + params.toString();
         },
-        processarDesatribuicao() {
-          if (!this.desatribuirItem) return;
-          let ids = [];
-          if (this.desatribuirItem.id.includes(',')) {
-            // Lote (caso futuro) - usa helper
-            ids = this.selectedPatrimoniosAtribuidos();
-          } else {
-            ids = [this.desatribuirItem.id];
-          }
-          const form = document.createElement('form');
-          form.method = 'POST';
-          form.action = '{{ route("patrimonios.atribuir.processar") }}';
-          const csrfToken = document.createElement('input');
-          csrfToken.type = 'hidden';
-          csrfToken.name = '_token';
-          csrfToken.value = '{{ csrf_token() }}';
-          form.appendChild(csrfToken);
-          ids.forEach(id => {
-            const patrimonioInput = document.createElement('input');
-            patrimonioInput.type = 'hidden';
-            patrimonioInput.name = 'ids[]';
-            patrimonioInput.value = id;
-            form.appendChild(patrimonioInput);
-          });
-          const desatribuirInput = document.createElement('input');
-          desatribuirInput.type = 'hidden';
-          desatribuirInput.name = 'desatribuir';
-          desatribuirInput.value = '1';
-          form.appendChild(desatribuirInput);
-          document.body.appendChild(form);
-          form.submit();
+        // FUNÇÃO LEGADA - NÃO USE MAIS
+        // Use desatribuirGrupo() ou footerDesatribuir()
+        processarDesatribuicaoLegacy() {
+          console.warn('processarDesatribuicao() legado não deve ser chamado!');
+          return;
         },
         selectedPatrimoniosAtribuidos() {
           const rows = Array.from(document.querySelectorAll('tr'));
