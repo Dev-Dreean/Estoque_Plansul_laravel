@@ -104,3 +104,4 @@ class PatrimonioPolicy
     {
         return true;
     }
+}
