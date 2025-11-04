@@ -1,0 +1,172 @@
+# 🔐 CONTEXTO DE REFERÊNCIA - SISTEMA DE PERMISSÕES
+
+## ⚡ VERIFICAÇÃO RÁPIDA ANTES DE QUALQUER MUDANÇA
+
+**Toda vez que for fazer mudança, verificar:**
+
+1. ✅ **Precisa de acesso restrito?** → Verificar `NIVEL_VISIBILIDADE` e `acessousuario`
+2. ✅ **Qual perfil pode fazer?** → USR, ADM, ou SUP?
+3. ✅ **Precisa de Policy?** → `$this->authorize('action', $model)`
+4. ✅ **Precisa de Middleware?** → `tela.access:NNNN` ou `admin`
+
+---
+
+## 🎭 HIERARQUIA DE PERFIS
+
+```
+SUPER ADMIN (SUP)
+├─ isGod() = true
+├─ isAdmin() = true
+├─ podeExcluir() = true
+├─ Vê TODAS as telas
+└─ GOD MODE - sem restrições
+
+ADMIN (ADM)
+├─ isGod() = false
+├─ isAdmin() = true
+├─ podeExcluir() = false
+├─ Vê telas TODOS + ADM
+└─ Acesso automático
+
+USUÁRIO (USR)
+├─ isGod() = false
+├─ isAdmin() = false
+├─ podeExcluir() = false
+├─ Vê apenas telas TODOS
+└─ Precisa de acessousuario
+```
+
+---
+
+## 📋 TABELAS CRÍTICAS
+
+### `usuario` (Banco de dados)
+- Coluna: `PERFIL` → 'USR', 'ADM', ou 'SUP'
+- Model: `App\Models\User`
+- Métodos: `isGod()`, `isAdmin()`, `isSuperAdmin()`, `podeExcluir()`
+
+### `acessotela` (Banco de dados)
+- Coluna: `NIVEL_VISIBILIDADE` → 'TODOS', 'ADM', ou 'SUP'
+- Define quem vê cada tela
+- NUSEQTELA = ID da tela
+
+### `acessousuario` (Banco de dados)
+- Chave: (NUSEQTELA, CDMATRFUNCIONARIO)
+- Coluna: `INACESSO` → 'S' ou 'N'
+- Dá permissão EXPLÍCITA para Usuários comuns (USR)
+
+---
+
+## 🛣️ MIDDLEWARE DISPONÍVEL
+
+| Middleware | Acesso | Uso |
+|---|---|---|
+| `admin` | ADM, SUP | Apenas administradores |
+| `tela.access:NNNN` | ADM, SUP, ou USR com perm | Controle granular por tela |
+| `auth` | Qualquer logado | Autenticação apenas |
+
+---
+
+## 🔄 FLUXO DE VERIFICAÇÃO (4 ETAPAS)
+
+```
+1. Autenticado? (middleware: auth)
+   ↓
+2. Tela visível? (telaVisivel)
+   ↓
+3. Tem acesso à tela? (temAcessoTela)
+   ↓
+4. Pode fazer ação? (Policy/authorize)
+```
+
+---
+
+## 📍 LOCALIZAÇÃO DOS ARQUIVOS PRINCIPAIS
+
+### Modelos
+- `app/Models/User.php` ← Métodos de permissão
+- `app/Models/AcessoUsuario.php` ← Relação tela-usuário
+
+### Middleware
+- `app/Http/Middleware/CheckTelaAccess.php` ← Verifica `tela.access:NNNN`
+- `app/Http/Middleware/AdminMiddleware.php` ← Verifica `admin`
+
+### Policies
+- `app/Policies/PatrimonioPolicy.php` ← Autorização por ação
+
+### Routes
+- `routes/web.php` ← Middleware das rotas
+
+### Views
+- `resources/views/patrimonios/atribuir.blade.php` ← Exibe tela com botão "Baixar"
+
+---
+
+## 🚨 CASOS CRÍTICOS
+
+### ❌ ERRO: Botão não aparece para Usuário
+**Verificar:**
+1. Tela tem `NIVEL_VISIBILIDADE = 'TODOS'`?
+2. Usuário tem registro em `acessousuario` com `INACESSO = 'S'`?
+3. Rota tem middleware `tela.access:NNNN`?
+
+### ❌ ERRO: Usuário não consegue deletar
+**Verificar:**
+1. `podeExcluir()` = true? (apenas SUP)
+2. Policy permite `delete`?
+
+### ❌ ERRO: Admin vê tela que não deveria
+**Verificar:**
+1. `NIVEL_VISIBILIDADE` está correto?
+2. Rota tem middleware correto?
+
+---
+
+## ✅ CHECKLIST ANTES DE LIBERAR ACESSO
+
+- [ ] Defini quem pode acessar? (USR, ADM, SUP)
+- [ ] Criei entrada em `acessotela` com `NIVEL_VISIBILIDADE` correto?
+- [ ] Se Usuário comum precisa, criei `acessousuario`?
+- [ ] Usei middleware correto na rota?
+- [ ] Testei com os 3 perfis?
+- [ ] Não quebrei permissões existentes?
+
+---
+
+## 🎯 PADRÕES COMUNS
+
+### Liberar para APENAS Super Admin
+```php
+Route::get('/path', [Controller::class, 'action'])
+    ->middleware('admin')  // ← Aceita ADM e SUP
+```
+
+### Liberar para Super Admin, Admin, ou Usuários com Perm
+```php
+Route::post('/path', [Controller::class, 'action'])
+    ->middleware('tela.access:1000')  // ← Verifica permissão
+```
+
+### Mostrar Botão na View
+```blade
+@if(Auth::user()->temAcessoTela(1000))
+    <!-- Mostrar botão -->
+@endif
+```
+
+---
+
+## 📌 TELAS EXISTENTES
+
+| NUSEQTELA | Descrição | NIVEL_VISIBILIDADE |
+|---|---|---|
+| 1000 | Patrimônios | TODOS |
+| 1001 | Dashboard | TODOS |
+| 1002 | Usuários | ADM |
+| 1003 | Telas | SUP |
+
+---
+
+**Última Atualização**: 3 de novembro de 2025  
+**Versão**: 1.0  
+**Status**: ✅ Ativo e Atualizado

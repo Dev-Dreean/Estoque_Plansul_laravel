@@ -127,7 +127,6 @@
                     <th class="px-4 py-3">Nº Pat.</th>
                     <th class="px-4 py-3">Itens</th>
                     <th class="px-4 py-3">Modelo</th>
-                    <th class="px-4 py-3">Situação</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -151,18 +150,10 @@
                     <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
                       {{ $patrimonio->MODELO ?? '—' }}
                     </td>
-                    <td class="px-4 py-3">
-                      @if(empty($patrimonio->NMPLANTA))
-                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-xs font-medium">
-                        <span class="w-2 h-2 rounded-full bg-green-600 dark:bg-green-400"></span>
-                        Disponível
-                      </span>
-                      @endif
-                    </td>
                   </tr>
                   @empty
                   <tr>
-                    <td colspan="5" class="px-6 py-12 text-center">
+                    <td colspan="4" class="px-6 py-12 text-center">
                       <div class="flex flex-col items-center justify-center text-gray-600 dark:text-gray-400">
                         <svg class="w-12 h-12 mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
@@ -182,14 +173,25 @@
                   $grupo_id = 'grupo_' . ($grupo_codigo === '__sem_termo__' ? 'sem_termo' : $grupo_codigo);
                   $item_count = $grupo_patrimonios->count();
                   $is_sem_termo = $grupo_codigo === '__sem_termo__';
+                  
+                  // Agrupar por DEPATRIMONIO + MODELO para mostrar quantidade
+                  $grupo_patrimonios_agrupado = $grupo_patrimonios->groupBy(function($item) {
+                      return $item->DEPATRIMONIO . '|' . ($item->MODELO ?? '');
+                  })->map(function($items) {
+                      return [
+                          'quantidade' => $items->count(),
+                          'items' => $items,
+                          'primeiro' => $items->first()
+                      ];
+                  });
                   @endphp
 
                   {{-- Cabeçalho Colapsável do Grupo --}}
-                  <tr class="group-header border-b-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer"
+                  <tr class="group-header border-b-2 border-gray-200 dark:border-gray-700 dark:hover:bg-gray-800 transition cursor-pointer bg-gray-300"
                     data-group-id="{{ $grupo_id }}"
                     @click="toggleGroup('{{ $grupo_id }}')"
                     :data-expanded="groupState['{{ $grupo_id }}'] === true ? 'true' : 'false'">
-                    <td colspan="5" class="px-4 py-4">
+                    <td colspan="5" class="px-4 py-4 bg-gray-300">
                       <div class="flex items-center justify-between gap-4">
                         {{-- Ícone de Expandir + Info do Grupo --}}
                         <div class="flex items-center gap-4 flex-1 min-w-0">
@@ -215,14 +217,14 @@
 
                             {{-- Lista de itens como badges individuais --}}
                             <div class="flex flex-wrap gap-2 flex-shrink">
-                              @foreach($grupo_patrimonios->pluck('DEPATRIMONIO')->take(5) as $item)
+                              @foreach($grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->take(5) as $item)
                               <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-purple-900/40 dark:bg-purple-900/40 text-purple-200 dark:text-purple-200 border border-purple-600/50 dark:border-purple-600/50 whitespace-nowrap">
                                 {{ Str::limit($item, 30) }}
                               </span>
                               @endforeach
-                              @if($item_count > 5)
+                              @if($grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->count() > 5)
                               <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-700 dark:bg-gray-700 text-gray-200 dark:text-gray-200 border border-gray-600/50 dark:border-gray-600/50">
-                                +{{ $item_count - 5 }} mais
+                                +{{ $grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->count() - 5 }} mais
                               </span>
                               @endif
                             </div>
@@ -266,7 +268,7 @@
                   </tr>
 
                   {{-- Header do Grupo (Colunas) --}}
-                  <tr class="text-xs text-gray-100 uppercase bg-gray-700 dark:bg-gray-700 dark:text-gray-100 border-b border-gray-600 dark:border-gray-600"
+                  <tr class="text-xs text-gray-700 dark:text-gray-100 uppercase bg-gray-100 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-600"
                     x-show="groupState['{{ $grupo_id }}'] === true"
                     style="display: none;">
                     <th class="px-4 py-3">
@@ -277,61 +279,51 @@
                     <th class="px-4 py-3">Nº Pat.</th>
                     <th class="px-4 py-3">Itens</th>
                     <th class="px-4 py-3">Modelo</th>
-                    <th class="px-4 py-3">Situação</th>
+                    <th class="px-4 py-3" colspan="2">Ação</th>
                   </tr>
 
-                  {{-- Detalhes do Grupo (Linhas dos Itens) --}}
-                  @foreach($grupo_patrimonios as $patrimonio)
+                  {{-- Detalhes do Grupo (Linhas dos Itens Agrupados por Descrição+Modelo) --}}
+                  @foreach($grupo_patrimonios_agrupado as $grupo_id_item => $grupo_dados)
                   <tr class="group-details border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                     data-group-id="{{ $grupo_id }}"
-                    data-row-id="{{ $patrimonio->NUSEQPATR }}"
+                    data-row-id="{{ $grupo_dados['primeiro']->NUSEQPATR }}"
                     x-show="groupState['{{ $grupo_id }}'] === true"
                     style="display: none;">
                     <td class="px-4 py-3 text-gray-500 dark:text-gray-400">
                       <div class="flex items-center justify-center">
-                        @if((!request('status') || request('status')=='disponivel') && empty($patrimonio->NMPLANTA))
+                        @if((!request('status') || request('status')=='disponivel') && empty($grupo_dados['primeiro']->NMPLANTA))
                         <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
-                          type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
-                        @elseif(request('status')=='indisponivel' && !empty($patrimonio->NMPLANTA))
+                          type="checkbox" name="ids[]" value="{{ $grupo_dados['primeiro']->NUSEQPATR }}" @change="updateCounter()">
+                        @elseif(request('status')=='indisponivel' && !empty($grupo_dados['primeiro']->NMPLANTA))
                         <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
-                          type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
+                          type="checkbox" name="ids[]" value="{{ $grupo_dados['primeiro']->NUSEQPATR }}" @change="updateCounter()">
                         @endif
                       </div>
                     </td>
                     <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
-                      {{ $patrimonio->NUPATRIMONIO }}
+                      {{ $grupo_dados['primeiro']->NUPATRIMONIO }}
                     </td>
-                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs truncate" :title="'{{ $patrimonio->DEPATRIMONIO }}'">
-                      {{ Str::limit($patrimonio->DEPATRIMONIO, 50) }}
+                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs truncate" :title="'{{ $grupo_dados['primeiro']->DEPATRIMONIO }}'">
+                      {{ Str::limit($grupo_dados['primeiro']->DEPATRIMONIO, 50) }}
                     </td>
                     <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
-                      {{ $patrimonio->MODELO ?? '—' }}
+                      {{ $grupo_dados['primeiro']->MODELO ?? '—' }}
                     </td>
-                    <td class="px-4 py-3">
-                      <div class="flex items-center justify-between gap-4">
-                        @if(empty($patrimonio->NMPLANTA))
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-xs font-medium">
-                          <span class="w-2 h-2 rounded-full bg-green-600 dark:bg-green-400"></span>
-                          Disponível
+                    <td class="px-4 py-3" colspan="2">
+                      <div class="flex items-center justify-between gap-3">
+                        <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 text-xs font-bold min-w-fit">
+                          {{ $grupo_dados['quantidade'] }}
                         </span>
-                        @else
-                        <div class="flex items-center gap-2">
-                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 text-xs font-medium">
-                            <span class="w-2 h-2 rounded-full bg-red-600 dark:bg-red-400"></span>
-                            Atribuído
-                          </span>
-                          @if(!empty($patrimonio->NMPLANTA))
-                          <button type="button" 
-                            @click.stop="desatribuirItem({{ $patrimonio->NUSEQPATR }})"
-                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-100 dark:text-gray-100 bg-red-700 dark:bg-red-800 rounded-lg border border-red-600 dark:border-red-700 hover:bg-red-800 dark:hover:bg-red-900 transition whitespace-nowrap ml-auto"
-                            title="Desatribuir este item">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                            <span>Desatribuir</span>
-                          </button>
-                          @endif
-                        </div>
+                        @if(request('status')=='indisponivel' && !empty($grupo_dados['primeiro']->NMPLANTA))
+                        <button type="button" 
+                          @click.stop="desatribuirItem({{ $grupo_dados['primeiro']->NUSEQPATR }})"
+                          class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-100 dark:text-gray-100 bg-red-700 dark:bg-red-800 rounded-lg border border-red-600 dark:border-red-700 hover:bg-red-800 dark:hover:bg-red-900 transition whitespace-nowrap"
+                          title="Desatribuir este item">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                          </svg>
+                          <span>Desatribuir</span>
+                        </button>
                         @endif
                       </div>
                     </td>
