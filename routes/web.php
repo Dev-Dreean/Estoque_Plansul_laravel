@@ -71,14 +71,14 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::resource('patrimonios', PatrimonioController::class)->middleware(['tela.access:1000', 'can.delete']);
     Route::get('/patrimonios/lookup-codigo', [App\Http\Controllers\PatrimonioController::class, 'lookupCodigo'])->name('patrimonios.lookupCodigo');
     Route::resource('patrimonios', App\Http\Controllers\PatrimonioController::class);
-    Route::get('/patrimonios/atribuir/termo', [PatrimonioController::class, 'atribuir'])->name('patrimonios.atribuir')->middleware('tela.access:1000');
+    Route::get('/patrimonios/atribuir/termo', [PatrimonioController::class, 'atribuir'])->name('patrimonios.atribuir');
     // Alias / nova rota para listagem/atribuição via filtros (referenciada em views e redirects)
     // Mantemos a rota original acima para retrocompatibilidade; esta atende chamadas a route('patrimonios.atribuir.codigos')
-    Route::get('/patrimonios/atribuir/codigos', [PatrimonioController::class, 'atribuir'])->name('patrimonios.atribuir.codigos')->middleware('tela.access:1000');
-    Route::post('/patrimonios/atribuir/processar', [PatrimonioController::class, 'processarAtribuicao'])->name('patrimonios.atribuir.processar')->middleware('tela.access:1000');
-    Route::post('/patrimonios/gerar-codigo', [PatrimonioController::class, 'gerarCodigo'])->name('patrimonios.gerarCodigo')->middleware('tela.access:1000');
-    Route::post('/patrimonios/atribuir-codigo', [PatrimonioController::class, 'atribuirCodigo'])->name('patrimonios.atribuirCodigo')->middleware('tela.access:1000');
-    Route::post('/patrimonios/desatribuir-codigo', [PatrimonioController::class, 'desatribuirCodigo'])->name('patrimonios.desatribuirCodigo')->middleware('tela.access:1000');
+    Route::get('/patrimonios/atribuir/codigos', [PatrimonioController::class, 'atribuir'])->name('patrimonios.atribuir.codigos');
+    Route::post('/patrimonios/atribuir/processar', [PatrimonioController::class, 'processarAtribuicao'])->name('patrimonios.atribuir.processar');
+    Route::post('/patrimonios/gerar-codigo', [PatrimonioController::class, 'gerarCodigo'])->name('patrimonios.gerarCodigo');
+    Route::post('/patrimonios/atribuir-codigo', [PatrimonioController::class, 'atribuirCodigo'])->name('patrimonios.atribuirCodigo');
+    Route::post('/patrimonios/desatribuir-codigo', [PatrimonioController::class, 'desatribuirCodigo'])->name('patrimonios.desatribuirCodigo');
     Route::get('/api/patrimonios/disponiveis', [PatrimonioController::class, 'getPatrimoniosDisponiveis'])->name('api.patrimonios.disponiveis');
     Route::get('/api/patrimonios/buscar/{numero}', [PatrimonioController::class, 'buscarPorNumero'])->name('api.patrimonios.buscar');
     Route::get('/api/patrimonios/pesquisar', [PatrimonioController::class, 'pesquisar'])->name('api.patrimonios.pesquisar');
@@ -153,15 +153,15 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
 
     // Rotas de Termos
     Route::prefix('termos')->name('termos.')->group(function () {
-        Route::post('/atribuir', [\App\Http\Controllers\TermoController::class, 'store'])->name('atribuir.store')->middleware('tela.access:1000');
-        Route::post('/exportar/excel', [\App\Http\Controllers\TermoController::class, 'exportarExcel'])->name('exportar.excel')->middleware('tela.access:1000');
-        Route::post('/desatribuir', [\App\Http\Controllers\TermoController::class, 'desatribuir'])->name('desatribuir')->middleware('tela.access:1000');
-        Route::get('/codigos', [\App\Http\Controllers\TermoController::class, 'listarCodigos'])->name('codigos.index')->middleware('tela.access:1000');
-        Route::post('/codigos', [\App\Http\Controllers\TermoController::class, 'criarCodigo'])->name('codigos.store')->middleware('tela.access:1000');
-        Route::get('/codigos/sugestao', [\App\Http\Controllers\TermoController::class, 'sugestaoCodigo'])->name('codigos.sugestao')->middleware('tela.access:1000');
+        Route::post('/atribuir', [\App\Http\Controllers\TermoController::class, 'store'])->name('atribuir.store');
+        Route::post('/exportar/excel', [\App\Http\Controllers\TermoController::class, 'exportarExcel'])->name('exportar.excel');
+        Route::post('/desatribuir', [\App\Http\Controllers\TermoController::class, 'desatribuir'])->name('desatribuir');
+        Route::get('/codigos', [\App\Http\Controllers\TermoController::class, 'listarCodigos'])->name('codigos.index');
+        Route::post('/codigos', [\App\Http\Controllers\TermoController::class, 'criarCodigo'])->name('codigos.store');
+        Route::get('/codigos/sugestao', [\App\Http\Controllers\TermoController::class, 'sugestaoCodigo'])->name('codigos.sugestao');
         // Rotas DOCX usando PhpWord TemplateProcessor
-        Route::post('/docx/zip', [\App\Http\Controllers\TermoDocxController::class, 'downloadZip'])->name('docx.zip')->middleware('tela.access:1000');
-        Route::get('/docx/{id}', [\App\Http\Controllers\TermoDocxController::class, 'downloadSingle'])->name('docx.single')->middleware('tela.access:1000');
+        Route::post('/docx/zip', [\App\Http\Controllers\TermoDocxController::class, 'downloadZip'])->name('docx.zip');
+        Route::get('/docx/{id}', [\App\Http\Controllers\TermoDocxController::class, 'downloadSingle'])->name('docx.single');
     });
 
     // Rota de Histórico

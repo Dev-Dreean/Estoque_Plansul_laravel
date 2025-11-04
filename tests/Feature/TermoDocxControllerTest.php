@@ -20,10 +20,10 @@ class TermoDocxControllerTest extends TestCase
 
     /** @var User */
     protected User $user;
-    
+
     /** @var Funcionario */
     protected Funcionario $funcionario;
-    
+
     /** @var Patrimonio */
     protected Patrimonio $patrimonio;
 
