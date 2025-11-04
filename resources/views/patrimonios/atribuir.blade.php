@@ -237,38 +237,26 @@
 
                           @if(!$is_sem_termo && $grupo_patrimonios->first()?->CDMATRFUNCIONARIO)
                           {{-- Botão Baixar - Um único botão que baixa TODOS os itens do termo em ZIP --}}
-                          <form method="POST" action="{{ route('termos.docx.zip') }}" style="display: inline;" @click.stop @submit.prevent="submitDownloadForm($event)">
-                            @csrf
-                            @foreach($grupo_patrimonios as $p)
-                            <input type="hidden" name="ids[]" value="{{ $p->NUSEQPATR }}">
-                            @endforeach
-                            <button type="submit"
-                              class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-100 dark:text-gray-100 bg-blue-700 dark:bg-blue-800 rounded-lg border border-blue-600 dark:border-blue-700 hover:bg-blue-800 dark:hover:bg-blue-900 transition whitespace-nowrap"
-                              title="Baixar todos os termos do grupo em ZIP">
-                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                              </svg>
-                              <span>Baixar Termo</span>
-                            </button>
-                          </form>
+                          <button type="button"
+                            @click.stop="downloadTermoGrupo([{{ $grupo_patrimonios->pluck('NUSEQPATR')->join(',') }}])"
+                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-100 dark:text-gray-100 bg-blue-700 dark:bg-blue-800 rounded-lg border border-blue-600 dark:border-blue-700 hover:bg-blue-800 dark:hover:bg-blue-900 transition whitespace-nowrap"
+                            title="Baixar documento de termo com todos os itens">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span>Baixar Termo</span>
+                          </button>
 
                           {{-- Botão Desatribuir --}}
-                          <form method="POST" action="{{ route('patrimonios.atribuir.processar') }}" style="display: inline;" @click.stop @submit.prevent>
-                            @csrf
-                            @foreach($grupo_patrimonios as $p)
-                            <input type="hidden" name="ids[]" value="{{ $p->NUSEQPATR }}">
-                            @endforeach
-                            <input type="hidden" name="desatribuir" value="1">
-                            <button type="submit"
-                              class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-100 dark:text-gray-100 bg-red-700 dark:bg-red-800 rounded-lg border border-red-600 dark:border-red-700 hover:bg-red-800 dark:hover:bg-red-900 transition whitespace-nowrap"
-                              title="Desatribuir todos os itens do termo"
-                              onclick="return confirm('Tem certeza que deseja desatribuir todos os itens deste termo?')">
-                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                              </svg>
-                              <span>Desatribuir</span>
-                            </button>
-                          </form>
+                          <button type="button"
+                            @click.stop="desatribuirGrupo([{{ $grupo_patrimonios->pluck('NUSEQPATR')->join(',') }}])"
+                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-100 dark:text-gray-100 bg-red-700 dark:bg-red-800 rounded-lg border border-red-600 dark:border-red-700 hover:bg-red-800 dark:hover:bg-red-900 transition whitespace-nowrap"
+                            title="Desatribuir todos os itens do termo">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            <span>Desatribuir</span>
+                          </button>
                           @endif
                         </div>
                       </div>
@@ -534,6 +522,95 @@
           } catch (e) {
             console.error('Erro ao gerar termo DOCX:', e);
             alert('Erro ao gerar documento. Tente novamente.');
+          }
+        },
+        async downloadTermoGrupo(ids) {
+          if (!ids || ids.length === 0) {
+            alert('Nenhum patrimônio disponível para download.');
+            return;
+          }
+
+          try {
+            // Criar form oculto para POST com os IDs do grupo
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route("termos.docx.zip") }}';
+            form.style.display = 'none';
+
+            // CSRF Token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = '{{ csrf_token() }}';
+            form.appendChild(csrfInput);
+
+            // IDs dos patrimônios do grupo
+            ids.forEach(id => {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = 'ids[]';
+              input.value = id;
+              form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+
+            // Remover form após submit
+            setTimeout(() => form.remove(), 100);
+          } catch (e) {
+            console.error('Erro ao gerar termo DOCX do grupo:', e);
+            alert('Erro ao gerar documento. Tente novamente.');
+          }
+        },
+        async desatribuirGrupo(ids) {
+          if (!ids || ids.length === 0) {
+            alert('Nenhum patrimônio disponível para desatribuição.');
+            return;
+          }
+
+          if (!confirm('Tem certeza que deseja desatribuir todos os itens deste termo?')) {
+            return;
+          }
+
+          try {
+            // Criar form oculto para POST com os IDs do grupo
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route("patrimonios.atribuir.processar") }}';
+            form.style.display = 'none';
+
+            // CSRF Token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = '{{ csrf_token() }}';
+            form.appendChild(csrfInput);
+
+            // IDs dos patrimônios do grupo
+            ids.forEach(id => {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = 'ids[]';
+              input.value = id;
+              form.appendChild(input);
+            });
+
+            // Flag para desatribuir
+            const desatribuirInput = document.createElement('input');
+            desatribuirInput.type = 'hidden';
+            desatribuirInput.name = 'desatribuir';
+            desatribuirInput.value = '1';
+            form.appendChild(desatribuirInput);
+
+            document.body.appendChild(form);
+            form.submit();
+
+            // Remover form após submit
+            setTimeout(() => form.remove(), 100);
+          } catch (e) {
+            console.error('Erro ao desatribuir grupo:', e);
+            alert('Erro ao desatribuir itens. Tente novamente.');
           }
         },
         confirmarAtribuicao() {
