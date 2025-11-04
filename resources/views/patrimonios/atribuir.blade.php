@@ -308,30 +308,31 @@
                       {{ $patrimonio->MODELO ?? '—' }}
                     </td>
                     <td class="px-4 py-3">
-                      @if(empty($patrimonio->NMPLANTA))
-                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-xs font-medium">
-                        <span class="w-2 h-2 rounded-full bg-green-600 dark:bg-green-400"></span>
-                        Disponível
-                      </span>
-                      @else
-                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 text-xs font-medium">
-                        <span class="w-2 h-2 rounded-full bg-red-600 dark:bg-red-400"></span>
-                        Atribuído
-                      </span>
-                      @endif
+                      <div class="flex items-center gap-2">
+                        @if(empty($patrimonio->NMPLANTA))
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-xs font-medium">
+                          <span class="w-2 h-2 rounded-full bg-green-600 dark:bg-green-400"></span>
+                          Disponível
+                        </span>
+                        @else
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 text-xs font-medium">
+                          <span class="w-2 h-2 rounded-full bg-red-600 dark:bg-red-400"></span>
+                          Atribuído
+                        </span>
+                        @if(!empty($patrimonio->NMPLANTA))
+                        <button type="button" 
+                          @click.stop="desatribuirItem({{ $patrimonio->NUSEQPATR }})"
+                          class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-red-600 hover:bg-red-700 text-white transition"
+                          title="Desatribuir este item">
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                          </svg>
+                          <span>Desatribuir</span>
+                        </button>
+                        @endif
+                        @endif
+                      </div>
                     </td>
-                    @if(request('status')=='indisponivel' && !empty($patrimonio->NMPLANTA))
-                    <td class="px-4 py-3">
-                      <button type="button" 
-                        @click.stop="desatribuirItem({{ $patrimonio->NUSEQPATR }})"
-                        class="inline-flex items-center justify-center w-6 h-6 rounded hover:bg-red-100 dark:hover:bg-red-900 text-red-600 dark:text-red-400 transition"
-                        title="Desatribuir este item">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                      </button>
-                    </td>
-                    @endif
                   </tr>
                   @endforeach
                   @empty
