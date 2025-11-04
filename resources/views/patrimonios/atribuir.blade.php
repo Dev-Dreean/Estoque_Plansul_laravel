@@ -633,6 +633,7 @@
           if (!this.codigoTermo || this.selectedPatrimonios.length === 0) return;
           this.atribuindo = true;
           try {
+            console.log('Iniciando atribuição com IDs:', this.selectedPatrimonios);
             const res = await fetch("{{ route('patrimonios.atribuir.processar') }}", {
               method: 'POST',
               headers: {
@@ -644,10 +645,12 @@
                 codigo_termo: this.codigoTermo
               })
             });
+            console.log('Resposta recebida:', res.status, res.ok);
             if (res.ok) {
               const json = await res.json().catch(() => ({
                 updated_ids: this.selectedPatrimonios
               }));
+              console.log('JSON resposta:', json);
               // Atualiza linhas afetadas inline
               this.selectedPatrimonios.forEach(id => {
                 const row = document.querySelector(`tr[data-row-id='${id}']`);
@@ -684,18 +687,19 @@
               }, 3000);
               this.selectedPatrimonios = [];
               this.updateCounter();
-              
-              // Redirecionar para aba de atribuídos após 1.5s
+
+              // Redirecionar para aba de atribuídos após 2s
+              console.log('Redirecionando em 2s para status=indisponivel');
               setTimeout(() => {
-                const currentUrl = new URL(window.location);
-                currentUrl.searchParams.set('status', 'indisponivel');
-                window.location.href = currentUrl.toString();
-              }, 1500);
+                console.log('Executando redirecionamento agora');
+                window.location.href = "{{ route('patrimonios.atribuir.codigos', ['status' => 'indisponivel']) }}";
+              }, 2000);
             } else {
+              console.log('Resposta não OK:', res.status);
               alert('Falha ao atribuir.');
             }
           } catch (e) {
-            console.error(e);
+            console.error('Erro na atribuição:', e);
             alert('Erro inesperado.');
           } finally {
             this.atribuindo = false;
@@ -936,6 +940,10 @@
               }
             });
             this.qtdSelecionados = 0;
+            // Redireciona para aba de atribuídos após 1.5 segundos
+            setTimeout(() => {
+              window.location.href = "{{ route('patrimonios.atribuir.codigos', ['status' => 'indisponivel']) }}";
+            }, 1500);
             this.state = 'generated';
           } catch (e) {
             console.error(e);
