@@ -86,4 +86,21 @@ class PatrimonioPolicy
         // pois o before() retorna true antes.
         return false;
     }
-}
+
+    /**
+     * Quem pode atribuir termo?
+     * God/Admin pode fazer tudo. Usuários comuns podem atribuir patrimônios que são seus.
+     */
+    public function atribuir(User $user): bool
+    {
+        return true;
+    }
+
+    /**
+     * Quem pode desatribuir termo?
+     * God/Admin pode fazer tudo. Usuários comuns podem desatribuir patrimônios que são seus.
+     */
+    public function desatribuir(User $user): bool
+    {
+        return true;
+    }

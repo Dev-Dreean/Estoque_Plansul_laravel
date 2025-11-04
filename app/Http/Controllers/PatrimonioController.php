@@ -1161,6 +1161,9 @@ class PatrimonioController extends Controller
      */
     public function processarAtribuicao(Request $request): RedirectResponse
     {
+        // Verificar autorização de atribuição
+        $this->authorize('atribuir', Patrimonio::class);
+
         // Verificar se é uma operação de desatribuição
         if ($request->filled('desatribuir')) {
             return $this->processarDesatribuicao($request);
@@ -1306,6 +1309,9 @@ class PatrimonioController extends Controller
      */
     private function processarDesatribuicao(Request $request): RedirectResponse
     {
+        // Verificar autorização de desatribuição
+        $this->authorize('desatribuir', Patrimonio::class);
+
         // Log para verificar se o campo ids (ou patrimonios) está faltando ou vazio
         $fieldName = $request->has('ids') ? 'ids' : 'patrimonios';
         if (!$request->has($fieldName) || empty($request->input($fieldName))) {
