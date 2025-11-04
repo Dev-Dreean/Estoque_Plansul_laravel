@@ -472,7 +472,11 @@
         toggleAll(event) {
           const source = event.target;
           const checkboxes = document.querySelectorAll('.patrimonio-checkbox');
-          checkboxes.forEach(cb => cb.checked = source.checked);
+          checkboxes.forEach(cb => {
+            cb.checked = source.checked;
+            // Dispara evento change para notificar o footerAcoes()
+            cb.dispatchEvent(new Event('change', { bubbles: true }));
+          });
           this.updateCounter();
         },
         updateCounter() {
