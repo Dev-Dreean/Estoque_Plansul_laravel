@@ -32,9 +32,30 @@
           <div class="section-body">
             <div class="space-y-6">
               <!-- Filtros (layout replicado do index) -->
-              <div x-data="{ open: false }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6" x-id="['filtro-atribuir']" :aria-expanded="open.toString()" :aria-controls="$id('filtro-atribuir')">
+              <div x-data="{ open: false, temFiltroAtivo: false, textofiltro: '' }"
+                x-init="
+                  const num = document.getElementById('filtro_numero').value;
+                  const desc = document.getElementById('filtro_descricao').value;
+                  const mod = document.getElementById('filtro_modelo').value;
+                  const proj = document.getElementById('filtro_projeto').value;
+                  const termo = document.getElementById('filtro_termo') ? document.getElementById('filtro_termo').value : '';
+                  temFiltroAtivo = num || desc || mod || proj || termo ? true : false;
+                  let partes = [];
+                  if (num) partes.push('Nº=' + num);
+                  if (desc) partes.push('Item=' + desc);
+                  if (mod) partes.push('Modelo=' + mod);
+                  if (proj) partes.push('Projeto=' + proj);
+                  if (termo) partes.push('Termo=' + termo);
+                  textofiltro = partes.join(', ');
+                "
+                @click.outside="open = false" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6" x-id="['filtro-atribuir']" :aria-expanded="open.toString()" :aria-controls="$id('filtro-atribuir')">
                 <div class="flex justify-between items-center">
-                  <h3 class="font-semibold text-lg">Filtros de Busca</h3>
+                  <h3 class="font-semibold text-lg">
+                    Filtros de Busca
+                    <span x-show="temFiltroAtivo" class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-100">
+                      Ativo: <span x-text="textofiltro" class="ml-1"></span>
+                    </span>
+                  </h3>
                   <button type="button" @click="open = !open" aria-expanded="open" aria-controls="$id('filtro-atribuir')" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -44,23 +65,98 @@
                 </div>
                 <div x-show="open" x-transition class="mt-4" x-cloak :id="$id('filtro-atribuir')">
                   <div class="flex flex-row gap-3 sm:gap-4">
+                    @if(request('status') == 'indisponivel')
                     <div class="flex-1 min-w-[150px]">
-                      <input type="text" id="filtro_numero" name="filtro_numero" value="{{ request('filtro_numero') }}" placeholder="Nº Patr." class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                      <input type="text" id="filtro_termo" name="filtro_termo" value="{{ request('filtro_termo') }}" placeholder="Nº Termo" @input="
+                        const num = document.getElementById('filtro_numero').value;
+                        const desc = document.getElementById('filtro_descricao').value;
+                        const mod = document.getElementById('filtro_modelo').value;
+                        const proj = document.getElementById('filtro_projeto').value;
+                        const termo = document.getElementById('filtro_termo').value;
+                        temFiltroAtivo = num || desc || mod || proj || termo ? true : false;
+                        let partes = [];
+                        if (termo) partes.push('Termo=' + termo);
+                        if (num) partes.push('Nº=' + num);
+                        if (desc) partes.push('Item=' + desc);
+                        if (mod) partes.push('Modelo=' + mod);
+                        if (proj) partes.push('Projeto=' + proj);
+                        textofiltro = partes.join(', ');
+                      " class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                    </div>
+                    @endif
+                    <div class="flex-1 min-w-[150px]">
+                      <input type="text" id="filtro_numero" name="filtro_numero" value="{{ request('filtro_numero') }}" placeholder="Nº Patr." @input="
+                        const num = document.getElementById('filtro_numero').value;
+                        const desc = document.getElementById('filtro_descricao').value;
+                        const mod = document.getElementById('filtro_modelo').value;
+                        const proj = document.getElementById('filtro_projeto').value;
+                        const termo = document.getElementById('filtro_termo') ? document.getElementById('filtro_termo').value : '';
+                        temFiltroAtivo = num || desc || mod || proj || termo ? true : false;
+                        let partes = [];
+                        if (termo) partes.push('Termo=' + termo);
+                        if (num) partes.push('Nº=' + num);
+                        if (desc) partes.push('Item=' + desc);
+                        if (mod) partes.push('Modelo=' + mod);
+                        if (proj) partes.push('Projeto=' + proj);
+                        textofiltro = partes.join(', ');
+                      " class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                     </div>
                     <div class="flex-1 min-w-[150px]">
-                      <input type="text" id="filtro_descricao" name="filtro_descricao" value="{{ request('filtro_descricao') }}" placeholder="Descrição" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                      <input type="text" id="filtro_descricao" name="filtro_descricao" value="{{ request('filtro_descricao') }}" placeholder="Item" @input="
+                        const num = document.getElementById('filtro_numero').value;
+                        const desc = document.getElementById('filtro_descricao').value;
+                        const mod = document.getElementById('filtro_modelo').value;
+                        const proj = document.getElementById('filtro_projeto').value;
+                        const termo = document.getElementById('filtro_termo') ? document.getElementById('filtro_termo').value : '';
+                        temFiltroAtivo = num || desc || mod || proj || termo ? true : false;
+                        let partes = [];
+                        if (termo) partes.push('Termo=' + termo);
+                        if (num) partes.push('Nº=' + num);
+                        if (desc) partes.push('Item=' + desc);
+                        if (mod) partes.push('Modelo=' + mod);
+                        if (proj) partes.push('Projeto=' + proj);
+                        textofiltro = partes.join(', ');
+                      " class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                     </div>
                     <div class="flex-1 min-w-[150px]">
-                      <input type="text" id="filtro_modelo" name="filtro_modelo" value="{{ request('filtro_modelo') }}" placeholder="Modelo" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                      <input type="text" id="filtro_modelo" name="filtro_modelo" value="{{ request('filtro_modelo') }}" placeholder="Modelo" @input="
+                        const num = document.getElementById('filtro_numero').value;
+                        const desc = document.getElementById('filtro_descricao').value;
+                        const mod = document.getElementById('filtro_modelo').value;
+                        const proj = document.getElementById('filtro_projeto').value;
+                        const termo = document.getElementById('filtro_termo') ? document.getElementById('filtro_termo').value : '';
+                        temFiltroAtivo = num || desc || mod || proj || termo ? true : false;
+                        let partes = [];
+                        if (termo) partes.push('Termo=' + termo);
+                        if (num) partes.push('Nº=' + num);
+                        if (desc) partes.push('Item=' + desc);
+                        if (mod) partes.push('Modelo=' + mod);
+                        if (proj) partes.push('Projeto=' + proj);
+                        textofiltro = partes.join(', ');
+                      " class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                     </div>
                     <div class="flex-1 min-w-[150px]">
-                      <input type="number" id="filtro_projeto" name="filtro_projeto" value="{{ request('filtro_projeto') }}" placeholder="Cód. Projeto" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                      <input type="number" id="filtro_projeto" name="filtro_projeto" value="{{ request('filtro_projeto') }}" placeholder="Cód. Projeto" @input="
+                        const num = document.getElementById('filtro_numero').value;
+                        const desc = document.getElementById('filtro_descricao').value;
+                        const mod = document.getElementById('filtro_modelo').value;
+                        const proj = document.getElementById('filtro_projeto').value;
+                        const termo = document.getElementById('filtro_termo') ? document.getElementById('filtro_termo').value : '';
+                        temFiltroAtivo = num || desc || mod || proj || termo ? true : false;
+                        let partes = [];
+                        if (termo) partes.push('Termo=' + termo);
+                        if (num) partes.push('Nº=' + num);
+                        if (desc) partes.push('Item=' + desc);
+                        if (mod) partes.push('Modelo=' + mod);
+                        if (proj) partes.push('Projeto=' + proj);
+                        textofiltro = partes.join(', ');
+                      " class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                     </div>
                   </div>
                   <div class="flex flex-wrap items-center justify-between mt-4 gap-4">
                     <div class="flex items-center gap-3">
                       <button type="button" @click="aplicarFiltros()" class="btn-accent h-10">Filtrar</button>
-                      <a href="{{ route('patrimonios.atribuir.codigos') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">Ir para nova página</a>
+                      <a href="{{ route('patrimonios.atribuir.codigos') }}" @click="temFiltroAtivo = false; open = false" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">Limpar</a>
                     </div>
                     <label class="flex items-center gap-2 ml-auto shrink-0">
                       <span class="text-sm text-gray-700 dark:text-gray-300">Itens por página</span>
@@ -77,8 +173,8 @@
               <div class="flex flex-wrap items-center mb-4 gap-3 w-full" x-data="{ }">
                 <!-- Esquerda: Disponíveis/Atribuídos -->
                 <div class="flex flex-wrap items-center gap-3">
-                  <a href="{{ route('patrimonios.atribuir.codigos', array_merge(request()->except('page','status'), ['status'=>'disponivel'])) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status','disponivel')=='disponivel' ? 'bg-green-600 text-white border-green-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-green-600/10' }}">Disponíveis</a>
-                  <a href="{{ route('patrimonios.atribuir.codigos', array_merge(request()->except('page','status'), ['status'=>'indisponivel'])) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status')=='indisponivel' ? 'bg-red-600 text-white border-red-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-red-600/10' }}">Atribuídos</a>
+                  <a href="{{ route('patrimonios.atribuir.codigos', ['status'=>'disponivel']) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status','disponivel')=='disponivel' ? 'bg-green-600 text-white border-green-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-green-600/10' }}">Disponíveis</a>
+                  <a href="{{ route('patrimonios.atribuir.codigos', ['status'=>'indisponivel']) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status')=='indisponivel' ? 'bg-red-600 text-white border-red-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-red-600/10' }}">Atribuídos</a>
                 </div>
 
                 <!-- Centro: contador quando houver seleção -->
@@ -86,20 +182,6 @@
                 <template x-if="selectedPatrimonios.length > 0">
                   <span id="contador-selecionados-tabs" class="text-[11px] text-muted" x-text="contadorTexto"></span>
                 </template>
-
-                <!-- Direita: Gerar Planilha Termo e Termo DOCX -->
-                <div class="ml-auto flex gap-2">
-                  <button type="button" @click="$dispatch('open-termo-modal')" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center" title="Gerar Planilha Termo">
-                    <x-heroicon-o-printer class="w-5 h-5 mr-2" />
-                    <span>Gerar Planilha Termo</span>
-                  </button>
-                  @if(request('status')=='indisponivel')
-                  <button type="button" @click="downloadTermoDocx()" x-show="selectedPatrimonios.length > 0" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center" title="Baixar Termo de Responsabilidade (DOCX)">
-                    <x-heroicon-o-document-text class="w-5 h-5 mr-2" />
-                    <span>Termo DOCX</span>
-                  </button>
-                  @endif
-                </div>
               </div>
 
               <!-- Forms para geração e atribuição direta de códigos -->
@@ -119,7 +201,7 @@
               <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
                 {{-- MODO DISPONÍVEIS: Tabela Normal --}}
                 @if(!request('status') || request('status')=='disponivel')
-                <thead class="text-xs text-gray-100 uppercase bg-gray-700 dark:bg-gray-700 dark:text-gray-100 border-b border-gray-600 dark:border-gray-600">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-600 dark:text-gray-100">
                   <tr>
                     <th class="px-4 py-3" style="width: 50px;">
                       <input type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600" @change="toggleAll($event)">
@@ -173,57 +255,57 @@
                   $grupo_id = 'grupo_' . ($grupo_codigo === '__sem_termo__' ? 'sem_termo' : $grupo_codigo);
                   $item_count = $grupo_patrimonios->count();
                   $is_sem_termo = $grupo_codigo === '__sem_termo__';
-                  
+
                   // Agrupar por DEPATRIMONIO + MODELO para mostrar quantidade
                   $grupo_patrimonios_agrupado = $grupo_patrimonios->groupBy(function($item) {
-                      return $item->DEPATRIMONIO . '|' . ($item->MODELO ?? '');
+                  return $item->DEPATRIMONIO . '|' . ($item->MODELO ?? '');
                   })->map(function($items) {
-                      return [
-                          'quantidade' => $items->count(),
-                          'items' => $items,
-                          'primeiro' => $items->first()
-                      ];
+                  return [
+                  'quantidade' => $items->count(),
+                  'items' => $items,
+                  'primeiro' => $items->first()
+                  ];
                   });
                   @endphp
 
                   {{-- Cabeçalho Colapsável do Grupo --}}
-                  <tr class="group-header border-b-2 border-gray-200 dark:border-gray-700 dark:hover:bg-gray-800 transition cursor-pointer bg-gray-300"
+                  <tr class="group-header border-b-2 border-gray-200 dark:border-gray-700 transition cursor-pointer bg-white dark:bg-white hover:bg-gray-50 dark:hover:bg-gray-50 shadow-sm"
                     data-group-id="{{ $grupo_id }}"
                     @click="toggleGroup('{{ $grupo_id }}')"
                     :data-expanded="groupState['{{ $grupo_id }}'] === true ? 'true' : 'false'">
-                    <td colspan="5" class="px-4 py-4 bg-gray-300">
+                    <td colspan="5" class="px-4 py-4 bg-white dark:bg-white border-l-4 border-indigo-400 dark:border-indigo-400">
                       <div class="flex items-center justify-between gap-4">
                         {{-- Ícone de Expandir + Info do Grupo --}}
                         <div class="flex items-center gap-4 flex-1 min-w-0">
                           <button type="button"
-                            class="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition transform"
+                            class="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-md border-2 border-indigo-400 dark:border-indigo-400 bg-white dark:bg-white hover:bg-indigo-50 dark:hover:bg-indigo-50 transition transform"
                             :class="{ 'rotate-180': groupState['{{ $grupo_id }}'] === true }"
                             @click.stop="toggleGroup('{{ $grupo_id }}')">
-                            <svg class="w-4 h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 text-indigo-400 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
                           </button>
 
                           <div class="flex items-center gap-3 flex-1 min-w-0">
                             @if(!$is_sem_termo)
-                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-gray-700 dark:bg-gray-700 border border-gray-600 dark:border-gray-600 flex-shrink-0">
-                              <span class="text-sm font-semibold text-gray-100 dark:text-gray-100">Termo {{ $grupo_codigo }}</span>
+                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white dark:bg-white text-gray-900 dark:text-gray-900 border-2 border-gray-400 dark:border-gray-400 flex-shrink-0">
+                              <span class="text-sm font-semibold text-gray-900 dark:text-gray-900">Termo {{ $grupo_codigo }}</span>
                             </span>
                             @else
-                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-100 dark:bg-amber-900 border border-amber-300 dark:border-amber-700 flex-shrink-0">
-                              <span class="text-sm font-semibold text-amber-900 dark:text-amber-100">Sem Termo</span>
+                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white dark:bg-white border-2 border-amber-300 dark:border-amber-300 flex-shrink-0">
+                              <span class="text-sm font-semibold text-amber-900 dark:text-amber-900">Sem Termo</span>
                             </span>
                             @endif
 
                             {{-- Lista de itens como badges individuais --}}
                             <div class="flex flex-wrap gap-2 flex-shrink">
                               @foreach($grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->take(5) as $item)
-                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-purple-900/40 dark:bg-purple-900/40 text-purple-200 dark:text-purple-200 border border-purple-600/50 dark:border-purple-600/50 whitespace-nowrap">
+                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-white text-gray-900 dark:text-gray-900 border border-gray-300 dark:border-gray-300 whitespace-nowrap">
                                 {{ Str::limit($item, 30) }}
                               </span>
                               @endforeach
                               @if($grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->count() > 5)
-                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-700 dark:bg-gray-700 text-gray-200 dark:text-gray-200 border border-gray-600/50 dark:border-gray-600/50">
+                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-white text-gray-900 dark:text-gray-900 border border-gray-300 dark:border-gray-300">
                                 +{{ $grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->count() - 5 }} mais
                               </span>
                               @endif
@@ -234,32 +316,43 @@
                         {{-- Botões de Ação (Baixar e Desatribuir) --}}
                         <div class="flex-shrink-0 flex gap-2 items-center">
                           {{-- Badge de Quantidade --}}
-                          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-transparent dark:bg-transparent border-2 border-white dark:border-white">
-                            <span class="text-sm font-bold text-purple-300 dark:text-purple-300">{{ $item_count }}</span>
-                            <span class="text-xs font-semibold text-purple-300 dark:text-purple-300">{{ $item_count === 1 ? 'item' : 'itens' }}</span>
+                          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-white border-2 border-gray-300 dark:border-gray-300">
+                            <span class="text-sm font-bold text-gray-900 dark:text-gray-900">{{ $item_count }}</span>
+                            <span class="text-xs font-semibold text-gray-900 dark:text-gray-900">{{ $item_count === 1 ? 'item' : 'itens' }}</span>
                           </span>
 
                           @if(!$is_sem_termo && $grupo_patrimonios->first()?->CDMATRFUNCIONARIO)
-                          {{-- Botão Baixar - Um único botão que baixa TODOS os itens do termo em ZIP --}}
+                          {{-- Botão Baixar Documento Termo (Word - Azul Office) --}}
                           <button type="button"
                             @click.stop="downloadTermoGrupo([{{ $grupo_patrimonios->pluck('NUSEQPATR')->join(',') }}])"
-                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-100 dark:text-gray-100 bg-blue-700 dark:bg-blue-800 rounded-lg border border-blue-600 dark:border-blue-700 hover:bg-blue-800 dark:hover:bg-blue-900 transition whitespace-nowrap"
+                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-600 bg-white dark:bg-white rounded-lg border-2 border-blue-600 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-50 transition whitespace-nowrap"
                             title="Baixar documento de termo com todos os itens">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
-                            <span>Baixar Termo</span>
+                            <span>Baixar Documento Termo</span>
                           </button>
 
-                          {{-- Botão Desatribuir --}}
+                          {{-- Botão Baixar Planilha Termo (Excel - Verde Office) --}}
+                          <button type="button"
+                            @click.stop="downloadPlanilhaTermo([{{ $grupo_patrimonios->pluck('NUSEQPATR')->join(',') }}], '{{ $grupo_codigo }}')"
+                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-green-600 dark:text-green-600 bg-white dark:bg-white rounded-lg border-2 border-green-600 dark:border-green-600 hover:bg-green-50 dark:hover:bg-green-50 transition whitespace-nowrap"
+                            title="Baixar planilha com todos os itens do termo">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span>Baixar Planilha Termo</span>
+                          </button>
+
+                          {{-- Botão Desatribuir Termo (Vermelho) --}}
                           <button type="button"
                             @click.stop="desatribuirGrupo([{{ $grupo_patrimonios->pluck('NUSEQPATR')->join(',') }}])"
-                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-100 dark:text-gray-100 bg-red-700 dark:bg-red-800 rounded-lg border border-red-600 dark:border-red-700 hover:bg-red-800 dark:hover:bg-red-900 transition whitespace-nowrap"
-                            title="Desatribuir todos os itens do termo">
+                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-600 bg-white dark:bg-white rounded-lg border-2 border-red-600 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-50 transition whitespace-nowrap"
+                            title="Desatribuir todos os itens deste termo">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
-                            <span>Desatribuir</span>
+                            <span>Desatribuir Termo</span>
                           </button>
                           @endif
                         </div>
@@ -279,7 +372,7 @@
                     <th class="px-4 py-3">Nº Pat.</th>
                     <th class="px-4 py-3">Itens</th>
                     <th class="px-4 py-3">Modelo</th>
-                    <th class="px-4 py-3" colspan="2">Ação</th>
+                    <th class="px-4 py-3" colspan="2">Qntd</th>
                   </tr>
 
                   {{-- Detalhes do Grupo (Linhas dos Itens Agrupados por Descrição+Modelo) --}}
@@ -291,13 +384,8 @@
                     style="display: none;">
                     <td class="px-4 py-3 text-gray-500 dark:text-gray-400">
                       <div class="flex items-center justify-center">
-                        @if((!request('status') || request('status')=='disponivel') && empty($grupo_dados['primeiro']->NMPLANTA))
-                        <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
-                          type="checkbox" name="ids[]" value="{{ $grupo_dados['primeiro']->NUSEQPATR }}" @change="updateCounter()">
-                        @elseif(request('status')=='indisponivel' && !empty($grupo_dados['primeiro']->NMPLANTA))
-                        <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
-                          type="checkbox" name="ids[]" value="{{ $grupo_dados['primeiro']->NUSEQPATR }}" @change="updateCounter()">
-                        @endif
+                        <input class="grupo-item-checkbox h-4 w-4 rounded border-gray-400 dark:border-gray-400 text-indigo-600 focus:ring-indigo-600"
+                          type="checkbox" data-grupo-id="{{ $grupo_id }}" value="{{ $grupo_dados['primeiro']->NUSEQPATR }}" @change="updateGroupSelection('{{ $grupo_id }}')">
                       </div>
                     </td>
                     <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
@@ -314,17 +402,6 @@
                         <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 text-xs font-bold min-w-fit">
                           {{ $grupo_dados['quantidade'] }}
                         </span>
-                        @if(request('status')=='indisponivel' && !empty($grupo_dados['primeiro']->NMPLANTA))
-                        <button type="button" 
-                          @click.stop="desatribuirItem({{ $grupo_dados['primeiro']->NUSEQPATR }})"
-                          class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-100 dark:text-gray-100 bg-red-700 dark:bg-red-800 rounded-lg border border-red-600 dark:border-red-700 hover:bg-red-800 dark:hover:bg-red-900 transition whitespace-nowrap"
-                          title="Desatribuir este item">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                          </svg>
-                          <span>Desatribuir</span>
-                        </button>
-                        @endif
                       </div>
                     </td>
                   </tr>
@@ -363,23 +440,7 @@
   </div><!-- /w-full wrapper -->
   </div><!-- /py-12 wrapper -->
 
-  {{-- Modal: Gerar Planilha por Termo --}}
-  <div x-data="{ open:false }" @open-termo-modal.window="open=true" x-show="open" x-transition class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">
-    <div @click.outside="open = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6">
-      <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Gerar Planilha por Termo</h3>
-      <form action="{{ route('termos.exportar.excel') }}" method="POST" @submit="open=false">
-        @csrf
-        <div class="mb-4">
-          <label for="cod_termo" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Cód Termo:</label>
-          <input type="number" id="cod_termo" name="cod_termo" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" required>
-        </div>
-        <div class="flex justify-end gap-2">
-          <button type="button" @click="open = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Sair</button>
-          <x-primary-button type="submit">Gerar</x-primary-button>
-        </div>
-      </form>
-    </div>
-  </div>
+
 
   <!-- Modal de Confirmação de Atribuição (encapsulado em x-data isolado para não gerar erros se não usado) -->
   <div x-data="{showConfirmModal:false, selectedPatrimonios:[], codigoTermo:''}" x-show="showConfirmModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -432,7 +493,7 @@
   <script>
     function atribuirPage() {
       return {
-        // AnimaÃ§Ã£o custom: classe usada: animate-fadeInScale
+        // Animação custom: classe usada: animate-fadeInScale
         showFilters: false,
         showConfirmModal: false,
         showDesatribuirModal: false,
@@ -446,7 +507,8 @@
         erroCodigo: false,
         gerandoCodigo: false,
         groupState: {}, // Estado dos grupos (expandido/colapsado)
-        // Estados de listagem de cÃ³digos removidos (modal removido)
+        grupoSelecionados: {}, // Itens selecionados por grupo
+        // Estados de listagem de códigos removidos (modal removido)
         init() {
           this.updateCounter();
           // ESC para fechar popover e modais leves
@@ -455,6 +517,41 @@
               if (this.showCodigosModal) this.showCodigosModal = false;
             }
           });
+
+          // Monitora mudança de status (disponivel -> indisponivel) para cancelar código não utilizado
+          window.addEventListener('beforeunload', () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('status') === 'indisponivel') {
+              // Se navegando para Atribuídos, cancelar código via footer
+              const footerElement = document.querySelector('[x-data*="footerAcoes"]');
+              if (footerElement && footerElement.__x) {
+                footerElement.__x.$data.cancelar();
+              }
+            }
+          });
+
+          // Monitora seleções para mostrar/esconder o footer com background
+          const updateFooterVisibility = () => {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"][name="ids[]"]:checked, input.patrimonio-checkbox:checked, input.grupo-item-checkbox:checked');
+            const htmlElement = document.documentElement;
+            if (checkboxes.length > 0) {
+              htmlElement.classList.add('with-visible-footer');
+              htmlElement.classList.remove('without-visible-footer');
+            } else {
+              htmlElement.classList.add('without-visible-footer');
+              htmlElement.classList.remove('with-visible-footer');
+            }
+          };
+
+          // Listener para todas as mudanças de checkbox
+          document.addEventListener('change', (e) => {
+            if (e.target.matches('input[type="checkbox"]')) {
+              updateFooterVisibility();
+            }
+          });
+
+          // Verificação inicial
+          updateFooterVisibility();
         },
         syncCodigoTermo(value) {
           this.codigoTermo = value;
@@ -462,16 +559,18 @@
         aplicarFiltros() {
           const params = new URLSearchParams(window.location.search);
           // Limpa filtros antigos para reconstruir
-          ['filtro_numero', 'filtro_descricao', 'filtro_modelo', 'filtro_projeto', 'per_page'].forEach(k => params.delete(k));
+          ['filtro_numero', 'filtro_descricao', 'filtro_modelo', 'filtro_projeto', 'filtro_termo', 'per_page'].forEach(k => params.delete(k));
           const numero = document.getElementById('filtro_numero')?.value;
           const descricao = document.getElementById('filtro_descricao')?.value;
           const modelo = document.getElementById('filtro_modelo')?.value;
           const projeto = document.getElementById('filtro_projeto')?.value;
+          const termo = document.getElementById('filtro_termo')?.value;
           const perPage = document.getElementById('per_page')?.value;
           if (numero) params.set('filtro_numero', numero);
           if (descricao) params.set('filtro_descricao', descricao);
           if (modelo) params.set('filtro_modelo', modelo);
           if (projeto) params.set('filtro_projeto', projeto);
+          if (termo) params.set('filtro_termo', termo);
           if (perPage) params.set('per_page', perPage);
           else params.delete('per_page');
           window.location.href = '{{ route("patrimonios.atribuir.codigos") }}?' + params.toString();
@@ -576,6 +675,91 @@
           } catch (e) {
             console.error('Erro ao gerar termo DOCX do grupo:', e);
             alert('Erro ao gerar documento. Tente novamente.');
+          }
+        },
+        async downloadPlanilhaTermo(ids, codigoTermo) {
+          if (!ids || ids.length === 0) {
+            alert('Nenhum patrimônio disponível para download.');
+            return;
+          }
+
+          try {
+            // Criar form oculto para POST com os IDs do grupo
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route("termos.exportar.excel") }}';
+            form.style.display = 'none';
+
+            // CSRF Token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = '{{ csrf_token() }}';
+            form.appendChild(csrfInput);
+
+            // Código do termo
+            const codigoInput = document.createElement('input');
+            codigoInput.type = 'hidden';
+            codigoInput.name = 'cod_termo';
+            codigoInput.value = codigoTermo;
+            form.appendChild(codigoInput);
+
+            // IDs dos patrimônios do grupo
+            ids.forEach(id => {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = 'ids[]';
+              input.value = id;
+              form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+
+            // Remover form após submit
+            setTimeout(() => form.remove(), 100);
+          } catch (e) {
+            console.error('Erro ao gerar planilha termo:', e);
+            alert('Erro ao gerar planilha. Tente novamente.');
+          }
+        },
+        async gerarPlanilhaTermo() {
+          if (this.selectedPatrimonios.length === 0) {
+            alert('Selecione pelo menos um patrimônio para gerar a planilha.');
+            return;
+          }
+
+          try {
+            // Criar form oculto para POST com os IDs selecionados
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route("termos.exportar.excel") }}';
+            form.style.display = 'none';
+
+            // CSRF Token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = '{{ csrf_token() }}';
+            form.appendChild(csrfInput);
+
+            // IDs dos patrimônios selecionados
+            this.selectedPatrimonios.forEach(id => {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = 'ids[]';
+              input.value = id;
+              form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+
+            // Remover form após submit
+            setTimeout(() => form.remove(), 100);
+          } catch (e) {
+            console.error('Erro ao gerar planilha termo:', e);
+            alert('Erro ao gerar planilha. Tente novamente.');
           }
         },
         async desatribuirGrupo(ids) {
@@ -708,6 +892,23 @@
           // Enviar formulário normalmente
           form.submit();
         },
+        updateGroupSelection(grupoId) {
+          // Obter todos os checkboxes do grupo
+          const checkboxes = document.querySelectorAll(`input.grupo-item-checkbox[data-grupo-id="${grupoId}"]:checked`);
+          const ids = Array.from(checkboxes).map(cb => cb.value);
+
+          // Atualizar o estado de seleção do grupo
+          if (ids.length > 0) {
+            this.grupoSelecionados[grupoId] = ids;
+          } else {
+            delete this.grupoSelecionados[grupoId];
+          }
+
+          // Forçar reatividade
+          this.grupoSelecionados = {
+            ...this.grupoSelecionados
+          };
+        },
         toggleGroup(groupId) {
           this.groupState[groupId] = !this.groupState[groupId];
           this.$nextTick(() => {
@@ -721,31 +922,72 @@
       }
     }
   </script>
-  <!-- Modal de cÃ³digos ativo (popover legado removido) -->
+  <style>
+    @keyframes slideUpIn {
+      from {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideDownOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      to {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+    }
+
+    .footer-slide-in {
+      animation: slideUpIn 0.3s ease-out forwards;
+      display: flex !important;
+    }
+
+    .footer-slide-out {
+      animation: slideDownOut 0.3s ease-out forwards;
+      display: none !important;
+    }
+
+    /* Controlar visibilidade do footer (background cinza) */
+    .site-footer {
+      transition: opacity 0.3s ease-out;
+    }
+
+    /* Quando há seleção, mostrar footer */
+    .with-visible-footer .site-footer {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Quando não há seleção, esconder footer */
+    .without-visible-footer .site-footer {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    [x-cloak] {
+      display: none !important;
+    }
+  </style>
+  <!-- Modal de códigos ativo (popover legado removido) -->
   @section('footer-actions')
   @if(!request('status') || request('status')=='disponivel')
-  <div x-data="footerAcoes()" x-init="init()" class="flex items-center justify-end gap-4">
-    <template x-if="state==='idle'">
+  <div x-data="footerAcoes()" x-init="init()"
+    :class="qtdSelecionados > 0 ? 'footer-slide-in' : 'footer-slide-out'"
+    x-show="qtdSelecionados > 0"
+    class="flex items-center justify-end gap-4">
+    <template x-if="generatedCode">
       <div class="flex items-center gap-3 flex-wrap">
-        <div class="flex items-center gap-3">
-          <button type="button" @click="gerar()" class="btn-accent" :disabled="loading">
-            <span x-show="!loading">+ Gerar Código</span>
-            <span x-show="loading" class="inline-flex items-center gap-2">
-              <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-              </svg>
-              Gerando...
-            </span>
-          </button>
-          <p class="text-xs text-gray-300">Clique em Gerar para criar ou reutilizar um código disponível.</p>
-        </div>
-      </div>
-    </template>
-
-    <template x-if="state!=='idle'">
-      <div class="flex items-center gap-3 flex-wrap">
-        <span class="code-badge" x-text="generatedCode"></span>
+        <span class="code-badge px-4 py-2 rounded-lg bg-indigo-600 text-white font-bold text-lg" x-text="generatedCode"></span>
         <div class="flex items-center gap-2">
           <button type="button" @click="atribuir()" class="btn-green" :disabled="qtdSelecionados===0 || state!=='generated'">
             <span x-show="state==='generated'">✓ Atribuir</span>
@@ -757,14 +999,17 @@
               Atribuindo...
             </span>
           </button>
-          <p class="text-xs text-gray-300" x-show="state==='generated'">Selecione os patrimônios e clique em Atribuir.</p>
+          <p class="text-sm font-bold text-white uppercase" x-show="state==='generated'">Selecione os patrimônios e clique em Atribuir.</p>
         </div>
       </div>
     </template>
   </div>
   @endif
   @if(request('status')=='indisponivel')
-  <div x-data="footerDesatribuir()" x-init="init()" class="flex items-center justify-end gap-4">
+  <div x-data="footerDesatribuir()" x-init="init()"
+    :class="qtdSelecionados > 0 ? 'footer-slide-in' : 'footer-slide-out'"
+    x-show="qtdSelecionados > 0"
+    class="flex items-center justify-end gap-4">
     <div class="flex items-center gap-3 flex-wrap">
       <button type="button" @click="executar()" class="btn-red flex items-center gap-2" :disabled="qtdSelecionados===0 || state==='processing'">
         <span x-show="state==='idle'">Desatribuir</span>
@@ -776,7 +1021,7 @@
           Processando...
         </span>
       </button>
-      <p class="text-xs text-gray-300" x-show="state==='idle'">Selecione os patrimônios e clique em Desatribuir.</p>
+      <p class="text-sm font-bold text-white uppercase" x-show="state==='idle'">Selecione os patrimônios e clique em Desatribuir.</p>
     </div>
   </div>
   @endif
@@ -790,19 +1035,45 @@
         qtdSelecionados: 0,
         init() {
           this.wireCheckboxListener();
+          // Auto-gerar código ao inicializar
+          this.gerarAutomatico();
         },
         wireCheckboxListener() {
           const update = () => {
             this.qtdSelecionados = document.querySelectorAll("input.patrimonio-checkbox[name='ids[]']:checked").length;
-            // Auto-gerar código quando houver seleção
-            if (this.qtdSelecionados > 0 && !this.generatedCode && this.state === 'idle') {
-              this.gerar();
+            // Mudar para estado 'generated' quando houver seleção
+            if (this.qtdSelecionados > 0 && this.generatedCode && this.state === 'idle') {
+              this.state = 'generated';
+            } else if (this.qtdSelecionados === 0 && this.state === 'generated') {
+              this.state = 'idle';
             }
           };
           document.addEventListener('change', e => {
             if (e.target.matches("input.patrimonio-checkbox[name='ids[]']")) update();
           });
           update();
+        },
+        async gerarAutomatico() {
+          this.loading = true;
+          try {
+            const res = await fetch("{{ route('patrimonios.gerarCodigo') }}", {
+              method: 'POST',
+              headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+              }
+            });
+            if (!res.ok) throw new Error('fail');
+            const json = await res.json();
+            this.generatedCode = json.code;
+            this.state = 'generated';
+          } catch (e) {
+            console.error(e);
+            // Se falhar, deixa em estado idle para o usuário tentar manualmente
+            this.state = 'idle';
+          } finally {
+            this.loading = false;
+          }
         },
         async gerar() {
           this.loading = true;
@@ -863,8 +1134,8 @@
               }
             });
             this.qtdSelecionados = 0;
-            // Redireciona imediatamente para aba de atribuídos
-            window.location.href = "{{ route('patrimonios.atribuir.codigos', ['status' => 'indisponivel']) }}";
+            // Redireciona imediatamente para aba de atribuídos COM filtro do termo criado
+            window.location.href = "{{ route('patrimonios.atribuir.codigos') }}?status=indisponivel&filtro_termo=" + this.generatedCode;
             this.state = 'generated';
           } catch (e) {
             console.error(e);
@@ -873,6 +1144,7 @@
           }
         },
         cancelar() {
+          // Limpar código local (ele será descartado no backend após expiração)
           this.generatedCode = null;
           this.state = 'idle';
         }
@@ -888,10 +1160,12 @@
         },
         wire() {
           const u = () => {
-            this.qtdSelecionados = document.querySelectorAll("input.patrimonio-checkbox[name='ids[]']:checked").length;
+            // Contar checkboxes dos grupos (modo atribuídos)
+            const grupoCheckboxes = document.querySelectorAll("input.grupo-item-checkbox:checked").length;
+            this.qtdSelecionados = grupoCheckboxes;
           };
           document.addEventListener('change', e => {
-            if (e.target.matches("input.patrimonio-checkbox[name='ids[]']")) u();
+            if (e.target.matches("input.grupo-item-checkbox")) u();
           });
           u();
         },
@@ -899,7 +1173,15 @@
           if (this.qtdSelecionados === 0) return;
           this.state = 'processing';
           try {
-            const ids = Array.from(document.querySelectorAll("input.patrimonio-checkbox[name='ids[]']:checked")).map(cb => cb.value);
+            // Coletar IDs dos checkboxes de grupo (modo atribuídos)
+            const ids = Array.from(document.querySelectorAll("input.grupo-item-checkbox:checked")).map(cb => cb.value);
+
+            if (ids.length === 0) {
+              alert('Nenhum item selecionado');
+              this.state = 'idle';
+              return;
+            }
+
             const res = await fetch("{{ route('patrimonios.desatribuirCodigo') }}", {
               method: 'POST',
               headers: {
@@ -917,44 +1199,9 @@
               this.state = 'idle';
               return;
             }
-            json.updated_ids.forEach(id => {
-              const row = document.querySelector(`tr[data-row-id='${id}']`);
-              if (row) {
-                const status = row.children[4];
-                if (status) {
-                  status.innerHTML = '<span class="badge-green">Disponível</span>';
-                }
-                const codigo = row.children[5];
-                if (codigo) {
-                  codigo.innerHTML = '<span class="text-muted">—</span>';
-                }
-                row.classList.add('row-just-updated');
-                setTimeout(() => row.classList.remove('row-just-updated'), 3000);
-                const cbCell = row.children[0];
-                if (cbCell && !cbCell.querySelector('input')) {
-                  const input = document.createElement('input');
-                  input.type = 'checkbox';
-                  input.className = 'patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600';
-                  input.name = 'ids[]';
-                  input.value = id;
-                  cbCell.appendChild(input);
-                }
-                // Se estamos na aba de itens atribuídos (indisponivel) removemos a linha para que suma imediatamente
-                if (new URLSearchParams(window.location.search).get('status') === 'indisponivel') {
-                  const tbody = row.parentElement;
-                  row.remove();
-                  // Se ficou vazio, insere linha de "nenhum"
-                  if (tbody && tbody.children.length === 0) {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = '<td colspan="6" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-300">Nenhum patrimônio atribuído restante.</td>';
-                    tbody.appendChild(tr);
-                  }
-                }
-              }
-            });
-            this.limparSelecao();
-            // Redireciona imediatamente para página de disponíveis
-            window.location.href = "{{ route('patrimonios.atribuir.codigos', ['status' => 'disponivel']) }}";
+
+            // Redireciona imediatamente para atualizar a página
+            window.location.href = "{{ route('patrimonios.atribuir.codigos', ['status' => 'indisponivel']) }}";
           } catch (e) {
             console.error(e);
             alert('Erro inesperado');

@@ -1052,6 +1052,7 @@ class PatrimonioController extends Controller
 
         // Filtro por status - default volta a 'disponivel'
         $status = $request->get('status', 'disponivel');
+        Log::info('🔍 Filtro Status: ' . $status);
 
         if ($status === 'disponivel') {
             // Patrimônios sem código de termo (campo integer => apenas null significa "sem")
@@ -1064,20 +1065,30 @@ class PatrimonioController extends Controller
 
         // Aplicar filtros se fornecidos
         if ($request->filled('filtro_numero')) {
+            Log::info('🔍 Filtro Número: ' . $request->filtro_numero);
             $query->where('NUPATRIMONIO', 'like', '%' . $request->filtro_numero . '%');
         }
 
         if ($request->filled('filtro_descricao')) {
+            Log::info('🔍 Filtro Descrição: ' . $request->filtro_descricao);
             $query->where('DEPATRIMONIO', 'like', '%' . $request->filtro_descricao . '%');
         }
 
         if ($request->filled('filtro_modelo')) {
+            Log::info('🔍 Filtro Modelo: ' . $request->filtro_modelo);
             $query->where('MODELO', 'like', '%' . $request->filtro_modelo . '%');
         }
 
         // Filtro por projeto para atribuição/termo
         if ($request->filled('filtro_projeto')) {
+            Log::info('🔍 Filtro Projeto: ' . $request->filtro_projeto);
             $query->where('CDPROJETO', $request->filtro_projeto);
+        }
+
+        // Filtro por termo (apenas na aba atribuidos)
+        if ($request->filled('filtro_termo')) {
+            Log::info('🔍 Filtro Termo: ' . $request->filtro_termo);
+            $query->where('NMPLANTA', $request->filtro_termo);
         }
 
         // Ordenação
@@ -1090,6 +1101,9 @@ class PatrimonioController extends Controller
         if ($perPage > 100) $perPage = 100;
 
         $patrimonios = $query->paginate($perPage);
+
+        Log::info('📊 Total de patrimônios após filtro: ' . $patrimonios->total() . ' (Página ' . $patrimonios->currentPage() . ')');
+        Log::info('📋 Patrimônios nesta página: ' . count($patrimonios));
 
         // Agrupar por NMPLANTA para exibição
         $patrimonios_grouped = $patrimonios->groupBy(function ($item) {
@@ -1121,6 +1135,8 @@ class PatrimonioController extends Controller
         }
 
         $status = $request->get('status', 'disponivel');
+        Log::info('[atribuirCodigos] 🔍 Filtro Status: ' . $status);
+
         if ($status === 'disponivel') {
             $query->whereNull('NMPLANTA');
         } elseif ($status === 'indisponivel') {
@@ -1128,16 +1144,24 @@ class PatrimonioController extends Controller
         }
 
         if ($request->filled('filtro_numero')) {
+            Log::info('[atribuirCodigos] 🔍 Filtro Número: ' . $request->filtro_numero);
             $query->where('NUPATRIMONIO', 'like', '%' . $request->filtro_numero . '%');
         }
         if ($request->filled('filtro_descricao')) {
+            Log::info('[atribuirCodigos] 🔍 Filtro Descrição: ' . $request->filtro_descricao);
             $query->where('DEPATRIMONIO', 'like', '%' . $request->filtro_descricao . '%');
         }
         if ($request->filled('filtro_modelo')) {
+            Log::info('[atribuirCodigos] 🔍 Filtro Modelo: ' . $request->filtro_modelo);
             $query->where('MODELO', 'like', '%' . $request->filtro_modelo . '%');
         }
         if ($request->filled('filtro_projeto')) {
+            Log::info('[atribuirCodigos] 🔍 Filtro Projeto: ' . $request->filtro_projeto);
             $query->where('CDPROJETO', $request->filtro_projeto);
+        }
+        if ($request->filled('filtro_termo')) {
+            Log::info('[atribuirCodigos] 🔍 Filtro Termo: ' . $request->filtro_termo);
+            $query->where('NMPLANTA', $request->filtro_termo);
         }
 
         $query->orderBy('NMPLANTA', 'asc');
@@ -1146,6 +1170,9 @@ class PatrimonioController extends Controller
         if ($perPage < 10) $perPage = 10;
         if ($perPage > 100) $perPage = 100;
         $patrimonios = $query->paginate($perPage);
+
+        Log::info('[atribuirCodigos] 📊 Total de patrimônios após filtro: ' . $patrimonios->total() . ' (Página ' . $patrimonios->currentPage() . ')');
+        Log::info('[atribuirCodigos] 📋 Patrimônios nesta página: ' . count($patrimonios));
 
         // Agrupar por NMPLANTA para exibição
         $patrimonios_grouped = $patrimonios->groupBy(function ($item) {
