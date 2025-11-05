@@ -41,12 +41,14 @@ class RelatorioController extends Controller
 
             // Validação base (não força campos condicionais aqui para permitir mensagens personalizadas)
             $base = $request->validate([
-                'tipo_relatorio' => 'required|string|in:numero,descricao,aquisicao,cadastro,projeto,oc',
+                'tipo_relatorio' => 'required|string|in:numero,descricao,aquisicao,cadastro,projeto,oc,uf,situacao',
                 'numero_busca' => 'nullable|integer',
                 'descricao_busca' => 'nullable|string',
                 'sort_direction' => 'nullable|in:asc,desc',
                 'projeto_busca' => 'nullable|string', // lista de códigos separados por vírgula
                 'oc_busca' => 'nullable|string',
+                'uf_busca' => 'nullable|string|size:2', // UF com 2 caracteres
+                'situacao_busca' => 'nullable|string',
                 'data_inicio_aquisicao' => 'nullable|date',
                 'data_fim_aquisicao' => 'nullable|date',
                 'data_inicio_cadastro' => 'nullable|date',
@@ -79,6 +81,12 @@ class RelatorioController extends Controller
             }
             if ($tipo === 'numero' && $request->filled('numero_busca') && !is_numeric($request->input('numero_busca'))) {
                 $erros['numero_busca'] = 'Número inválido.';
+            }
+            if ($tipo === 'uf' && !$request->filled('uf_busca')) {
+                $erros['uf_busca'] = 'Informe a Unidade Federativa (UF).';
+            }
+            if ($tipo === 'situacao' && !$request->filled('situacao_busca')) {
+                $erros['situacao_busca'] = 'Informe a Situação do Patrimônio.';
             }
             if ($erros) {
                 return response()->json(['message' => 'Validação falhou', 'errors' => $erros], 422);
@@ -134,6 +142,18 @@ class RelatorioController extends Controller
                 case 'oc':
                     $query->where('NUMOF', $request->input('oc_busca'));
                     break;
+                case 'uf':
+                    // Filtra por UF através do relacionamento com local/projeto
+                    $uf = strtoupper($request->input('uf_busca'));
+                    $query->whereHas('local.projeto', function ($q) use ($uf) {
+                        $q->where('UF', $uf);
+                    })->orderBy('NUPATRIMONIO');
+                    break;
+                case 'situacao':
+                    // Filtra por situação do patrimônio
+                    $situacao = strtoupper($request->input('situacao_busca'));
+                    $query->where('SITUACAO', $situacao)->orderBy('NUPATRIMONIO');
+                    break;
             }
 
             $resultados = $query->get();
@@ -155,7 +175,7 @@ class RelatorioController extends Controller
             $request->merge(['tipo_relatorio' => 'numero']);
         }
         $validated = $request->validate([
-            'tipo_relatorio' => 'required|string|in:numero,descricao,aquisicao,cadastro,projeto,oc',
+            'tipo_relatorio' => 'required|string|in:numero,descricao,aquisicao,cadastro,projeto,oc,uf,situacao',
             'data_inicio_aquisicao' => 'nullable|date',
             'data_fim_aquisicao' => 'nullable|date',
             'data_inicio_cadastro' => 'nullable|date',
@@ -163,6 +183,8 @@ class RelatorioController extends Controller
             'projeto_busca' => 'nullable|string',
             'local_id' => 'nullable|integer|exists:tabfant,id',
             'oc_busca' => 'nullable|string',
+            'uf_busca' => 'nullable|string|size:2',
+            'situacao_busca' => 'nullable|string',
             'numero_busca' => 'nullable|integer',
             'descricao_busca' => 'nullable|string',
             'sort_direction' => 'nullable|in:asc,desc'
@@ -222,6 +244,18 @@ class RelatorioController extends Controller
                 break;
             case 'oc':
                 $query->where('NUMOF', $validated['oc_busca']);
+                break;
+            case 'uf':
+                // Filtra por UF através do relacionamento com local/projeto
+                $uf = strtoupper($request->input('uf_busca'));
+                $query->whereHas('local.projeto', function ($q) use ($uf) {
+                    $q->where('UF', $uf);
+                })->orderBy('NUPATRIMONIO');
+                break;
+            case 'situacao':
+                // Filtra por situação do patrimônio
+                $situacao = strtoupper($request->input('situacao_busca'));
+                $query->where('SITUACAO', $situacao)->orderBy('NUPATRIMONIO');
                 break;
         }
         return $query;

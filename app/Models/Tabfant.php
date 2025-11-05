@@ -48,6 +48,7 @@ class Tabfant extends Model
         'NOMEPROJETO',
         'CDPROJETO',
         'LOCAL',
+        'UF',
     ];
 
     /**
@@ -56,5 +57,13 @@ class Tabfant extends Model
     public function setLOCALAttribute($value)
     {
         $this->attributes['LOCAL'] = strtoupper($value);
+    }
+
+    /**
+     * Mutator para converter UF para UPPERCASE ao salvar
+     */
+    public function setUFAttribute($value)
+    {
+        $this->attributes['UF'] = strtoupper($value);
     }
 }

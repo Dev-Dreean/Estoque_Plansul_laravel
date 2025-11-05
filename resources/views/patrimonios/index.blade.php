@@ -435,6 +435,14 @@
                     name="tipo_relatorio" value="oc" x-model="tipoRelatorio"
                     class="form-radio text-indigo-600"><span
                     class="text-gray-700 dark:text-gray-300">Por OC</span></label>
+                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
+                    name="tipo_relatorio" value="uf" x-model="tipoRelatorio"
+                    class="form-radio text-indigo-600"><span
+                    class="text-gray-700 dark:text-gray-300">Por UF</span></label>
+                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
+                    name="tipo_relatorio" value="situacao" x-model="tipoRelatorio"
+                    class="form-radio text-indigo-600"><span
+                    class="text-gray-700 dark:text-gray-300">Por Situação</span></label>
               </div>
               <!-- Campo de busca de descrição quando tipo descricao -->
               <div x-show="tipoRelatorio === 'descricao'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
@@ -541,6 +549,60 @@
                       disabled>
                       <option>A definir</option>
                     </select></div>
+                </div>
+              </div>
+              <!-- Campo UF quando tipo uf -->
+              <div x-show="tipoRelatorio === 'uf'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
+                <div>
+                  <label for="uf_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Unidade Federativa (UF)</label>
+                  <select id="uf_busca" name="uf_busca" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                    <option value="">-- Selecione uma UF --</option>
+                    <option value="AC">Acre</option>
+                    <option value="AL">Alagoas</option>
+                    <option value="AP">Amapá</option>
+                    <option value="AM">Amazonas</option>
+                    <option value="BA">Bahia</option>
+                    <option value="CE">Ceará</option>
+                    <option value="DF">Distrito Federal</option>
+                    <option value="ES">Espírito Santo</option>
+                    <option value="GO">Goiás</option>
+                    <option value="MA">Maranhão</option>
+                    <option value="MT">Mato Grosso</option>
+                    <option value="MS">Mato Grosso do Sul</option>
+                    <option value="MG">Minas Gerais</option>
+                    <option value="PA">Pará</option>
+                    <option value="PB">Paraíba</option>
+                    <option value="PR">Paraná</option>
+                    <option value="PE">Pernambuco</option>
+                    <option value="PI">Piauí</option>
+                    <option value="RJ">Rio de Janeiro</option>
+                    <option value="RN">Rio Grande do Norte</option>
+                    <option value="RS">Rio Grande do Sul</option>
+                    <option value="RO">Rondônia</option>
+                    <option value="RR">Roraima</option>
+                    <option value="SC">Santa Catarina</option>
+                    <option value="SP">São Paulo</option>
+                    <option value="SE">Sergipe</option>
+                    <option value="TO">Tocantins</option>
+                  </select>
+                  <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.uf_busca" x-text="relatorioErrors.uf_busca"></p>
+                </div>
+              </div>
+              <!-- Campo Situação quando tipo situacao -->
+              <div x-show="tipoRelatorio === 'situacao'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
+                <div>
+                  <label for="situacao_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Situação do Patrimônio</label>
+                  <select id="situacao_busca" name="situacao_busca" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                    <option value="">-- Selecione uma Situação --</option>
+                    <option value="EM USO">Em Uso</option>
+                    <option value="CONSERTO">Conserto</option>
+                    <option value="BAIXADO">Baixado</option>
+                    <option value="EMPRESTADO">Emprestado</option>
+                    <option value="DANIFICADO">Danificado</option>
+                    <option value="INATIVO">Inativo</option>
+                    <option value="DESAPARECIDO">Desaparecido</option>
+                  </select>
+                  <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.situacao_busca" x-text="relatorioErrors.situacao_busca"></p>
                 </div>
               </div>
             </div>
