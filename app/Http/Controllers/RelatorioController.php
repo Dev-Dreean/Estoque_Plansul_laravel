@@ -13,7 +13,7 @@ use Spatie\SimpleExcel\SimpleExcelWriter;
 use Barryvdh\DomPDF\Facade\Pdf;
 // Removido uso de Maatwebsite\Excel; usaremos SimpleExcelWriter já presente
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 
 class RelatorioController extends Controller
 {
@@ -36,6 +36,8 @@ class RelatorioController extends Controller
     public function gerar(Request $request)
     {
         try {
+            Log::info('RelatorioController::gerar iniciado', ['tipo_relatorio' => $request->input('tipo_relatorio')]);
+            
             if (!$request->filled('tipo_relatorio')) {
                 $request->merge(['tipo_relatorio' => 'numero']);
             }
@@ -57,6 +59,7 @@ class RelatorioController extends Controller
             ]);
 
             $tipo = $base['tipo_relatorio'];
+            Log::info('Validação passada', ['tipo' => $tipo, 'uf_busca' => $request->input('uf_busca')]);
 
             // Validações condicionais manuais para respostas 422 claras
             $erros = [];
@@ -151,11 +154,10 @@ class RelatorioController extends Controller
                 case 'uf':
                     // Filtra por UF através do LEFT JOIN (inclui registros sem projeto também)
                     $uf = strtoupper($request->input('uf_busca'));
-                    // Se a coluna UF não existir (migração não aplicada), usar LOCAL como fallback
-                    $ufColumn = Schema::hasColumn('tabfant', 'UF') ? 'UF' : 'LOCAL';
+                    Log::info('Filtro UF', ['uf' => $uf]);
                     $query->leftJoin('tabfant', 'patr.CDPROJETO', '=', 'tabfant.CDPROJETO')
-                        ->where("tabfant.{$ufColumn}", $uf)
-                        ->select('patr.*', "tabfant.{$ufColumn} as projeto_uf")
+                        ->where('tabfant.UF', $uf)
+                        ->select('patr.*', 'tabfant.UF as projeto_uf')
                         ->distinct()
                         ->orderBy('patr.NUPATRIMONIO');
                     break;
@@ -167,11 +169,19 @@ class RelatorioController extends Controller
             }
 
             $resultados = $query->get();
+            Log::info('Query executada com sucesso', ['total' => count($resultados), 'tipo' => $tipo]);
+            
             return response()->json([
                 'resultados' => $resultados,
                 'filtros' => $request->only(array_keys($base))
             ]);
         } catch (\Throwable $e) {
+            Log::error('Erro em RelatorioController::gerar', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'message' => 'Erro interno ao gerar relatório',
                 'exception' => app()->environment('local') ? $e->getMessage() : null
