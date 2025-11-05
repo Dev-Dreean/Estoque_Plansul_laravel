@@ -13,6 +13,7 @@ use Spatie\SimpleExcel\SimpleExcelWriter;
 use Barryvdh\DomPDF\Facade\Pdf;
 // Removido uso de Maatwebsite\Excel; usaremos SimpleExcelWriter já presente
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class RelatorioController extends Controller
 {
@@ -150,9 +151,11 @@ class RelatorioController extends Controller
                 case 'uf':
                     // Filtra por UF através do LEFT JOIN (inclui registros sem projeto também)
                     $uf = strtoupper($request->input('uf_busca'));
+                    // Se a coluna UF não existir (migração não aplicada), usar LOCAL como fallback
+                    $ufColumn = Schema::hasColumn('tabfant', 'UF') ? 'UF' : 'LOCAL';
                     $query->leftJoin('tabfant', 'patr.CDPROJETO', '=', 'tabfant.CDPROJETO')
-                        ->where('tabfant.UF', $uf)
-                        ->select('patr.*', 'tabfant.UF as projeto_uf')
+                        ->where("tabfant.{$ufColumn}", $uf)
+                        ->select('patr.*', "tabfant.{$ufColumn} as projeto_uf")
                         ->distinct()
                         ->orderBy('patr.NUPATRIMONIO');
                     break;
