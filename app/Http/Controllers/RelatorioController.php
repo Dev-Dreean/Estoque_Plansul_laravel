@@ -92,7 +92,12 @@ class RelatorioController extends Controller
                 return response()->json(['message' => 'Validação falhou', 'errors' => $erros], 422);
             }
 
-            $query = Patrimonio::query()->with('creator', 'local.projeto');
+            // Não carrega 'local.projeto' para tipo UF (será feito via JOIN)
+            if ($tipo === 'uf') {
+                $query = Patrimonio::query()->with('creator', 'projeto');
+            } else {
+                $query = Patrimonio::query()->with('creator', 'local.projeto');
+            }
 
             // Filtra patrimônios por usuário (exceto Admin e Super Admin)
             /** @var \App\Models\User|null $user */
@@ -143,11 +148,13 @@ class RelatorioController extends Controller
                     $query->where('NUMOF', $request->input('oc_busca'));
                     break;
                 case 'uf':
-                    // Filtra por UF através do relacionamento com local/projeto
+                    // Filtra por UF através do LEFT JOIN (inclui registros sem projeto também)
                     $uf = strtoupper($request->input('uf_busca'));
-                    $query->whereHas('local.projeto', function ($q) use ($uf) {
-                        $q->where('UF', $uf);
-                    })->orderBy('NUPATRIMONIO');
+                    $query->leftJoin('tabfant', 'patr.CDPROJETO', '=', 'tabfant.CDPROJETO')
+                        ->where('tabfant.UF', $uf)
+                        ->select('patr.*', 'tabfant.UF as projeto_uf')
+                        ->distinct()
+                        ->orderBy('patr.NUPATRIMONIO');
                     break;
                 case 'situacao':
                     // Filtra por situação do patrimônio
@@ -190,7 +197,12 @@ class RelatorioController extends Controller
             'sort_direction' => 'nullable|in:asc,desc'
         ]);
 
-        $query = Patrimonio::query()->with('creator', 'local.projeto');
+        // Não carrega 'local.projeto' para tipo UF (será feito via JOIN)
+        if ($validated['tipo_relatorio'] === 'uf') {
+            $query = Patrimonio::query()->with('creator', 'projeto');
+        } else {
+            $query = Patrimonio::query()->with('creator', 'local.projeto');
+        }
 
         // Filtra patrimônios por usuário (exceto Admin e Super Admin)
         /** @var \App\Models\User|null $user */
@@ -246,11 +258,13 @@ class RelatorioController extends Controller
                 $query->where('NUMOF', $validated['oc_busca']);
                 break;
             case 'uf':
-                // Filtra por UF através do relacionamento com local/projeto
+                // Filtra por UF através do LEFT JOIN (inclui registros sem projeto também)
                 $uf = strtoupper($request->input('uf_busca'));
-                $query->whereHas('local.projeto', function ($q) use ($uf) {
-                    $q->where('UF', $uf);
-                })->orderBy('NUPATRIMONIO');
+                $query->leftJoin('tabfant', 'patr.CDPROJETO', '=', 'tabfant.CDPROJETO')
+                    ->where('tabfant.UF', $uf)
+                    ->select('patr.*', 'tabfant.UF as projeto_uf')
+                    ->distinct()
+                    ->orderBy('patr.NUPATRIMONIO');
                 break;
             case 'situacao':
                 // Filtra por situação do patrimônio

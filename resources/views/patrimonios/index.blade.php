@@ -76,6 +76,34 @@
     this.$watch('tipoRelatorio', () => { this.relatorioErrors = {}; this.relatorioGlobalError = null; });
   },
 
+  getFilterLabel() {
+    const labels = {
+      'numero': 'Relatório por Número de Patrimônio',
+      'descricao': 'Relatório por Descrição',
+      'aquisicao': 'Relatório por Período de Aquisição',
+      'cadastro': 'Relatório por Período de Cadastro',
+      'projeto': 'Relatório por Projeto',
+      'oc': 'Relatório por OC',
+      'uf': 'Relatório por UF',
+      'situacao': 'Relatório por Situação'
+    };
+    return labels[this.tipoRelatorio] || 'Relatório';
+  },
+
+  getColumnColor() {
+    const colors = {
+      'numero': 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300',
+      'descricao': 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300',
+      'aquisicao': 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300',
+      'cadastro': 'bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300',
+      'projeto': 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300',
+      'oc': 'bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-300',
+      'uf': 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
+      'situacao': 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
+    };
+    return colors[this.tipoRelatorio] || 'bg-gray-100 dark:bg-gray-900';
+  },
+
     exportarRelatorio: function(format) {
         const form = document.createElement('form');
         form.method = 'POST';
@@ -645,12 +673,63 @@
     <div x-show="resultadosModalOpen" x-transition
       class="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center" style="display: none;">
       <div @click.outside="resultadosModalOpen = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-7xl p-6 max-h-[90vh] flex flex-col">
-        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Resultado do Relatório</h3>
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Resultado do Relatório</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <strong>Filtro:</strong> <span x-text="getFilterLabel(tipoRelatorio)"></span>
+          <template x-if="tipoRelatorio === 'numero'">
+            <span> → <strong x-text="reportFilters.numero_busca || 'Todos'"></strong></span>
+          </template>
+          <template x-if="tipoRelatorio === 'descricao'">
+            <span> → <strong x-text="reportFilters.descricao_busca || 'Todos'"></strong></span>
+          </template>
+          <template x-if="tipoRelatorio === 'projeto'">
+            <span> → <strong x-text="reportFilters.projeto_busca || 'Todos'"></strong></span>
+          </template>
+          <template x-if="tipoRelatorio === 'oc'">
+            <span> → <strong x-text="reportFilters.oc_busca || 'Todos'"></strong></span>
+          </template>
+          <template x-if="tipoRelatorio === 'uf'">
+            <span> → <strong x-text="reportFilters.uf_busca"></strong></span>
+          </template>
+          <template x-if="tipoRelatorio === 'situacao'">
+            <span> → <strong x-text="reportFilters.situacao_busca"></strong></span>
+          </template>
+          <template x-if="['aquisicao', 'cadastro'].includes(tipoRelatorio)">
+            <span> → <strong x-text="(reportFilters.data_inicio_aquisicao || reportFilters.data_inicio_cadastro) + ' a ' + (reportFilters.data_fim_aquisicao || reportFilters.data_fim_cadastro)"></strong></span>
+          </template>
+        </p>
         <div class="flex-grow overflow-y-auto">
           <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
             <thead
               class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0">
               <tr>
+                <!-- Coluna dinâmica em primeiro lugar (conforme o tipo de filtro) -->
+                <template x-if="tipoRelatorio === 'numero'">
+                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">Nº Patrimônio</th>
+                </template>
+                <template x-if="tipoRelatorio === 'descricao'">
+                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">Descrição</th>
+                </template>
+                <template x-if="tipoRelatorio === 'projeto'">
+                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">Código Projeto</th>
+                </template>
+                <template x-if="tipoRelatorio === 'oc'">
+                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">OC</th>
+                </template>
+                <template x-if="tipoRelatorio === 'uf'">
+                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">UF</th>
+                </template>
+                <template x-if="tipoRelatorio === 'situacao'">
+                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">Situação</th>
+                </template>
+                <template x-if="tipoRelatorio === 'aquisicao'">
+                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">Data Aquisição</th>
+                </template>
+                <template x-if="tipoRelatorio === 'cadastro'">
+                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">Data Cadastro</th>
+                </template>
+                
+                <!-- Colunas fixas (sempre aparecem depois) -->
                 <th scope="col" class="px-6 py-3">Nº Patrimônio</th>
                 <th scope="col" class="px-6 py-3">Descrição</th>
                 <th scope="col" class="px-6 py-3">Modelo</th>
@@ -662,7 +741,7 @@
             <tbody>
               <template x-if="reportData.length === 0">
                 <tr>
-                  <td colspan="6" class="px-6 py-4 text-center text-lg">
+                  <td colspan="10" class="px-6 py-4 text-center text-lg">
                     Nenhum patrimônio encontrado para os filtros aplicados.
                   </td>
                 </tr>
@@ -670,10 +749,53 @@
               <template x-for="patrimonio in reportData" :key="patrimonio.NUSEQPATR">
                 <tr
                   class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                  <!-- Coluna dinâmica em primeiro lugar (conforme o tipo de filtro) -->
+                  <template x-if="tipoRelatorio === 'numero'">
+                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
+                      <span x-text="patrimonio.NUPATRIMONIO || 'N/A'"></span>
+                    </td>
+                  </template>
+                  <template x-if="tipoRelatorio === 'descricao'">
+                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
+                      <span x-text="patrimonio.DEPATRIMONIO || 'N/A'"></span>
+                    </td>
+                  </template>
+                  <template x-if="tipoRelatorio === 'projeto'">
+                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
+                      <span x-text="patrimonio.CDPROJETO || 'N/A'"></span>
+                    </td>
+                  </template>
+                  <template x-if="tipoRelatorio === 'oc'">
+                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
+                      <span x-text="patrimonio.NUMOF || 'N/A'"></span>
+                    </td>
+                  </template>
+                  <template x-if="tipoRelatorio === 'uf'">
+                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
+                      <span x-text="patrimonio.projeto_uf || 'N/A'"></span>
+                    </td>
+                  </template>
+                  <template x-if="tipoRelatorio === 'situacao'">
+                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
+                      <span x-text="patrimonio.SITUACAO || 'N/A'"></span>
+                    </td>
+                  </template>
+                  <template x-if="tipoRelatorio === 'aquisicao'">
+                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
+                      <span x-text="patrimonio.DTAQUISICAO || 'N/A'"></span>
+                    </td>
+                  </template>
+                  <template x-if="tipoRelatorio === 'cadastro'">
+                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
+                      <span x-text="patrimonio.DTOPERACAO || 'N/A'"></span>
+                    </td>
+                  </template>
+                  
+                  <!-- Colunas fixas (sempre aparecem depois) -->
                   <td class="px-6 py-4" x-text="patrimonio.NUPATRIMONIO || 'N/A'"></td>
                   <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                     x-text="patrimonio.DEPATRIMONIO"></td>
-                  <td class="px-6 py-4" x-text="patrimonio.MODELO"></td>
+                  <td class="px-6 py-4" x-text="patrimonio.MODELO || 'N/A'"></td>
                   <td class="px-6 py-4" x-text="patrimonio.SITUACAO"></td>
                   <td class="px-6 py-4"
                     x-text="patrimonio.local ? patrimonio.local.LOCAL : 'SISTEMA'"></td>
