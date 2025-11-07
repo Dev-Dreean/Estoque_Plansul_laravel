@@ -13,28 +13,73 @@
 
 <div x-data='patrimonioForm({ patrimonio: @json($patrimonio), old: @json(old()) })' @keydown.enter.prevent="handleEnter($event)" class="space-y-4 text-sm">
 
-  {{-- GRUPO 1: 4 Inputs lado a lado - Número Patrimônio, OC, Descrição e Código do Objeto --}}
+  {{-- GRUPO 1: 4 Inputs lado a lado - Botão Gerar, Número Patrimônio, OC, Descrição e Código do Objeto --}}
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    {{-- Número do Patrimônio (GERADO AUTOMATICAMENTE - READ ONLY) --}}
+    {{-- Número do Patrimônio (Dropdown com busca ou novo número) --}}
     <div>
-      <label for="NUPATRIMONIO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nº Patrimônio (Automático) *</label>
-      <input
-        id="NUPATRIMONIO"
-        x-model="formData.NUPATRIMONIO"
-        name="NUPATRIMONIO"
-        type="text"
-        inputmode="numeric"
-        tabindex="-1"
-        readonly
-        class="block w-full h-8 text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-400 text-gray-600 border-gray-300 dark:border-gray-700 rounded-md shadow-sm cursor-not-allowed"
-        placeholder="Será gerado automaticamente"
-        required />
-    </div>
+      <label for="patSearch" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nº Patrimônio (Digite ou selecione) *</label>
+      <div class="flex items-stretch gap-2">
+        {{-- Botão Gerar Novo Número (ANTES do input) --}}
+        <button 
+          type="button" 
+          id="btnGerarNumPatrimonio"
+          @click.prevent="gerarProximoNumeroPatrimonio()" 
+          @keydown.space.prevent="gerarProximoNumeroPatrimonio()"
+          @keydown.tab.prevent="(function(){ document.getElementById('patSearch').focus(); })()"
+          title="Espaço ou clique: gera nº automático | Tab: vai para nº patrimônio" 
+          tabindex="0"
+          class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors active:bg-indigo-800">
+          ⟳
+        </button>
 
-    {{-- Número da Ordem de Compra --}}
+        {{-- Input de Busca/Digitação --}}
+        <div class="flex-grow relative" @click.away="showPatDropdown=false">
+          <input 
+            id="patSearch"
+            x-model="patSearch"
+            @focus="(function(){ showPatDropdown=true; if(patSearch.trim()){buscarPatrimonios();} })()"
+            @blur.debounce.150ms="showPatDropdown=false"
+            @input.debounce.300ms="(function(){ const t=String(patSearch||'').trim(); if(t.length>0){ showPatDropdown=true; buscarPatrimonios(); } else { showPatDropdown=false; patrimoniosLista=[]; highlightedPatIndex=-1; } })()"
+            @keydown.down.prevent="(function(){ highlightedPatIndex = Math.min(highlightedPatIndex+1, patrimoniosLista.length-1); })()"
+            @keydown.up.prevent="(function(){ highlightedPatIndex = Math.max(highlightedPatIndex-1, -1); })()"
+            @keydown.enter.prevent="(function(){ if(highlightedPatIndex>=0 && patrimoniosLista[highlightedPatIndex]){ selectPatrimonio(patrimoniosLista[highlightedPatIndex]); buscarPatrimonio(); } })()"
+            @keydown.escape.prevent="showPatDropdown=false"
+            type="text"
+            inputmode="numeric"
+            tabindex="2"
+            class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-6 focus:ring-2 focus:ring-indigo-500"
+            placeholder="Digite nº ou selecione da lista"
+            required />
+          
+          {{-- Valor oculto com o número selecionado (enviado para o servidor) --}}
+          <input type="hidden" name="NUPATRIMONIO" :value="patSearch" />
+
+          {{-- Botão Limpar (DENTRO do input, à direita) --}}
+          <button type="button" x-show="patSearch" @click.prevent="(function(){ patSearch=''; patrimoniosLista=[]; highlightedPatIndex=-1; showPatDropdown=false; })()" title="Limpar busca" tabindex="-1" class="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-lg leading-none">×</button>
+
+          {{-- Dropdown de Patrimônios --}}
+          <div x-show="showPatDropdown" x-transition class="absolute z-50 top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-xs">
+            <template x-if="loadingSearch">
+              <div class="p-2 text-gray-500 text-center">Buscando...</div>
+            </template>
+            <template x-if="!loadingSearch && patrimoniosLista.length === 0">
+              <div class="p-2 text-gray-500 text-center" x-text="String(patSearch || '').trim()==='' ? 'Digite para buscar patrimônios' : 'Nenhum patrimônio encontrado'"></div>
+            </template>
+            <template x-for="(p,i) in (patrimoniosLista || [])" :key="p.NUSEQPATR || p.NUPATRIMONIO || i">
+              <div @click="selectPatrimonio(p); buscarPatrimonio();" @mouseover="highlightedPatIndex=i" :class="['px-3 py-1.5 cursor-pointer border-b border-gray-200 dark:border-gray-700 last:border-0', highlightedPatIndex===i ? 'bg-indigo-500 dark:bg-indigo-600 text-white' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+                <div class="flex justify-between items-center gap-2">
+                  <span class="font-semibold text-indigo-600 dark:text-indigo-400" :class="highlightedPatIndex===i ? 'text-white' : ''" x-text="p.NUPATRIMONIO"></span>
+                  <span class="text-gray-700 dark:text-gray-300 flex-grow" :class="highlightedPatIndex===i ? 'text-white' : ''" x-text="' - ' + (p.DEPATRIMONIO || p.descricao || '—')"></span>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>    {{-- Número da Ordem de Compra --}}
     <div>
       <label for="NUMOF" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número da Ordem de Compra</label>
-      <input x-model="formData.NUMOF" id="NUMOF" name="NUMOF" type="number" tabindex="1" @focus="focarNumOf" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <input x-model="formData.NUMOF" id="NUMOF" name="NUMOF" type="number" tabindex="3" @focus="focarNumOf" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
 
     {{-- Descrição do Objeto (busca com dropdown) --}}
@@ -52,7 +97,7 @@
           @keydown.tab.prevent="selecionarCodigoTab($event)"
           @keydown.escape.prevent="showCodigoDropdown=false"
           type="text"
-          tabindex="2"
+          tabindex="4"
           class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500"
           placeholder="Informe a descrição" required />
         {{-- Valor enviado (hidden) --}}
@@ -65,7 +110,7 @@
             </svg>
           </button>
         </div>
-        <div x-show="showCodigoDropdown" x-transition class="absolute z-50 bottom-full mb-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto text-xs">
+        <div x-show="showCodigoDropdown" x-transition class="absolute z-50 top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto text-xs">
           <template x-if="loadingCodigos">
             <div class="p-2 text-gray-500 text-center">Buscando...</div>
           </template>
@@ -89,7 +134,7 @@
         x-model="formData.NUSEQOBJ"
         type="text"
         inputmode="numeric"
-        tabindex="3"
+        tabindex="5"
         x-bind:readonly="!isNovoCodigo"
         :class="[
           'block w-full h-8 text-xs border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500',
@@ -145,7 +190,7 @@
             </svg>
           </button>
         </div>
-        <div x-show="showProjetoDropdown" x-transition class="absolute z-50 bottom-full mb-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm">
+        <div x-show="showProjetoDropdown" x-transition class="absolute z-50 top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm">
           <template x-if="loadingProjetos">
             <div class="p-2 text-gray-500">Buscando...</div>
           </template>
@@ -229,7 +274,7 @@
           {{-- Dropdown de Códigos Locais --}}
           <div x-show="showCodigoLocalDropdown"
             x-transition
-            class="absolute z-50 bottom-full mb-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-xs">
+            class="absolute z-50 top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-xs">
             <template x-if="loadingCodigosLocais">
               <div class="p-3 text-gray-500 text-center">
                 <svg class="animate-spin h-4 w-4 inline mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -295,7 +340,7 @@
     </div>
     <div>
       <label for="SITUACAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Situação do Patrimônio *</label>
-      <select id="SITUACAO" name="SITUACAO" x-model="formData.SITUACAO" required tabindex="12"
+      <select id="SITUACAO" name="SITUACAO" x-model="formData.SITUACAO" @change="(function(){ this.$nextTick(() => { setTimeout(() => { const matricula = document.getElementById('matricula_busca'); if(matricula) { matricula.focus(); console.log('🎯 [SITUACAO change] Focus movido para matricula_busca'); } }, 50); }); })()" required tabindex="12"
         class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500">
         <option value="EM USO">EM USO</option>
         <option value="CONSERTO">CONSERTO</option>
@@ -360,7 +405,7 @@
 
     <div>
       <label for="DTAQUISICAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Data de Aquisição</label>
-      <input x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" tabindex="14" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <input x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" @keydown.tab.prevent="(function(){ const dtBaixa = document.getElementById('DTBAIXA'); if(dtBaixa) { dtBaixa.focus(); } })()" tabindex="14" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
 
     <div>
@@ -369,6 +414,7 @@
         id="DTBAIXA"
         name="DTBAIXA"
         type="date"
+        @keydown.tab.prevent="(function(){ const btnSalvar = document.querySelector('button[type=submit]'); if(btnSalvar) { btnSalvar.focus(); } })()"
         tabindex="15"
         class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
       <x-input-error class="mt-2" :messages="$errors->get('DTBAIXA')" />
@@ -823,8 +869,21 @@
       },
       selectPatrimonio(item) {
         this.formData.NUPATRIMONIO = item.NUPATRIMONIO;
+        this.patSearch = String(item.NUPATRIMONIO); // Sincronizar com campo visível
+        this.showPatDropdown = false; // Fechar dropdown
         this.buscarPatrimonio();
         this.closeSearchModal();
+        
+        // Auto-focus no próximo input (NUMOF - Número da Ordem de Compra)
+        this.$nextTick(() => {
+          setTimeout(() => {
+            const inputNumof = document.getElementById('NUMOF');
+            if (inputNumof) {
+              inputNumof.focus();
+              console.log('🎯 [selectPatrimonio] Focus movido para NUMOF');
+            }
+          }, 50);
+        });
       },
       async buscarPatrimonio() {
         if (!this.formData.NUPATRIMONIO) return;
@@ -1195,6 +1254,18 @@
         this.userSelectedName = `${matricula} - ${nomeLimpo}`;
         this.userSearch = this.userSelectedName;
         this.showUserDropdown = false;
+        // Auto-focus para a próxima field (pular datas de calendário - Data de Aquisição)
+        // Ir direto para Data de Baixa se a de aquisição já estiver preenchida, ou saltar para botão salvar
+        this.$nextTick(() => {
+          setTimeout(() => {
+            // Tentar focar Data de Baixa primeiro
+            const dtBaixa = document.getElementById('DTBAIXA');
+            if (dtBaixa) {
+              dtBaixa.focus();
+              console.log('🎯 [selecionarUsuario] Focus movido para DTBAIXA (Data de Baixa)');
+            }
+          }, 50);
+        });
       },
       // Sanitiza o campo visível removendo datas/números após o nome e garante que o hidden receba só a matrícula
       normalizarMatriculaBusca() {
@@ -1549,6 +1620,18 @@
         // 5️⃣ Buscar todos os locais com este código para validação
         // Isso mantém a lista de locais para caso haja múltiplos
         this.buscarLocalPorCodigo();
+        
+        // Auto-focus no próximo input após selecionar código local
+        this.$nextTick(() => {
+          setTimeout(() => {
+            // Próximo campo após CDLOCAL é NMPLANTA (Código do Termo)
+            const inputNmplanta = document.getElementById('NMPLANTA');
+            if (inputNmplanta) {
+              inputNmplanta.focus();
+              console.log('🎯 [selecionarCodigoLocal] Focus movido para NMPLANTA');
+            }
+          }, 50);
+        });
       },
       selecionarCodigoLocalEnter() {
         if (!this.showCodigoLocalDropdown) return;
@@ -1697,6 +1780,17 @@
         this.isNovoCodigo = false; // bloqueia edição do código
         this.codigoBuscaStatus = ''; // sem mensagem quando selecionado
         this.showCodigoDropdown = false;
+        
+        // Auto-focus para o próximo campo: Observações (DEHISTORICO)
+        this.$nextTick(() => {
+          setTimeout(() => {
+            const dehistorico = document.getElementById('DEHISTORICO');
+            if (dehistorico) {
+              dehistorico.focus();
+              console.log('🎯 [selecionarCodigo] Focus movido para DEHISTORICO (Observações)');
+            }
+          }, 50);
+        });
       },
       selecionarCodigoEnter() {
         if (!this.showCodigoDropdown) return;
@@ -3290,9 +3384,17 @@
         }, null, 2));
         console.log('📌 descricaoSearch:', this.descricaoSearch);
 
-        // ✨ Se é modo CRIAÇÃO, gerar automaticamente o próximo número de patrimônio
+        // ✨ Se é modo CRIAÇÃO, dar foco NO BOTÃO DE GERAR (não preencher automaticamente)
         if (!this.isEditMode()) {
-          await this.gerarProximoNumeroPatrimonio();
+          this.$nextTick(() => {
+            setTimeout(() => {
+              const btnGerar = document.getElementById('btnGerarNumPatrimonio');
+              if (btnGerar) {
+                btnGerar.focus();
+                console.log('🎯 [INIT CRIAÇÃO] Focus movido para botão de gerar nº patrimônio');
+              }
+            }, 100);
+          });
         }
 
         // Se é modo EDIÇÃO e há patrimônio carregado
@@ -3321,15 +3423,16 @@
           const data = await response.json();
           if (data.success && data.numero) {
             this.formData.NUPATRIMONIO = String(data.numero);
+            this.patSearch = String(data.numero); // Sincronizar com o campo de busca
             console.log('✅ [GERAR NUM] Próximo número gerado:', data.numero);
 
-            // Dar focus no campo NUMOF após gerar o número
+            // Dar focus no campo NUMOF (Número da Ordem de Compra) após gerar o número
             this.$nextTick(() => {
               setTimeout(() => {
                 const inputNumof = document.getElementById('NUMOF');
                 if (inputNumof) {
                   inputNumof.focus();
-                  console.log('🎯 [FOCUS] Focus movido para NUMOF');
+                  console.log('🎯 [GERAR NUM] Focus movido para NUMOF (Número da Ordem de Compra)');
                 }
               }, 100);
             });
@@ -3358,6 +3461,12 @@
         console.log('='.repeat(80));
 
         try {
+          // 0️⃣ SINCRONIZAR patSearch COM formData.NUPATRIMONIO (em modo edição)
+          if (this.formData.NUPATRIMONIO) {
+            this.patSearch = String(this.formData.NUPATRIMONIO);
+            console.log(`✅ [CARREGA EDIÇÃO] patSearch sincronizado: ${this.patSearch}`);
+          }
+
           // 1️⃣ CARREGAR NOME DO PROJETO
           if (this.formData.CDPROJETO) {
             console.log(`🔍 [CARREGA EDIÇÃO] Carregando projeto ${this.formData.CDPROJETO}...`);
