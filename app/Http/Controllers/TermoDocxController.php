@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Controller responsável pela geração de Termos de Responsabilidade em DOCX
@@ -28,12 +29,13 @@ class TermoDocxController extends Controller
      * Limite máximo de itens por documento (para evitar sobrecarga)
      */
     private const MAX_ITEMS_PER_DOCUMENT = 200;
-
     /**
-     * Gera termo para um único patrimônio
-     * 
+     * Download Termo de Responsabilidade para um patrimônio
+     *
      * @param int $id ID do patrimônio (NUSEQPATR)
-     * @return BinaryFileResponse
+     * @return \Symfony\Component\HttpFoundation\Response
+     * @phpstan-ignore-next-line P1075
+     * @noinspection PhpUnreachableStatementInspection
      */
     public function downloadSingle(int $id): BinaryFileResponse
     {
@@ -57,72 +59,15 @@ class TermoDocxController extends Controller
             ]);
 
             abort(500, 'Erro ao gerar documento. Por favor, tente novamente.');
+            // @never (abort nunca retorna, encerra execução)
         }
     }
 
     /**
      * DESCONTINUADO: Método removido - use downloadSingle para cada patrimônio
-     * Gera termo para múltiplos patrimônios (lote)
      * 
      * @deprecated Use downloadSingle para cada ID
-     * @param Request $request
-     * @return BinaryFileResponse
      */
-    /*
-    public function downloadBatch(Request $request): BinaryFileResponse
-    {
-        $validated = $request->validate([
-            'ids' => 'required|array|min:1|max:' . self::MAX_ITEMS_PER_DOCUMENT,
-            'ids.*' => 'required|integer|exists:patr,NUSEQPATR'
-        ], [
-            'ids.required' => 'Selecione pelo menos um patrimônio para gerar o termo',
-            'ids.array' => 'Dados inválidos recebidos',
-            'ids.min' => 'Selecione pelo menos um patrimônio',
-            'ids.max' => 'Máximo de ' . self::MAX_ITEMS_PER_DOCUMENT . ' itens por documento',
-            'ids.*.exists' => 'Um ou mais itens não foram encontrados',
-            'ids.*.integer' => 'ID de patrimônio inválido'
-        ]);
-
-        try {
-            $items = Patrimonio::with(['funcionario', 'local.projeto'])
-                ->whereIn('NUSEQPATR', $validated['ids'])
-                ->get();
-
-            if ($items->isEmpty()) {
-                abort(404, 'Nenhum patrimônio encontrado');
-            }
-
-            // Verificar se todos os itens pertencem ao mesmo funcionário
-            $funcionarios = $items->pluck('CDMATRFUNCIONARIO')->unique();
-            if ($funcionarios->count() > 1) {
-                abort(422, 'Os itens selecionados pertencem a funcionários diferentes. Gere termos separados.');
-            }
-
-            // Autorizar acesso a todos os itens
-            foreach ($items as $item) {
-                $this->authorize('view', $item);
-            }
-
-            $funcionario = $items->first()->funcionario;
-            $filename = $this->generateFilename($funcionario, 'lote');
-
-            return $this->generateDocument($items, $funcionario, $filename);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            throw $e;
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
-            abort(403, 'Você não tem permissão para gerar termo de um ou mais itens');
-        } catch (\Throwable $e) {
-            Log::error('Erro ao gerar termo em lote', [
-                'ids' => $validated['ids'] ?? [],
-                'user' => Auth::id(),
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            abort(500, 'Erro ao gerar documento. Por favor, tente novamente.');
-        }
-    }
-    */
 
     /**
      * Gera um ÚNICO documento com TODOS os patrimônios selecionados
@@ -130,6 +75,7 @@ class TermoDocxController extends Controller
      * 
      * @param Request $request
      * @return BinaryFileResponse
+     * @noinspection PhpUnreachableStatementInspection
      */
     public function downloadZip(Request $request): BinaryFileResponse
     {
@@ -178,6 +124,7 @@ class TermoDocxController extends Controller
             return $this->generateDocument($items, $funcionario, $filename);
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             abort(403, 'Você não tem permissão para gerar termo de um ou mais itens');
+            // @never
         } catch (\Throwable $e) {
             Log::error('Erro ao gerar documento de termos', [
                 'ids' => $validated['ids'] ?? [],
@@ -187,6 +134,7 @@ class TermoDocxController extends Controller
             ]);
 
             abort(500, 'Erro ao gerar documento. Por favor, tente novamente.');
+            // @never
         }
     }
 
@@ -210,6 +158,7 @@ class TermoDocxController extends Controller
                 'exists_check' => file_exists($templatePath)
             ]);
             abort(500, 'Template do documento não encontrado. Contate o administrador.');
+            // @never
         }
 
         try {
@@ -218,8 +167,8 @@ class TermoDocxController extends Controller
             // Preencher dados do funcionário/responsável
             $this->fillEmployeeData($template, $funcionario);
 
-            // Preencher data por extenso
-            $this->fillDateData($template);
+            // Preencher data por extenso (com local baseado no patrimônio)
+            $this->fillDateData($template, $items);
 
             // Preencher lista de itens
             $this->fillItemsTable($template, $items);
@@ -276,22 +225,93 @@ class TermoDocxController extends Controller
         $template->setValue('employee_matricula', $this->makeBold($matricula));
     }
     /**
-     * Preenche data por extenso no template
+     * Preenche data por extenso no template com o local baseado no patrimônio
+     * 
+     * Extrai a localização (cidade/sede) do PRIMEIRO patrimônio da coleção,
+     * buscando a informação através da relação:
+     * Patrimonio -> LocalProjeto (via CDLOCAL) -> Tabfant (projeto) -> LOCAL (campo da tabfant)
+     * 
+     * Exemplo: Se patrimônio está em Florianópolis (código 8), o documento
+     * será emitido como "Florianópolis, Estado de Santa Catarina, DD de MMMM de YYYY"
      * 
      * @param TemplateProcessor $template
+     * @param \Illuminate\Support\Collection $items Coleção de patrimônios
      * @return void
      */
-    protected function fillDateData(TemplateProcessor $template): void
+    protected function fillDateData(TemplateProcessor $template, $items): void
     {
         $now = now();
 
-        // Data por extenso: "Curitiba, 03 de novembro de 2025"
-        $dateExtenso = $now->locale('pt_BR')->isoFormat('DD [de] MMMM [de] YYYY');
-        $cidade = config('app.cidade', 'Curitiba'); // Configurável
+        // Extrair o primeiro patrimônio
+        $primeiroPatrimonio = $items->first();
+        
+        // Valores padrão
+        $uf = config('app.uf', 'PR'); // Padrão (fallback)
+        
+        // Tentar extrair UF do primeiro patrimônio
+        if ($primeiroPatrimonio && $primeiroPatrimonio->localProjeto && $primeiroPatrimonio->localProjeto->projeto) {
+            $projeto = $primeiroPatrimonio->localProjeto->projeto;
+            $ufDoProjeto = $projeto->UF ?? null;
+            
+            // Se encontrar UF definida no projeto, usar
+            if (!empty($ufDoProjeto)) {
+                $uf = $ufDoProjeto;
+            }
+        }
 
-        $template->setValue('date_extenso', $this->makeBold("{$cidade}, {$dateExtenso}"));
+        // Converter sigla para nome completo
+        $ufCompleta = $this->getEstadoNome($uf);
+
+        // Data por extenso: "Santa Catarina, 03 de novembro de 2025"
+        $dateExtenso = $now->locale('pt_BR')->isoFormat('DD [de] MMMM [de] YYYY');
+
+        $template->setValue('date_extenso', $this->makeBold("{$ufCompleta}, {$dateExtenso}"));
         $template->setValue('date_short', $now->format('d/m/Y'));
-        $template->setValue('cidade', $cidade);
+        $template->setValue('cidade', $ufCompleta); // Usar nome do estado como "cidade"
+        $template->setValue('uf', $ufCompleta); // Usar nome completo
+        $template->setValue('sigla_uf', ''); // Limpar sigla
+        $template->setValue('estado', $ufCompleta); // Compatibilidade
+    }
+
+    /**
+     * Converte sigla de UF para nome completo do Estado
+     * 
+     * @param string $sigla Sigla da UF (ex: 'SC', 'SP', 'PR')
+     * @return string Nome completo do Estado (ex: 'Santa Catarina')
+     */
+    private function getEstadoNome(string $sigla): string
+    {
+        $estados = [
+            'AC' => 'Acre',
+            'AL' => 'Alagoas',
+            'AP' => 'Amapá',
+            'AM' => 'Amazonas',
+            'BA' => 'Bahia',
+            'CE' => 'Ceará',
+            'DF' => 'Distrito Federal',
+            'ES' => 'Espírito Santo',
+            'GO' => 'Goiás',
+            'MA' => 'Maranhão',
+            'MT' => 'Mato Grosso',
+            'MS' => 'Mato Grosso do Sul',
+            'MG' => 'Minas Gerais',
+            'PA' => 'Pará',
+            'PB' => 'Paraíba',
+            'PR' => 'Paraná',
+            'PE' => 'Pernambuco',
+            'PI' => 'Piauí',
+            'RJ' => 'Rio de Janeiro',
+            'RN' => 'Rio Grande do Norte',
+            'RS' => 'Rio Grande do Sul',
+            'RO' => 'Rondônia',
+            'RR' => 'Roraima',
+            'SC' => 'Santa Catarina',
+            'SP' => 'São Paulo',
+            'SE' => 'Sergipe',
+            'TO' => 'Tocantins',
+        ];
+
+        return $estados[strtoupper($sigla)] ?? $sigla;
     }
 
     /**

@@ -728,7 +728,7 @@
                 <template x-if="tipoRelatorio === 'cadastro'">
                   <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">Data Cadastro</th>
                 </template>
-                
+
                 <!-- Colunas fixas (sempre aparecem depois) -->
                 <th scope="col" class="px-6 py-3">Nº Patrimônio</th>
                 <th scope="col" class="px-6 py-3">Descrição</th>
@@ -790,7 +790,7 @@
                       <span x-text="patrimonio.DTOPERACAO || 'N/A'"></span>
                     </td>
                   </template>
-                  
+
                   <!-- Colunas fixas (sempre aparecem depois) -->
                   <td class="px-6 py-4" x-text="patrimonio.NUPATRIMONIO || 'N/A'"></td>
                   <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"

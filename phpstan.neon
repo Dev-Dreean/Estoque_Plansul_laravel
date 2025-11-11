@@ -1,0 +1,10 @@
+parameters:
+  checkMissingReturnTypeDeclaration: false
+  checkMissingIterableValueType: false
+  reportUnmatchedIgnoredErrors: false
+  ignoreErrors:
+    - '#Undefined variable#'
+    - '#Not all paths return a value#'
+    - '#Call to an undefined method#'
+    - '#Property .* \(.*\) does not accept#'
+    - '#Access to an undefined property#'

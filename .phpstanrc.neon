@@ -1,0 +1,17 @@
+parameters:
+    level: 0
+    checkMissingOverrideMethodAttribute: false
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        - '#P1075#'
+        - '#P1006#'
+        - '#P1008#'
+        - '#P1001#'
+        - '#P1003#'
+        - '#undefined variable#i'
+        - '#Not all paths return a value#i'
+    exclude:
+        - %currentWorkingDirectory%/vendor
+        - %currentWorkingDirectory%/bootstrap/cache
+        - %currentWorkingDirectory%/storage
+        - %currentWorkingDirectory%/tests

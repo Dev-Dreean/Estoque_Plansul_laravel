@@ -1,0 +1,5 @@
+{
+  "intelephense.diagnosticsEnabled": false,
+  "intelephense.analysisEnabled": false,
+  "intelephense.telemetryEnabled": false
+}

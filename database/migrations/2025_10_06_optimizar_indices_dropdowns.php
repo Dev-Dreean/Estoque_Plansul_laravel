@@ -41,7 +41,8 @@ return new class extends Migration {
                         Schema::table('tabfant', function (Blueprint $table) {
                             $table->index('CDPROJETO', 'idx_cdprojeto');
                         });
-                    } catch (\Exception $e2) {}
+                    } catch (\Exception $e2) {
+                    }
                 }
             }
             try {

@@ -20,13 +20,13 @@
       <label for="patSearch" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nº Patrimônio (Digite ou selecione) *</label>
       <div class="flex items-stretch gap-2">
         {{-- Botão Gerar Novo Número (ANTES do input) --}}
-        <button 
-          type="button" 
+        <button
+          type="button"
           id="btnGerarNumPatrimonio"
-          @click.prevent="gerarProximoNumeroPatrimonio()" 
+          @click.prevent="gerarProximoNumeroPatrimonio()"
           @keydown.space.prevent="gerarProximoNumeroPatrimonio()"
           @keydown.tab.prevent="(function(){ document.getElementById('patSearch').focus(); })()"
-          title="Espaço ou clique: gera nº automático | Tab: vai para nº patrimônio" 
+          title="Espaço ou clique: gera nº automático | Tab: vai para nº patrimônio"
           tabindex="0"
           class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors active:bg-indigo-800">
           ⟳
@@ -34,7 +34,7 @@
 
         {{-- Input de Busca/Digitação --}}
         <div class="flex-grow relative" @click.away="showPatDropdown=false">
-          <input 
+          <input
             id="patSearch"
             x-model="patSearch"
             @focus="(function(){ showPatDropdown=true; if(patSearch.trim()){buscarPatrimonios();} })()"
@@ -50,7 +50,7 @@
             class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-6 focus:ring-2 focus:ring-indigo-500"
             placeholder="Digite nº ou selecione da lista"
             required />
-          
+
           {{-- Valor oculto com o número selecionado (enviado para o servidor) --}}
           <input type="hidden" name="NUPATRIMONIO" :value="patSearch" />
 
@@ -76,7 +76,7 @@
           </div>
         </div>
       </div>
-    </div>    {{-- Número da Ordem de Compra --}}
+    </div> {{-- Número da Ordem de Compra --}}
     <div>
       <label for="NUMOF" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número da Ordem de Compra</label>
       <input x-model="formData.NUMOF" id="NUMOF" name="NUMOF" type="number" tabindex="3" @focus="focarNumOf" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
@@ -873,7 +873,7 @@
         this.showPatDropdown = false; // Fechar dropdown
         this.buscarPatrimonio();
         this.closeSearchModal();
-        
+
         // Auto-focus no próximo input (NUMOF - Número da Ordem de Compra)
         this.$nextTick(() => {
           setTimeout(() => {
@@ -1620,7 +1620,7 @@
         // 5️⃣ Buscar todos os locais com este código para validação
         // Isso mantém a lista de locais para caso haja múltiplos
         this.buscarLocalPorCodigo();
-        
+
         // Auto-focus no próximo input após selecionar código local
         this.$nextTick(() => {
           setTimeout(() => {
@@ -1780,7 +1780,7 @@
         this.isNovoCodigo = false; // bloqueia edição do código
         this.codigoBuscaStatus = ''; // sem mensagem quando selecionado
         this.showCodigoDropdown = false;
-        
+
         // Auto-focus para o próximo campo: Observações (DEHISTORICO)
         this.$nextTick(() => {
           setTimeout(() => {
