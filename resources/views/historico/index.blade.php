@@ -1,18 +1,11 @@
 <x-app-layout>
+  {{-- Abas de navegação do patrimônio --}}
+  <x-patrimonio-nav-tabs />
 
   <div class="py-12">
-    <div class="w-full px-2 sm:px-4 lg:px-8 2xl:px-12">
-      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-        <div class="p-6 text-gray-900 dark:text-gray-100">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <x-heroicon-o-clock class="w-5 h-5 text-indigo-500" />
-              <h3 class="font-semibold">Histórico recente</h3>
-            </div>
-            <div class="text-sm text-gray-600 dark:text-gray-300">
-              Resultados: <span class="font-semibold">{{ $historicos->total() }}</span>
-            </div>
-          </div>
+    <div class="w-full sm:px-6 lg:px-8">
+      <div class="section">
+        <div class="section-body">
           <div x-data="{ open: false }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
             <div class="flex justify-between items-center">
               <h3 class="font-semibold text-lg">Filtros de Busca</h3>
@@ -176,11 +169,18 @@
             </table>
           </div>
 
-          @if($historicos->hasPages())
-          <div class="mt-4">
-            {{ $historicos->links() }}
+          <div class="mt-4 flex items-center justify-between">
+            <div>
+              @if($historicos->hasPages())
+              <div>
+                {{ $historicos->links() }}
+              </div>
+              @endif
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-300">
+              Resultados: <span class="font-semibold">{{ $historicos->total() }}</span>
+            </div>
           </div>
-          @endif
         </div>
       </div>
     </div>

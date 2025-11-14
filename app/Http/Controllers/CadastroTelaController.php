@@ -84,6 +84,10 @@ class CadastroTelaController extends Controller
             'NUSEQTELA' => 'required|integer|unique:acessotela,NUSEQTELA',
             'DETELA' => 'required|string|max:100',
             'NMSISTEMA' => 'required|string|max:60',
+        ], [], [
+            'NUSEQTELA' => 'Código da Tela',
+            'DETELA' => 'Nome da Tela',
+            'NMSISTEMA' => 'Sistema',
         ]);
 
         $data = $request->only(['NUSEQTELA', 'DETELA', 'NMSISTEMA']);

@@ -1,4 +1,7 @@
 <x-app-layout>
+  {{-- Abas de navegação do patrimônio --}}
+  <x-patrimonio-nav-tabs />
+
   <div x-data="atribuirPage()" x-init="init()">
     <div class="py-12">
       <div class="w-full sm:px-6 lg:px-8">
@@ -173,8 +176,8 @@
               <div class="flex flex-wrap items-center mb-4 gap-3 w-full" x-data="{ }">
                 <!-- Esquerda: Disponíveis/Atribuídos -->
                 <div class="flex flex-wrap items-center gap-3">
-                  <a href="{{ route('patrimonios.atribuir.codigos', ['status'=>'disponivel']) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status','disponivel')=='disponivel' ? 'bg-green-600 text-white border-green-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-green-600/10' }}">Disponíveis</a>
-                  <a href="{{ route('patrimonios.atribuir.codigos', ['status'=>'indisponivel']) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status')=='indisponivel' ? 'bg-red-600 text-white border-red-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-red-600/10' }}">Atribuídos</a>
+                  <a href="{{ route('patrimonios.atribuir.codigos', ['status'=>'disponivel']) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status','disponivel')=='disponivel' ? 'bg-green-600 text-white border-green-600' : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-green-600/10 dark:hover:bg-green-600/10' }}">Disponíveis</a>
+                  <a href="{{ route('patrimonios.atribuir.codigos', ['status'=>'indisponivel']) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status')=='indisponivel' ? 'bg-red-600 text-white border-red-600' : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-red-600/10 dark:hover:bg-red-600/10' }}">Atribuídos</a>
                 </div>
 
                 <!-- Centro: contador quando houver seleção -->
@@ -269,16 +272,16 @@
                   @endphp
 
                   {{-- Cabeçalho Colapsável do Grupo --}}
-                  <tr class="group-header border-b-2 border-gray-200 dark:border-gray-700 transition cursor-pointer bg-white dark:bg-white hover:bg-gray-50 dark:hover:bg-gray-50 shadow-sm"
+                  <tr class="group-header border-b-2 border-gray-200 dark:border-gray-700 transition cursor-pointer bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm"
                     data-group-id="{{ $grupo_id }}"
                     @click="toggleGroup('{{ $grupo_id }}')"
                     :data-expanded="groupState['{{ $grupo_id }}'] === true ? 'true' : 'false'">
-                    <td colspan="5" class="px-4 py-4 bg-white dark:bg-white border-l-4 border-indigo-400 dark:border-indigo-400">
+                    <td colspan="5" class="px-4 py-4 bg-white dark:bg-gray-800 border-l-4 border-indigo-400 dark:border-indigo-400">
                       <div class="flex items-center justify-between gap-4">
                         {{-- Ícone de Expandir + Info do Grupo --}}
                         <div class="flex items-center gap-4 flex-1 min-w-0">
                           <button type="button"
-                            class="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-md border-2 border-indigo-400 dark:border-indigo-400 bg-white dark:bg-white hover:bg-indigo-50 dark:hover:bg-indigo-50 transition transform"
+                            class="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-md border-2 border-indigo-400 dark:border-indigo-400 bg-white dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-indigo-700 transition transform"
                             :class="{ 'rotate-180': groupState['{{ $grupo_id }}'] === true }"
                             @click.stop="toggleGroup('{{ $grupo_id }}')">
                             <svg class="w-4 h-4 text-indigo-400 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,24 +291,24 @@
 
                           <div class="flex items-center gap-3 flex-1 min-w-0">
                             @if(!$is_sem_termo)
-                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white dark:bg-white text-gray-900 dark:text-gray-900 border-2 border-gray-400 dark:border-gray-400 flex-shrink-0">
-                              <span class="text-sm font-semibold text-gray-900 dark:text-gray-900">Termo {{ $grupo_codigo }}</span>
+                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-2 border-gray-400 dark:border-gray-600 flex-shrink-0">
+                              <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Termo {{ $grupo_codigo }}</span>
                             </span>
                             @else
-                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white dark:bg-white border-2 border-amber-300 dark:border-amber-300 flex-shrink-0">
-                              <span class="text-sm font-semibold text-amber-900 dark:text-amber-900">Sem Termo</span>
+                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white dark:bg-gray-800 border-2 border-amber-300 dark:border-amber-400 flex-shrink-0">
+                              <span class="text-sm font-semibold text-amber-900 dark:text-amber-200">Sem Termo</span>
                             </span>
                             @endif
 
                             {{-- Lista de itens como badges individuais --}}
                             <div class="flex flex-wrap gap-2 flex-shrink">
                               @foreach($grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->take(5) as $item)
-                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-white text-gray-900 dark:text-gray-900 border border-gray-300 dark:border-gray-300 whitespace-nowrap">
+                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 whitespace-nowrap">
                                 {{ Str::limit($item, 30) }}
                               </span>
                               @endforeach
                               @if($grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->count() > 5)
-                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-white text-gray-900 dark:text-gray-900 border border-gray-300 dark:border-gray-300">
+                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">
                                 +{{ $grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->count() - 5 }} mais
                               </span>
                               @endif
@@ -316,16 +319,16 @@
                         {{-- Botões de Ação (Baixar e Desatribuir) --}}
                         <div class="flex-shrink-0 flex gap-2 items-center">
                           {{-- Badge de Quantidade --}}
-                          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-white border-2 border-gray-300 dark:border-gray-300">
-                            <span class="text-sm font-bold text-gray-900 dark:text-gray-900">{{ $item_count }}</span>
-                            <span class="text-xs font-semibold text-gray-900 dark:text-gray-900">{{ $item_count === 1 ? 'item' : 'itens' }}</span>
+                          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
+                            <span class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ $item_count }}</span>
+                            <span class="text-xs font-semibold text-gray-900 dark:text-gray-100">{{ $item_count === 1 ? 'item' : 'itens' }}</span>
                           </span>
 
                           @if(!$is_sem_termo && $grupo_patrimonios->first()?->CDMATRFUNCIONARIO)
                           {{-- Botão Baixar Documento Termo (Word - Azul Office) --}}
                           <button type="button"
                             @click.stop="downloadTermoGrupo([{{ $grupo_patrimonios->pluck('NUSEQPATR')->join(',') }}])"
-                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-600 bg-white dark:bg-white rounded-lg border-2 border-blue-600 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-50 transition whitespace-nowrap"
+                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 rounded-lg border-2 border-blue-600 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-700 transition whitespace-nowrap"
                             title="Baixar documento de termo com todos os itens">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -336,7 +339,7 @@
                           {{-- Botão Baixar Planilha Termo (Excel - Verde Office) --}}
                           <button type="button"
                             @click.stop="downloadPlanilhaTermo([{{ $grupo_patrimonios->pluck('NUSEQPATR')->join(',') }}], '{{ $grupo_codigo }}')"
-                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-green-600 dark:text-green-600 bg-white dark:bg-white rounded-lg border-2 border-green-600 dark:border-green-600 hover:bg-green-50 dark:hover:bg-green-50 transition whitespace-nowrap"
+                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-green-600 dark:text-green-400 bg-white dark:bg-gray-800 rounded-lg border-2 border-green-600 dark:border-green-600 hover:bg-green-50 dark:hover:bg-green-700/10 transition whitespace-nowrap"
                             title="Baixar planilha com todos os itens do termo">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -347,7 +350,7 @@
                           {{-- Botão Desatribuir Termo (Vermelho) --}}
                           <button type="button"
                             @click.stop="desatribuirGrupo([{{ $grupo_patrimonios->pluck('NUSEQPATR')->join(',') }}])"
-                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-600 bg-white dark:bg-white rounded-lg border-2 border-red-600 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-50 transition whitespace-nowrap"
+                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 bg-white dark:bg-gray-800 rounded-lg border-2 border-red-600 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-700/10 transition whitespace-nowrap"
                             title="Desatribuir todos os itens deste termo">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>

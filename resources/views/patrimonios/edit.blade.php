@@ -1,4 +1,7 @@
 <x-app-layout>
+    {{-- Abas de navegação do patrimônio --}}
+    <x-patrimonio-nav-tabs />
+
     <x-slot name="header">
         <div style="height:0.8em;line-height:0.8em;padding:0;margin:0;overflow:hidden;background:inherit;">
             <h2 style="font-size:0.95em;font-weight:600;color:#fff;margin:0;padding:0;line-height:0.8em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">

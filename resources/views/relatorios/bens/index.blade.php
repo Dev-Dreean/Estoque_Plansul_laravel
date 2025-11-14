@@ -1,9 +1,13 @@
 {{-- resources/views/relatorios/bens/index.blade.php --}}
 <x-app-layout>
+    {{-- Abas de navegação do patrimônio --}}
+    <x-patrimonio-nav-tabs />
+
     <div
         x-data="{
-                    cadBemOpen: {{ old('modal') === 'cadBem' ? 'true' : 'false' }}
+                    cadBemOpen: {{ (old('modal') === 'cadBem' || request('open') === 'cadBem') ? 'true' : 'false' }}
                 }"
+        @open-cad-bem.window="cadBemOpen = true"
         class="py-12">
         <div class="w-full sm:px-6 lg:px-8">
 
@@ -30,15 +34,7 @@
             <div class="section">
                 <div class="section-body">
 
-                    {{-- AÇÕES (um único botão para abrir o modal) --}}
-                    <div class="flex flex-wrap items-center mb-4 gap-3 w-full">
-                        <button type="button"
-                            @click="cadBemOpen = true"
-                            class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
-                            <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
-                            <span>Cadastrar Bem</span>
-                        </button>
-                    </div>
+                    {{-- AÇÕES: o botão principal será exibido junto ao cabeçalho de filtros (aba abaixo) --}}
 
                     {{-- FILTRO (sempre fechado por padrão) --}}
                     <div x-data="{ open: false }"
@@ -112,6 +108,14 @@
                                 </div>
                             </form>
                         </div>
+                    </div>
+
+                    {{-- AÇÕES: botão Cadastrar Bem abaixo dos filtros --}}
+                    <div class="flex items-start mb-4 mt-2">
+                        <button type="button" @click="cadBemOpen = true" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+                            <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
+                            <span>Cadastrar Bem</span>
+                        </button>
                     </div>
 
                     {{-- TABELA (única) --}}

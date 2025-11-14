@@ -12,53 +12,52 @@
                     </div>
                     @endif
 
-                    <form action="{{ route('cadastro-tela.store') }}" method="POST" class="mb-4">
+                    <form action="{{ route('cadastro-tela.store') }}" method="POST" class="mb-4 w-full">
                         @csrf
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                            <div>
+                        <div class="flex items-center gap-2 md:gap-4 mb-2 w-full flex-nowrap overflow-x-auto">
+                            <div class="flex-shrink-0 w-28">
                                 <input
                                     type="number"
                                     name="NUSEQTELA"
                                     id="NUSEQTELA"
                                     value="{{ old('NUSEQTELA') }}"
-                                    class="h-9 px-3 w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md focus:ring-2 focus:ring-plansul-blue focus:border-transparent"
+                                    class="h-7 px-2 w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md focus:ring-2 focus:ring-plansul-blue focus:border-transparent"
                                     placeholder="Código da Tela" />
                                 @error('NUSEQTELA')
-                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                <p class="mt-0.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                 @enderror
                             </div>
-                            <div>
+                            <div class="flex-1 min-w-[220px]">
                                 <input
                                     type="text"
                                     name="DETELA"
                                     id="DETELA"
                                     value="{{ old('DETELA') }}"
-                                    class="h-9 px-3 w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md focus:ring-2 focus:ring-plansul-blue focus:border-transparent"
+                                    class="h-7 px-2 w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md focus:ring-2 focus:ring-plansul-blue focus:border-transparent"
                                     maxlength="100"
                                     placeholder="Nome da Tela">
                                 @error('DETELA')
-                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                <p class="mt-0.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                 @enderror
                             </div>
-                            <div>
+                            <div class="flex-shrink-0 w-44 ml-1">
                                 <input
                                     type="text"
                                     name="NMSISTEMA"
                                     id="NMSISTEMA"
                                     value="{{ old('NMSISTEMA') }}"
-                                    class="h-9 px-3 w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md focus:ring-2 focus:ring-plansul-blue focus:border-transparent"
+                                    class="h-7 px-2 w-full text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 rounded-md focus:ring-2 focus:ring-plansul-blue focus:border-transparent"
                                     maxlength="60"
                                     placeholder="Sistema">
                                 @error('NMSISTEMA')
-                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                <p class="mt-0.5 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                 @enderror
                             </div>
-                        </div>
-
-                        <div class="flex justify-end">
-                            <button type="submit" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-1.5 px-5 rounded-full inline-flex items-center text-sm transition-all duration-200 shadow-sm hover:shadow-md">
-                                Salvar
-                            </button>
+                            <div class="flex-shrink-0 ml-3">
+                                <button type="submit" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-1 px-3 rounded-full inline-flex items-center text-sm transition-all duration-200 shadow-sm hover:shadow-md">
+                                    Salvar
+                                </button>
+                            </div>
                         </div>
                     </form>
 
