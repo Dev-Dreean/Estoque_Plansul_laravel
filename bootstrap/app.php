@@ -16,7 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'tela.access' => \App\Http\Middleware\CheckTelaAccess::class,
             'can.delete' => \App\Http\Middleware\CheckDeletePermission::class,
+            'session.expiration' => \App\Http\Middleware\CheckSessionExpiration::class,
         ]);
+
+        // Adicionar middleware global para verificar expiração da sessão
+        $middleware->append(\App\Http\Middleware\CheckSessionExpiration::class);
 
         // Exceções de CSRF para rotas API
         $middleware->validateCsrfTokens(except: [

@@ -35,6 +35,8 @@
   </script>
 
   @vite(['resources/css/app.css', 'resources/js/app.js'])
+  
+  
   @if(session('theme_changed'))
   <?php $___themeChanged = json_encode(session('theme_changed')); ?>
   <script>
@@ -57,6 +59,9 @@
 </head>
 
 <body class="font-sans antialiased bg-base text-base-color" x-data="{persistTheme(){try{localStorage.setItem('theme', document.documentElement.getAttribute('data-theme'));}catch(e){}}}" x-init="persistTheme()" @theme-changed.window="persistTheme()">
+  
+  
+
   <div class="min-h-screen bg-base with-fixed-footer">
     @include('layouts.navigation')
 
@@ -112,6 +117,8 @@
 
       window.addEventListener('unload', function() {});
     })();
+
+    // Transition behavior removed per request — no page overlay transitions
   </script>
   @stack('scripts')
 </body>

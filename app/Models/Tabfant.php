@@ -56,7 +56,7 @@ class Tabfant extends Model
      */
     public function setLOCALAttribute($value)
     {
-        $this->attributes['LOCAL'] = strtoupper($value);
+        $this->attributes['LOCAL'] = $value ? strtoupper($value) : null;
     }
 
     /**
@@ -64,6 +64,6 @@ class Tabfant extends Model
      */
     public function setUFAttribute($value)
     {
-        $this->attributes['UF'] = strtoupper($value);
+        $this->attributes['UF'] = $value ? strtoupper($value) : null;
     }
 }

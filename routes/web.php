@@ -9,6 +9,7 @@
  */
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PatrimonioController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjetoController;
@@ -23,14 +24,20 @@ use App\Http\Controllers\DuplicatePatrimonioController;
 |--------------------------------------------------------------------------
 */
 
-// Rota principal redireciona para o login
+// Rota principal redireciona para /menu (página principal agora)
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect()->route('menu.index');
 });
 
 // Inclui as rotas de autenticação (login, logout, etc.)
 // É importante que auth.php esteja aqui para que as rotas de login/logout funcionem
 require __DIR__ . '/auth.php';
+
+// Menu Principal - PÚBLICA (acessível para autenticados e não autenticados)
+Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
+
+// API para obter clima - PÚBLICA (para usuários não autenticados)
+Route::get('/api/weather', [MenuController::class, 'getWeather'])->name('api.weather');
 
 
 // --- ESTRUTURA CORRIGIDA ---

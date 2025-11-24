@@ -185,6 +185,11 @@ class User extends Authenticatable
             return false;
         }
 
+        // Usuário comum nunca acessa a tela de cadastro de usuários
+        if ($nuseqtela === 1002 && $this->isUsuario()) {
+            return false;
+        }
+
         // Super Admin tem acesso TOTAL
         if ($this->isSuperAdmin()) {
             return true;

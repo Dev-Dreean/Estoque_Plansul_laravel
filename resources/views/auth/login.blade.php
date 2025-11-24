@@ -1,42 +1,83 @@
 <x-guest-layout>
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    @if ($errors->any())
+        <div class="status-message" style="background: rgba(255, 107, 107, 0.2); border-color: rgba(255, 107, 107, 0.4);">
+            <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>
+            Usuário ou senha inválidos
+        </div>
+    @endif
 
-    <form method="POST" action="{{ route('login') }}">
+    <x-auth-session-status class="status-message" :status="session('status')" />
+
+    <form method="POST" action="{{ route('login') }}" id="loginForm">
         @csrf
 
-        <div>
-            {{-- MUDANÇA 1: Traduzindo o label "Login" --}}
-            <x-input-label for="NMLOGIN" value="Usuário" />
-            <x-text-input id="NMLOGIN" class="block mt-1 w-full" type="text" name="NMLOGIN" :value="old('NMLOGIN')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('NMLOGIN')" class="mt-2" />
+        <div class="form-group">
+            <label for="NMLOGIN" class="form-label">Usuário</label>
+            <input 
+                id="NMLOGIN" 
+                class="form-input" 
+                type="text" 
+                name="NMLOGIN" 
+                value="{{ old('NMLOGIN') }}" 
+                required 
+                autofocus 
+                autocomplete="username"
+                placeholder="Digite seu usuário"
+            />
+            @if ($errors->has('NMLOGIN'))
+                <div class="error-message">
+                    {{ $errors->first('NMLOGIN') }}
+                </div>
+            @endif
         </div>
 
-        <div class="mt-4">
-            {{-- MUDANÇA 2: Traduzindo o label "Password" --}}
-            <x-input-label for="password" value="Senha" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="form-group">
+            <label for="password" class="form-label">Senha</label>
+            <input 
+                id="password" 
+                class="form-input" 
+                type="password" 
+                name="password" 
+                required 
+                autocomplete="current-password"
+                placeholder="Digite sua senha"
+            />
+            @if ($errors->has('password'))
+                <div class="error-message">
+                    {{ $errors->first('password') }}
+                </div>
+            @endif
         </div>
 
-        {{-- MUDANÇA 3: Bloco "Remember Me" removido anteriormente --}}
-        
-        <div class="flex items-center justify-end mt-4">
-            {{-- MUDANÇA 4: Link "Esqueceu sua senha?" REMOVIDO --}}
-            {{-- @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif --}}
-
-            {{-- MUDANÇA 5: Traduzindo o texto do botão --}}
-            <x-primary-button class="ms-3">
-                {{ __('Acessar') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="submit-btn" id="submitBtn">
+            <span class="submit-btn-text">
+                <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i>
+                Acessar
+            </span>
+        </button>
     </form>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            // Mostrar loading
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+
+            // Se houver erro, remover loading após 1s
+            setTimeout(() => {
+                if (submitBtn.classList.contains('loading') && !form.classList.contains('submitted')) {
+                    // Ainda em loading
+                }
+            }, 1000);
+        });
+
+        // Se houver erro, remover loading
+        if (document.querySelector('.status-message') || document.querySelector('.error-message')) {
+            submitBtn.classList.remove('loading');
+            submitBtn.disabled = false;
+        }
+    </script>
 </x-guest-layout>

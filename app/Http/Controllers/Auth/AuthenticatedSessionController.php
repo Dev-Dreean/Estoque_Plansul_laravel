@@ -22,13 +22,37 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $request->authenticate();
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('patrimonios.index', absolute: false));
+        // Se o usuário marcou "Confiar neste dispositivo", definir expiração de 7 dias
+        if ($request->input('remember_device', false)) {
+            // Configurar sessão para expirar em 7 dias (10080 minutos)
+            config(['session.lifetime' => 10080]);
+            
+            // Salvar timestamp do login na sessão
+            $request->session()->put('login_timestamp', now()->timestamp);
+            $request->session()->put('remember_device', true);
+        }
+
+        // Se for requisição AJAX, retornar JSON
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Login realizado com sucesso',
+                'redirect' => route('patrimonios.index')
+            ]);
+        }
+
+        // Se foi fornecido um redirecionamento específico, usar esse
+        if ($request->has('redirect_to')) {
+            return redirect()->route($request->input('redirect_to'));
+        }
+
+        return redirect()->intended(route('menu.index', absolute: false));
     }
 
     /**
@@ -42,6 +66,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('menu.index');
     }
 }
