@@ -444,11 +444,20 @@
             align-items: center;
             justify-content: center;
             font-size: 45px;
-            margin-bottom: 25px;
+            margin: 0 auto 25px auto;
             transition: all 0.3s ease;
             position: relative;
             z-index: 1;
             box-shadow: 0 15px 40px rgba(251, 146, 60, 0.3);
+        }
+
+        .service-icon i {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            color: white;
         }
 
         .service-card:hover .service-icon {
@@ -1255,6 +1264,9 @@
                 width: 70px;
                 height: 70px;
                 font-size: 35px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .service-title {
@@ -1392,21 +1404,18 @@
             <div class="services-grid">
                 @auth
                     <a href="{{ route('patrimonios.index') }}" class="service-card patrimonio" onclick="showLoadingModal()" style="text-decoration: none; display: block;">
-                        <div class="service-icon">
-                            <i class="fas fa-cube"></i>
-                        </div>
+                        <div class="service-icon"><i class="fas fa-cube"></i></div>
                         <div class="service-title">Cadastro de Patrimônio</div>
                         <div class="service-description">Gerencie e registre todos os itens do seu patrimônio com facilidade</div>
                     </a>
-                @else
+                @endauth
+                @guest
                     <button onclick="openLoginModal()" class="service-card patrimonio" style="border: none; background: none; padding: 0;">
-                        <div class="service-icon">
-                            <i class="fas fa-cube"></i>
-                        </div>
+                        <div class="service-icon"><i class="fas fa-cube"></i></div>
                         <div class="service-title">Cadastro de Patrimônio</div>
                         <div class="service-description">Gerencie e registre todos os itens do seu patrimônio com facilidade</div>
                     </button>
-                @endauth
+                @endguest
 
                 <button onclick="openConstructionModal()" class="service-card almoxarifado" style="border: none; background: none; padding: 0;">
                     <div class="service-icon">
@@ -1433,7 +1442,6 @@
                     
                     <div class="user-weather-section">
                         <div class="weather-item">
-                            <span class="weather-icon"><i class="fas fa-cloud-sun"></i></span>
                             <div class="weather-text">
                                 <span class="weather-label">Clima</span>
                                 <span class="weather-value" id="weatherInfo">--°C</span>
@@ -1471,7 +1479,7 @@
                     </div>
                     
                     <div class="login-info-actions">
-                        <button onclick="openLocationModal()" class="location-auth-btn">
+                        <button id="geoAuthBtn" onclick="openLocationModal()" class="location-auth-btn">
                             <i class="fas fa-location-dot"></i>
                             Autorizar Localização
                         </button>
@@ -1735,6 +1743,11 @@
                         if (weatherElement) {
                             weatherElement.innerHTML = `${data.temp}°C`;
                         }
+                        // Hide the authorization button when coordinates are obtained
+                        const geoAuthBtn = document.getElementById('geoAuthBtn');
+                        if (geoAuthBtn) {
+                            geoAuthBtn.style.display = 'none';
+                        }
                     }
                 }
             } catch (error) {
@@ -1742,8 +1755,27 @@
             }
         }
 
+        // Check if user has geolocation permission (localStorage has coordinates)
+        function checkGeolocationAuthorization() {
+            const userLat = localStorage.getItem('userLat');
+            const userLng = localStorage.getItem('userLng');
+            
+            if (userLat && userLng) {
+                // User has already authorized geolocation - hide only the button
+                const geoAuthBtn = document.getElementById('geoAuthBtn');
+                if (geoAuthBtn) {
+                    geoAuthBtn.style.display = 'none';
+                }
+                // Load weather for guest user
+                loadWeatherByCoordinates(userLat, userLng);
+            }
+        }
+
         // Handle login modal form submission
         document.addEventListener("DOMContentLoaded", function() {
+            // Check geolocation on page load
+            checkGeolocationAuthorization();
+
             const loginForm = document.getElementById("loginModalForm");
             if (loginForm) {
                 loginForm.addEventListener("submit", async function(e) {
