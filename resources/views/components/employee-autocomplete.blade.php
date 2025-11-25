@@ -10,17 +10,19 @@
 ])
 
 <div class="relative w-full">
-    <input 
-        type="text" 
-        id="{{ $id }}-input"
-        placeholder="{{ $placeholder }}"
-        autocomplete="off"
-        class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md"
-        data-autocomplete="true"
-        data-autocomplete-id="{{ $id }}"
-        data-autocomplete-name="{{ $name }}"
-        value=""
-    />
+    <div class="relative">
+        <input 
+            type="text" 
+            id="{{ $id }}-input"
+            placeholder="{{ $placeholder }}"
+            autocomplete="off"
+            class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md"
+            data-autocomplete="true"
+            data-autocomplete-id="{{ $id }}"
+            data-autocomplete-name="{{ $name }}"
+            value=""
+        />
+    </div>
     
     <input 
         type="hidden"
@@ -52,6 +54,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 dropdownEl.classList.add('hidden');
                 return;
             }
+            
+            // Mostrar dropdown com spinner de carregamento
+            dropdownEl.innerHTML = '<div class="flex items-center justify-center px-3 py-4">' +
+                '<svg class="animate-spin h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">' +
+                '<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>' +
+                '<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>' +
+                '</svg>' +
+                '<span class="text-sm text-gray-600 dark:text-gray-400">Buscando...</span>' +
+                '</div>';
+            dropdownEl.classList.remove('hidden');
             
             debounceTimer = setTimeout(function() {
                 fetch(`/api/funcionarios/pesquisar?q=${encodeURIComponent(searchTerm)}`)
