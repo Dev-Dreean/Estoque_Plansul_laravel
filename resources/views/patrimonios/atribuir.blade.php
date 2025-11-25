@@ -160,7 +160,7 @@
                       " class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                     </div>
                     <div class="flex-1 min-w-[150px]">
-                      <x-user-autocomplete 
+                      <x-employee-autocomplete 
                         id="filtro_matr_responsavel"
                         name="filtro_matr_responsavel"
                         placeholder="Responsável"
@@ -168,7 +168,7 @@
                       />
                     </div>
                     <div class="flex-1 min-w-[150px]">
-                      <x-user-autocomplete 
+                      <x-employee-autocomplete 
                         id="filtro_matr_cadastrador"
                         name="filtro_matr_cadastrador"
                         placeholder="Cadastrador"

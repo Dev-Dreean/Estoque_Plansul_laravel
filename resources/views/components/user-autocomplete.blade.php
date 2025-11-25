@@ -25,7 +25,7 @@
     inputName: '{{ $name }}',
     apiEndpoint: '{{ $apiEndpoint }}',
     initialValue: '{{ $value }}'
-})" class="relative">
+})" x-init="init()" class="relative w-full isolation-auto">
     
     <!-- Input de busca -->
     <input 
@@ -40,11 +40,13 @@
         @keydown.arrow-up="highlightedIndex = Math.max(highlightedIndex - 1, 0)"
         @keydown.enter="selectResult(highlightedIndex)"
         placeholder="{{ $placeholder }}"
-        value="{{ $value }}"
+        x-model="searchTerm"
         {{ $attributes->merge([
             'class' => 'h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md'
         ]) }}
         autocomplete="off"
+        spellcheck="false"
+        list=""
     />
     
     <!-- Input hidden para armazenar o valor selecionado (matrícula) -->
@@ -57,12 +59,13 @@
         @change="$dispatch('autocomplete-changed')"
     />
     
-    <!-- Dropdown de resultados -->
+    <!-- Dropdown de resultados (usando absolute com z-index alto) -->
     <div 
         x-show="showDropdown && results.length > 0" 
         x-transition
-        class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 max-h-64 overflow-y-auto"
+        class="absolute top-full left-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-[9999] max-h-64 overflow-y-auto"
         @click.stop
+        style="width: 100%; min-width: 300px;"
     >
         <template x-for="(result, index) in results" :key="index">
             <div 
@@ -71,9 +74,9 @@
                     'bg-indigo-500 text-white': highlightedIndex === index,
                     'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700': highlightedIndex !== index
                 }"
-                class="px-3 py-2 cursor-pointer text-sm"
+                class="px-3 py-2 cursor-pointer text-sm whitespace-nowrap text-ellipsis overflow-hidden block"
             >
-                <span x-text="formatResult(result)"></span>
+                <span x-text="formatResult(result)" class="truncate"></span>
             </div>
         </template>
     </div>
@@ -82,7 +85,7 @@
     <div 
         x-show="isLoading" 
         x-transition
-        class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 px-3 py-2"
+        class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-[9999] px-3 py-2"
     >
         <span class="text-xs text-gray-500 dark:text-gray-400">Carregando...</span>
     </div>
@@ -91,7 +94,7 @@
     <div 
         x-show="showDropdown && !isLoading && results.length === 0 && searchTerm.length > 0" 
         x-transition
-        class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 px-3 py-2"
+        class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-[9999] px-3 py-2"
     >
         <span class="text-xs text-gray-500 dark:text-gray-400">Nenhum resultado encontrado</span>
     </div>
@@ -108,6 +111,13 @@ function userAutocomplete(config) {
         isLoading: false,
         debounceTimer: null,
         apiEndpoint: config.apiEndpoint,
+        
+        init() {
+            // Se houver um valor inicial, limpa o campo de busca para que o usuário veja vazio
+            if (this.selectedValue) {
+                this.searchTerm = '';
+            }
+        },
         
         onSearch(event) {
             // Debounce a busca

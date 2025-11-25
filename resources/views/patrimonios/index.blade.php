@@ -203,7 +203,7 @@
                       <input type="number" name="nmplanta" placeholder="Cód. Termo" value="{{ request('nmplanta') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                     </div>
                     <div>
-                      <x-user-autocomplete 
+                      <x-employee-autocomplete 
                         id="matr_responsavel_search"
                         name="matr_responsavel"
                         placeholder="Responsável (matrícula ou nome)"
@@ -211,7 +211,7 @@
                       />
                     </div>
                     <div>
-                      <x-user-autocomplete 
+                      <x-employee-autocomplete 
                         id="matr_cadastrador_search"
                         name="matr_cadastrador"
                         placeholder="Cadastrador (matrícula ou nome)"
