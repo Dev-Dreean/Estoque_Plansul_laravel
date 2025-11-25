@@ -432,10 +432,21 @@ class PatrimonioController extends Controller
     public function destroy(Patrimonio $patrimonio)
     {
         $this->authorize('delete', $patrimonio);
+        
+        // Log da deleção
+        \Illuminate\Support\Facades\Log::info('Patrimônio deletado', [
+            'NUSEQPATR' => $patrimonio->NUSEQPATR,
+            'NUPATRIMONIO' => $patrimonio->NUPATRIMONIO,
+            'DEPATRIMONIO' => $patrimonio->DEPATRIMONIO,
+            'deletado_por' => Auth::user()->NMLOGIN,
+            'user_id' => Auth::id()
+        ]);
+        
         $patrimonio->delete();
         
         if (request()->expectsJson()) {
-            return response()->json(['message' => 'Patrimônio deletado com sucesso!'], 200);
+            return response()->json(['message' => 'Patrimônio deletado com sucesso!'], 204)
+                ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
         }
         
         return redirect()->route('patrimonios.index')->with('success', 'Patrimônio deletado com sucesso!');

@@ -77,7 +77,6 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // Rotas do CRUD de Patrimônios e suas APIs (NUSEQTELA: 1000)
     Route::resource('patrimonios', PatrimonioController::class)->middleware(['tela.access:1000', 'can.delete']);
     Route::get('/patrimonios/lookup-codigo', [App\Http\Controllers\PatrimonioController::class, 'lookupCodigo'])->name('patrimonios.lookupCodigo');
-    Route::resource('patrimonios', App\Http\Controllers\PatrimonioController::class);
     Route::get('/patrimonios/atribuir/termo', [PatrimonioController::class, 'atribuir'])->name('patrimonios.atribuir');
     // Alias / nova rota para listagem/atribuição via filtros (referenciada em views e redirects)
     // Mantemos a rota original acima para retrocompatibilidade; esta atende chamadas a route('patrimonios.atribuir.codigos')
