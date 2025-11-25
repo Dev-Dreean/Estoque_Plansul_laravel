@@ -1,3 +1,8 @@
+<IfModule mod_fcgid.c>
+    AddHandler fcgid-script .php
+    FcgidWrapper /opt/remi/php82/root/usr/bin/php-cgi .php
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
