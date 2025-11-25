@@ -1370,13 +1370,13 @@
         <div class="floating-shape shape-orange"></div>
 
         <!-- Background Logo -->
-        <img src="{{ asset('img/logo_plansul.svg') }}" alt="Plansul Background" class="background-logo">
+        <img src="{{ asset('public/img/logo_plansul.svg') }}" alt="Plansul Background" class="background-logo">
 
         <!-- Content -->
         <div class="content-wrapper">
             <!-- Logo Section -->
             <div class="logo-section">
-                <img src="{{ asset('img/logo_plansul.svg') }}" alt="Plansul" class="company-logo">
+                <img src="{{ asset('public/img/logo_plansul.svg') }}" alt="Plansul" class="company-logo">
             </div>
 
             <!-- Greeting Section -->
