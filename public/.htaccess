@@ -1,7 +1,12 @@
+# Forçar PHP 8.2 para esta aplicação (método 1: FastCGI)
 <IfModule mod_fcgid.c>
     AddHandler fcgid-script .php
     FcgidWrapper /opt/remi/php82/root/usr/bin/php-cgi .php
 </IfModule>
+
+# Forçar PHP 8.2 para esta aplicação (método 2: CGI)
+AddHandler application/x-httpd-php82 .php
+Action application/x-httpd-php82 /cgi-sys/php82
 
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
