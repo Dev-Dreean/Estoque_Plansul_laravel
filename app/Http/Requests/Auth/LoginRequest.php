@@ -28,10 +28,20 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
-        // MUDANÇA 1: Trocamos a validação de 'email' para 'NMLOGIN'
         return [
             'NMLOGIN' => ['required', 'string'],
             'password' => ['required', 'string'],
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     */
+    public function messages(): array
+    {
+        return [
+            'NMLOGIN.required' => 'O campo usuário é obrigatório.',
+            'password.required' => 'O campo senha é obrigatório.',
         ];
     }
 
@@ -44,17 +54,26 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // MUDANÇA 2: Usamos 'NMLOGIN' na tentativa de login em vez de 'email'
-        if (! Auth::attempt($this->only('NMLOGIN', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        try {
+            if (! Auth::attempt($this->only('NMLOGIN', 'password'), $this->boolean('remember'))) {
+                RateLimiter::hit($this->throttleKey());
 
-            throw ValidationException::withMessages([
-                // MUDANÇA 3: A mensagem de erro agora se refere ao campo 'NMLOGIN'
-                'NMLOGIN' => trans('auth.failed'),
-            ]);
+                throw ValidationException::withMessages([
+                    'NMLOGIN' => 'Usuário ou senha inválidos. Verifique seus dados e tente novamente.',
+                ]);
+            }
+
+            RateLimiter::clear($this->throttleKey());
+        } catch (\Exception $e) {
+            // Se houver erro de conexão com banco de dados
+            if ($e instanceof \PDOException || $e instanceof \Illuminate\Database\QueryException) {
+                throw ValidationException::withMessages([
+                    'connection' => 'Erro ao conectar ao servidor. Verifique se o WAMP Server está rodando.',
+                ]);
+            }
+            
+            throw $e;
         }
-
-        RateLimiter::clear($this->throttleKey());
     }
 
     /**
@@ -73,10 +92,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'NMLOGIN' => trans('auth.throttle', [ // MUDANÇA 4: A mensagem de erro de throttle também usa 'NMLOGIN'
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'NMLOGIN' => 'Muitas tentativas de login. Tente novamente em ' . ceil($seconds / 60) . ' minuto(s).',
         ]);
     }
 
@@ -85,7 +101,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        // MUDANÇA 5: O controle de tentativas agora é por NMLOGIN + IP
         return Str::transliterate(Str::lower($this->input('NMLOGIN')).'|'.$this->ip());
     }
 }

@@ -206,6 +206,17 @@
             box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.1);
         }
 
+        .form-input.input-error {
+            border-color: #ef4444;
+            background: rgba(15, 23, 42, 0.8);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .form-input.input-error:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+        }
+
         .form-input::placeholder {
             color: rgba(226, 232, 240, 0.4);
         }
@@ -290,6 +301,143 @@
             color: rgba(226, 232, 240, 0.9);
             font-size: 14px;
             text-align: center;
+        }
+
+        /* Alert Styles */
+        #alertContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(220, 38, 38, 0.5);
+            border-radius: 15px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(220, 38, 38, 0.3);
+        }
+
+        .alert-error.alert-connection {
+            background: rgba(59, 130, 246, 0.95);
+            border-color: rgba(37, 99, 235, 0.5);
+            box-shadow: 0 10px 40px rgba(37, 99, 235, 0.3);
+        }
+
+        .alert-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 20px;
+            color: white;
+        }
+
+        .alert-icon {
+            flex-shrink: 0;
+            font-size: 24px;
+            margin-top: 2px;
+        }
+
+        .alert-text {
+            flex: 1;
+        }
+
+        .alert-text h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .alert-text p {
+            font-size: 13px;
+            opacity: 0.95;
+            line-height: 1.4;
+        }
+
+        .alert-close {
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .alert-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(400px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(400px);
+            }
+        }
+
+        .animated-alert {
+            animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .fade-out {
+            animation: fadeOut 0.3s ease forwards;
+        }
+
+        /* Media query para mobile */
+        @media (max-width: 640px) {
+            #alertContainer {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+
+            .alert-content {
+                padding: 16px;
+                gap: 12px;
+            }
+
+            .alert-icon {
+                font-size: 20px;
+            }
+
+            .alert-text h3 {
+                font-size: 15px;
+            }
+
+            .alert-text p {
+                font-size: 12px;
+            }
         }
 
         @media (max-width: 640px) {

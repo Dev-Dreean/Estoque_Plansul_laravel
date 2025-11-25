@@ -12,6 +12,11 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
+// Rota de health check - sem autenticação necessária
+Route::get('api/health', function () {
+    return response()->json(['status' => 'ok'], 200);
+})->name('api.health');
+
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
