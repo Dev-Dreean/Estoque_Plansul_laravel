@@ -5,6 +5,18 @@
 
     RewriteEngine On
 
+    # >>> Configuração para arquivos SVG
+    <FilesMatch "\.(svg|svgz)$">
+        <IfModule mod_mime.c>
+            AddType image/svg+xml .svg
+            AddType image/svg+xml .svgz
+        </IfModule>
+        <IfModule mod_headers.c>
+            Header set Content-Type "image/svg+xml"
+        </IfModule>
+    </FilesMatch>
+    # <<<
+
     # >>> Força HTTPS
     RewriteCond %{HTTPS} !=on
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
