@@ -221,6 +221,11 @@ class User extends Authenticatable
     {
         $nuseqtela = (string) $nuseqtela;
 
+        // Super Admin vê TODAS as telas SEMPRE
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
         $tela = DB::table('acessotela')
             ->where('NUSEQTELA', $nuseqtela)
             ->first();
@@ -230,11 +235,6 @@ class User extends Authenticatable
         }
 
         $nivelVisibilidade = $tela->NIVEL_VISIBILIDADE ?? 'TODOS';
-
-        // Super Admin vê TODAS as telas sempre
-        if ($this->isSuperAdmin()) {
-            return true;
-        }
 
         // Admin vê telas 'TODOS' e 'ADM', mas não 'SUP'
         if ($this->PERFIL === self::PERFIL_ADMIN) {
