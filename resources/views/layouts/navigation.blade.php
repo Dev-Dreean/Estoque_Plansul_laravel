@@ -2,13 +2,13 @@
     <div class="w-full sm:px-6 lg:px-8">
         <div class="flex items-center h-16">
             <div class="flex flex-1 items-center">
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-base-color" />
+                <div class="shrink-0 flex items-center" style="min-width: 120px; min-height: 36px;">
+                    <a href="{{ route('dashboard') }}" class="block">
+                        <x-application-logo class="block h-9 w-auto fill-current text-base-color" style="max-height: 36px;" />
                     </a>
                 </div>
 
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex" x-cloak>
                     @php
                     // Mapa simples: NUSEQTELA => URL
                     // Ordem customizada das telas:
@@ -18,24 +18,24 @@
                     // 4. 1002: Cadastro de Usuário
                     // 5. 1006: Cadastro de Telas
                     $telaRotas = [
-                        1000 => route('patrimonios.index'),
-                        1008 => route('dashboard'),
-                        1009 => route('projetos.index'),
-                        1002 => route('usuarios.index'),
-                        1006 => route('cadastro-tela.index'),
+                        '1000' => route('patrimonios.index'),
+                        '1008' => route('dashboard'),
+                        '1009' => route('projetos.index'),
+                        '1002' => route('usuarios.index'),
+                        '1006' => route('cadastro-tela.index'),
                     ];
                     
                     // Rotas para verificação de ativo
                     $rotasAtivas = [
-                        1000 => 'patrimonios.*',
-                        1008 => 'dashboard',
-                        1009 => 'projetos.*',
-                        1002 => 'usuarios.*',
-                        1006 => 'cadastro-tela.*',
+                        '1000' => 'patrimonios.*',
+                        '1008' => 'dashboard',
+                        '1009' => 'projetos.*',
+                        '1002' => 'usuarios.*',
+                        '1006' => 'cadastro-tela.*',
                     ];
                     
                     // Ordem customizada das telas
-                    $telaOrder = [1000, 1008, 1009, 1002, 1006];
+                    $telaOrder = ['1000', '1008', '1009', '1002', '1006'];
                     
                     // Busca todas as telas disponíveis e ordena
                     $todasAsTelas = \Illuminate\Support\Facades\DB::table('acessotela')
@@ -116,24 +116,24 @@
             // 4. 1002: Cadastro de Usuário
             // 5. 1006: Cadastro de Telas
             $telaRotas = [
-                1000 => route('patrimonios.index'),
-                1008 => route('dashboard'),
-                1009 => route('projetos.index'),
-                1002 => route('usuarios.index'),
-                1006 => route('cadastro-tela.index'),
+                '1000' => route('patrimonios.index'),
+                '1008' => route('dashboard'),
+                '1009' => route('projetos.index'),
+                '1002' => route('usuarios.index'),
+                '1006' => route('cadastro-tela.index'),
             ];
             
             // Rotas para verificação de ativo
             $rotasAtivas = [
-                1000 => 'patrimonios.*',
-                1008 => 'dashboard',
-                1009 => 'projetos.*',
-                1002 => 'usuarios.*',
-                1006 => 'cadastro-tela.*',
+                '1000' => 'patrimonios.*',
+                '1008' => 'dashboard',
+                '1009' => 'projetos.*',
+                '1002' => 'usuarios.*',
+                '1006' => 'cadastro-tela.*',
             ];
             
             // Ordem customizada das telas
-            $telaOrder = [1000, 1008, 1009, 1002, 1006];
+            $telaOrder = ['1000', '1008', '1009', '1002', '1006'];
             
             // Busca todas as telas disponíveis e ordena
             $todasAsTelas = \Illuminate\Support\Facades\DB::table('acessotela')

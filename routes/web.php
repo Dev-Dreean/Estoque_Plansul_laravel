@@ -70,9 +70,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
 
     // MOVI TODAS AS SUAS ROTAS PRINCIPAIS PARA DENTRO DESTE GRUPO
 
-    // Rota do Dashboard (NUSEQTELA: 1001)
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('tela.access:1001');
-    Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data')->middleware('tela.access:1001');
+    // Rota do Dashboard/Gráficos (NUSEQTELA: 1008)
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('tela.access:1008');
+    Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data')->middleware('tela.access:1008');
 
     // Rotas do CRUD de Patrimônios e suas APIs (NUSEQTELA: 1000)
     Route::resource('patrimonios', PatrimonioController::class)->middleware(['tela.access:1000', 'can.delete']);
@@ -94,8 +94,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // Nova rota: pesquisa de funcionários
     Route::get('/api/funcionarios/pesquisar', [\App\Http\Controllers\FuncionarioController::class, 'pesquisar'])->name('api.funcionarios.pesquisar');
 
-    // Rotas de Projetos e suas APIs (NUSEQTELA: 1003 - Cadastro de Projetos)
-    Route::resource('projetos', ProjetoController::class)->middleware(['admin', 'tela.access:1003', 'can.delete']);
+    // Rotas de Projetos/Locais e suas APIs (NUSEQTELA: 1009 - Cadastro de Locais)
+    Route::resource('projetos', ProjetoController::class)->middleware(['admin', 'tela.access:1009', 'can.delete']);
     Route::get('projetos/{projeto}/duplicar', [ProjetoController::class, 'duplicate'])->name('projetos.duplicate')->middleware('admin');
     Route::post('projetos/delete-multiple', [ProjetoController::class, 'deleteMultiple'])->name('projetos.delete-multiple')->middleware(['admin', 'can.delete']);
     Route::get('/api/locais/lookup', [ProjetoController::class, 'lookup'])->name('projetos.lookup')->middleware('admin');
@@ -191,8 +191,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         ]);
     })->name('debug.theme');
 
-    // Rotas protegidas para Cadastro de Tela (apenas administradores)
-    Route::middleware(['auth'])->group(function () {
+    // Rotas protegidas para Cadastro de Tela (NUSEQTELA: 1006 - apenas administradores)
+    Route::middleware(['auth', 'admin', 'tela.access:1006'])->group(function () {
         Route::get('/cadastro-tela', [\App\Http\Controllers\CadastroTelaController::class, 'index'])->name('cadastro-tela.index');
         Route::post('/cadastro-tela', [\App\Http\Controllers\CadastroTelaController::class, 'store'])->name('cadastro-tela.store');
         Route::post('/cadastro-tela/show-form/{nome}', [\App\Http\Controllers\CadastroTelaController::class, 'showForm'])->name('cadastro-tela.showForm');

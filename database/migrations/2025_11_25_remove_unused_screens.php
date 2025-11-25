@@ -29,11 +29,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Remover telas de teste
-        DB::table('acessotela')->whereIn('NUSEQTELA', [0, 1, 2, 5, 10])->delete();
+        // Remover telas de teste (com casting para string)
+        DB::table('acessotela')->whereIn('NUSEQTELA', ['0', '1', '2', '5', '10'])->delete();
 
         // Remover telas que não devem aparecer
-        DB::table('acessotela')->whereIn('NUSEQTELA', [1001, 1003, 1004, 1005])->delete();
+        DB::table('acessotela')->whereIn('NUSEQTELA', ['1001', '1003', '1004', '1005'])->delete();
     }
 
     /**

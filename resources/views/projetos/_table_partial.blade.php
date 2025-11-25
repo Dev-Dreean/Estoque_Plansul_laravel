@@ -1,6 +1,6 @@
 {{-- Caminho: resources/views/projetos/_table_partial.blade.php --}}
 
-<div x-data="tableMultiSelect()" class="relative overflow-x-auto shadow-md sm:rounded-lg">
+<div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     {{-- Toast de Sucesso/Erro --}}
     <div x-show="toast.show" x-transition class="fixed top-4 right-4 z-[9999] max-w-sm" @click="toast.show = false">
         <div :class="toast.tipo === 'sucesso' ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'" class="rounded-lg shadow-lg p-4">

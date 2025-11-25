@@ -1,7 +1,5 @@
 <x-app-layout>
-    <div class="py-12"
-        x-data="searchTagFilterProjetos('{{ route('projetos.index') }}')"
-        @init="init()"> {{-- Inicializa as tags ao carregar --}}
+    <div class="py-12" x-data="mergeProjetos('{{ route('projetos.index') }}')" @init="init()">
         <div class="w-full sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
@@ -58,13 +56,25 @@
     </div>
 
     @push('scripts')
-    {{-- 4. Lógica Javascript do Alpine.js --}}
+    {{-- 4. Lógica Javascript do Alpine.js - Mergeado searchTagFilter + tableMultiSelect --}}
     <script>
-        function searchTagFilterProjetos(baseUrl) {
+        function mergeProjetos(baseUrl) {
             return {
+                // Dados do Search/Filter
                 inputValue: '',
                 tags: [],
                 tableHtml: document.getElementById('table-container').innerHTML,
+                
+                // Dados do Multi-Select
+                selecionados: [],
+                mostraModalDelecao: false,
+                carregando: false,
+                toast: {
+                    show: false,
+                    mensagem: '',
+                    tipo: 'sucesso'
+                },
+
                 init() {
                     // Restaura as tags da URL ao carregar a página
                     const params = new URLSearchParams(window.location.search);
@@ -73,6 +83,7 @@
                         this.tags = searchParam.split(',').filter(tag => tag.trim().length > 0);
                     }
                 },
+
                 addTag() {
                     const val = this.inputValue.trim();
                     if (val && !this.tags.includes(val)) {
@@ -81,18 +92,25 @@
                         this.search();
                     }
                 },
+
                 removeTag(idx) {
                     this.tags.splice(idx, 1);
                     this.search();
                 },
+
                 removeLastTag() {
                     if (this.inputValue === '' && this.tags.length > 0) {
                         this.tags.pop();
                         this.search();
                     }
                 },
+
                 search() {
-                    // Monta a URL com os parâmetros de busca (tags + input)
+                    // Limpar seleção ao buscar
+                    this.selecionados = [];
+                    this.mostraModalDelecao = false;
+                    
+                    // Monta a URL com os parâmetros de busca
                     let params = [];
                     if (this.inputValue.trim().length > 0) {
                         params = [...this.tags, this.inputValue.trim()];
@@ -110,22 +128,9 @@
                             this.tableHtml = html;
                         })
                         .catch(error => console.error('Erro ao buscar os dados:', error));
-                }
-            }
-        }
-
-        // Função Alpine para multi-select
-        function tableMultiSelect() {
-            return {
-                selecionados: [],
-                mostraModalDelecao: false,
-                carregando: false,
-                toast: {
-                    show: false,
-                    mensagem: '',
-                    tipo: 'sucesso' // 'sucesso' ou 'erro'
                 },
 
+                // Multi-Select Methods
                 toggleSelecao(id, checked) {
                     if (checked) {
                         if (!this.selecionados.includes(id)) {
@@ -138,7 +143,6 @@
 
                 toggleTodos(checked) {
                     if (checked) {
-                        // Seleciona todos os locais visíveis na página
                         const rows = document.querySelectorAll('tbody tr[data-local-id]');
                         this.selecionados = [];
                         rows.forEach(row => {
@@ -149,12 +153,13 @@
                         });
                     } else {
                         this.selecionados = [];
+                        const headerCheckbox = document.querySelector('thead input[type="checkbox"]');
+                        if (headerCheckbox) headerCheckbox.checked = false;
                     }
                 },
 
                 limparSelecao() {
                     this.selecionados = [];
-                    // Desmarca o checkbox do header
                     const headerCheckbox = document.querySelector('thead input[type="checkbox"]');
                     if (headerCheckbox) {
                         headerCheckbox.checked = false;
@@ -210,10 +215,8 @@
                             const quantidade = this.selecionados.length;
                             this.selecionados = [];
 
-                            // Mostra toast de sucesso
                             this.mostrarToast(`✓ ${quantidade} local(is) removido(s) com sucesso!`, 'sucesso', 3000);
 
-                            // Recarrega a página após 1.5 segundos
                             setTimeout(() => {
                                 location.reload();
                             }, 1500);

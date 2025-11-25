@@ -24,8 +24,8 @@ use Illuminate\Support\Facades\DB;
  * @method bool isSuperAdmin()
  * @method bool isAdmin()
  * @method bool podeExcluir()
- * @method bool temAcessoTela(int $nuseqtela)
- * @method bool telaVisivel(int $nuseqtela)
+ * @method bool temAcessoTela(int|string $nuseqtela)
+ * @method bool telaVisivel(int|string $nuseqtela)
  */
 class User extends Authenticatable
 {
@@ -175,23 +175,21 @@ class User extends Authenticatable
      * Admin tem acesso a telas visíveis para ele
      * Usuários comuns precisam ter acesso configurado + tela visível
      *
-     * @param int $nuseqtela
+     * @param int|string $nuseqtela
      * @return bool
      */
-    public function temAcessoTela(int $nuseqtela): bool
+    public function temAcessoTela(int|string $nuseqtela): bool
     {
+        // Converte para string para comparações consistentes
+        $nuseqtela = (string) $nuseqtela;
+
         // Primeiro verifica se a tela está visível para este perfil
         if (!$this->telaVisivel($nuseqtela)) {
             return false;
         }
 
-        // Usuário comum nunca acessa a tela de usuários (1003)
-        if ($nuseqtela === 1003 && $this->isUsuario()) {
-            return false;
-        }
-
-        // Usuário comum nunca acessa a tela de cadastro de locais (1002)
-        if ($nuseqtela === 1002 && $this->isUsuario()) {
+        // Usuário comum nunca acessa a tela de usuários (1003, 1002)
+        if (in_array($nuseqtela, ['1003', '1002']) && $this->isUsuario()) {
             return false;
         }
 
@@ -216,11 +214,13 @@ class User extends Authenticatable
      * Verifica se uma tela está visível para o perfil do usuário
      * baseado no campo NIVEL_VISIBILIDADE da tabela acessotela
      * 
-     * @param int $nuseqtela
+     * @param int|string $nuseqtela
      * @return bool
      */
-    public function telaVisivel(int $nuseqtela): bool
+    public function telaVisivel(int|string $nuseqtela): bool
     {
+        $nuseqtela = (string) $nuseqtela;
+
         $tela = DB::table('acessotela')
             ->where('NUSEQTELA', $nuseqtela)
             ->first();

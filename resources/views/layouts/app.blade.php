@@ -60,7 +60,20 @@
 
 <body class="font-sans antialiased bg-base text-base-color" x-data="{persistTheme(){try{localStorage.setItem('theme', document.documentElement.getAttribute('data-theme'));}catch(e){}}}" x-init="persistTheme()" @theme-changed.window="persistTheme()">
   
-  
+  <style>
+    /* Skeleton loader para prevenir flash durante carregamento */
+    .nav-skeleton {
+      background: linear-gradient(90deg, rgba(200,200,200,0.1) 25%, rgba(200,200,200,0.2) 50%, rgba(200,200,200,0.1) 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s ease-in-out infinite;
+    }
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    /* Esconde elementos até Alpine.js carregar */
+    [x-cloak] { display: none !important; }
+  </style>
 
   <div class="min-h-screen bg-base with-fixed-footer">
     @include('layouts.navigation')
