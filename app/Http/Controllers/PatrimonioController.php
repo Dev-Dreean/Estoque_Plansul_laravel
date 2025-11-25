@@ -1063,6 +1063,13 @@ class PatrimonioController extends Controller
         }
         // Se status for vazio ou 'todos', não aplica filtro de status
 
+        // FILTRO ESSENCIAL: Excluir patrimônios sem descrição (DEPATRIMONIO vazio/null)
+        // Se não tiver nome do item, não deveria aparecer na tela de atribuição
+        $query->where(function ($q) {
+            $q->whereNotNull('DEPATRIMONIO')
+              ->where('DEPATRIMONIO', '<>', '');
+        });
+
         // Aplicar filtros se fornecidos
         if ($request->filled('filtro_numero')) {
             Log::info('🔍 Filtro Número: ' . $request->filtro_numero);
