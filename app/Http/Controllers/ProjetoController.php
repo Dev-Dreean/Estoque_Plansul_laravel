@@ -71,6 +71,12 @@ class ProjetoController extends Controller
                 $page
             );
 
+        // Se requisição é AJAX com api=1, retorna JSON com HTML das linhas
+        if ($request->has('api') && $request->input('api') === '1') {
+            $html = view('projetos._table_rows', ['locais' => $locais])->render();
+            return response()->json(['html' => $html]);
+        }
+
         if ($request->ajax()) {
             return view('projetos._table_partial', ['locais' => $locais])->render();
         }
@@ -180,6 +186,10 @@ class ProjetoController extends Controller
     public function destroy(Request $request, LocalProjeto $projeto)
     {
         $projeto->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Local apagado com sucesso.'], 200);
+        }
 
         // Manter os filtros da requisição anterior
         $filtros = $request->only(['search', 'cdprojeto', 'local', 'tag']);

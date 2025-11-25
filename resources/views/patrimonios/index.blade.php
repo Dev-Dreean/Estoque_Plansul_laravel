@@ -13,7 +13,7 @@
     reportFilters: {},
     tipoRelatorio: 'numero', // <-- A variável agora vive aqui, no lugar certo.
     relatorioErrors: {},
-  relatorioGlobalError: null,
+    relatorioGlobalError: null,
     init() {
         if (window.location.hash === '#atribuir-termo') {
             this.atribuirTermoModalOpen = true;
@@ -146,7 +146,7 @@
         form.submit();
         document.body.removeChild(form);
     }
-}">
+  }">
     <div class="py-12">
       <div class="w-full sm:px-6 lg:px-8">
         @if(session('success'))
@@ -388,21 +388,7 @@
                   @if(Auth::user()->isAdmin())
                   <td class="px-2 py-2">
                     <div class="flex items-center gap-2">
-                      @if(Auth::user()->isSuperAdmin())
-                      <form method="POST" action="{{ route('patrimonios.destroy', $patrimonio) }}" onsubmit="return confirm('Tem certeza que deseja excluir este patrimônio?');" @click.stop>
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="text-red-600 dark:text-red-500 hover:text-red-700" title="Excluir" aria-label="Excluir patrimônio">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                            <path d="M10 11v6" />
-                            <path d="M14 11v6" />
-                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                          </svg>
-                        </button>
-                      </form>
-                      @endif
+                      {{-- Deleção removida por problemas --}}
                     </div>
                   </td>
                   @endif
@@ -423,6 +409,7 @@
           </div>
         </div>
       </div>
+
     </div>
     <div x-show="relatorioModalOpen" x-transition
       class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">

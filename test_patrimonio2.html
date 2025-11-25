@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="FwqH6QcaxAlIYU31L8ovwkb266dDWZb9duQFV4rp">
+
+    <title>Laravel - Menu</title>
+
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:300;400;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="preload" as="style" href="http://127.0.0.1:8000/build/assets/app-60ZNL-6C.css" /><link rel="modulepreload" href="http://127.0.0.1:8000/build/assets/app-D9eLteF9.js" /><link rel="stylesheet" href="http://127.0.0.1:8000/build/assets/app-60ZNL-6C.css" /><script type="module" src="http://127.0.0.1:8000/build/assets/app-D9eLteF9.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at 10% 20%, rgb(30, 58, 138) 0%, rgb(15, 23, 42) 90%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .premium-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+            overflow: hidden;
+            transition: background-position 0.3s ease-out;
+            background-attachment: fixed;
+        }
+
+        /* Floating Shapes */
+        .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: 0;
+            animation: floatShape 8s infinite alternate;
+        }
+
+        @keyframes floatShape {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(20px, -20px); }
+        }
+
+        .shape-blue {
+            background: rgb(37, 99, 235);
+            width: 600px;
+            height: 600px;
+            top: -150px;
+            left: -250px;
+            opacity: 0.20;
+        }
+
+        .shape-orange {
+            background: rgb(251, 146, 60);
+            width: 600px;
+            height: 600px;
+            bottom: -150px;
+            right: -250px;
+            opacity: 0.20;
+            animation-delay: 5s;
+        }
+
+        /* Background Logo */
+        .background-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            opacity: 0;
+            width: 1100px; /* ajuste: tamanho atual da logo grande */
+            height: auto;
+            filter: blur(0px);
+            pointer-events: none;
+            animation: logoReveal 1.5s ease-out forwards, opacityFade 2s ease-out 1.8s forwards, floatingLogoScale 12s ease-in-out 1.5s infinite, blurLogoProgress 3s ease-out 2.5s forwards;
+        }
+
+        @keyframes logoReveal {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes opacityFade {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0.25;
+            }
+        }
+
+        @keyframes floatingLogoScale {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.12);
+            }
+        }
+
+        @keyframes blurLogoProgress {
+            0% {
+                filter: blur(0px);
+            }
+            100% {
+                filter: blur(5px);
+            }
+        }
+
+        /* Floating small logos container (between big logo and content) */
+        .floating-logos {
+            display: none;
+        }
+
+        .floating-logo {
+            display: none;
+        }
+
+        /* Main Content */
+        .content-wrapper {
+            position: relative;
+            z-index: 20;
+            text-align: center;
+            max-width: 800px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .greeting-section {
+            margin-bottom: 40px;
+        }
+
+        /* Logo Section */
+        .logo-section {
+            display: none;
+            margin-bottom: 35px;
+            text-align: center;
+        }
+
+        .company-logo {
+            height: 80px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 25px rgba(251, 146, 60, 0.2));
+            transition: all 0.3s ease;
+            animation: fadeInLogo 0.8s ease-out;
+        }
+
+        .company-logo:hover {
+            filter: drop-shadow(0 15px 35px rgba(251, 146, 60, 0.35));
+            transform: scale(1.05);
+        }
+
+        @keyframes fadeInLogo {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .greeting-section {
+            margin-bottom: 40px;
+            animation: fadeInUp 0.6s ease-out 1.8s both;
+        }
+
+        .greeting-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+            display: none;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .greeting-text {
+            font-size: 16px;
+            color: rgba(226, 232, 240, 0.9);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            background: linear-gradient(to right, #fb923c, #ea580c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .greeting-message {
+            font-size: 60px;
+            font-weight: 800;
+            margin-bottom: 0;
+            line-height: 1.1;
+            animation: scaleInName 0.8s ease-out;
+        }
+
+        @keyframes scaleInName {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .user-name {
+            background: linear-gradient(90deg, #fb923c, #ea580c, #fb923c, #ea580c, #fb923c);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: inline-block;
+            animation: shimmerName 3s ease-in-out infinite, glowPulse 3s ease-in-out infinite, fadeInName 1s ease-out;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes shimmerName {
+            0% {
+                background-position: -200% 0;
+                filter: brightness(0.9);
+            }
+            50% {
+                background-position: 200% 0;
+                filter: brightness(1.2);
+            }
+            100% {
+                background-position: -200% 0;
+                filter: brightness(0.9);
+            }
+        }
+
+        @keyframes fadeInName {
+            from {
+                opacity: 0;
+                filter: blur(8px);
+                text-shadow: 0 0 0px rgba(251, 146, 60, 0);
+            }
+            to {
+                opacity: 1;
+                filter: blur(0);
+                text-shadow: 0 0 0px rgba(251, 146, 60, 0);
+            }
+        }
+
+        @keyframes glowPulse {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(251, 146, 60, 0.4), 0 0 20px rgba(234, 88, 12, 0.2);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(251, 146, 60, 0.8), 0 0 40px rgba(234, 88, 12, 0.4);
+            }
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: rgba(226, 232, 240, 0.8);
+            margin-bottom: 30px;
+            line-height: 1.6;
+            background: linear-gradient(90deg, rgba(251, 146, 60, 0.1), rgba(37, 99, 235, 0.1));
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #fb923c;
+            animation: fadeInUp 0.6s ease-out 2.2s both;
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 50px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .services-grid .service-card:nth-child(1) {
+            animation: fadeInUp 0.6s ease-out 2.6s both;
+        }
+
+        .services-grid .service-card:nth-child(2) {
+            animation: fadeInUp 0.6s ease-out 2.9s both;
+        }
+
+        .service-card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 40px 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(234, 88, 12, 0.1));
+            border-radius: 0 0 0 200px;
+            transition: all 0.3s ease;
+            z-index: 0;
+        }
+
+        .service-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(59, 130, 246, 0.05));
+            border-radius: 150px 0 0 0;
+            transition: all 0.3s ease;
+            z-index: 0;
+        }
+
+        .service-card:hover {
+            transform: translateY(-15px);
+            border-color: rgba(251, 146, 60, 0.6);
+            box-shadow: 0 25px 60px rgba(251, 146, 60, 0.25);
+            background: rgba(30, 41, 59, 0.95);
+        }
+
+        .service-card:hover::before {
+            background: linear-gradient(135deg, rgba(251, 146, 60, 0.25), rgba(234, 88, 12, 0.15));
+            width: 250px;
+            height: 250px;
+        }
+
+        .service-card:hover::after {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(59, 130, 246, 0.1));
+            width: 180px;
+            height: 180px;
+        }
+
+        /* Cores e ícones específicos */
+        .service-card.patrimonio {
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .service-card.patrimonio:hover {
+            border-color: rgba(59, 130, 246, 0.6);
+            box-shadow: 0 25px 60px rgba(59, 130, 246, 0.25);
+        }
+
+        .service-card.patrimonio .service-icon {
+            background: linear-gradient(135deg, rgb(37, 99, 235), rgb(59, 130, 246));
+            box-shadow: 0 15px 40px rgba(37, 99, 235, 0.4);
+        }
+
+        .service-card.patrimonio:hover .service-icon {
+            box-shadow: 0 20px 50px rgba(37, 99, 235, 0.5);
+        }
+
+        .service-card.almoxarifado {
+            border-color: rgba(251, 146, 60, 0.2);
+        }
+
+        .service-card.almoxarifado:hover {
+            border-color: rgba(251, 146, 60, 0.6);
+            box-shadow: 0 25px 60px rgba(251, 146, 60, 0.25);
+        }
+
+        .service-card.almoxarifado .service-icon {
+            background: linear-gradient(135deg, rgb(251, 146, 60), rgb(234, 88, 12));
+            box-shadow: 0 15px 40px rgba(251, 146, 60, 0.4);
+        }
+
+        .service-card.almoxarifado:hover .service-icon {
+            box-shadow: 0 20px 50px rgba(251, 146, 60, 0.5);
+        }
+
+        /* Button reset para service-card */
+        button.service-card {
+            padding: 40px 30px !important;
+            background: rgba(30, 41, 59, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            cursor: pointer;
+        }
+
+        button.service-card:hover {
+            padding: 40px 30px !important;
+            background: rgba(30, 41, 59, 0.95) !important;
+        }
+
+        .service-icon {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, rgb(251, 146, 60), rgb(234, 88, 12));
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            margin: 0 auto 25px auto;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 15px 40px rgba(251, 146, 60, 0.3);
+        }
+
+        .service-icon i {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            color: white;
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.15) rotate(8deg);
+            box-shadow: 0 20px 50px rgba(251, 146, 60, 0.4);
+        }
+
+        .service-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            color: white;
+        }
+
+        .service-description {
+            font-size: 14px;
+            color: rgba(226, 232, 240, 0.75);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            line-height: 1.6;
+        }
+
+        /* User Info Card */
+        .user-info-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(251, 146, 60, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 40px;
+            text-align: left;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(251, 146, 60, 0.1);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 30px;
+            align-items: center;
+            animation: fadeInUp 0.6s ease-out 3.2s both;
+        }
+
+        .user-info-card:hover {
+            border-color: rgba(251, 146, 60, 0.6);
+            box-shadow: 0 15px 40px rgba(251, 146, 60, 0.15);
+        }
+
+        /* Login Info Card (para usuários não autenticados) */
+        .login-info-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(251, 146, 60, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 40px;
+            text-align: left;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(251, 146, 60, 0.1);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+            animation: fadeInUp 0.6s ease-out 3.2s both;
+        }
+
+        .login-info-card:hover {
+            border-color: rgba(251, 146, 60, 0.6);
+            box-shadow: 0 15px 40px rgba(251, 146, 60, 0.15);
+        }
+
+        .login-info-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .login-info-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #fb923c, #ea580c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+            box-shadow: 0 10px 30px rgba(251, 146, 60, 0.3);
+        }
+
+        .login-info-text h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #fb923c;
+        }
+
+        .login-info-text p {
+            font-size: 13px;
+            color: rgba(226, 232, 240, 0.6);
+        }
+
+        .login-info-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-left: 30px;
+            border-left: 1px solid rgba(251, 146, 60, 0.2);
+        }
+
+        .location-auth-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #fb923c, #ea580c);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 10px 25px rgba(251, 146, 60, 0.3);
+        }
+
+        .location-auth-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(251, 146, 60, 0.4);
+        }
+
+        .location-weather-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            text-align: center;
+        }
+
+        .location-weather-label {
+            font-size: 12px;
+            color: rgba(226, 232, 240, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .location-weather-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fb923c;
+        }
+
+        .user-info-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 0;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #fb923c, #ea580c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+            box-shadow: 0 10px 30px rgba(251, 146, 60, 0.3);
+        }
+
+        .user-details h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #fb923c;
+        }
+
+        .user-details p {
+            font-size: 13px;
+            color: rgba(226, 232, 240, 0.6);
+        }
+
+        .user-weather-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-left: 30px;
+            border-left: 1px solid rgba(251, 146, 60, 0.2);
+        }
+
+        .weather-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .weather-icon,
+        .location-icon {
+            font-size: 20px;
+            color: #fb923c;
+            min-width: 20px;
+        }
+
+        .weather-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .weather-label,
+        .location-label {
+            font-size: 10px;
+            color: rgba(226, 232, 240, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .weather-value,
+        .location-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .logout-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #fb923c, #ea580c);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 10px 25px rgba(251, 146, 60, 0.3);
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(251, 146, 60, 0.4);
+        }
+
+        .logout-btn-full {
+            width: 100%;
+            background: linear-gradient(135deg, #fb923c, #ea580c);
+            border: none;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 10px 25px rgba(251, 146, 60, 0.3);
+            animation: fadeInUp 0.6s ease-out 3.5s both;
+        }
+
+        .logout-btn-full:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(251, 146, 60, 0.4);
+        }
+
+        /* Modal Styles */
+        .construction-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: radial-gradient(circle at 10% 20%, rgb(30, 58, 138) 0%, rgb(15, 23, 42) 90%);
+            border: 1px solid rgba(251, 146, 60, 0.3);
+            border-radius: 30px;
+            padding: 50px 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 30px 80px rgba(251, 146, 60, 0.2);
+            animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes popIn {
+            from {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-icon-container {
+            margin-bottom: 30px;
+        }
+
+        .construction-hammer {
+            font-size: 80px;
+            animation: swing 1.5s infinite;
+            display: inline-block;
+        }
+
+        @keyframes swing {
+            0%, 100% {
+                transform: rotate(0deg);
+                transform-origin: top right;
+            }
+            25% {
+                transform: rotate(15deg);
+                transform-origin: top right;
+            }
+            50% {
+                transform: rotate(0deg);
+                transform-origin: top right;
+            }
+            75% {
+                transform: rotate(-15deg);
+                transform-origin: top right;
+            }
+        }
+
+        .modal-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, #fb923c, #ea580c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-description {
+            font-size: 16px;
+            color: rgba(226, 232, 240, 0.8);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .construction-dots {
+            margin: 30px 0;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fb923c, #ea580c);
+            margin: 0 6px;
+            animation: bounce 1.4s infinite;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            40% {
+                transform: translateY(-15px);
+                opacity: 0.7;
+            }
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #fb923c, #ea580c);
+            color: white;
+            box-shadow: 0 10px 25px rgba(251, 146, 60, 0.3);
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(251, 146, 60, 0.4);
+        }
+
+        .modal-btn-secondary {
+            background: transparent;
+            border: 1.5px solid rgba(251, 146, 60, 0.5);
+            color: #fb923c;
+        }
+
+        .modal-btn-secondary:hover {
+            background: rgba(251, 146, 60, 0.1);
+            border-color: #fb923c;
+        }
+
+        /* Login Modal Styles */
+        .login-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .login-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: radial-gradient(circle at 10% 20%, rgb(30, 58, 138) 0%, rgb(15, 23, 42) 90%);
+            border: 1px solid rgba(251, 146, 60, 0.3);
+            border-radius: 25px;
+            padding: 45px 40px;
+            max-width: 450px;
+            width: 90%;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 30px 80px rgba(251, 146, 60, 0.2);
+            animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-btn:hover {
+            background: rgba(251, 146, 60, 0.2);
+            transform: scale(1.1);
+        }
+
+        .login-modal-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .login-modal-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #fb923c, #ea580c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .login-modal-subtitle {
+            font-size: 14px;
+            color: rgba(226, 232, 240, 0.7);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid rgba(251, 146, 60, 0.3);
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            color: white;
+            font-size: 15px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-input::placeholder {
+            color: rgba(226, 232, 240, 0.5);
+        }
+
+        .form-input:focus {
+            border-color: #fb923c;
+            background: rgba(251, 146, 60, 0.05);
+            box-shadow: 0 0 20px rgba(251, 146, 60, 0.2);
+        }
+
+        .error-message {
+            display: block;
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 8px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .remember-device {
+            margin-bottom: 10px;
+        }
+
+        .remember-device-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .remember-device-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #fb923c;
+        }
+
+        .remember-device-text {
+            font-size: 14px;
+            color: rgba(226, 232, 240, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remember-device-text i {
+            color: #fb923c;
+            font-size: 16px;
+        }
+
+        .login-modal-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #fb923c, #ea580c);
+            color: white;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            box-shadow: 0 10px 25px rgba(251, 146, 60, 0.3);
+        }
+
+        .login-modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(251, 146, 60, 0.4);
+        }
+
+        .login-modal-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .login-modal-btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .login-modal-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Location Modal Styles */
+        .location-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .location-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: radial-gradient(circle at 10% 20%, rgb(30, 58, 138) 0%, rgb(15, 23, 42) 90%);
+            border: 1px solid rgba(251, 146, 60, 0.3);
+            border-radius: 25px;
+            padding: 45px 40px;
+            max-width: 450px;
+            width: 90%;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 30px 80px rgba(251, 146, 60, 0.2);
+            animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .location-modal-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .location-modal-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #fb923c, #ea580c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .location-modal-subtitle {
+            font-size: 14px;
+            color: rgba(226, 232, 240, 0.7);
+        }
+
+        .location-modal-body {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .location-icon-large {
+            font-size: 80px;
+            color: #fb923c;
+            margin-bottom: 20px;
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+
+        @keyframes floatIcon {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .location-description {
+            font-size: 15px;
+            color: rgba(226, 232, 240, 0.8);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .location-modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .location-modal-btn-primary {
+            padding: 14px 30px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #fb923c, #ea580c);
+            color: white;
+            box-shadow: 0 10px 25px rgba(251, 146, 60, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .location-modal-btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(251, 146, 60, 0.4);
+        }
+
+        .location-modal-btn-secondary {
+            padding: 14px 30px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: 1.5px solid rgba(251, 146, 60, 0.5);
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: #fb923c;
+        }
+
+        .location-modal-btn-secondary:hover {
+            background: rgba(251, 146, 60, 0.1);
+            border-color: #fb923c;
+        }
+
+        @media (max-width: 768px) {
+            .greeting-message {
+                font-size: 40px;
+            }
+
+            .greeting-icon {
+                font-size: 60px;
+            }
+
+            .greeting-text {
+                font-size: 14px;
+            }
+
+            .user-info-card {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .user-weather-section {
+                padding-left: 0;
+                border-left: none;
+                display: flex;
+                flex-direction: row;
+            }
+
+            .subtitle {
+                font-size: 16px;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .service-card {
+                min-height: 250px;
+                padding: 30px 20px;
+            }
+
+            .service-icon {
+                width: 70px;
+                height: 70px;
+                font-size: 35px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .service-title {
+                font-size: 18px;
+            }
+
+            .service-description {
+                font-size: 13px;
+            }
+
+            .user-info-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .user-details h4,
+            .user-details p {
+                text-align: center;
+            }
+        }
+
+        /* Loading Modal Styles */
+        .loading-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .loading-modal.active {
+            display: flex;
+        }
+
+        .loading-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(251, 146, 60, 0.3);
+            max-width: 400px;
+            animation: slideUpLoading 0.4s ease-out;
+        }
+
+        @keyframes slideUpLoading {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 30px;
+            border: 4px solid rgba(251, 146, 60, 0.2);
+            border-top: 4px solid #fb923c;
+            border-radius: 50%;
+            animation: spinnerRotate 1s linear infinite;
+        }
+
+        @keyframes spinnerRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            font-size: 14px;
+            color: #666;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="premium-container">
+        <!-- Floating Shapes -->
+        <div class="floating-shape shape-blue"></div>
+        <div class="floating-shape shape-orange"></div>
+
+        <!-- Background Logo -->
+        <img src="http://127.0.0.1:8000/img/logo_plansul.svg" alt="Plansul Background" class="background-logo">
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <img src="http://127.0.0.1:8000/img/logo_plansul.svg" alt="Plansul" class="company-logo">
+            </div>
+
+            <!-- Greeting Section -->
+                            <!-- Para usuários não autenticados -->
+                <div class="greeting-section">
+                    <div class="greeting-text" id="greetingWord">Boa Tarde</div>
+                    <div class="greeting-message">
+                        <span class="user-name">Visitante</span>
+                    </div>
+                </div>
+            
+            <p class="subtitle">Escolha uma opção para começar:</p>
+
+            <!-- Services Grid -->
+            <div class="services-grid">
+                                                    <button onclick="openLoginModal()" class="service-card patrimonio" style="border: none; background: none; padding: 0;">
+                        <div class="service-icon"><i class="fas fa-cube"></i></div>
+                        <div class="service-title">Cadastro de Patrimônio</div>
+                        <div class="service-description">Gerencie e registre todos os itens do seu patrimônio com facilidade</div>
+                    </button>
+                
+                <button onclick="openConstructionModal()" class="service-card almoxarifado" style="border: none; background: none; padding: 0;">
+                    <div class="service-icon">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <div class="service-title">Almoxarifado</div>
+                    <div class="service-description">Controle completo de estoque e movimentação de itens</div>
+                </button>
+            </div>
+
+            <!-- User Info Card / Login Info Card -->
+                            <!-- Card para usuário não logado -->
+                <div class="login-info-card">
+                    <div class="login-info-content">
+                        <div class="login-info-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="login-info-text">
+                            <h4>Faça login para continuar</h4>
+                            <p>Acesse suas informações e dados de patrimônio</p>
+                        </div>
+                    </div>
+                    
+                    <div class="login-info-actions">
+                        <button id="geoAuthBtn" onclick="openLocationModal()" class="location-auth-btn">
+                            <i class="fas fa-location-dot"></i>
+                            Autorizar Localização
+                        </button>
+                        <div class="location-weather-info">
+                            <span class="location-weather-label">Clima Local</span>
+                            <span class="location-weather-value" id="guestWeatherInfo">--°C</span>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+    </div>
+
+    <!-- Construction Modal -->
+    <div class="construction-modal" id="constructionModal">
+        <div class="modal-content">
+            <div class="modal-icon-container">
+                <span class="construction-hammer">🔨</span>
+            </div>
+
+            <h2 class="modal-title">Em Construção</h2>
+            <p class="modal-description">
+                O módulo de Almoxarifado está sendo desenvolvido com recursos avançados para você!
+            </p>
+
+            <div class="construction-dots">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+
+            <div class="modal-buttons">
+                <button onclick="closeConstructionModal()" class="modal-btn modal-btn-primary">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="login-modal" id="loginModal">
+        <div class="login-modal-content">
+            <button onclick="closeLoginModal()" class="close-btn">&times;</button>
+            
+            <div class="login-modal-header">
+                <h2 class="login-modal-title">Acesso ao Patrimônio</h2>
+                <p class="login-modal-subtitle">Faça login para continuar</p>
+            </div>
+
+            <form id="loginModalForm" method="POST" action="http://127.0.0.1:8000/login">
+                <input type="hidden" name="_token" value="FwqH6QcaxAlIYU31L8ovwkb266dDWZb9duQFV4rp" autocomplete="off">                <input type="hidden" name="redirect_to" value="patrimonios.index">
+                
+                <div class="form-group">
+                    <input 
+                        type="text" 
+                        name="nmlogin" 
+                        class="form-input" 
+                        placeholder="Digite seu usuário"
+                        required 
+                        autocomplete="username"
+                    >
+                                    </div>
+
+                <div class="form-group">
+                    <input 
+                        type="password" 
+                        name="password" 
+                        class="form-input" 
+                        placeholder="Digite sua senha"
+                        required 
+                        autocomplete="current-password"
+                    >
+                                    </div>
+
+                <div class="form-group remember-device">
+                    <label class="remember-device-label">
+                        <input 
+                            type="checkbox" 
+                            name="remember_device" 
+                            id="rememberDevice"
+                            class="remember-device-checkbox"
+                        >
+                        <span class="remember-device-text">
+                            <i class="fas fa-shield-check"></i>
+                            Confiar neste dispositivo por 7 dias
+                        </span>
+                    </label>
+                </div>
+
+                
+                <button type="submit" class="login-modal-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    ACESSAR
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Location Authorization Modal -->
+    <div class="location-modal" id="locationModal">
+        <div class="location-modal-content">
+            <button onclick="closeLocationModal()" class="close-btn">&times;</button>
+            
+            <div class="location-modal-header">
+                <h2 class="location-modal-title">Autorizar Localização</h2>
+                <p class="location-modal-subtitle">Precisamos da sua localização para mostrar o clima local</p>
+            </div>
+
+            <div class="location-modal-body">
+                <div class="location-icon-large">
+                    <i class="fas fa-map-location-dot"></i>
+                </div>
+                <p class="location-description">
+                    Ao autorizar, você terá acesso ao clima e informações de região personalizadas.
+                </p>
+            </div>
+
+            <div class="location-modal-buttons">
+                <button onclick="requestGeolocation()" class="location-modal-btn-primary">
+                    <i class="fas fa-check"></i>
+                    Autorizar
+                </button>
+                <button onclick="closeLocationModal()" class="location-modal-btn-secondary">
+                    Agora não
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para obter clima via UF (sem pedir geolocalização)
+        async function loadWeather() {
+            try {
+                const weatherElement = document.getElementById('weatherInfo');
+                if (!weatherElement) {
+                    console.warn('Elemento weatherInfo não encontrado');
+                    return;
+                }
+
+                const response = await fetch(`/api/weather`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        weatherElement.innerHTML = `<i class="fas fa-cloud-sun"></i> <span>${data.temp}°C</span>`;
+                    } else {
+                        weatherElement.innerHTML = `<i class="fas fa-cloud-sun"></i> <span>--°C</span>`;
+                    }
+                } else {
+                    weatherElement.innerHTML = `<i class="fas fa-cloud-sun"></i> <span>--°C</span>`;
+                }
+            } catch (error) {
+                console.warn('Erro ao carregar clima:', error);
+                const weatherElement = document.getElementById('weatherInfo');
+                if (weatherElement) {
+                    weatherElement.innerHTML = `<i class="fas fa-cloud-sun"></i> <span>--°C</span>`;
+                }
+            }
+        }
+
+        // Carregar clima ao carregar a página
+        loadWeather();
+
+        // Modal Functions
+        function openConstructionModal() {
+            document.getElementById("constructionModal").style.display = "flex";
+            document.getElementById("constructionModal").style.alignItems = "center";
+            document.getElementById("constructionModal").style.justifyContent = "center";
+        }
+
+        function closeConstructionModal() {
+            document.getElementById("constructionModal").style.display = "none";
+        }
+
+        function openLoginModal() {
+            document.getElementById("loginModal").style.display = "flex";
+            document.getElementById("loginModal").style.alignItems = "center";
+            document.getElementById("loginModal").style.justifyContent = "center";
+        }
+
+        function closeLoginModal() {
+            document.getElementById("loginModal").style.display = "none";
+            // Reset form on close
+            document.getElementById("loginModalForm").reset();
+        }
+
+        function openLocationModal() {
+            document.getElementById("locationModal").style.display = "flex";
+            document.getElementById("locationModal").style.alignItems = "center";
+            document.getElementById("locationModal").style.justifyContent = "center";
+        }
+
+        function closeLocationModal() {
+            document.getElementById("locationModal").style.display = "none";
+        }
+
+        // Geolocation Function
+        function requestGeolocation() {
+            const geoButton = event.target.closest('button');
+            geoButton.disabled = true;
+            geoButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Autorizando...';
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        
+                        // Save to localStorage
+                        localStorage.setItem('userLat', latitude);
+                        localStorage.setItem('userLng', longitude);
+                        
+                        // Load weather with coordinates
+                        loadWeatherByCoordinates(latitude, longitude);
+                        
+                        closeLocationModal();
+                        geoButton.disabled = false;
+                        geoButton.innerHTML = '<i class="fas fa-check"></i> Autorizar';
+                    },
+                    function(error) {
+                        console.warn('Geolocation error:', error);
+                        alert('Erro ao obter localização. Por favor, tente novamente.');
+                        geoButton.disabled = false;
+                        geoButton.innerHTML = '<i class="fas fa-check"></i> Autorizar';
+                    }
+                );
+            } else {
+                alert('Geolocalização não é suportada neste navegador.');
+                geoButton.disabled = false;
+                geoButton.innerHTML = '<i class="fas fa-check"></i> Autorizar';
+            }
+        }
+
+        // Load weather by coordinates
+        async function loadWeatherByCoordinates(lat, lng) {
+            try {
+                const response = await fetch(`/api/weather?lat=${lat}&lng=${lng}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        const weatherElement = document.getElementById('guestWeatherInfo');
+                        if (weatherElement) {
+                            weatherElement.innerHTML = `${data.temp}°C`;
+                        }
+                        // Hide the authorization button when coordinates are obtained
+                        const geoAuthBtn = document.getElementById('geoAuthBtn');
+                        if (geoAuthBtn) {
+                            geoAuthBtn.style.display = 'none';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn('Erro ao carregar clima:', error);
+            }
+        }
+
+        // Check if user has geolocation permission (localStorage has coordinates)
+        function checkGeolocationAuthorization() {
+            const userLat = localStorage.getItem('userLat');
+            const userLng = localStorage.getItem('userLng');
+            
+            if (userLat && userLng) {
+                // User has already authorized geolocation - hide only the button
+                const geoAuthBtn = document.getElementById('geoAuthBtn');
+                if (geoAuthBtn) {
+                    geoAuthBtn.style.display = 'none';
+                }
+                // Load weather for guest user
+                loadWeatherByCoordinates(userLat, userLng);
+            }
+        }
+
+        // Handle login modal form submission
+        document.addEventListener("DOMContentLoaded", function() {
+            // Check geolocation on page load
+            checkGeolocationAuthorization();
+
+            const loginForm = document.getElementById("loginModalForm");
+            if (loginForm) {
+                loginForm.addEventListener("submit", async function(e) {
+                    e.preventDefault(); // Previne o submit padrão
+                    
+                    const submitBtn = loginForm.querySelector('button[type="submit"]');
+                    const nmlogin = loginForm.querySelector('input[name="nmlogin"]').value;
+                    const password = loginForm.querySelector('input[name="password"]').value;
+                    const rememberDevice = loginForm.querySelector('input[name="remember_device"]').checked;
+                    const csrfToken = loginForm.querySelector('input[name="_token"]').value;
+                    
+                    submitBtn.classList.add('loading');
+                    submitBtn.disabled = true;
+                    
+                    try {
+                        const response = await fetch('http://127.0.0.1:8000/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({
+                                NMLOGIN: nmlogin,
+                                password: password,
+                                remember_device: rememberDevice,
+                                redirect_to: 'patrimonios.index'
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            // Login bem-sucedido, redirecionar
+                            window.location.href = 'http://127.0.0.1:8000/patrimonios';
+                        } else {
+                            // Erro de autenticação
+                            alert(data.message || 'Usuário ou senha inválidos');
+                            submitBtn.classList.remove('loading');
+                            submitBtn.disabled = false;
+                        }
+                    } catch (error) {
+                        console.error('Erro no login:', error);
+                        alert('Erro ao tentar fazer login. Tente novamente.');
+                        submitBtn.classList.remove('loading');
+                        submitBtn.disabled = false;
+                    }
+                });
+            }
+        });
+
+        // Fechar modal ao clicar fora dela
+        document.addEventListener("click", function(event) {
+            const constructionModal = document.getElementById("constructionModal");
+            const loginModal = document.getElementById("loginModal");
+            const modalContent = document.querySelector(".modal-content");
+            const loginModalContent = document.querySelector(".login-modal-content");
+            
+            if (event.target === constructionModal) {
+                closeConstructionModal();
+            }
+            
+            if (event.target === loginModal) {
+                closeLoginModal();
+            }
+        });
+
+        // Fechar modal com ESC
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "Escape") {
+                closeConstructionModal();
+                closeLoginModal();
+            }
+        });
+
+        // Background Gradient - Mouse Follow Effect
+        const premiumContainer = document.querySelector('.premium-container');
+
+        document.addEventListener('mousemove', (e) => {
+            if (!premiumContainer) return;
+
+            const containerRect = premiumContainer.getBoundingClientRect();
+            const centerX = containerRect.left + containerRect.width / 2;
+            const centerY = containerRect.top + containerRect.height / 2;
+
+            // Calculate mouse position relative to center
+            const mouseX = e.clientX - centerX;
+            const mouseY = e.clientY - centerY;
+
+            // Calculate movement intensity (gradiente se move até 30px)
+            const moveX = (mouseX / centerX) * 30;
+            const moveY = (mouseY / centerY) * 30;
+
+            // Apply transform ao gradiente via background-position
+            premiumContainer.style.backgroundPosition = `calc(10% + ${moveX}px) calc(20% + ${moveY}px)`;
+        });
+
+        // Reset position when mouse leaves
+        document.addEventListener('mouseleave', () => {
+            if (premiumContainer) {
+                premiumContainer.style.backgroundPosition = '10% 20%';
+            }
+        });
+
+        // Loading Modal Functions
+        function showLoadingModal() {
+            const loadingModal = document.getElementById('loadingModal');
+            if (loadingModal) {
+                loadingModal.classList.add('active');
+            }
+        }
+
+        function hideLoadingModal() {
+            const loadingModal = document.getElementById('loadingModal');
+            if (loadingModal) {
+                loadingModal.classList.remove('active');
+            }
+        }
+
+        // Hide loading modal when page is fully loaded
+        window.addEventListener('load', () => {
+            hideLoadingModal();
+        });
+
+        // Also hide if user navigates back (prevent stuck modal)
+        window.addEventListener('beforeunload', () => {
+            hideLoadingModal();
+        });
+        
+    </script>
+
+    <!-- Loading Modal -->
+    <div class="loading-modal" id="loadingModal">
+        <div class="loading-modal-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Carregando</div>
+            <div class="loading-subtext">Preparando informações do patrimônio...</div>
+        </div>
+    </div>
+</body>
+
+</html>
+

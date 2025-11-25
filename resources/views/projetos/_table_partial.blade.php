@@ -1,4 +1,4 @@
-{{-- Caminho: resources/views/projetos/_table_partial.blade.php --}}
+{{-- Renderiza a tabela completa com estrutura e controles Alpine --}}
 
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     {{-- Toast de Sucesso/Erro --}}
@@ -60,6 +60,7 @@
                 <th class="px-4 py-3 w-12">
                     <input
                         type="checkbox"
+                        id="checkbox-header"
                         @change="toggleTodos($event.target.checked)"
                         class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 cursor-pointer">
                 </th>
@@ -70,90 +71,24 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($locais as $local)
-            <tr class="border-b dark:border-gray-700 transition"
-                data-local-id="{{ $local->id }}"
-                :class="selecionados.includes({{ $local->id }}) ? 'bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-150 dark:hover:bg-blue-900/40' : 'hover:bg-gray-50 dark:hover:bg-gray-600'">
-
-                <td class="px-4 py-2" @click.stop>
-                    <input
-                        type="checkbox"
-                        :checked="selecionados.includes({{ $local->id }})"
-                        @change="toggleSelecao({{ $local->id }}, $event.target.checked)"
-                        class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 cursor-pointer">
-                </td>
-
-                <td class="px-4 py-2 font-bold cursor-pointer"
-                    @click="irParaEdicao('{{ route('projetos.edit', $local) }}')">
-                    {{ $local->cdlocal }}
-                </td>
-
-                <td class="px-4 py-2 cursor-pointer"
-                    @click="irParaEdicao('{{ route('projetos.edit', $local) }}')">
-                    {{ $local->delocal }}
-                </td>
-
-                <td class="px-4 py-2 cursor-pointer"
-                    @click="irParaEdicao('{{ route('projetos.edit', $local) }}')">
-                    @if($local->projeto)
-                    <div class="flex flex-col leading-tight gap-0.5">
-                        <span class="text-xs font-mono text-blue-600 dark:text-blue-400">{{ $local->projeto->CDPROJETO ?? '—' }}</span>
-                        <span class="text-xs text-gray-600 dark:text-gray-400 truncate" style="max-width: 150px;">{{ $local->projeto->NOMEPROJETO ?? '—' }}</span>
-                    </div>
-                    @else
-                    <span>—</span>
-                    @endif
-                </td>
-
-                <td class="px-4 py-2" @click.stop>
-                    <div class="flex items-center space-x-4">
-                        <a href="{{ route('projetos.duplicate', $local) }}" title="Duplicar para novo local" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" onclick="event.stopPropagation();">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                            </svg>
-                        </a>
-                        @if(Auth::user()->isSuperAdmin())
-                        <form action="{{ route('projetos.destroy', $local) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja apagar este local?');" onclick="event.stopPropagation();">
-                            @csrf
-                            @method('DELETE')
-                            @if(request('search'))
-                            <input type="hidden" name="search" value="{{ request('search') }}">
-                            @endif
-                            @if(request('cdprojeto'))
-                            <input type="hidden" name="cdprojeto" value="{{ request('cdprojeto') }}">
-                            @endif
-                            @if(request('local'))
-                            <input type="hidden" name="local" value="{{ request('local') }}">
-                            @endif
-                            @if(request('tag'))
-                            <input type="hidden" name="tag" value="{{ request('tag') }}">
-                            @endif
-                            <button type="submit" title="Apagar" class="text-red-600 dark:text-red-500">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </form>
-                        @endif
-                    </div>
-                </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="5" class="px-6 py-4 text-center">Nenhum local encontrado.</td>
-            </tr>
-            @endforelse
+            {{-- O conteúdo das linhas será inserido aqui via AJAX/fetch --}}
+            @include('projetos._table_rows', ['locais' => $locais])
         </tbody>
     </table>
 
     {{-- Modal Simples de Confirmação --}}
-    <div x-show="mostraModalDelecao" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center" @click.self="mostraModalDelecao = false">
+    <div x-show="mostraModalDelecao" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center" @click.self="mostraModalDelecao = false" style="display: none;">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-sm mx-4" @click.stop>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Confirmar Remoção</h3>
 
             <p class="text-gray-600 dark:text-gray-300 mb-6">
-                Tem certeza que deseja remover <strong x-text="selecionados.length"></strong>
-                <span x-text="selecionados.length === 1 ? 'local' : 'locais'"></span>?
+                <template x-if="localParaDelecaoIndividual">
+                    Tem certeza que deseja remover o local "<strong x-text="localParaDelecaoIndividual.nome"></strong>"?
+                </template>
+                <template x-if="!localParaDelecaoIndividual">
+                    Tem certeza que deseja remover <strong x-text="selecionados.length"></strong>
+                    <span x-text="selecionados.length === 1 ? 'local' : 'locais'"></span>?
+                </template>
             </p>
 
             <div class="flex gap-3 justify-end">

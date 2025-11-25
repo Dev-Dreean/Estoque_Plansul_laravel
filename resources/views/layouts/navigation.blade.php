@@ -8,7 +8,7 @@
                     </a>
                 </div>
 
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex" x-cloak>
+                <div class="hidden space-x-8 sm:-my-px sm:flex" x-cloak>
                     @php
                     // Mapa simples: NUSEQTELA => URL
                     // Ordem customizada das telas:

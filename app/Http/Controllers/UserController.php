@@ -43,6 +43,12 @@ class UserController extends Controller
 
         $usuarios = $query->orderBy('NOMEUSER')->paginate(10);
 
+        // Se requisição é AJAX com api=1, retorna JSON com HTML das linhas
+        if ($request->has('api') && $request->input('api') === '1') {
+            $html = view('usuarios._table_rows_usuarios', compact('usuarios'))->render();
+            return response()->json(['html' => $html]);
+        }
+
         if ($request->ajax()) {
             return view('usuarios._table_partial', compact('usuarios'))->render();
         }
@@ -196,14 +202,22 @@ class UserController extends Controller
         return redirect()->route('usuarios.index')->with('success', 'Usuário atualizado com sucesso!');
     }
 
-    public function destroy(User $usuario): RedirectResponse
+    public function destroy(User $usuario)
     {
         // Regra de segurança para não se auto-deletar
         if ($usuario->id === Auth::id()) {
+            if (request()->expectsJson()) {
+                return response()->json(['message' => 'Você não pode deletar seu próprio usuário.'], 403);
+            }
             return redirect()->route('usuarios.index')->with('error', 'Você não pode deletar seu próprio usuário.');
         }
 
         $usuario->delete();
+        
+        if (request()->expectsJson()) {
+            return response()->json(['message' => 'Usuário deletado com sucesso!'], 200);
+        }
+        
         return redirect()->route('usuarios.index')->with('success', 'Usuário deletado com sucesso!');
     }
 

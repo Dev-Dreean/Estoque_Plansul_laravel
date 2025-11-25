@@ -429,10 +429,15 @@ class PatrimonioController extends Controller
     /**
      * Remove o patrimônio do banco de dados.
      */
-    public function destroy(Patrimonio $patrimonio): RedirectResponse
+    public function destroy(Patrimonio $patrimonio)
     {
         $this->authorize('delete', $patrimonio);
         $patrimonio->delete();
+        
+        if (request()->expectsJson()) {
+            return response()->json(['message' => 'Patrimônio deletado com sucesso!'], 200);
+        }
+        
         return redirect()->route('patrimonios.index')->with('success', 'Patrimônio deletado com sucesso!');
     }
 
