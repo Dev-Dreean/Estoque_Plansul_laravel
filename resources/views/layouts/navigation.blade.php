@@ -34,16 +34,17 @@
                         '1006' => 'cadastro-tela.*',
                     ];
                     
-                    // Ordem customizada das telas
-                    $telaOrder = ['1000', '1008', '1009', '1002', '1006'];
-                    
-                    // Busca todas as telas disponíveis e ordena
+                    // Ordem customizada das telas (mantém ordem preferida, mas não limita quais aparecem)
+                    $telaOrder = ['1000', '1008', '1009', '1002', '1006', '1003', '1004', '1005', '1007'];
+
+                    // Busca todas as telas ativas no BD (não limitamos apenas às da ordem, para incluir telas novas)
                     $todasAsTelas = \Illuminate\Support\Facades\DB::table('acessotela')
                         ->where('FLACESSO', 'S')
-                        ->whereIn('NUSEQTELA', $telaOrder)
                         ->get()
                         ->sortBy(function($tela) use ($telaOrder) {
-                            return array_search($tela->NUSEQTELA, $telaOrder);
+                            $idx = array_search((string)$tela->NUSEQTELA, $telaOrder);
+                            // Telas sem posição definida ficam no final (ordenadas por código)
+                            return $idx === false ? (10000 + (int)$tela->NUSEQTELA) : $idx;
                         });
                     @endphp
 
