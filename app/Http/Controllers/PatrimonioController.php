@@ -1098,6 +1098,21 @@ class PatrimonioController extends Controller
             $query->where('NMPLANTA', $request->filtro_termo);
         }
 
+        // Filtro por matrícula do responsável (CDMATRFUNCIONARIO)
+        if ($request->filled('filtro_matr_responsavel')) {
+            Log::info('🔍 Filtro Matrícula Responsável: ' . $request->filtro_matr_responsavel);
+            $query->where('CDMATRFUNCIONARIO', $request->filtro_matr_responsavel);
+        }
+
+        // Filtro por matrícula do cadastrador (USUARIO)
+        if ($request->filled('filtro_matr_cadastrador')) {
+            Log::info('🔍 Filtro Matrícula Cadastrador: ' . $request->filtro_matr_cadastrador);
+            // Buscar pelo NMLOGIN do usuário que cadastrou
+            $query->whereHas('creator', function ($q) use ($request) {
+                $q->where('CDMATRFUNCIONARIO', $request->filtro_matr_cadastrador);
+            });
+        }
+
         // Ordenação
         $query->orderBy('NMPLANTA', 'asc');
         $query->orderBy('NUPATRIMONIO', 'asc');

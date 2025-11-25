@@ -145,13 +145,59 @@
                         const mod = document.getElementById('filtro_modelo').value;
                         const proj = document.getElementById('filtro_projeto').value;
                         const termo = document.getElementById('filtro_termo') ? document.getElementById('filtro_termo').value : '';
-                        temFiltroAtivo = num || desc || mod || proj || termo ? true : false;
+                        const matrResp = document.getElementById('filtro_matr_responsavel') ? document.getElementById('filtro_matr_responsavel').value : '';
+                        const matrCad = document.getElementById('filtro_matr_cadastrador') ? document.getElementById('filtro_matr_cadastrador').value : '';
+                        temFiltroAtivo = num || desc || mod || proj || termo || matrResp || matrCad ? true : false;
                         let partes = [];
                         if (termo) partes.push('Termo=' + termo);
                         if (num) partes.push('Nº=' + num);
                         if (desc) partes.push('Item=' + desc);
                         if (mod) partes.push('Modelo=' + mod);
                         if (proj) partes.push('Projeto=' + proj);
+                        if (matrResp) partes.push('Resp=' + matrResp);
+                        if (matrCad) partes.push('Cad=' + matrCad);
+                        textofiltro = partes.join(', ');
+                      " class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                    </div>
+                    <div class="flex-1 min-w-[150px]">
+                      <input type="number" id="filtro_matr_responsavel" name="filtro_matr_responsavel" value="{{ request('filtro_matr_responsavel') }}" placeholder="Matr. Responsável" @input="
+                        const num = document.getElementById('filtro_numero').value;
+                        const desc = document.getElementById('filtro_descricao').value;
+                        const mod = document.getElementById('filtro_modelo').value;
+                        const proj = document.getElementById('filtro_projeto').value;
+                        const termo = document.getElementById('filtro_termo') ? document.getElementById('filtro_termo').value : '';
+                        const matrResp = document.getElementById('filtro_matr_responsavel').value;
+                        const matrCad = document.getElementById('filtro_matr_cadastrador') ? document.getElementById('filtro_matr_cadastrador').value : '';
+                        temFiltroAtivo = num || desc || mod || proj || termo || matrResp || matrCad ? true : false;
+                        let partes = [];
+                        if (termo) partes.push('Termo=' + termo);
+                        if (num) partes.push('Nº=' + num);
+                        if (desc) partes.push('Item=' + desc);
+                        if (mod) partes.push('Modelo=' + mod);
+                        if (proj) partes.push('Projeto=' + proj);
+                        if (matrResp) partes.push('Resp=' + matrResp);
+                        if (matrCad) partes.push('Cad=' + matrCad);
+                        textofiltro = partes.join(', ');
+                      " class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                    </div>
+                    <div class="flex-1 min-w-[150px]">
+                      <input type="number" id="filtro_matr_cadastrador" name="filtro_matr_cadastrador" value="{{ request('filtro_matr_cadastrador') }}" placeholder="Matr. Cadastrador" @input="
+                        const num = document.getElementById('filtro_numero').value;
+                        const desc = document.getElementById('filtro_descricao').value;
+                        const mod = document.getElementById('filtro_modelo').value;
+                        const proj = document.getElementById('filtro_projeto').value;
+                        const termo = document.getElementById('filtro_termo') ? document.getElementById('filtro_termo').value : '';
+                        const matrResp = document.getElementById('filtro_matr_responsavel') ? document.getElementById('filtro_matr_responsavel').value : '';
+                        const matrCad = document.getElementById('filtro_matr_cadastrador').value;
+                        temFiltroAtivo = num || desc || mod || proj || termo || matrResp || matrCad ? true : false;
+                        let partes = [];
+                        if (termo) partes.push('Termo=' + termo);
+                        if (num) partes.push('Nº=' + num);
+                        if (desc) partes.push('Item=' + desc);
+                        if (mod) partes.push('Modelo=' + mod);
+                        if (proj) partes.push('Projeto=' + proj);
+                        if (matrResp) partes.push('Resp=' + matrResp);
+                        if (matrCad) partes.push('Cad=' + matrCad);
                         textofiltro = partes.join(', ');
                       " class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                     </div>
