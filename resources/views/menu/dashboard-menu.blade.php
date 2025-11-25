@@ -1370,13 +1370,13 @@
         <div class="floating-shape shape-orange"></div>
 
         <!-- Background Logo -->
-        <img src="{{ asset('img/logo_plansul.svg') }}" alt="Plansul Background" class="background-logo">
+        <img src="{{ asset('img/logo_plansul.png') }}" alt="Plansul Background" class="background-logo">
 
         <!-- Content -->
         <div class="content-wrapper">
             <!-- Logo Section -->
             <div class="logo-section">
-                <img src="{{ asset('img/logo_plansul.svg') }}" alt="Plansul" class="company-logo">
+                <img src="{{ asset('img/logo_plansul.png') }}" alt="Plansul" class="company-logo">
             </div>
 
             <!-- Greeting Section -->
@@ -1626,6 +1626,12 @@
         // Função para obter clima via UF (sem pedir geolocalização)
         async function loadWeather() {
             try {
+                const weatherElement = document.getElementById('weatherInfo');
+                if (!weatherElement) {
+                    console.warn('Elemento weatherInfo não encontrado');
+                    return;
+                }
+
                 const response = await fetch(`/api/weather`, {
                     method: 'GET',
                     headers: {
@@ -1638,16 +1644,19 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success) {
-                        document.getElementById('weatherInfo').innerHTML = `<i class="fas fa-cloud-sun"></i> <span>${data.temp}°C</span>`;
+                        weatherElement.innerHTML = `<i class="fas fa-cloud-sun"></i> <span>${data.temp}°C</span>`;
                     } else {
-                        document.getElementById('weatherInfo').innerHTML = `<i class="fas fa-cloud-sun"></i> <span>--°C</span>`;
+                        weatherElement.innerHTML = `<i class="fas fa-cloud-sun"></i> <span>--°C</span>`;
                     }
                 } else {
-                    document.getElementById('weatherInfo').innerHTML = `<i class="fas fa-cloud-sun"></i> <span>--°C</span>`;
+                    weatherElement.innerHTML = `<i class="fas fa-cloud-sun"></i> <span>--°C</span>`;
                 }
             } catch (error) {
                 console.warn('Erro ao carregar clima:', error);
-                document.getElementById('weatherInfo').innerHTML = `<i class="fas fa-cloud-sun"></i> <span>--°C</span>`;
+                const weatherElement = document.getElementById('weatherInfo');
+                if (weatherElement) {
+                    weatherElement.innerHTML = `<i class="fas fa-cloud-sun"></i> <span>--°C</span>`;
+                }
             }
         }
 
