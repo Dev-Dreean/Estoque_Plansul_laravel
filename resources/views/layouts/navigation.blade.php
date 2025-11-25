@@ -9,35 +9,51 @@
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    @if(Auth::user()->temAcessoTela(1000))
-                    <x-nav-link :href="route('patrimonios.index')" :active="request()->routeIs('patrimonios.*')">
-                        {{ ('Controle de Patrimônio') }}
-                    </x-nav-link>
-                    @endif
+                    @php
+                    // Mapa simples: NUSEQTELA => URL
+                    // Ordem customizada das telas:
+                    // 1. 1000: Controle de Patrimônio
+                    // 2. 1008: Gráficos
+                    // 3. 1009: Cadastro de Locais
+                    // 4. 1002: Cadastro de Usuário
+                    // 5. 1006: Cadastro de Telas
+                    $telaRotas = [
+                        1000 => route('patrimonios.index'),
+                        1008 => route('dashboard'),
+                        1009 => route('projetos.index'),
+                        1002 => route('usuarios.index'),
+                        1006 => route('cadastro-tela.index'),
+                    ];
+                    
+                    // Rotas para verificação de ativo
+                    $rotasAtivas = [
+                        1000 => 'patrimonios.*',
+                        1008 => 'dashboard',
+                        1009 => 'projetos.*',
+                        1002 => 'usuarios.*',
+                        1006 => 'cadastro-tela.*',
+                    ];
+                    
+                    // Ordem customizada das telas
+                    $telaOrder = [1000, 1008, 1009, 1002, 1006];
+                    
+                    // Busca todas as telas disponíveis e ordena
+                    $todasAsTelas = \Illuminate\Support\Facades\DB::table('acessotela')
+                        ->where('FLACESSO', 'S')
+                        ->whereIn('NUSEQTELA', $telaOrder)
+                        ->get()
+                        ->sortBy(function($tela) use ($telaOrder) {
+                            return array_search($tela->NUSEQTELA, $telaOrder);
+                        });
+                    @endphp
 
-                    @if(Auth::user()->temAcessoTela(1001))
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Gráficos') }}
-                    </x-nav-link>
-                    @endif
-
-                    @if(Auth::user()->temAcessoTela(1002))
-                    <x-nav-link :href="route('projetos.index')" :active="request()->routeIs('projetos.*')">
-                        {{ __('Cadastro de Locais') }}
-                    </x-nav-link>
-                    @endif
-
-                    @if(Auth::user()->temAcessoTela(1003))
-                    <x-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')">
-                        {{ __('Usuários') }}
-                    </x-nav-link>
-                    @endif
-
-                    @if(Auth::user()->isAdmin() || Auth::user()->isSuperAdmin())
-                    <x-nav-link :href="route('cadastro-tela.index')" :active="request()->routeIs('cadastro-tela.*')">
-                        {{ __('Cadastro de Telas') }}
-                    </x-nav-link>
-                    @endif
+                    @foreach($todasAsTelas as $tela)
+                        @if(Auth::user()->temAcessoTela($tela->NUSEQTELA) && isset($telaRotas[$tela->NUSEQTELA]))
+                            <x-nav-link :href="$telaRotas[$tela->NUSEQTELA]" :active="request()->routeIs($rotasAtivas[$tela->NUSEQTELA])">
+                                {{ $tela->DETELA }}
+                            </x-nav-link>
+                        @endif
+                    @endforeach
                 </div>
             </div>
 
@@ -91,35 +107,51 @@
     {{-- menu mobile --}}
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-surface border-t border-base">
         <div class="pt-2 pb-3 space-y-1">
-            @if(Auth::user()->temAcessoTela(1000))
-            <x-responsive-nav-link :href="route('patrimonios.index')" :active="request()->routeIs('patrimonios.*')">
-                {{ ('Controle de Patrimônio') }}
-            </x-responsive-nav-link>
-            @endif
+            @php
+            // Mapa simples: NUSEQTELA => URL
+            // Ordem customizada das telas:
+            // 1. 1000: Controle de Patrimônio
+            // 2. 1008: Gráficos
+            // 3. 1009: Cadastro de Locais
+            // 4. 1002: Cadastro de Usuário
+            // 5. 1006: Cadastro de Telas
+            $telaRotas = [
+                1000 => route('patrimonios.index'),
+                1008 => route('dashboard'),
+                1009 => route('projetos.index'),
+                1002 => route('usuarios.index'),
+                1006 => route('cadastro-tela.index'),
+            ];
+            
+            // Rotas para verificação de ativo
+            $rotasAtivas = [
+                1000 => 'patrimonios.*',
+                1008 => 'dashboard',
+                1009 => 'projetos.*',
+                1002 => 'usuarios.*',
+                1006 => 'cadastro-tela.*',
+            ];
+            
+            // Ordem customizada das telas
+            $telaOrder = [1000, 1008, 1009, 1002, 1006];
+            
+            // Busca todas as telas disponíveis e ordena
+            $todasAsTelas = \Illuminate\Support\Facades\DB::table('acessotela')
+                ->where('FLACESSO', 'S')
+                ->whereIn('NUSEQTELA', $telaOrder)
+                ->get()
+                ->sortBy(function($tela) use ($telaOrder) {
+                    return array_search($tela->NUSEQTELA, $telaOrder);
+                });
+            @endphp
 
-            @if(Auth::user()->temAcessoTela(1001))
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Gráficos') }}
-            </x-responsive-nav-link>
-            @endif
-
-            @if(Auth::user()->temAcessoTela(1002))
-            <x-responsive-nav-link :href="route('projetos.index')" :active="request()->routeIs('projetos.*')">
-                {{ __('Cadastro de Locais') }}
-            </x-responsive-nav-link>
-            @endif
-
-            @if(Auth::user()->temAcessoTela(1003))
-            <x-responsive-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')">
-                {{ __('Usuários') }}
-            </x-responsive-nav-link>
-            @endif
-
-            @if(Auth::user()->isAdmin() || Auth::user()->isSuperAdmin())
-            <x-responsive-nav-link :href="route('cadastro-tela.index')" :active="request()->routeIs('cadastro-tela.*')">
-                {{ __('Cadastro de Telas') }}
-            </x-responsive-nav-link>
-            @endif
+            @foreach($todasAsTelas as $tela)
+                @if(Auth::user()->temAcessoTela($tela->NUSEQTELA) && isset($telaRotas[$tela->NUSEQTELA]))
+                    <x-responsive-nav-link :href="$telaRotas[$tela->NUSEQTELA]" :active="request()->routeIs($rotasAtivas[$tela->NUSEQTELA])">
+                        {{ $tela->DETELA }}
+                    </x-responsive-nav-link>
+                @endif
+            @endforeach
         </div>
 
         <div class="pt-4 pb-1 border-t border-base">

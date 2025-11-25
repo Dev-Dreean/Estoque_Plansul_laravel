@@ -498,22 +498,82 @@ class PatrimonioController extends Controller
 
     public function buscarPorNumero($numero): JsonResponse
     {
-        $patrimonio = Patrimonio::with(['local', 'local.projeto', 'funcionario'])->where('NUPATRIMONIO', $numero)->first();
-        if ($patrimonio) {
+        try {
+            $patrimonio = Patrimonio::with(['local', 'local.projeto', 'funcionario'])->where('NUPATRIMONIO', $numero)->first();
+            
+            if (!$patrimonio) {
+                return response()->json(null, 404);
+            }
+
+            // 🔐 VERIFICAR AUTORIZAÇÃO: O usuário pode ver este patrimônio?
+            $user = Auth::user();
+            if (!$user) {
+                // Não autenticado
+                return response()->json(['error' => 'Não autorizado'], 403);
+            }
+
+            // Super Admin (SUP) e Admin (ADM) têm acesso total
+            if ($user->PERFIL === 'SUP' || $user->PERFIL === 'ADM') {
+                return response()->json($patrimonio);
+            }
+
+            // Usuários comuns: só podem ver se são responsáveis ou criadores
+            $isResp = (string)($user->CDMATRFUNCIONARIO ?? '') === (string)($patrimonio->CDMATRFUNCIONARIO ?? '');
+            $usuario = trim((string)($patrimonio->USUARIO ?? ''));
+            $nmLogin = trim((string)($user->NMLOGIN ?? ''));
+            $nmUser  = trim((string)($user->NOMEUSER ?? ''));
+            $isCreator = $usuario !== '' && (
+                strcasecmp($usuario, $nmLogin) === 0 ||
+                strcasecmp($usuario, $nmUser) === 0
+            );
+
+            if (!$isResp && !$isCreator) {
+                // Usuário não tem permissão
+                Log::warning('Tentativa de acesso não autorizado a patrimônio', [
+                    'user_id' => $user->id,
+                    'patrimonio' => $numero,
+                    'patrimonio_responsavel' => $patrimonio->CDMATRFUNCIONARIO,
+                    'patrimonio_criador' => $patrimonio->USUARIO,
+                ]);
+                return response()->json(['error' => 'Não autorizado'], 403);
+            }
+
             return response()->json($patrimonio);
+        } catch (\Throwable $e) {
+            Log::error('Erro ao buscar patrimônio por número: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return response()->json(['error' => 'Erro ao buscar patrimônio'], 500);
         }
-        return response()->json(null, 404);
     }
 
     public function pesquisar(Request $request): JsonResponse
     {
         try {
             $termo = trim((string) $request->input('q', ''));
+            $user = Auth::user();
 
-            // Buscar todos os patrimônios
-            $patrimonios = Patrimonio::select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO'])
-                ->get()
-                ->toArray();
+            if (!$user) {
+                // Não autenticado
+                return response()->json([], 403);
+            }
+
+            // Super Admin (SUP) e Admin (ADM) têm acesso a TODOS os patrimônios
+            if ($user->PERFIL === 'SUP' || $user->PERFIL === 'ADM') {
+                $patrimonios = Patrimonio::select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO'])
+                    ->get()
+                    ->toArray();
+            } else {
+                // Usuários comuns: só podem ver patrimonios que são responsáveis ou criadores
+                $patrimonios = Patrimonio::where(function ($query) use ($user) {
+                    // Responsável pelo patrimônio
+                    $query->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
+                        // OU criador (USUARIO)
+                        ->orWhere('USUARIO', $user->NMLOGIN)
+                        ->orWhere('USUARIO', $user->NOMEUSER);
+                })
+                    ->select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO'])
+                    ->get()
+                    ->toArray();
+            }
 
             // Aplicar filtro inteligente
             $filtrados = \App\Services\FilterService::filtrar(
@@ -1512,12 +1572,28 @@ class PatrimonioController extends Controller
         try {
             $page = max(1, (int) $request->input('page', 1));
             $perPage = 30; // Fixo para modal
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json(['error' => 'Não autorizado'], 403);
+            }
 
             // Query para patrimônios disponíveis (sem termo atribuído ou conforme regra de negócio)
             $query = Patrimonio::with(['funcionario'])
                 ->whereNull('NMPLANTA') // Sem código de termo
                 ->orWhere('NMPLANTA', '') // Ou código vazio
                 ->orderBy('NUPATRIMONIO', 'asc');
+
+            // 🔐 FILTRO DE SEGURANÇA: Se não for Admin/SuperAdmin, filtrar por permissões
+            if (!($user->PERFIL === 'SUP' || $user->PERFIL === 'ADM')) {
+                $query->where(function ($q) use ($user) {
+                    // Responsável pelo patrimônio
+                    $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
+                        // OU criador
+                        ->orWhere('USUARIO', $user->NMLOGIN)
+                        ->orWhere('USUARIO', $user->NOMEUSER);
+                });
+            }
 
             // Paginar manualmente
             $total = $query->count();

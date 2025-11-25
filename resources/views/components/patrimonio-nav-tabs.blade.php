@@ -61,7 +61,7 @@
             </div>
           </div>
         @elseif($tab['route'] === 'patrimonios.atribuir')
-          {{-- Aba especial: submenu flutuante tipo "nuvem" posicionado fixed para evitar clipping por overflow --}}
+          {{-- Aba especial: submenu com posicionamento dinâmico (fixed na index, relativo em outras páginas) --}}
           <div class="mx-2" x-data="{open:false, x:0, y:0, toggle(e){ if(window.matchMedia('(hover: none)').matches){ this.open = !this.open; } }, show(e){ this.open = true; this.$nextTick(()=>{ const r = this.$refs.anchor.getBoundingClientRect(); this.x = Math.max(8, r.left + window.scrollX); this.y = Math.max(8, r.bottom + window.scrollY + 6); }); }, hide(){ this.open = false; }}"
                @mouseenter="show" @mouseleave="hide" @focusin="show" @focusout="hide">
             <a href="{{ route('patrimonios.atribuir.codigos', ['status' => 'disponivel']) }}" x-ref="anchor" @click="if(window.matchMedia('(hover: none)').matches){ $event.preventDefault(); toggle($event); }" class="px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors duration-150 {{ $tab['active'] ? 'text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400' : 'text-gray-500 dark:text-gray-300 border-transparent hover:text-gray-700 dark:hover:text-gray-200' }}" tabindex="0">
@@ -72,8 +72,8 @@
               {{ $tab['label'] }}
             </a>
 
-            {{-- Caixa flutuante (nuvem) fixa na viewport; visível quando open=true --}}
-            <div x-show="open" x-cloak x-transition.opacity x-transition.duration.150 class="fixed z-50" :style="`left: ${x}px; top: ${y}px;`">
+            {{-- Submenu com posicionamento inteligente --}}
+            <div x-show="open" x-cloak x-transition.opacity x-transition.duration.150 @if(request()->routeIs('patrimonios.index')) class="fixed z-50" :style="`left: ${x}px; top: ${y}px;`" @else class="absolute z-50 mt-0 left-0 top-full" @endif>
               <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl px-2 py-2 w-48">
                 <div class="flex flex-col gap-1">
                    <a href="{{ route('patrimonios.atribuir.codigos', ['status' => 'disponivel']) }}" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition">
@@ -93,8 +93,8 @@
             </div>
           </div>
         @elseif($tab['route'] === 'relatorios.bens.index')
-          {{-- Aba Relatório de Bens com nuvem (Cadastrar Bem) --}}
-          <div class="mx-2" x-data="{open:false, x:0, y:0, toggle(e){ if(window.matchMedia('(hover: none)').matches){ this.open = !this.open; } }, show(e){ this.open = true; this.$nextTick(()=>{ const r = this.$refs.anchor.getBoundingClientRect(); this.x = Math.max(8, r.left); this.y = Math.max(8, r.bottom + 6); }); }, hide(){ this.open = false; }}" @mouseenter="show" @mouseleave="hide" @focusin="show" @focusout="hide">
+          {{-- Aba Relatório de Bens com submenu inteligente --}}
+          <div class="mx-2" x-data="{open:false, x:0, y:0, toggle(e){ if(window.matchMedia('(hover: none)').matches){ this.open = !this.open; } }, show(e){ this.open = true; this.$nextTick(()=>{ const r = this.$refs.anchor.getBoundingClientRect(); this.x = Math.max(8, r.left + window.scrollX); this.y = Math.max(8, r.bottom + window.scrollY + 6); }); }, hide(){ this.open = false; }}" @mouseenter="show" @mouseleave="hide" @focusin="show" @focusout="hide">
             <a href="{{ route('relatorios.bens.index') }}" x-ref="anchor" @click="if(window.matchMedia('(hover: none)').matches){ $event.preventDefault(); toggle($event); }" class="px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors duration-150 {{ $tab['active'] ? 'text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400' : 'text-gray-500 dark:text-gray-300 border-transparent hover:text-gray-700 dark:hover:text-gray-200' }}" tabindex="0">
               {{-- Ícone Relatório (herda cor com currentColor) --}}
               <svg class="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -103,7 +103,8 @@
               {{ $tab['label'] }}
             </a>
 
-            <div x-show="open" x-cloak x-transition.opacity x-transition.duration.150 class="fixed z-50" :style="`left: ${x}px; top: ${y}px;`">
+            {{-- Submenu com posicionamento inteligente --}}
+            <div x-show="open" x-cloak x-transition.opacity x-transition.duration.150 @if(request()->routeIs('patrimonios.index')) class="fixed z-50" :style="`left: ${x}px; top: ${y}px;`" @else class="absolute z-50 mt-0 left-0 top-full" @endif>
               <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl px-2 py-2 w-48">
                 <div class="flex flex-col gap-1">
                   <a href="{{ route('relatorios.bens.index', ['open' => 'cadBem']) }}" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition">

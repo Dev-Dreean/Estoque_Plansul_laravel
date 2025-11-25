@@ -74,8 +74,7 @@
                 type="password"
                 class="mt-1 block w-full"
                 placeholder="Digite a senha de Super Admin"
-                x-model="senhaAdmin"
-                required />
+                x-model="senhaAdmin" />
             <p class="text-xs text-amber-600 dark:text-amber-400 mt-1" x-show="senhaAdmin && perfil === 'SUP'">
                 ✓ Senha preenchida
             </p>
@@ -276,6 +275,14 @@
                 onLoginTyping() {
                     // Usuário está digitando manualmente
                     this.loginAuto = false;
+                },
+                validateForm() {
+                    // Se perfil é SUP, senha de super admin é obrigatória
+                    if (this.perfil === 'SUP' && !this.senhaAdmin) {
+                        alert('A senha de autorização de Super Admin é obrigatória para criar/atualizar um Super Administrador.');
+                        return false;
+                    }
+                    return true;
                 }
             }
         }
@@ -286,7 +293,7 @@
     <a href="{{ route('usuarios.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:underline mr-4">
         Cancelar
     </a>
-    <x-primary-button>
+    <x-primary-button @click="validateForm() && $el.closest('form').submit()">
         {{ isset($usuario) ? 'Atualizar Usuário' : 'Criar Usuário' }}
     </x-primary-button>
 </div>

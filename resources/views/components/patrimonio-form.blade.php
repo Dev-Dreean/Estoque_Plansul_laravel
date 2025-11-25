@@ -5,7 +5,17 @@
   <strong class="font-bold">Opa! Algo deu errado.</strong>
   <ul class="mt-1 list-disc list-inside text-xs">
     @foreach ($errors->all() as $error)
-    <li>{{ $error }}</li>
+      @if (str_contains($error, 'Já existe um patrimônio') || str_contains($error, 'duplicat'))
+        <li class="font-semibold text-red-700">
+          {{ $error }}
+          <br>
+          <span class="mt-2 block text-red-600">
+            💡 <strong>Dica:</strong> Clique no botão <strong style="background: #16a34a; color: white; padding: 2px 6px; border-radius: 3px;">⟳</strong> (verde) para gerar um novo número de patrimônio automaticamente.
+          </span>
+        </li>
+      @else
+        <li>{{ $error }}</li>
+      @endif
     @endforeach
   </ul>
 </div>
@@ -15,24 +25,24 @@
 
   {{-- GRUPO 1: 4 Inputs lado a lado - Botão Gerar, Número Patrimônio, OC, Descrição e Código do Objeto --}}
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    {{-- Número do Patrimônio (Dropdown com busca ou novo número) --}}
+    {{-- Número do Patrimônio (Dropdown com patrimônios do usuário) --}}
     <div>
-      <label for="patSearch" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nº Patrimônio (Digite ou selecione) *</label>
+      <label for="patSearch" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nº Patrimônio (Selecione ou Gere) *</label>
       <div class="flex items-stretch gap-2">
-        {{-- Botão Gerar Novo Número (ANTES do input) --}}
+        {{-- Botão para gerar novo número --}}
         <button
           type="button"
           id="btnGerarNumPatrimonio"
           @click.prevent="gerarProximoNumeroPatrimonio()"
           @keydown.space.prevent="gerarProximoNumeroPatrimonio()"
           @keydown.tab.prevent="(function(){ document.getElementById('patSearch').focus(); })()"
-          title="Espaço ou clique: gera nº automático | Tab: vai para nº patrimônio"
-          tabindex="0"
-          class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors active:bg-indigo-800">
+          title="Gerar um novo número de patrimônio (opcional)"
+          tabindex="1"
+          class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors active:bg-green-800">
           ⟳
         </button>
 
-        {{-- Input de Busca/Digitação --}}
+        {{-- Input de Busca/Seleção --}}
         <div class="flex-grow relative" @click.away="showPatDropdown=false">
           <input
             id="patSearch"
@@ -48,28 +58,28 @@
             inputmode="numeric"
             tabindex="2"
             class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-6 focus:ring-2 focus:ring-indigo-500"
-            placeholder="Digite nº ou selecione da lista"
+            placeholder="Digite nº ou selecione"
             required />
 
           {{-- Valor oculto com o número selecionado (enviado para o servidor) --}}
           <input type="hidden" name="NUPATRIMONIO" :value="patSearch" />
 
           {{-- Botão Limpar (DENTRO do input, à direita) --}}
-          <button type="button" x-show="patSearch" @click.prevent="(function(){ patSearch=''; patrimoniosLista=[]; highlightedPatIndex=-1; showPatDropdown=false; })()" title="Limpar busca" tabindex="-1" class="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-lg leading-none">×</button>
+          <button type="button" x-show="patSearch" @click.prevent="(function(){ patSearch=''; patrimoniosLista=[]; highlightedPatIndex=-1; showPatDropdown=false; })()" title="Limpar seleção" tabindex="-1" class="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-lg leading-none">×</button>
 
-          {{-- Dropdown de Patrimônios --}}
+          {{-- Dropdown de Patrimônios do Usuário --}}
           <div x-show="showPatDropdown" x-transition class="absolute z-50 top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-xs">
-            <template x-if="loadingSearch">
-              <div class="p-2 text-gray-500 text-center">Buscando...</div>
+            <template x-if="loadingPatrimonios">
+              <div class="p-2 text-gray-500 text-center">Buscando seus patrimônios...</div>
             </template>
-            <template x-if="!loadingSearch && patrimoniosLista.length === 0">
-              <div class="p-2 text-gray-500 text-center" x-text="String(patSearch || '').trim()==='' ? 'Digite para buscar patrimônios' : 'Nenhum patrimônio encontrado'"></div>
+            <template x-if="!loadingPatrimonios && patrimoniosLista.length === 0">
+              <div class="p-2 text-gray-500 text-center" x-text="String(patSearch || '').trim()==='' ? 'Digite para buscar ou clique no campo' : 'Nenhum patrimônio encontrado'"></div>
             </template>
             <template x-for="(p,i) in (patrimoniosLista || [])" :key="p.NUSEQPATR || p.NUPATRIMONIO || i">
               <div @click="selectPatrimonio(p); buscarPatrimonio();" @mouseover="highlightedPatIndex=i" :class="['px-3 py-1.5 cursor-pointer border-b border-gray-200 dark:border-gray-700 last:border-0', highlightedPatIndex===i ? 'bg-indigo-500 dark:bg-indigo-600 text-white' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
                 <div class="flex justify-between items-center gap-2">
                   <span class="font-semibold text-indigo-600 dark:text-indigo-400" :class="highlightedPatIndex===i ? 'text-white' : ''" x-text="p.NUPATRIMONIO"></span>
-                  <span class="text-gray-700 dark:text-gray-300 flex-grow" :class="highlightedPatIndex===i ? 'text-white' : ''" x-text="' - ' + (p.DEPATRIMONIO || p.descricao || '—')"></span>
+                  <span class="text-gray-700 dark:text-gray-300 flex-grow text-xs" :class="highlightedPatIndex===i ? 'text-white' : ''" x-text="' - ' + (p.DEPATRIMONIO || p.descricao || '—')"></span>
                 </div>
               </div>
             </template>
@@ -962,46 +972,97 @@
               this.formData.CDLOCAL = data.CDLOCAL;
               console.log(`  ✓ formData.CDLOCAL: ${this.formData.CDLOCAL}`);
 
-              // Buscar informações do local para preencher os campos visuais
-              try {
-                console.log(`  🔍 Buscando informações do local (ID: ${data.CDLOCAL})...`);
-                // Buscar todos os locais e filtrar pelo ID
-                const localResp = await fetch(`/api/locais/buscar?termo=`);
-                if (localResp.ok) {
-                  const todosLocais = await localResp.json();
-                  console.log(`  📦 Total de locais retornados pela API: ${todosLocais.length}`);
-                  // Encontrar o local específico pelo ID
-                  const local = todosLocais.find(l => String(l.id) === String(data.CDLOCAL));
+              // Primeiro tentar usar o objeto 'local' que vem do eager loading
+              if (data.local && data.local.id) {
+                const local = data.local;
+                this.codigoLocalDigitado = local.CDLOCAL || local.cdlocal || '';
+                this.nomeLocalBusca = local.NOMELOCAL || local.LOCAL || local.delocal || '';
+                this.localNome = this.nomeLocalBusca;
+                this.localSelecionadoId = local.id;
+                this.locaisEncontrados = [local];
 
-                  if (local) {
-                    this.codigoLocalDigitado = local.cdlocal;
-                    this.nomeLocalBusca = local.LOCAL || local.delocal || '';
-                    this.localNome = this.nomeLocalBusca;
-                    this.localSelecionadoId = local.id;
-                    this.locaisEncontrados = [local];
+                console.log(`  ✓ Local vindo do eager loading:`);
+                console.log(`    - codigoLocalDigitado: ${this.codigoLocalDigitado}`);
+                console.log(`    - nomeLocalBusca: ${this.nomeLocalBusca}`);
+                console.log(`    - localSelecionadoId: ${this.localSelecionadoId}`);
 
-                    console.log(`  ✓ codigoLocalDigitado: ${this.codigoLocalDigitado}`);
-                    console.log(`  ✓ nomeLocalBusca: ${this.nomeLocalBusca}`);
-                    console.log(`  ✓ localSelecionadoId: ${this.localSelecionadoId}`);
-
-                    // Se o local tem projeto associado e ainda não preenchemos, preencher agora
-                    if (!this.formData.CDPROJETO && local.CDPROJETO) {
-                      this.formData.CDPROJETO = local.CDPROJETO;
-                      if (local.NOMEPROJETO) {
-                        this.projetoSearch = `${local.CDPROJETO} - ${local.NOMEPROJETO}`;
-                        console.log(`  ✓ Projeto preenchido via local: ${this.projetoSearch}`);
-                      }
-                    }
-                  } else {
-                    console.warn(`  ❌ Local com ID ${data.CDLOCAL} NÃO encontrado na lista de ${todosLocais.length} locais`);
-                    console.log(`  📋 IDs disponíveis: ${todosLocais.map(l => l.id).join(', ')}`);
+                // Se o local tem projeto associado e ainda não preenchemos, preencher agora
+                if (!this.formData.CDPROJETO && local.CDPROJETO) {
+                  this.formData.CDPROJETO = local.CDPROJETO;
+                  if (local.NOMEPROJETO) {
+                    this.projetoSearch = `${local.CDPROJETO} - ${local.NOMEPROJETO}`;
+                    console.log(`  ✓ Projeto preenchido via local: ${this.projetoSearch}`);
                   }
                 }
-              } catch (e) {
-                console.warn('⚠️ [BUSCAR PATRIMONIO] Erro ao buscar informações do local:', e);
+              } else {
+                // Se não veio no eager loading, buscar via API
+                console.log(`  🔍 Objeto local não veio do eager loading, buscando via API...`);
+                try {
+                  const localResp = await fetch(`/api/locais/buscar?termo=`);
+                  if (localResp.ok) {
+                    const todosLocais = await localResp.json();
+                    console.log(`  📦 Total de locais retornados pela API: ${todosLocais.length}`);
+                    const local = todosLocais.find(l => String(l.id) === String(data.CDLOCAL));
+
+                    if (local) {
+                      this.codigoLocalDigitado = local.cdlocal;
+                      this.nomeLocalBusca = local.LOCAL || local.delocal || '';
+                      this.localNome = this.nomeLocalBusca;
+                      this.localSelecionadoId = local.id;
+                      this.locaisEncontrados = [local];
+
+                      console.log(`  ✓ codigoLocalDigitado: ${this.codigoLocalDigitado}`);
+                      console.log(`  ✓ nomeLocalBusca: ${this.nomeLocalBusca}`);
+                      console.log(`  ✓ localSelecionadoId: ${this.localSelecionadoId}`);
+
+                      if (!this.formData.CDPROJETO && local.CDPROJETO) {
+                        this.formData.CDPROJETO = local.CDPROJETO;
+                        if (local.NOMEPROJETO) {
+                          this.projetoSearch = `${local.CDPROJETO} - ${local.NOMEPROJETO}`;
+                          console.log(`  ✓ Projeto preenchido via local: ${this.projetoSearch}`);
+                        }
+                      }
+                    } else {
+                      console.warn(`  ❌ Local com ID ${data.CDLOCAL} NÃO encontrado`);
+                    }
+                  }
+                } catch (e) {
+                  console.warn('⚠️ [BUSCAR PATRIMONIO] Erro ao buscar informações do local:', e);
+                }
               }
             } else {
               console.log('  ℹ️ Patrimônio sem local associado');
+            }
+
+            // 🆕 PREENCHER USUÁRIO RESPONSÁVEL (CDMATRFUNCIONARIO)
+            console.log('\n🎯 [BUSCAR PATRIMONIO] PREENCHENDO USUÁRIO RESPONSÁVEL:');
+            if (data.hasOwnProperty('CDMATRFUNCIONARIO') && data.CDMATRFUNCIONARIO) {
+              const matricula = String(data.CDMATRFUNCIONARIO || '').trim();
+              this.formData.CDMATRFUNCIONARIO = matricula.replace(/[^0-9]/g, '');
+              console.log(`  ✓ formData.CDMATRFUNCIONARIO: ${this.formData.CDMATRFUNCIONARIO}`);
+
+              // Se a API retornou os dados do funcionário, buscar o nome
+              if (data.funcionario && data.funcionario.NMFUNCIONARIO) {
+                let nomeLimpo = String(data.funcionario.NMFUNCIONARIO || '').trim();
+                // Remove datas no padrão dd/mm/yyyy
+                nomeLimpo = nomeLimpo.replace(/\d{2}\/\d{2}\/\d{4}/g, '');
+                // Remove múltiplos espaços e números ao final
+                nomeLimpo = nomeLimpo.replace(/\s+\d+\s*$/g, '');
+                // Remove caracteres especiais mantendo apenas letras, acentos e espaço
+                nomeLimpo = nomeLimpo.replace(/[^A-Za-zÀ-ÿ\s]/g, '').trim();
+                // Remove espaços extras
+                nomeLimpo = nomeLimpo.replace(/\s+/g, ' ').trim();
+
+                this.userSelectedName = `${matricula} - ${nomeLimpo}`;
+                this.userSearch = this.userSelectedName;
+                console.log(`  ✓ userSelectedName: ${this.userSelectedName}`);
+                console.log(`  ✓ userSearch: ${this.userSearch}`);
+              } else {
+                console.log('  ℹ️ Dados do funcionário não retornados pela API - tentando buscar');
+                // Se não retornou, precisaríamos buscar, mas por enquanto deixamos vazio
+              }
+            } else {
+              console.log('  ℹ️ Patrimônio sem usuário responsável');
             }
 
             console.log('\n📊 [BUSCAR PATRIMONIO] ESTADO FINAL DO FORMULÁRIO:');
@@ -1009,10 +1070,13 @@
               NUPATRIMONIO: this.formData.NUPATRIMONIO,
               CDPROJETO: this.formData.CDPROJETO,
               CDLOCAL: this.formData.CDLOCAL,
+              CDMATRFUNCIONARIO: this.formData.CDMATRFUNCIONARIO,
               NUSEQOBJ: this.formData.NUSEQOBJ,
               projetoSearch: this.projetoSearch,
               codigoLocalDigitado: this.codigoLocalDigitado,
               nomeLocalBusca: this.nomeLocalBusca,
+              userSelectedName: this.userSelectedName,
+              userSearch: this.userSearch,
               localSelecionadoId: this.localSelecionadoId,
             }, null, 2));
             console.log('='.repeat(80) + '\n');
@@ -1678,29 +1742,28 @@
       // === Autocomplete Patrimônio ===
       async buscarPatrimonios() {
         const termo = this.patSearch.trim();
-
-        if (termo === '') {
-          this.patrimoniosLista = [];
-          this.highlightedPatIndex = -1;
-          this.showPatDropdown = false; // Fechar apenas quando vazio
-          return;
-        }
-
-        // Abrir dropdown enquanto digita (apenas se ainda não está fechado)
-        if (this.showPatDropdown !== false || this.patrimoniosLista.length === 0) {
-          this.showPatDropdown = true;
-        }
         this.loadingPatrimonios = true;
 
         try {
+          // Buscar com ou sem termo (sem termo = lista completa do usuário)
           const resp = await fetch(`/api/patrimonios/pesquisar?q=${encodeURIComponent(termo)}`);
           if (resp.ok) {
             this.patrimoniosLista = await resp.json();
             this.highlightedPatIndex = this.patrimoniosLista.length > 0 ? 0 : -1;
-            // Manter dropdown aberto apenas se houver resultados e não foi fechado manualmente
-            if (this.patrimoniosLista.length > 0 && this.showPatDropdown !== false) {
+            
+            // Mostrar dropdown se houver resultados
+            if (this.patrimoniosLista.length > 0) {
               this.showPatDropdown = true;
+            } else {
+              // Se vazio e não tem termo, deixa aberto para o usuário digitar
+              if (termo === '') {
+                this.showPatDropdown = true;
+              }
             }
+          } else if (resp.status === 403) {
+            // Não autorizado
+            this.patrimoniosLista = [];
+            this.showPatDropdown = true;
           }
         } catch (e) {
           console.error('Falha busca patrimonios', e);
@@ -3139,16 +3202,6 @@
           }
         });
       },
-      abrirDropdownPatrimonios(force = false) {
-        // Se há um patrimônio já selecionado, não abre novamente
-        if (this.formData.NUPATRIMONIO && !force) {
-          return;
-        }
-        this.showPatDropdown = true;
-        if (this.patSearch.trim() !== '') {
-          this.buscarPatrimonios();
-        }
-      },
       selecionarPatrimonio(p) {
         console.log('\n' + '='.repeat(80));
         console.log('🖱️  [SELECIONAR PATRIMONIO] CLICOU NO GRID');
@@ -3384,14 +3437,14 @@
         }, null, 2));
         console.log('📌 descricaoSearch:', this.descricaoSearch);
 
-        // ✨ Se é modo CRIAÇÃO, dar foco NO BOTÃO DE GERAR (não preencher automaticamente)
+        // ✨ Se é modo CRIAÇÃO, dar foco NO CAMPO DE BUSCA DE PATRIMÔNIOS
         if (!this.isEditMode()) {
           this.$nextTick(() => {
             setTimeout(() => {
-              const btnGerar = document.getElementById('btnGerarNumPatrimonio');
-              if (btnGerar) {
-                btnGerar.focus();
-                console.log('🎯 [INIT CRIAÇÃO] Focus movido para botão de gerar nº patrimônio');
+              const inputPat = document.getElementById('patSearch');
+              if (inputPat) {
+                inputPat.focus();
+                console.log('🎯 [INIT CRIAÇÃO] Focus movido para campo de busca de patrimônios');
               }
             }, 100);
           });
@@ -3417,6 +3470,7 @@
 
           if (!response.ok) {
             console.error('❌ [GERAR NUM] Erro ao buscar próximo número');
+            alert('❌ Erro ao gerar número de patrimônio. Tente novamente.');
             return;
           }
 
@@ -3439,6 +3493,7 @@
           }
         } catch (error) {
           console.error('❌ [GERAR NUM] Erro ao gerar número:', error);
+          alert('❌ Erro ao gerar número de patrimônio. Tente novamente.');
         }
       },
 

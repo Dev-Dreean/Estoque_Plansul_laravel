@@ -2,16 +2,13 @@
     {{-- Abas de navegação do patrimônio --}}
     <x-patrimonio-nav-tabs />
 
-    <x-slot name="header">
-        <div style="height:0.8em;line-height:0.8em;padding:0;margin:0;overflow:hidden;background:inherit;">
-            <h2 style="font-size:0.95em;font-weight:600;color:#fff;margin:0;padding:0;line-height:0.8em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                {{ __('Editar Patrimônio') }}: <span style="font-weight:400;">{{ $patrimonio->DEPATRIMONIO }}</span>
-            </h2>
-        </div>
-    </x-slot>
-
-    <div class="py-12">
+    <div class="py-6">
         <div class="w-full sm:px-6 lg:px-8">
+            <div class="mb-4">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">
+                    {{ __('Editar Patrimônio') }}: <span class="font-normal text-gray-600 dark:text-gray-400">{{ $patrimonio->DEPATRIMONIO }}</span>
+                </h2>
+            </div>
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <form method="POST" action="{{ route('patrimonios.update', $patrimonio) }}" id="editPatrimonioForm">

@@ -185,7 +185,12 @@ class User extends Authenticatable
             return false;
         }
 
-        // Usuário comum nunca acessa a tela de cadastro de usuários
+        // Usuário comum nunca acessa a tela de usuários (1003)
+        if ($nuseqtela === 1003 && $this->isUsuario()) {
+            return false;
+        }
+
+        // Usuário comum nunca acessa a tela de cadastro de locais (1002)
         if ($nuseqtela === 1002 && $this->isUsuario()) {
             return false;
         }
