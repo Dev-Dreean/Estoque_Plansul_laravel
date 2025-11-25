@@ -202,6 +202,22 @@
                     <div>
                       <input type="number" name="nmplanta" placeholder="Cód. Termo" value="{{ request('nmplanta') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                     </div>
+                    <div>
+                      <x-user-autocomplete 
+                        id="matr_responsavel_search"
+                        name="matr_responsavel"
+                        placeholder="Responsável (matrícula ou nome)"
+                        value="{{ request('matr_responsavel') }}"
+                      />
+                    </div>
+                    <div>
+                      <x-user-autocomplete 
+                        id="matr_cadastrador_search"
+                        name="matr_cadastrador"
+                        placeholder="Cadastrador (matrícula ou nome)"
+                        value="{{ request('matr_cadastrador') }}"
+                      />
+                    </div>
                     @if (Auth::user()->PERFIL === 'ADM')
                     <div>
                       <select name="cadastrado_por" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">

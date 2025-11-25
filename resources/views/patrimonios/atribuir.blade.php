@@ -160,46 +160,20 @@
                       " class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                     </div>
                     <div class="flex-1 min-w-[150px]">
-                      <input type="number" id="filtro_matr_responsavel" name="filtro_matr_responsavel" value="{{ request('filtro_matr_responsavel') }}" placeholder="Matr. Responsável" @input="
-                        const num = document.getElementById('filtro_numero').value;
-                        const desc = document.getElementById('filtro_descricao').value;
-                        const mod = document.getElementById('filtro_modelo').value;
-                        const proj = document.getElementById('filtro_projeto').value;
-                        const termo = document.getElementById('filtro_termo') ? document.getElementById('filtro_termo').value : '';
-                        const matrResp = document.getElementById('filtro_matr_responsavel').value;
-                        const matrCad = document.getElementById('filtro_matr_cadastrador') ? document.getElementById('filtro_matr_cadastrador').value : '';
-                        temFiltroAtivo = num || desc || mod || proj || termo || matrResp || matrCad ? true : false;
-                        let partes = [];
-                        if (termo) partes.push('Termo=' + termo);
-                        if (num) partes.push('Nº=' + num);
-                        if (desc) partes.push('Item=' + desc);
-                        if (mod) partes.push('Modelo=' + mod);
-                        if (proj) partes.push('Projeto=' + proj);
-                        if (matrResp) partes.push('Resp=' + matrResp);
-                        if (matrCad) partes.push('Cad=' + matrCad);
-                        textofiltro = partes.join(', ');
-                      " class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                      <x-user-autocomplete 
+                        id="filtro_matr_responsavel"
+                        name="filtro_matr_responsavel"
+                        placeholder="Responsável"
+                        value="{{ request('filtro_matr_responsavel') }}"
+                      />
                     </div>
                     <div class="flex-1 min-w-[150px]">
-                      <input type="number" id="filtro_matr_cadastrador" name="filtro_matr_cadastrador" value="{{ request('filtro_matr_cadastrador') }}" placeholder="Matr. Cadastrador" @input="
-                        const num = document.getElementById('filtro_numero').value;
-                        const desc = document.getElementById('filtro_descricao').value;
-                        const mod = document.getElementById('filtro_modelo').value;
-                        const proj = document.getElementById('filtro_projeto').value;
-                        const termo = document.getElementById('filtro_termo') ? document.getElementById('filtro_termo').value : '';
-                        const matrResp = document.getElementById('filtro_matr_responsavel') ? document.getElementById('filtro_matr_responsavel').value : '';
-                        const matrCad = document.getElementById('filtro_matr_cadastrador').value;
-                        temFiltroAtivo = num || desc || mod || proj || termo || matrResp || matrCad ? true : false;
-                        let partes = [];
-                        if (termo) partes.push('Termo=' + termo);
-                        if (num) partes.push('Nº=' + num);
-                        if (desc) partes.push('Item=' + desc);
-                        if (mod) partes.push('Modelo=' + mod);
-                        if (proj) partes.push('Projeto=' + proj);
-                        if (matrResp) partes.push('Resp=' + matrResp);
-                        if (matrCad) partes.push('Cad=' + matrCad);
-                        textofiltro = partes.join(', ');
-                      " class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                      <x-user-autocomplete 
+                        id="filtro_matr_cadastrador"
+                        name="filtro_matr_cadastrador"
+                        placeholder="Cadastrador"
+                        value="{{ request('filtro_matr_cadastrador') }}"
+                      />
                     </div>
                   </div>
                   <div class="flex flex-wrap items-center justify-between mt-4 gap-4">
@@ -608,18 +582,22 @@
         aplicarFiltros() {
           const params = new URLSearchParams(window.location.search);
           // Limpa filtros antigos para reconstruir
-          ['filtro_numero', 'filtro_descricao', 'filtro_modelo', 'filtro_projeto', 'filtro_termo', 'per_page'].forEach(k => params.delete(k));
+          ['filtro_numero', 'filtro_descricao', 'filtro_modelo', 'filtro_projeto', 'filtro_termo', 'filtro_matr_responsavel', 'filtro_matr_cadastrador', 'per_page'].forEach(k => params.delete(k));
           const numero = document.getElementById('filtro_numero')?.value;
           const descricao = document.getElementById('filtro_descricao')?.value;
           const modelo = document.getElementById('filtro_modelo')?.value;
           const projeto = document.getElementById('filtro_projeto')?.value;
           const termo = document.getElementById('filtro_termo')?.value;
+          const matrResp = document.getElementById('filtro_matr_responsavel')?.value;
+          const matrCad = document.getElementById('filtro_matr_cadastrador')?.value;
           const perPage = document.getElementById('per_page')?.value;
           if (numero) params.set('filtro_numero', numero);
           if (descricao) params.set('filtro_descricao', descricao);
           if (modelo) params.set('filtro_modelo', modelo);
           if (projeto) params.set('filtro_projeto', projeto);
           if (termo) params.set('filtro_termo', termo);
+          if (matrResp) params.set('filtro_matr_responsavel', matrResp);
+          if (matrCad) params.set('filtro_matr_cadastrador', matrCad);
           if (perPage) params.set('per_page', perPage);
           else params.delete('per_page');
           window.location.href = '{{ route("patrimonios.atribuir.codigos") }}?' + params.toString();

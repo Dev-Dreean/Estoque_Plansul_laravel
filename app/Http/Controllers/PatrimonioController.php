@@ -1473,6 +1473,16 @@ class PatrimonioController extends Controller
         if ($request->filled('nmplanta')) {
             $query->where('NMPLANTA', $request->nmplanta);
         }
+        // Filtro por matrícula do responsável (CDMATRFUNCIONARIO)
+        if ($request->filled('matr_responsavel')) {
+            $query->where('CDMATRFUNCIONARIO', $request->matr_responsavel);
+        }
+        // Filtro por matrícula do cadastrador (USUARIO)
+        if ($request->filled('matr_cadastrador')) {
+            $query->whereHas('creator', function ($q) use ($request) {
+                $q->where('CDMATRFUNCIONARIO', $request->matr_cadastrador);
+            });
+        }
         // Filtro por cadastrante (apenas Admin e Super Admin)
         if ($request->filled('cadastrado_por') && ($user->isGod() || $user->PERFIL === 'ADM')) {
             if ($request->cadastrado_por === 'SISTEMA') {
