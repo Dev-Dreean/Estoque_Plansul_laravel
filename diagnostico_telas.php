@@ -30,7 +30,7 @@ if (!$usuarioSup) {
 
 echo "   ✅ Usuário encontrado: {$usuarioSup->NOMEUSER}\n";
 echo "   PERFIL: {$usuarioSup->PERFIL}\n";
-echo "   isSuperAdmin(): " . ($usuarioSup->isSuperAdmin() ? 'SIM' : 'NÃO') . "\n";
+echo "   isAdmin(): " . ($usuarioSup->isAdmin() ? 'SIM' : 'NÃO') . "\n";
 echo "   isGod(): " . ($usuarioSup->isGod() ? 'SIM' : 'NÃO') . "\n\n";
 
 // 2. Telas cadastradas no BD
@@ -104,8 +104,8 @@ echo "\n";
 
 // 6. Conclusão
 echo "6️⃣  ANÁLISE FINAL:\n";
-if (!$usuarioSup->isSuperAdmin()) {
-    echo "   ❌ ERRO: Usuário não é Super Admin!\n";
+if (!$usuarioSup->isAdmin()) {
+    echo "   ❌ ERRO: Usuário não é Admin!\n";
 } elseif ($telas->isEmpty()) {
     echo "   ❌ ERRO: Nenhuma tela cadastrada em acessotela!\n";
     echo "      SOLUÇÃO: Execute 'php artisan cadastro-tela:sync'\n";

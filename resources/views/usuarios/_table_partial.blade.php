@@ -20,15 +20,13 @@
                 <td class="px-6 py-4">
                     @if($usuario->PERFIL === 'ADM')
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ $usuario->PERFIL }}</span>
-                    @elseif($usuario->PERFIL === 'SUP')
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-600 text-white">{{ $usuario->PERFIL }}</span>
                     @else
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{{ $usuario->PERFIL }}</span>
                     @endif
                 </td>
                 <td class="px-6 py-4 flex items-center space-x-2">
                     <a href="{{ route('usuarios.edit', $usuario) }}" class="font-medium text-plansul-orange hover:underline">Editar</a>
-                    @if(Auth::user()->isSuperAdmin() && Auth::id() !== $usuario->NUSEQUSUARIO)
+                    @if(Auth::user()->isAdmin() && Auth::id() !== $usuario->NUSEQUSUARIO)
                     <form method="POST" action="{{ route('usuarios.destroy', $usuario) }}" onsubmit="return confirm('Tem certeza?');">
                         @csrf
                         @method('DELETE')

@@ -385,7 +385,7 @@
                   </td>
                   <td class="px-4 py-2">{{ $patrimonio->cadastrado_por_nome ?? '—' }}</td>
 
-                  @if(Auth::user()->isSuperAdmin())
+                  @if(Auth::user()->isAdmin())
                   <td class="px-2 py-2">
                     <div class="flex items-center gap-2">
                       <button 
@@ -408,7 +408,7 @@
                 @empty
                 <tr>
                   {{-- Corrigindo o colspan para o número correto de colunas --}}
-                  <td colspan="{{ Auth::user()->isSuperAdmin() ? 17 : 16 }}"
+                  <td colspan="16"
                     class="px-6 py-4 text-center">Nenhum patrimônio encontrado para os
                     filtros atuais.</td>
                 </tr>

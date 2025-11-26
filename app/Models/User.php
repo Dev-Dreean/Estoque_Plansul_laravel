@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\DB;
  * @property string|null $CDMATRFUNCIONARIO
  * 
  * @method bool isGod()
- * @method bool isSuperAdmin()
  * @method bool isAdmin()
  * @method bool podeExcluir()
  * @method bool temAcessoTela(int|string $nuseqtela)
@@ -34,7 +33,6 @@ class User extends Authenticatable
     // Constantes de perfis
     public const PERFIL_USUARIO = 'USR';
     public const PERFIL_ADMIN = 'ADM';
-    public const PERFIL_SUPER = 'SUP';
 
     /**
      * @var string A tabela do banco de dados associada a este Model.
@@ -126,10 +124,7 @@ class User extends Authenticatable
     /**
      * Verifica se o usu├írio ├® Super Administrador
      */
-    public function isSuperAdmin(): bool
-    {
-        return $this->PERFIL === self::PERFIL_SUPER;
-    }
+
 
     /**
      * ­ƒö▒ GOD MODE: Super Admin tem poder absoluto
@@ -139,7 +134,7 @@ class User extends Authenticatable
      */
     public function isGod(): bool
     {
-        return $this->PERFIL === self::PERFIL_SUPER;
+        return $this->isAdmin();
     }
 
     /**
@@ -147,7 +142,7 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return in_array($this->PERFIL, [self::PERFIL_ADMIN, self::PERFIL_SUPER]);
+        return $this->PERFIL === self::PERFIL_ADMIN;
     }
 
     /**
@@ -164,7 +159,7 @@ class User extends Authenticatable
      */
     public function podeExcluir(): bool
     {
-        return $this->isSuperAdmin();
+        return $this->isAdmin();
     }
 
     /**
@@ -182,8 +177,8 @@ class User extends Authenticatable
     {
         $nuseqtela = (string) $nuseqtela;
 
-        // Super Admin tem acesso total
-        if ($this->isSuperAdmin()) {
+        // Admin tem acesso total
+        if ($this->isAdmin()) {
             return true;
         }
 
@@ -206,7 +201,7 @@ class User extends Authenticatable
     {
         $nuseqtela = (string) $nuseqtela;
 
-        if ($this->isSuperAdmin()) {
+        if ($this->isAdmin()) {
             return true;
         }
 
@@ -233,7 +228,7 @@ class User extends Authenticatable
 
     public function telasComAcesso(): array
     {
-        if ($this->isSuperAdmin()) {
+        if ($this->isAdmin()) {
             return DB::table('acessotela')
                 ->whereRaw("TRIM(UPPER(FLACESSO)) = 'S'")
                 ->pluck('NUSEQTELA')

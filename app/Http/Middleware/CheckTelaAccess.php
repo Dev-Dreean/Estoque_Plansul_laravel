@@ -6,21 +6,17 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use App\Helpers\MenuHelper;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckTelaAccess
 {
     /**
-     * Verifica se o usuário tem acesso à tela
-     * Uso: Route::get('/patrimonios', ...)->middleware('tela.access:1000');
+     * Controle de acesso simplificado por perfil
+     * - USR: acesso apenas a telas 1000 (Patrimônio) e 1001 (Gráficos)
+     * - ADM: acesso a tudo
      */
     public function handle(Request $request, Closure $next, ?int $nuseqtela = null): Response
     {
-        if ($nuseqtela === null) {
-            return $next($request);
-        }
-
         if (!Auth::check()) {
             return redirect()->route('login')
                 ->with('error', 'Você precisa estar autenticado para acessar esta página.');
@@ -29,28 +25,27 @@ class CheckTelaAccess
         /** @var User|null $user */
         $user = Auth::user();
 
-        // Super Admin tem acesso total
-        if ($user->isGod()) {
+        // Administrador tem acesso a tudo
+        if ($user->isAdmin()) {
             return $next($request);
         }
 
-        // Verifica se é uma tela obrigatória (sempre acessível)
-        if (MenuHelper::isTelaObrigatoria((string)$nuseqtela)) {
-            return $next($request);
-        }
+        // Usuário comum (USR) só pode acessar telas 1000 e 1001
+        if ($user->PERFIL === User::PERFIL_USUARIO) {
+            $telasPermitidas = [1000, 1001];
+            
+            if ($nuseqtela !== null && !in_array($nuseqtela, $telasPermitidas)) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => 'Você não tem permissão para acessar esta funcionalidade.',
+                        'code' => 'access_denied',
+                    ], 403);
+                }
 
-        // Verifica se o usuário tem acesso à tela
-        if (!$user->temAcessoTela((int)$nuseqtela)) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'message' => 'Você não tem permissão para acessar esta funcionalidade.',
-                    'code' => 'access_denied',
-                ], 403);
+                // Para requisições normais, redireciona para dashboard com mensagem
+                return redirect()->route('dashboard')
+                    ->with('error', 'Você não tem permissão para acessar esta página.');
             }
-
-            // Para requisições normais, redireciona para dashboard com mensagem
-            return redirect()->route('dashboard')
-                ->with('error', 'Você não tem permissão para acessar esta página.');
         }
 
         return $next($request);

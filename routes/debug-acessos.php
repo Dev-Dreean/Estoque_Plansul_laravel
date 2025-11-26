@@ -21,7 +21,6 @@ Route::get('/debug-acessos', function () {
             'perfil' => $user->PERFIL,
             'matricula' => $user->CDMATRFUNCIONARIO,
             'is_god' => $user->isGod(),
-            'is_super_admin' => $user->isSuperAdmin(),
             'is_admin' => $user->isAdmin(),
         ],
         'permissoes_banco' => $user->acessos()

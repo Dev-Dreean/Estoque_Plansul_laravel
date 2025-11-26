@@ -228,7 +228,6 @@ class MenuController extends Controller
     private function perfilDescricao(string $perfil): string
     {
         return match ($perfil) {
-            User::PERFIL_SUPER => 'Super admin: controle total e pode deletar.',
             User::PERFIL_ADMIN => 'Admin: acesso a todas as telas liberadas, sem deletar.',
             User::PERFIL_USUARIO => 'Usuario: acesso liberado apenas quando possuir o codigo da tela.',
             default => 'Visitante: faca login para solicitar liberacao.',

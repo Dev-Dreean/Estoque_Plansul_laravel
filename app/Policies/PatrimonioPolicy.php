@@ -9,7 +9,7 @@ class PatrimonioPolicy
 {
     /**
      * Verifica permissões antes das policies específicas
-     * Super Admin e Admin têm acesso total
+     * Admin tem acesso total
      */
     public function before(User $user, string $ability): bool|null
     {
@@ -77,7 +77,7 @@ class PatrimonioPolicy
 
     /**
      * Quem pode deletar?
-     * God/Super Admin pode deletar TUDO (verificado no 'before').
+     * God/Admin pode deletar TUDO (verificado no 'before').
      * NINGUÉM mais pode deletar.
      */
     public function delete(User $user, Patrimonio $patrimonio): bool

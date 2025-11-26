@@ -40,7 +40,7 @@
                 class="px-3 py-1 text-sm bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 rounded transition">
                 Desselecionar
             </button>
-            @if(Auth::check() && Auth::user()->isSuperAdmin())
+            @if(Auth::check() && Auth::user()->isAdmin())
             <button
                 type="button"
                 @click="abrirModalDelecao()"

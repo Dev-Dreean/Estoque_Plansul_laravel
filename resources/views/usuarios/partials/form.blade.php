@@ -55,65 +55,6 @@
         </p>
     </div>
 
-    {{-- Gestão de Acessos (apenas para Usuário Padrão) --}}
-    <div x-show="perfil === 'USR'" x-transition class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
-        <div class="flex items-center justify-between mb-3">
-            <x-input-label value="Acesso às Telas" class="!mb-0" />
-            <div class="flex gap-2">
-                <button type="button" @click="marcarTodas" class="text-xs px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded">
-                    Marcar Todas
-                </button>
-                <button type="button" @click="desmarcarTodas" class="text-xs px-2 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded">
-                    Desmarcar Todas
-                </button>
-            </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-64 overflow-y-auto scrollbar-thin">
-            @php
-            $telasDisponiveis = \Illuminate\Support\Facades\DB::table('acessotela')
-            ->where('FLACESSO', 'S')
-            ->orderBy('NMSISTEMA')
-            ->orderBy('DETELA')
-            ->get();
-            $telasUsuario = isset($usuario) ? $usuario->acessos->pluck('NUSEQTELA')->toArray() : [];
-
-            // Telas OBRIGATÓRIAS para usuários comuns (USR)
-            $telasObrigatorias = [1000, 1001];
-            @endphp
-            @foreach($telasDisponiveis as $tela)
-            @php
-            $ehObrigatoria = in_array($tela->NUSEQTELA, $telasObrigatorias);
-            $estaMarcada = $ehObrigatoria || in_array($tela->NUSEQTELA, old('telas', $telasUsuario));
-            @endphp
-            <label class="flex items-start gap-2 p-2 rounded {{ $ehObrigatoria ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50' }} cursor-pointer">
-                <input
-                    type="checkbox"
-                    name="telas[]"
-                    value="{{ $tela->NUSEQTELA }}"
-                    @if($estaMarcada) checked @endif
-                    @if($ehObrigatoria) disabled @endif
-                    class="mt-1 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 {{ $ehObrigatoria ? 'opacity-50 cursor-not-allowed' : '' }}">
-                {{-- Hidden input para garantir que telas obrigatórias sejam enviadas --}}
-                @if($ehObrigatoria)
-                <input type="hidden" name="telas[]" value="{{ $tela->NUSEQTELA }}">
-                @endif
-                <div class="flex-1">
-                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {{ $tela->DETELA }}
-                        @if($ehObrigatoria)
-                        <span class="text-xs text-blue-600 dark:text-blue-400 font-semibold">(Obrigatória)</span>
-                        @endif
-                    </div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ $tela->NMSISTEMA }}</div>
-                </div>
-            </label>
-            @endforeach
-        </div>
-        <p class="text-xs text-gray-500 mt-2">
-            <strong>Telas incluídas:</strong> Controle de Patrimônio e Gráficos estão sempre ativas para usuários padrão.
-        </p>
-    </div>
-
     <div>
         @if(isset($usuario))
         <x-input-label for="SENHA" value="Senha" />

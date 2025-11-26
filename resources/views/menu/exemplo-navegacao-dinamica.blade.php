@@ -32,7 +32,7 @@
                             <i class="fas fa-shield-alt mr-1"></i>
                             Perfil: 
                             @if(Auth::user()->isGod())
-                                <span class="text-red-400">SUPER ADMIN</span>
+                                <span class="text-blue-400">ADMINISTRADOR</span>
                             @elseif(Auth::user()->isAdmin())
                                 <span class="text-yellow-400">ADMINISTRADOR</span>
                             @else

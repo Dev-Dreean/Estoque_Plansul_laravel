@@ -67,8 +67,6 @@ class UserController extends Controller
             'NMLOGIN' => ['required', 'string', 'max:30', 'unique:usuario,NMLOGIN'],
             'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', 'unique:usuario,CDMATRFUNCIONARIO'],
             'PERFIL' => ['required', \Illuminate\Validation\Rule::in(['ADM', 'USR'])],
-            'telas' => ['nullable', 'array'], // Acessos às telas
-            'telas.*' => ['integer', 'exists:acessotela,NUSEQTELA'],
         ]);
 
         // Senha provisória forte: prefixo 'Plansul@' + 6 números aleatórios
@@ -84,30 +82,6 @@ class UserController extends Controller
             'LGATIVO' => 'S',
             'must_change_password' => true,
         ]);
-
-        // Gerenciar acessos apenas para usuários comuns (USR)
-        // Admin e Super Admin têm acesso automático a tudo
-        if ($request->PERFIL === User::PERFIL_USUARIO) {
-            $telasAutorizadas = $request->input('telas', []);
-
-            // Telas APENAS para usuários comuns (USR) - Somente Patrimônio e Gráficos
-            $telasObrigatorias = [
-                1000, // Controle de Patrimônio
-                1001, // Gráficos
-            ];
-
-            // Merge das telas selecionadas com as obrigatórias (sem duplicatas)
-            $telasAutorizadas = array_unique(array_merge($telasObrigatorias, $telasAutorizadas));
-
-            // Inserir acessos
-            foreach ($telasAutorizadas as $nuseqtela) {
-                DB::table('acessousuario')->insert([
-                    'CDMATRFUNCIONARIO' => $user->CDMATRFUNCIONARIO,
-                    'NUSEQTELA' => $nuseqtela,
-                    'INACESSO' => 'S',
-                ]);
-            }
-        }
 
         // Retornar tela de confirmação com credenciais para copiar/repasse
         return view('usuarios.confirmacao', [
@@ -129,8 +103,6 @@ class UserController extends Controller
             'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', Rule::unique('usuario', 'CDMATRFUNCIONARIO')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
             'PERFIL' => ['required', Rule::in(['ADM', 'USR'])],
             'SENHA' => ['nullable', 'string', 'min:8'], // Senha é opcional na edição
-            'telas' => ['nullable', 'array'], // Acessos às telas
-            'telas.*' => ['integer', 'exists:acessotela,NUSEQTELA'],
         ]);
 
         $usuario->NOMEUSER = $request->NOMEUSER;
@@ -143,38 +115,6 @@ class UserController extends Controller
         }
 
         $usuario->save();
-
-        // Gerenciar acessos apenas para usuários comuns (USR)
-        // Admin e Super Admin têm acesso automático a tudo
-        if ($request->PERFIL === User::PERFIL_USUARIO) {
-            // Remover todos os acessos atuais
-            DB::table('acessousuario')
-                ->where('CDMATRFUNCIONARIO', $usuario->CDMATRFUNCIONARIO)
-                ->delete();
-
-            // Telas APENAS para usuários comuns (USR) - Somente Patrimônio e Gráficos
-            $telasObrigatorias = [
-                1000, // Controle de Patrimônio
-                1001, // Gráficos
-            ];
-
-            // Inserir novos acessos selecionados + obrigatórias
-            $telasAutorizadas = $request->input('telas', []);
-            $telasAutorizadas = array_unique(array_merge($telasObrigatorias, $telasAutorizadas));
-
-            foreach ($telasAutorizadas as $nuseqtela) {
-                DB::table('acessousuario')->insert([
-                    'CDMATRFUNCIONARIO' => $usuario->CDMATRFUNCIONARIO,
-                    'NUSEQTELA' => $nuseqtela,
-                    'INACESSO' => 'S',
-                ]);
-            }
-        } else {
-            // Se mudou de USR para ADM/SUP, remover todos os acessos individuais
-            DB::table('acessousuario')
-                ->where('CDMATRFUNCIONARIO', $usuario->CDMATRFUNCIONARIO)
-                ->delete();
-        }
 
         return redirect()->route('usuarios.index')->with('success', 'Usuário atualizado com sucesso!');
     }

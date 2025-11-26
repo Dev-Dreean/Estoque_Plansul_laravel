@@ -57,11 +57,7 @@
                                         {{ $usuario->CDMATRFUNCIONARIO }}
                                     </td>
                                     <td class="px-6 py-4">
-                                        @if($usuario->PERFIL === 'SUP')
-                                        <span class="px-2 py-1 text-xs rounded bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
-                                            {{ $usuario->PERFIL }}
-                                        </span>
-                                        @elseif($usuario->PERFIL === 'ADM')
+                                        @if($usuario->PERFIL === 'ADM')
                                         <span class="px-2 py-1 text-xs rounded bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
                                             {{ $usuario->PERFIL }}
                                         </span>

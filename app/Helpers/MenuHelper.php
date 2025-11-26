@@ -61,8 +61,9 @@ class MenuHelper
     }
 
     /**
-     * Obtém as telas que o usuário tem acesso
-     * Considera telas obrigatórias + telas liberadas por ADM/SUPER ADM
+     * Obtém as telas que o usuário tem acesso baseado no perfil
+     * - USR: acesso apenas a 1000 e 1001
+     * - ADM: acesso a tudo
      */
     public static function getTelasComAcesso(): array
     {
@@ -73,30 +74,19 @@ class MenuHelper
             return [];
         }
 
-        // Super Admin tem acesso a todas as telas
-        if ($user->isGod()) {
-            return array_keys(self::getTelasDisponiveis());
-        }
-
         $telasConfig = self::getTelasDisponiveis();
-        $telasComAcesso = [];
 
-        foreach ($telasConfig as $nuseqtela => $config) {
-            $nuseqtelaStr = (string) $nuseqtela;
-
-            // Telas obrigatórias sempre têm acesso
-            if (self::isTelaObrigatoria($nuseqtelaStr)) {
-                $telasComAcesso[] = $nuseqtelaStr;
-                continue;
-            }
-
-            // Verifica se o usuário tem permissão para acessar a tela
-            if ($user->temAcessoTela($nuseqtelaStr)) {
-                $telasComAcesso[] = $nuseqtelaStr;
-            }
+        // Administrador tem acesso a todas as telas
+        if ($user->isAdmin()) {
+            return array_keys($telasConfig);
         }
 
-        return $telasComAcesso;
+        // Usuário comum (USR) só tem acesso a Patrimônio e Gráficos
+        if ($user->PERFIL === 'USR') {
+            return ['1000', '1001'];
+        }
+
+        return [];
     }
 
     /**
