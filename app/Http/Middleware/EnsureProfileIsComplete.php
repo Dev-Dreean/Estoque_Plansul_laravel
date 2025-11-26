@@ -1,7 +1,6 @@
 <?php
-// DENTRO DE app/Http/Middleware/EnsureProfileIsComplete.php
-
 declare(strict_types=1);
+// DENTRO DE app/Http/Middleware/EnsureProfileIsComplete.php
 
 namespace App\Http\Middleware; // <-- Verifique se o namespace está correto
 

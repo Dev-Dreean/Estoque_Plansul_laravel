@@ -1,8 +1,7 @@
 <?php
+declare(strict_types=1);
 
 // app/Models/User.php
-
-declare(strict_types=1);
 
 namespace App\Models;
 
@@ -26,6 +25,7 @@ use Illuminate\Support\Facades\DB;
  * @method bool podeExcluir()
  * @method bool temAcessoTela(int|string $nuseqtela)
  * @method bool telaVisivel(int|string $nuseqtela)
+ * @method \Illuminate\Database\Eloquent\Relations\HasMany acessos()
  */
 class User extends Authenticatable
 {
@@ -42,13 +42,13 @@ class User extends Authenticatable
     protected $table = 'usuario';
 
     /**
-     * @var string A chave primária da tabela.
+     * @var string A chave prim├íria da tabela.
      */
     protected $primaryKey = 'NUSEQUSUARIO';
 
     /**
      * @var bool Indica se o model deve registrar 'created_at' e 'updated_at'.
-     * Sua tabela não possui essas colunas, então desativamos.
+     * Sua tabela n├úo possui essas colunas, ent├úo desativamos.
      */
     public $timestamps = false;
 
@@ -85,8 +85,8 @@ class User extends Authenticatable
     ];
 
     /**
-     * Pega o nome da coluna de senha para autenticação.
-     * O padrão é 'password', o nosso é 'SENHA'.
+     * Pega o nome da coluna de senha para autentica├º├úo.
+     * O padr├úo ├® 'password', o nosso ├® 'SENHA'.
      *
      * @return string
      */
@@ -96,8 +96,8 @@ class User extends Authenticatable
     }
 
     /**
-     * Pega a senha para autenticação.
-     * Necessário para que o Auth::attempt() funcione com a coluna 'SENHA'.
+     * Pega a senha para autentica├º├úo.
+     * Necess├írio para que o Auth::attempt() funcione com a coluna 'SENHA'.
      *
      * @return string
      */
@@ -107,8 +107,8 @@ class User extends Authenticatable
     }
 
     /**
-     * Define um "mutator" para sempre criptografar a senha ao salvá-la.
-     * Ex: $user->SENHA = '1234'; // Salvará o hash, não '1234'
+     * Define um "mutator" para sempre criptografar a senha ao salv├í-la.
+     * Ex: $user->SENHA = '1234'; // Salvar├í o hash, n├úo '1234'
      */
     public function setSenhaAttribute(string $value): void
     {
@@ -116,7 +116,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Relacionamento: um usuário tem muitos acessos a telas
+     * Relacionamento: um usu├írio tem muitos acessos a telas
      */
     public function acessos()
     {
@@ -124,7 +124,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Verifica se o usuário é Super Administrador
+     * Verifica se o usu├írio ├® Super Administrador
      */
     public function isSuperAdmin(): bool
     {
@@ -132,8 +132,8 @@ class User extends Authenticatable
     }
 
     /**
-     * 🔱 GOD MODE: Super Admin tem poder absoluto
-     * Anula TODAS as verificações de permissão
+     * ­ƒö▒ GOD MODE: Super Admin tem poder absoluto
+     * Anula TODAS as verifica├º├Áes de permiss├úo
      * 
      * @return bool
      */
@@ -143,7 +143,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Verifica se o usuário é Administrador (ou superior)
+     * Verifica se o usu├írio ├® Administrador (ou superior)
      */
     public function isAdmin(): bool
     {
@@ -151,7 +151,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Verifica se o usuário é apenas usuário comum
+     * Verifica se o usu├írio ├® apenas usu├írio comum
      */
     public function isUsuario(): bool
     {
@@ -159,7 +159,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Verifica se o usuário pode excluir registros
+     * Verifica se o usu├írio pode excluir registros
      * Apenas Super Admin pode excluir
      */
     public function podeExcluir(): bool
@@ -172,7 +172,7 @@ class User extends Authenticatable
      * considerando tanto permissões quanto visibilidade
      * 
      * Hierarquia: Super Admin tem acesso a TODAS as telas
-     * Admin tem acesso a telas visíveis para ele
+     * Admin precisa ter permissão explícita
      * Usuários comuns precisam ter acesso configurado + tela visível
      *
      * @param int|string $nuseqtela
@@ -180,48 +180,32 @@ class User extends Authenticatable
      */
     public function temAcessoTela(int|string $nuseqtela): bool
     {
-        // Converte para string para comparações consistentes
         $nuseqtela = (string) $nuseqtela;
 
-        // Primeiro verifica se a tela está visível para este perfil
-        if (!$this->telaVisivel($nuseqtela)) {
-            return false;
-        }
-
-        // Usuário comum nunca acessa a tela de usuários (1003, 1002)
-        if (in_array($nuseqtela, ['1003', '1002']) && $this->isUsuario()) {
-            return false;
-        }
-
-        // Super Admin tem acesso TOTAL
+        // Super Admin tem acesso total
         if ($this->isSuperAdmin()) {
             return true;
         }
 
-        // Admin tem acesso a todas as telas visíveis para ele
-        if ($this->PERFIL === self::PERFIL_ADMIN) {
-            return true;
+        // Verifica se há permissão explícita na tabela acessousuario
+        $temPermissao = $this->acessos()
+            ->where('NUSEQTELA', $nuseqtela)
+            ->whereRaw("TRIM(UPPER(INACESSO)) = 'S'")
+            ->exists();
+
+        // Se não tem permissão, retorna false
+        if (!$temPermissao) {
+            return false;
         }
 
-        // Usuários comuns: verifica se existe um registro ativo para esta tela
-        return $this->acessos()
-            ->where('NUSEQTELA', $nuseqtela)
-            ->where('INACESSO', 'S')
-            ->exists();
+        // Se tem permissão, verifica se a tela está visível para o perfil
+        return $this->telaVisivel($nuseqtela);
     }
 
-    /**
-     * Verifica se uma tela está visível para o perfil do usuário
-     * baseado no campo NIVEL_VISIBILIDADE da tabela acessotela
-     * 
-     * @param int|string $nuseqtela
-     * @return bool
-     */
     public function telaVisivel(int|string $nuseqtela): bool
     {
         $nuseqtela = (string) $nuseqtela;
 
-        // Super Admin vê TODAS as telas SEMPRE
         if ($this->isSuperAdmin()) {
             return true;
         }
@@ -234,47 +218,32 @@ class User extends Authenticatable
             return false;
         }
 
+        if (strtoupper(trim($tela->FLACESSO ?? 'N')) !== 'S') {
+            return false;
+        }
+
         $nivelVisibilidade = $tela->NIVEL_VISIBILIDADE ?? 'TODOS';
 
-        // Admin vê telas 'TODOS' e 'ADM', mas não 'SUP'
         if ($this->PERFIL === self::PERFIL_ADMIN) {
             return in_array($nivelVisibilidade, ['TODOS', 'ADM']);
         }
 
-        // Usuário comum vê apenas telas 'TODOS'
         return $nivelVisibilidade === 'TODOS';
     }
 
-    /**
-     * Retorna lista de códigos de telas que o usuário tem acesso
-     * considerando tanto permissões quanto visibilidade
-     *
-     * @return array
-     */
     public function telasComAcesso(): array
     {
-        // Super Admin tem acesso a TODAS as telas
         if ($this->isSuperAdmin()) {
             return DB::table('acessotela')
-                ->where('FLACESSO', 'S')
+                ->whereRaw("TRIM(UPPER(FLACESSO)) = 'S'")
                 ->pluck('NUSEQTELA')
                 ->toArray();
         }
 
-        // Admin tem acesso a todas VISÍVEIS para ele
-        if ($this->PERFIL === self::PERFIL_ADMIN) {
-            return DB::table('acessotela')
-                ->where('FLACESSO', 'S')
-                ->whereIn('NIVEL_VISIBILIDADE', ['TODOS', 'ADM'])
-                ->pluck('NUSEQTELA')
-                ->toArray();
-        }
-
-        // Usuário comum: apenas telas com permissão E visíveis
         return $this->acessos()
             ->join('acessotela', 'acessousuario.NUSEQTELA', '=', 'acessotela.NUSEQTELA')
-            ->where('acessousuario.INACESSO', 'S')
-            ->where('acessotela.NIVEL_VISIBILIDADE', 'TODOS')
+            ->whereRaw("TRIM(UPPER(acessousuario.INACESSO)) = 'S'")
+            ->whereRaw("TRIM(UPPER(acessotela.FLACESSO)) = 'S'")
             ->pluck('acessousuario.NUSEQTELA')
             ->toArray();
     }

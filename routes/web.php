@@ -15,6 +15,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjetoController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\RelatorioBensController;
 use App\Http\Controllers\DuplicatePatrimonioController;
 
@@ -38,6 +39,75 @@ Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
 
 // API para obter clima - PÚBLICA (para usuários não autenticados)
 Route::get('/api/weather', [MenuController::class, 'getWeather'])->name('api.weather');
+
+// Debug de acessos (apenas em desenvolvimento)
+Route::get('/debug-acessos', function () {
+    if (!Auth::check()) {
+        return 'Faça login primeiro!';
+    }
+
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
+    
+    $debug = [
+        'usuario' => [
+            'nome' => $user->NOMEUSER,
+            'login' => $user->NMLOGIN,
+            'perfil' => $user->PERFIL,
+            'matricula' => $user->CDMATRFUNCIONARIO,
+            'is_god' => $user->isGod(),
+            'is_super_admin' => $user->isSuperAdmin(),
+            'is_admin' => $user->isAdmin(),
+        ],
+        'permissoes_banco' => $user->acessos()
+            ->select('NUSEQTELA', 'INACESSO')
+            ->get()
+            ->map(function($acesso) {
+                return [
+                    'tela' => $acesso->NUSEQTELA,
+                    'acesso' => $acesso->INACESSO,
+                    'acesso_bool' => $acesso->INACESSO === 'S',
+                ];
+            })
+            ->toArray(),
+        'telas_obrigatorias' => [
+            '1006' => App\Helpers\MenuHelper::isTelaObrigatoria('1006'),
+            '1007' => App\Helpers\MenuHelper::isTelaObrigatoria('1007'),
+        ],
+        'verificacao_acesso' => [
+            '1000_patrimonio' => [
+                'tem_acesso' => $user->temAcessoTela('1000'),
+                'deve_aparecer_menu' => App\Helpers\MenuHelper::deveAparecerNoMenu('1000'),
+            ],
+            '1001_dashboard' => [
+                'tem_acesso' => $user->temAcessoTela('1001'),
+                'deve_aparecer_menu' => App\Helpers\MenuHelper::deveAparecerNoMenu('1001'),
+            ],
+            '1002_locais' => [
+                'tem_acesso' => $user->temAcessoTela('1002'),
+                'deve_aparecer_menu' => App\Helpers\MenuHelper::deveAparecerNoMenu('1002'),
+            ],
+            '1003_usuarios' => [
+                'tem_acesso' => $user->temAcessoTela('1003'),
+                'deve_aparecer_menu' => App\Helpers\MenuHelper::deveAparecerNoMenu('1003'),
+            ],
+            '1006_relatorios' => [
+                'tem_acesso' => App\Helpers\MenuHelper::temAcessoTela('1006'),
+                'deve_aparecer_menu' => App\Helpers\MenuHelper::deveAparecerNoMenu('1006'),
+                'is_obrigatoria' => App\Helpers\MenuHelper::isTelaObrigatoria('1006'),
+            ],
+            '1007_historico' => [
+                'tem_acesso' => App\Helpers\MenuHelper::temAcessoTela('1007'),
+                'deve_aparecer_menu' => App\Helpers\MenuHelper::deveAparecerNoMenu('1007'),
+                'is_obrigatoria' => App\Helpers\MenuHelper::isTelaObrigatoria('1007'),
+            ],
+        ],
+        'telas_com_acesso' => App\Helpers\MenuHelper::getTelasComAcesso(),
+        'telas_para_menu' => array_keys(App\Helpers\MenuHelper::getTelasParaMenu()),
+    ];
+
+    return response()->json($debug, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+})->middleware('auth')->name('debug.acessos');
 
 
 // --- ESTRUTURA CORRIGIDA ---
@@ -63,7 +133,7 @@ Route::middleware('auth')->group(function () {
 // NOTE: Adicionamos 'profile.complete' a este grupo.
 Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])->group(function () {
     // Configuração de Tema (apenas administradores)
-    Route::middleware('admin')->group(function () {
+    Route::middleware(['admin', 'tela.access:1008'])->group(function () {
         Route::get('/settings/theme', [\App\Http\Controllers\ThemeController::class, 'index'])->name('settings.theme');
         Route::post('/settings/theme', [\App\Http\Controllers\ThemeController::class, 'update'])->name('settings.theme.update');
     });
@@ -71,8 +141,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // MOVI TODAS AS SUAS ROTAS PRINCIPAIS PARA DENTRO DESTE GRUPO
 
     // Rota do Dashboard/Gráficos (NUSEQTELA: 1008)
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('tela.access:1008');
-    Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data')->middleware('tela.access:1008');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('tela.access:1001');
+    Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data')->middleware('tela.access:1001');
 
     // Rotas do CRUD de Patrimônios e suas APIs (NUSEQTELA: 1000)
     Route::resource('patrimonios', PatrimonioController::class)->middleware(['tela.access:1000', 'can.delete']);
@@ -93,30 +163,30 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // Nova rota: pesquisa de funcionários
     Route::get('/api/funcionarios/pesquisar', [\App\Http\Controllers\FuncionarioController::class, 'pesquisar'])->name('api.funcionarios.pesquisar');
 
-    // Rotas de Projetos/Locais e suas APIs (NUSEQTELA: 1009 - Cadastro de Locais)
-    Route::resource('projetos', ProjetoController::class)->middleware(['admin', 'tela.access:1009', 'can.delete']);
-    Route::get('projetos/{projeto}/duplicar', [ProjetoController::class, 'duplicate'])->name('projetos.duplicate')->middleware('admin');
-    Route::post('projetos/delete-multiple', [ProjetoController::class, 'deleteMultiple'])->name('projetos.delete-multiple')->middleware(['admin', 'can.delete']);
-    Route::get('/api/locais/lookup', [ProjetoController::class, 'lookup'])->name('projetos.lookup')->middleware('admin');
+    // Rotas de Projetos/Locais e suas APIs (T:1002 - Cadastro de Locais)
+    Route::resource('projetos', ProjetoController::class)->middleware(['tela.access:1002', 'can.delete']);
+    Route::get('projetos/{projeto}/duplicar', [ProjetoController::class, 'duplicate'])->name('projetos.duplicate')->middleware('tela.access:1002');
+    Route::post('projetos/delete-multiple', [ProjetoController::class, 'deleteMultiple'])->name('projetos.delete-multiple')->middleware(['tela.access:1002', 'can.delete']);
+    Route::get('/api/locais/lookup', [ProjetoController::class, 'lookup'])->name('projetos.lookup')->middleware('tela.access:1002');
     Route::get('/api/projetos/nome/{codigo}', function ($codigo) {
         $p = \App\Models\Tabfant::where('CDPROJETO', $codigo)->first();
         return $p ? response()->json(['exists' => true, 'nome' => $p->NOMEPROJETO]) : response()->json(['exists' => false]);
-    });
-    Route::get('/api/projetos/buscar/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'buscarProjeto'])->name('api.projetos.buscar');
-    Route::get('/api/projetos/pesquisar', [App\Http\Controllers\PatrimonioController::class, 'pesquisarProjetos'])->name('api.projetos.pesquisar');
-    Route::get('/api/projetos/por-local/{cdlocal}', [App\Http\Controllers\PatrimonioController::class, 'buscarProjetosPorLocal'])->name('api.projetos.por-local');
-    Route::post('/api/projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarProjeto'])->name('api.projetos.criar');
-    Route::post('/api/projetos/criar-associado', [App\Http\Controllers\PatrimonioController::class, 'criarProjetoAssociado'])->name('api.projetos.criar-associado');
-    Route::get('/api/locais/buscar', [App\Http\Controllers\PatrimonioController::class, 'buscarLocais'])->name('api.locais.buscar');
-    Route::get('/api/locais/{id}', [App\Http\Controllers\PatrimonioController::class, 'buscarLocalPorId'])->name('api.locais.por-id');
-    Route::get('/api/locais/debug', [App\Http\Controllers\PatrimonioController::class, 'debugLocaisPorCodigo'])->name('api.locais.debug');
-    Route::post('/api/locais/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalVinculadoProjeto'])->name('api.locais.criar');
-    Route::post('/api/locais/criar-novo', [App\Http\Controllers\PatrimonioController::class, 'criarNovoLocal'])->name('api.locais.criar-novo');
-    Route::post('/api/locais-projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalProjeto'])->name('api.locais-projetos.criar');
-    Route::post('/api/locais-projetos/criar-simples', [ProjetoController::class, 'criarSimples'])->name('api.locais-projetos.criar-simples');
-    Route::post('/api/locais/criar-com-projeto', [App\Http\Controllers\PatrimonioController::class, 'criarLocalComProjeto'])->name('api.locais.criar-com-projeto');
-    Route::get('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'getLocaisPorProjeto'])->name('api.locais');
-    Route::post('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'criarLocalPorProjeto'])->name('api.locais.criar-por-projeto');
+    })->middleware('tela.access:1002');
+    Route::get('/api/projetos/buscar/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'buscarProjeto'])->name('api.projetos.buscar')->middleware('tela.access:1002');
+    Route::get('/api/projetos/pesquisar', [App\Http\Controllers\PatrimonioController::class, 'pesquisarProjetos'])->name('api.projetos.pesquisar')->middleware('tela.access:1002');
+    Route::get('/api/projetos/por-local/{cdlocal}', [App\Http\Controllers\PatrimonioController::class, 'buscarProjetosPorLocal'])->name('api.projetos.por-local')->middleware('tela.access:1002');
+    Route::post('/api/projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarProjeto'])->name('api.projetos.criar')->middleware('tela.access:1002');
+    Route::post('/api/projetos/criar-associado', [App\Http\Controllers\PatrimonioController::class, 'criarProjetoAssociado'])->name('api.projetos.criar-associado')->middleware('tela.access:1002');
+    Route::get('/api/locais/buscar', [App\Http\Controllers\PatrimonioController::class, 'buscarLocais'])->name('api.locais.buscar')->middleware('tela.access:1002');
+    Route::get('/api/locais/{id}', [App\Http\Controllers\PatrimonioController::class, 'buscarLocalPorId'])->name('api.locais.por-id')->middleware('tela.access:1002');
+    Route::get('/api/locais/debug', [App\Http\Controllers\PatrimonioController::class, 'debugLocaisPorCodigo'])->name('api.locais.debug')->middleware('tela.access:1002');
+    Route::post('/api/locais/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalVinculadoProjeto'])->name('api.locais.criar')->middleware('tela.access:1002');
+    Route::post('/api/locais/criar-novo', [App\Http\Controllers\PatrimonioController::class, 'criarNovoLocal'])->name('api.locais.criar-novo')->middleware('tela.access:1002');
+    Route::post('/api/locais-projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalProjeto'])->name('api.locais-projetos.criar')->middleware('tela.access:1002');
+    Route::post('/api/locais-projetos/criar-simples', [ProjetoController::class, 'criarSimples'])->name('api.locais-projetos.criar-simples')->middleware('tela.access:1002');
+    Route::post('/api/locais/criar-com-projeto', [App\Http\Controllers\PatrimonioController::class, 'criarLocalComProjeto'])->name('api.locais.criar-com-projeto')->middleware('tela.access:1002');
+    Route::get('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'getLocaisPorProjeto'])->name('api.locais')->middleware('tela.access:1002');
+    Route::post('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'criarLocalPorProjeto'])->name('api.locais.criar-por-projeto')->middleware('tela.access:1002');
 
     // Rotas de Códigos (API)
     Route::get('/api/codigos/buscar/{codigo}', [PatrimonioController::class, 'buscarCodigoObjeto'])->name('api.codigos.buscar');
@@ -131,18 +201,16 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Rotas de Usuários (Admin - NUSEQTELA: 1002 - Cadastro de Usuário)
-    Route::middleware('admin')->group(function () {
-        Route::resource('usuarios', UserController::class)->middleware(['tela.access:1002', 'can.delete']);
-        Route::get('usuarios/confirmacao', [UserController::class, 'confirmacao'])->name('usuarios.confirmacao');
-        // APIs auxiliares do formulário de usuário
-        Route::get('/api/usuarios/por-matricula', [UserController::class, 'porMatricula'])->name('api.usuarios.porMatricula');
-        Route::get('/api/usuarios/sugerir-login', [UserController::class, 'sugerirLogin'])->name('api.usuarios.sugerirLogin');
-        Route::get('/api/usuarios/login-disponivel', [UserController::class, 'loginDisponivel'])->name('api.usuarios.loginDisponivel');
-    });
+    // Rotas de Usuários (T:1003)
+    Route::resource('usuarios', UserController::class)->middleware(['tela.access:1003', 'can.delete']);
+    Route::get('usuarios/confirmacao', [UserController::class, 'confirmacao'])->name('usuarios.confirmacao')->middleware('tela.access:1003');
+    // APIs auxiliares do formulário de usuário
+    Route::get('/api/usuarios/por-matricula', [UserController::class, 'porMatricula'])->name('api.usuarios.porMatricula')->middleware('tela.access:1003');
+    Route::get('/api/usuarios/sugerir-login', [UserController::class, 'sugerirLogin'])->name('api.usuarios.sugerirLogin')->middleware('tela.access:1003');
+    Route::get('/api/usuarios/login-disponivel', [UserController::class, 'loginDisponivel'])->name('api.usuarios.loginDisponivel')->middleware('tela.access:1003');
 
     // Rotas de Relatórios
-    Route::prefix('relatorios')->name('relatorios.')->group(function () {
+    Route::prefix('relatorios')->name('relatorios.')->middleware('tela.access:1006')->group(function () {
         // Fluxo original: gerar => retorna JSON para modal de pré-visualização
         Route::post('/patrimonios/gerar', [\App\Http\Controllers\RelatorioController::class, 'gerar'])->name('patrimonios.gerar');
         // Download direto (novo método unificado permanece disponível)
@@ -171,7 +239,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     });
 
     // Rota de Histórico
-    Route::get('/historico', [\App\Http\Controllers\HistoricoController::class, 'index'])->name('historico.index');
+    Route::get('/historico', [\App\Http\Controllers\HistoricoController::class, 'index'])->name('historico.index')->middleware('tela.access:1007');
 
     // Debug do tema (apenas em ambiente local ou se user for admin)
     Route::get('/debug/theme', function (\Illuminate\Http\Request $request) {
@@ -190,8 +258,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         ]);
     })->name('debug.theme');
 
-    // Rotas protegidas para Cadastro de Tela (NUSEQTELA: 1006 - apenas administradores)
-    Route::middleware(['auth', 'admin', 'tela.access:1006'])->group(function () {
+    // Rotas protegidas para Cadastro de Tela (NUSEQTELA: 1006)
+    Route::middleware(['auth', 'tela.access:1004'])->group(function () {
         Route::get('/cadastro-tela', [\App\Http\Controllers\CadastroTelaController::class, 'index'])->name('cadastro-tela.index');
         Route::post('/cadastro-tela', [\App\Http\Controllers\CadastroTelaController::class, 'store'])->name('cadastro-tela.store');
         Route::post('/cadastro-tela/show-form/{nome}', [\App\Http\Controllers\CadastroTelaController::class, 'showForm'])->name('cadastro-tela.showForm');

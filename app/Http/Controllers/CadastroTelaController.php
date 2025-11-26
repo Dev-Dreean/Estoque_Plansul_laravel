@@ -10,11 +10,11 @@ class CadastroTelaController extends Controller
 {
     public function index()
     {
-        // Permite acesso para Admin e Super Admin
+        // Permite acesso conforme codigo da tela 1006
         /** @var \App\Models\User|null $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser || !($currentUser->isAdmin() || $currentUser->isSuperAdmin())) {
-            abort(403, 'Acesso não autorizado.');
+        if (!$currentUser || !$currentUser->temAcessoTela(1004)) {
+            abort(403, 'Acesso nao autorizado');
         }
 
         $telasCadastradas = DB::table('acessotela')->orderBy('NUSEQTELA')->get();
@@ -73,11 +73,11 @@ class CadastroTelaController extends Controller
 
     public function store(Request $request)
     {
-        // Permite acesso para Admin e Super Admin
+        // Permite acesso conforme codigo da tela 1006
         /** @var \App\Models\User|null $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser || !($currentUser->isAdmin() || $currentUser->isSuperAdmin())) {
-            abort(403, 'Acesso não autorizado');
+        if (!$currentUser || !$currentUser->temAcessoTela(1004)) {
+            abort(403, 'Acesso nao autorizado');
         }
 
         $request->validate([
@@ -106,11 +106,11 @@ class CadastroTelaController extends Controller
 
     public function showForm(Request $request, $nome)
     {
-        // Permite acesso para Admin e Super Admin
+        // Permite acesso conforme codigo da tela 1006
         /** @var \App\Models\User|null $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser || !($currentUser->isAdmin() || $currentUser->isSuperAdmin())) {
-            abort(403, 'Acesso não autorizado');
+        if (!$currentUser || !$currentUser->temAcessoTela(1004)) {
+            abort(403, 'Acesso nao autorizado');
         }
 
         $max = DB::table('acessotela')->max('NUSEQTELA');
@@ -127,11 +127,11 @@ class CadastroTelaController extends Controller
 
     public function gerarVincular(Request $request, $nome)
     {
-        // Permite acesso para Admin e Super Admin
+        // Permite acesso conforme codigo da tela 1006
         /** @var \App\Models\User|null $currentUser */
         $currentUser = Auth::user();
-        if (!$currentUser || !($currentUser->isAdmin() || $currentUser->isSuperAdmin())) {
-            abort(403, 'Acesso não autorizado');
+        if (!$currentUser || !$currentUser->temAcessoTela(1004)) {
+            abort(403, 'Acesso nao autorizado');
         }
 
         $inserted = null;

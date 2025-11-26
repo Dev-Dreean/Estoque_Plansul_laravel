@@ -17,7 +17,7 @@ class PatrimonioPolicy
             return true;
         }
 
-        if ($user->PERFIL === 'ADM') {
+        if ($user->PERFIL === 'ADM' && $ability !== 'delete') {
             return true;
         }
 

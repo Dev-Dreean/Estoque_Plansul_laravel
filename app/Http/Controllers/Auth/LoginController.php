@@ -1,8 +1,7 @@
 <?php
+declare(strict_types=1);
 
 // app/Http/Controllers/Auth/LoginController.php
-
-declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 

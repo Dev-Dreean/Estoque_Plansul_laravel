@@ -43,16 +43,13 @@ class ProjetoController extends Controller
             PHP_INT_MAX  // Sem limite inicial (paginação acontece depois)
         );
 
-        // Reconstruir collection com paginação
-        $locais_modelo = collect(array_map(fn($f) => $f['_model'], $filtrados));
-
-        // Paginar manualmente
+        // Paginar manualmente - MANTER OS DADOS MAPEADOS, NÃO DESCARTAR!
         $page = (int) $request->input('page', 1);
         $perPage = 15;
-        $total = count($locais_modelo);
-        $paginada = $locais_modelo->slice(($page - 1) * $perPage, $perPage);
+        $total = count($filtrados);
+        $paginada = collect($filtrados)->slice(($page - 1) * $perPage, $perPage)->values()->toArray();
 
-        // Usar o paginator do Laravel
+        // Usar o paginator do Laravel - PASSAR OS DADOS MAPEADOS
         $locais = \Illuminate\Pagination\Paginator::resolveCurrentPath()
             ? new \Illuminate\Pagination\LengthAwarePaginator(
                 $paginada,

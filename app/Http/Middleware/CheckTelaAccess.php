@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Helpers\MenuHelper;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckTelaAccess
@@ -33,6 +34,12 @@ class CheckTelaAccess
             return $next($request);
         }
 
+        // Verifica se é uma tela obrigatória (sempre acessível)
+        if (MenuHelper::isTelaObrigatoria((string)$nuseqtela)) {
+            return $next($request);
+        }
+
+        // Verifica se o usuário tem acesso à tela
         if (!$user->temAcessoTela((int)$nuseqtela)) {
             if ($request->expectsJson()) {
                 return response()->json([
