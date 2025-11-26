@@ -1,0 +1,146 @@
+================================================================================
+                    INSTRUÇÕES DE IMPORTAÇÃO KINGHOST
+                        26 de novembro de 2025
+================================================================================
+
+ARQUIVO PRINCIPAL: KINGHOST_IMPORT_COMPLEMENTAR.sql
+
+================================================================================
+                        O QUE SERÁ IMPORTADO
+================================================================================
+
+✓ PROJETOS (tabfant): 133 novos projetos
+  - CEF, CASAN, BRADESCO, FURNAS, IBGE, etc.
+  - Estados: RS, SC, BA, MG, RJ, SP e outros
+
+✓ LOCAIS (locais_projeto): 58 novos locais
+  - Locais mapeados para cada projeto
+  - Códigos de local (cdlocal) corretamente associados
+
+✓ PATRIMÔNIOS (patr): 24 novos patrimônios
+  - Patrimônios com dados básicos
+  - Relacionamento correto com projetos e locais
+  - Datas convertidas para formato MySQL (YYYY-MM-DD)
+
+================================================================================
+                        COMO IMPORTAR NO KINGHOST
+================================================================================
+
+1. ACESSE O PAINEL DE CONTROLE KINGHOST
+   - Vá para: Painel de Controle > Banco de Dados > phpMyAdmin
+
+2. SELECIONE O BANCO DE DADOS
+   - Escolha o banco: "plansul" (ou seu nome correto)
+
+3. IMPORTE O ARQUIVO SQL
+   - Clique em "Importar"
+   - Selecione o arquivo: KINGHOST_IMPORT_COMPLEMENTAR.sql
+   - Codificação: UTF-8
+   - Clique em "Executar"
+
+4. VERIFICAÇÃO
+   - Aguarde a conclusão da importação
+   - Verifique se não há mensagens de erro
+   - A importação usa "INSERT IGNORE" portanto:
+     ✓ Não substitui dados existentes
+     ✓ Pula registros duplicados
+     ✓ Apenas adiciona novos dados
+
+================================================================================
+                        ESTRUTURA DO ARQUIVO SQL
+================================================================================
+
+O arquivo está organizado em 4 partes principais:
+
+1. PROJETOS (tabfant)
+   - INSERT IGNORE INTO tabfant
+   - 133 projetos do arquivo: projeto_TABFANTASIA.TXT
+
+2. LOCAIS (locais_projeto)
+   - INSERT IGNORE INTO locais_projeto
+   - 58 locais do arquivo: LOCALPROJETO.TXT
+   - Cada local está corretamente mapeado para seu projeto
+
+3. PATRIMÔNIOS (patr)
+   - INSERT IGNORE INTO patr
+   - 24 patrimônios do arquivo: patrimonio.TXT
+   - Datas corretamente formatadas (STR_TO_DATE)
+
+4. HISTÓRICO DE MOVIMENTAÇÃO (comentado)
+   - Instruções para importar dados de: hist_MOVPATR.TXT
+   - Descomente se desejar importar histórico
+
+================================================================================
+                        TRATAMENTO DE DADOS
+================================================================================
+
+✓ Datas: Convertidas de dd/mm/yyyy para yyyy-mm-dd
+✓ Valores NULL: Mantidos como NULL no banco
+✓ Strings vazias: Convertidas para NULL
+✓ Duplicatas: Ignoradas (INSERT IGNORE)
+✓ Relacionamentos: Mantidos intactos
+✓ Chaves estrangeiras: Temporariamente desabilitadas durante importação
+
+================================================================================
+                        PRECAUÇÕES
+================================================================================
+
+⚠ ANTES DE IMPORTAR:
+  1. Faça backup do banco de dados
+  2. Teste primeiro em ambiente de desenvolvimento
+  3. Verifique se os dados existentes estão corretos
+
+⚠ DURANTE A IMPORTAÇÃO:
+  1. Não feche a página até terminar
+  2. Aguarde a mensagem de sucesso
+  3. Se houver erro, copie a mensagem para referência
+
+⚠ APÓS A IMPORTAÇÃO:
+  1. Verifique se os dados foram inseridos
+  2. Teste a funcionalidade no sistema
+  3. Se tiver problemas, faça rollback do backup
+
+================================================================================
+                        DADOS INCLUSOS
+================================================================================
+
+TABFANT (Projetos):
+- BRADESCO-RS, CASAN, CEF (vários estados)
+- FURNAS, IBGE, INSS, PF, SEBRAE, etc.
+- Total: 133 projetos
+
+LOCAIS_PROJETO (Locais):
+- Filial PLANSUL (CDLOCAL = 1)
+- Agências e unidades por estado
+- MF Lages, Criciuma, Joinville, etc.
+- Total: 58 locais
+
+PATRIMONIO (Bens):
+- Patrimônios 1-20 (básicos)
+- Patrimônios 456, 5640, 5679, 5746, 5747 (complementos)
+- Total: 24 patrimônios
+
+================================================================================
+                        PRÓXIMOS PASSOS
+================================================================================
+
+Após a importação bem-sucedida:
+
+1. Acesse o sistema Plansul
+2. Verifique a tela de patrimônios
+3. Filtre por projeto ou local para validar
+4. Verifique se as relações estão corretas
+5. Atualize dados conforme necessário via interface
+
+================================================================================
+                        SUPORTE
+================================================================================
+
+Se encontrar problemas:
+1. Verifique se o arquivo SQL está correto
+2. Confira a codificação UTF-8
+3. Verifique permissões no Kinghost
+4. Teste com um patrimônio de exemplo primeiro
+5. Se persistir, faça rollback do backup e tente novamente
+
+================================================================================

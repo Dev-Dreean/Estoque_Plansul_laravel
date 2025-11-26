@@ -66,18 +66,10 @@ class UserController extends Controller
             'NOMEUSER' => ['required', 'string', 'max:80'],
             'NMLOGIN' => ['required', 'string', 'max:30', 'unique:usuario,NMLOGIN'],
             'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', 'unique:usuario,CDMATRFUNCIONARIO'],
-            'PERFIL' => ['required', \Illuminate\Validation\Rule::in(['SUP', 'ADM', 'USR'])],
+            'PERFIL' => ['required', \Illuminate\Validation\Rule::in(['ADM', 'USR'])],
             'telas' => ['nullable', 'array'], // Acessos às telas
             'telas.*' => ['integer', 'exists:acessotela,NUSEQTELA'],
-            'senha_super_admin' => ['required_if:PERFIL,SUP', 'nullable', 'string'],
         ]);
-
-        // Validar senha de Super Admin se estiver tentando criar um Super Admin
-        if ($request->PERFIL === 'SUP') {
-            if ($request->input('senha_super_admin') !== '33673170') {
-                return back()->withErrors(['senha_super_admin' => 'Senha de autorização incorreta. Acesso negado.'])->withInput();
-            }
-        }
 
         // Senha provisória forte: prefixo 'Plansul@' + 6 números aleatórios
         $randomNumbers = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -98,13 +90,10 @@ class UserController extends Controller
         if ($request->PERFIL === User::PERFIL_USUARIO) {
             $telasAutorizadas = $request->input('telas', []);
 
-            // Telas OBRIGATÓRIAS (sempre ativas, não podem ser desmarcadas)
+            // Telas APENAS para usuários comuns (USR) - Somente Patrimônio e Gráficos
             $telasObrigatorias = [
                 1000, // Controle de Patrimônio
                 1001, // Gráficos
-                1005, // Atribuir Termo
-                1006, // Histórico
-                1007, // Relatórios de Bens
             ];
 
             // Merge das telas selecionadas com as obrigatórias (sem duplicatas)
@@ -138,20 +127,11 @@ class UserController extends Controller
             'NOMEUSER' => ['required', 'string', 'max:80'],
             'NMLOGIN' => ['required', 'string', 'max:30', Rule::unique('usuario', 'NMLOGIN')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
             'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', Rule::unique('usuario', 'CDMATRFUNCIONARIO')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
-            'PERFIL' => ['required', Rule::in(['SUP', 'ADM', 'USR'])],
+            'PERFIL' => ['required', Rule::in(['ADM', 'USR'])],
             'SENHA' => ['nullable', 'string', 'min:8'], // Senha é opcional na edição
             'telas' => ['nullable', 'array'], // Acessos às telas
             'telas.*' => ['integer', 'exists:acessotela,NUSEQTELA'],
-            'senha_super_admin' => ['nullable', 'string'],
         ]);
-
-        // Validar se está promovendo para Super Admin
-        if ($request->PERFIL === 'SUP' && $usuario->PERFIL !== 'SUP') {
-            // Validar senha de autorização
-            if ($request->input('senha_super_admin') !== '33673170') {
-                return back()->withErrors(['senha_super_admin' => 'Senha de autorização incorreta. Acesso negado.'])->withInput();
-            }
-        }
 
         $usuario->NOMEUSER = $request->NOMEUSER;
         $usuario->NMLOGIN = $request->NMLOGIN;
@@ -172,13 +152,10 @@ class UserController extends Controller
                 ->where('CDMATRFUNCIONARIO', $usuario->CDMATRFUNCIONARIO)
                 ->delete();
 
-            // Telas OBRIGATÓRIAS (sempre ativas, não podem ser desmarcadas)
+            // Telas APENAS para usuários comuns (USR) - Somente Patrimônio e Gráficos
             $telasObrigatorias = [
                 1000, // Controle de Patrimônio
                 1001, // Gráficos
-                1005, // Atribuir Termo
-                1006, // Histórico
-                1007, // Relatórios de Bens
             ];
 
             // Inserir novos acessos selecionados + obrigatórias

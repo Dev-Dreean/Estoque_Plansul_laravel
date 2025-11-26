@@ -10,7 +10,7 @@ return [
         'ordem' => 1,
     ],
     '1001' => [
-        'nome' => 'Dashboard - Graficos',
+        'nome' => 'Gráficos',
         'descricao' => 'Indicadores e graficos consolidados',
         'route' => 'dashboard',
         'icone' => 'fa-chart-line',

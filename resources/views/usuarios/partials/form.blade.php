@@ -48,37 +48,11 @@
             required>
             <option value="USR" @selected(old('PERFIL', $usuario->PERFIL ?? '' )=='USR' )>Usuário Padrão</option>
             <option value="ADM" @selected(old('PERFIL', $usuario->PERFIL ?? '' )=='ADM' )>Administrador</option>
-            <option value="SUP" @selected(old('PERFIL', $usuario->PERFIL ?? '' )=='SUP' )>Super Administrador</option>
         </select>
         <p class="text-xs text-gray-500 mt-1">
-            <span x-show="perfil === 'USR'">Usuário comum com acesso limitado às telas selecionadas abaixo.</span>
-            <span x-show="perfil === 'ADM'">Administrador com acesso a todas as telas (sem permissão para excluir).</span>
-            <span x-show="perfil === 'SUP'">Super Administrador com acesso total e permissão para excluir registros.</span>
+            <span x-show="perfil === 'USR'">Usuário comum com acesso apenas às telas Controle de Patrimônio e Gráficos.</span>
+            <span x-show="perfil === 'ADM'">Administrador com acesso a todas as telas.</span>
         </p>
-    </div>
-
-    {{-- Senha Super Admin - apenas quando selecionando Super Administrador --}}
-    <div x-show="perfil === 'SUP'" x-transition class="border border-amber-300 dark:border-amber-600/60 rounded-lg p-4 bg-amber-50 dark:bg-amber-900/20">
-        <div class="flex items-center gap-2 mb-2">
-            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
-            <x-input-label value="Autorização Super Admin Necessária" class="!mb-0 !font-bold" />
-        </div>
-        <p class="text-xs text-amber-700 dark:text-amber-300 mb-3">Para conceder acesso de Super Administrador, a senha de autorização é obrigatória:</p>
-        <div>
-            <x-input-label for="senha_super_admin" value="Senha de Autorização *" />
-            <x-text-input
-                id="senha_super_admin"
-                name="senha_super_admin"
-                type="password"
-                class="mt-1 block w-full"
-                placeholder="Digite a senha de Super Admin"
-                x-model="senhaAdmin" />
-            <p class="text-xs text-amber-600 dark:text-amber-400 mt-1" x-show="senhaAdmin && perfil === 'SUP'">
-                ✓ Senha preenchida
-            </p>
-        </div>
     </div>
 
     {{-- Gestão de Acessos (apenas para Usuário Padrão) --}}
@@ -103,8 +77,8 @@
             ->get();
             $telasUsuario = isset($usuario) ? $usuario->acessos->pluck('NUSEQTELA')->toArray() : [];
 
-            // Telas OBRIGATÓRIAS (sempre marcadas e desabilitadas)
-            $telasObrigatorias = [1000, 1001, 1005, 1006, 1007];
+            // Telas OBRIGATÓRIAS para usuários comuns (USR)
+            $telasObrigatorias = [1000, 1001];
             @endphp
             @foreach($telasDisponiveis as $tela)
             @php
@@ -136,7 +110,7 @@
             @endforeach
         </div>
         <p class="text-xs text-gray-500 mt-2">
-            <strong>Telas obrigatórias:</strong> Controle de Patrimônio, Gráficos, Atribuir Termo, Histórico e Relatórios de Bens estão sempre ativas para todos os usuários.
+            <strong>Telas incluídas:</strong> Controle de Patrimônio e Gráficos estão sempre ativas para usuários padrão.
         </p>
     </div>
 
