@@ -110,12 +110,23 @@ class PatrimonioController extends Controller
 
         $patrimonios = $query->paginate($perPage)->withQueryString();
 
-        // Busca usuários para filtro (apenas Admin e Super Admin)
+        // Busca usuários que têm patrimônios cadastrados (apenas Admin)
         $cadastradores = [];
         /** @var User $currentUser */
         $currentUser = Auth::user();
         if ($currentUser->isGod() || $currentUser->PERFIL === 'ADM') {
-            $cadastradores = User::orderBy('NOMEUSER')->get(['CDMATRFUNCIONARIO', 'NOMEUSER']);
+            // Buscar TODOS os usuários (USR e ADM), independente de terem patrimônios
+            $todosUsuarios = User::whereIn('PERFIL', ['USR', 'ADM'])
+                ->orderBy('NOMEUSER')
+                ->get(['NUSEQUSUARIO', 'NOMEUSER', 'NMLOGIN', 'CDMATRFUNCIONARIO']);
+
+            $cadastradores = $todosUsuarios->map(function ($user) {
+                return (object) [
+                    'CDMATRFUNCIONARIO' => $user->NUSEQUSUARIO, // Usar NUSEQUSUARIO como identificador único
+                    'NOMEUSER' => $user->NOMEUSER,
+                    'NMLOGIN' => $user->NMLOGIN,
+                ];
+            })->values();
         }
 
         // Busca locais para modal de relatório
@@ -135,7 +146,8 @@ class PatrimonioController extends Controller
             'locais' => $locais,
             'patrimoniosDisponiveis' => $patrimoniosDisponiveis,
             'filters' => $request->only(['descricao', 'situacao', 'modelo', 'cadastrado_por']),
-            'sort' => ['column' => $request->input('sort', 'NUSEQPATR'), 'direction' => 'desc'],
+            // Definimos ordenação padrão por Data de Aquisição crescente
+            'sort' => ['column' => $request->input('sort', 'DTAQUISICAO'), 'direction' => $request->input('direction', 'asc')],
         ]);
     }
 
@@ -1525,10 +1537,20 @@ class PatrimonioController extends Controller
         if (!$user->isGod() && $user->PERFIL !== 'ADM') {
             $nmLogin = (string) ($user->NMLOGIN ?? '');
             $nmUser  = (string) ($user->NOMEUSER ?? '');
+            
             $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
+                // Ver seus próprios registros
                 $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
                     ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
                     ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser]);
+                
+                // Se é supervisor, ver também os registros dos supervisionados
+                if ($user->isSupervisor()) {
+                    $supervisionados = $user->getSupervisionados();
+                    if (!empty($supervisionados)) {
+                        $q->orWhereIn('USUARIO', $supervisionados);
+                    }
+                }
             });
         }
         if ($request->filled('nupatrimonio')) {
@@ -1564,17 +1586,33 @@ class PatrimonioController extends Controller
             if ($request->cadastrado_por === 'SISTEMA') {
                 $query->whereNull('CDMATRFUNCIONARIO');
             } else {
-                $query->where('CDMATRFUNCIONARIO', $request->cadastrado_por);
+                // O valor pode ser NUSEQUSUARIO (ID do usuário) ou CDMATRFUNCIONARIO
+                $usuarioFiltro = User::find($request->cadastrado_por);
+                
+                if ($usuarioFiltro) {
+                    // Se o usuário tem CDMATRFUNCIONARIO preenchido, usar esse
+                    if ($usuarioFiltro->CDMATRFUNCIONARIO) {
+                        $query->where('CDMATRFUNCIONARIO', $usuarioFiltro->CDMATRFUNCIONARIO);
+                    } else {
+                        // Se não tem CDMATRFUNCIONARIO (pré-cadastrado), buscar por USUARIO (o login)
+                        $query->where('USUARIO', $usuarioFiltro->NMLOGIN);
+                    }
+                } else {
+                    // Se não encontrar como usuário, tenta direto como CDMATRFUNCIONARIO (compatibilidade)
+                    $query->where('CDMATRFUNCIONARIO', $request->cadastrado_por);
+                }
             }
         }
 
-        $sortableColumns = ['NUPATRIMONIO', 'MODELO', 'DEPATRIMONIO', 'SITUACAO'];
-        $sortColumn = $request->input('sort', 'NUSEQPATR');
-        $sortDirection = $request->input('direction', 'desc');
+        // Permitir ordenar também por DTAQUISICAO
+        $sortableColumns = ['NUPATRIMONIO', 'MODELO', 'DEPATRIMONIO', 'SITUACAO', 'DTAQUISICAO'];
+        $sortColumn = $request->input('sort', 'DTAQUISICAO');
+        $sortDirection = $request->input('direction', 'asc');
         if (in_array($sortColumn, $sortableColumns)) {
             $query->orderBy($sortColumn, $sortDirection);
         } else {
-            $query->latest('NUSEQPATR');
+            // Ordenação padrão por data de aquisição crescente
+            $query->orderBy('DTAQUISICAO', 'asc');
         }
         return $query;
     }

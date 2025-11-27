@@ -28,6 +28,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // If the user must change password (temporary password), redirect them
+        // immediately to the profile completion flow before anywhere else.
+        $user = $request->user();
+        if ($user && ($user->must_change_password ?? false)) {
+            return redirect()->route('profile.completion.create');
+        }
+
         // Se o usuário marcou "Confiar neste dispositivo", definir expiração de 7 dias
         if ($request->input('remember_device', false)) {
             // Configurar sessão para expirar em 7 dias (10080 minutos)

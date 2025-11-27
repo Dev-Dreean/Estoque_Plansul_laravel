@@ -21,7 +21,9 @@
 </div>
 @endif
 
-<div x-data='patrimonioForm({ patrimonio: @json($patrimonio), old: @json(old()) })' @keydown.enter.prevent="handleEnter($event)" class="space-y-4 text-sm">
+<div x-data="patrimonioForm($el)" @keydown.enter.prevent="handleEnter($event)" class="space-y-4 text-sm"
+  data-patrimonio='{!! json_encode($patrimonio) !!}'
+  data-old='{!! json_encode(old()) !!}'>
 
   {{-- GRUPO 1: 4 Inputs lado a lado - Botão Gerar, Número Patrimônio, OC, Descrição e Código do Objeto --}}
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -639,7 +641,23 @@
   </div>
 </div>
 <script>
-  function patrimonioForm(config) {
+  function patrimonioForm(elOrConfig) {
+    let config = elOrConfig || {};
+    // If an element was passed (via $el), read initial data from its data-* attributes
+    if (elOrConfig && elOrConfig.dataset) {
+      const ds = elOrConfig.dataset;
+      try {
+        config = config || {};
+        config.patrimonio = ds.patrimonio ? JSON.parse(ds.patrimonio) : null;
+      } catch (e) {
+        config.patrimonio = null;
+      }
+      try {
+        config.old = ds.old ? JSON.parse(ds.old) : {};
+      } catch (e) {
+        config.old = {};
+      }
+    }
     return {
       // == DADOS DO FORMULÁRIO ==
       formData: {

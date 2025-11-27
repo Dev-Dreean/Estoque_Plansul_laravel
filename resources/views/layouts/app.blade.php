@@ -78,6 +78,26 @@
   <div class="min-h-screen bg-base with-fixed-footer">
     @include('layouts.navigation')
 
+  @if(session('impersonator_id'))
+  <div class="bg-yellow-600 border-b border-yellow-700 text-white p-3 text-sm flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path d="M10 2a2 2 0 00-2 2v2a2 2 0 104 0V4a2 2 0 00-2-2z" />
+        <path fill-rule="evenodd" d="M3 13a4 4 0 014-4h6a4 4 0 014 4v1a1 1 0 01-1 1h-2v-1a3 3 0 00-3-3H10a3 3 0 00-3 3v1H4a1 1 0 01-1-1v-1z" clip-rule="evenodd" />
+      </svg>
+      <div>
+        <strong class="block">Modo de Testes: você está assumindo outra conta</strong>
+        <span class="text-xs opacity-90">Esta sessão é temporária. Clique em voltar para restaurar sua conta.</span>
+      </div>
+    </div>
+    <div>
+      <form method="POST" action="{{ route('impersonate.stop') }}">@csrf
+        <button type="submit" class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-md text-sm border border-white/20">🔙 Voltar à minha conta</button>
+      </form>
+    </div>
+  </div>
+  @endif
+
     @if (isset($header))
     <header class="bg-surface shadow border-b border-base">
       <div class="max-w-screen-2xl mx-auto py-6 px-4 sm:px-6 lg:px-8">

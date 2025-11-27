@@ -68,6 +68,13 @@
         </div>
         @endif
     </div>
+
+    @if(isset($usuariosUsrDisponiveis))
+    <div x-show="perfil === 'USR'" x-cloak>
+        @include('usuarios.partials.supervisao_form', compact('usuario', 'usuariosUsrDisponiveis'))
+    </div>
+    @endif
+
     <script>
         function userForm({
             existingId,
@@ -197,6 +204,10 @@
                         alert('A senha de autorização de Super Admin é obrigatória para criar/atualizar um Super Administrador.');
                         return false;
                     }
+                    // Se o perfil não for USR, garantir que não enviemos supervisionados
+                    if (this.perfil !== 'USR') {
+                        document.querySelectorAll('input[name="supervisor_de[]"]').forEach(el => el.remove());
+                    }
                     return true;
                 }
             }
@@ -204,8 +215,8 @@
     </script>
 </div>
 
-<div class="flex items-center justify-end mt-6">
-    <a href="{{ route('usuarios.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:underline mr-4">
+<div class="flex items-center justify-end gap-3 mt-6">
+    <a href="{{ route('usuarios.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:underline">
         Cancelar
     </a>
     <x-primary-button @click="validateForm() && $el.closest('form').submit()">

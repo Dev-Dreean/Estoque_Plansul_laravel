@@ -148,7 +148,7 @@
     }
   }">
     <div class="py-12">
-      <div class="w-full sm:px-6 lg:px-8">
+      <div class="w-full px-2 sm:px-6 lg:px-12 max-w-screen-xl mx-auto">
         @if(session('success'))
         <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
           <strong class="font-bold">Sucesso!</strong>
@@ -168,7 +168,7 @@
         </div>
         @endif
         <div class="section">
-          <div class="section-body">
+          <div class="section-body max-w-full">
 
             {{-- Formulário de Filtro --}}
             <div x-data="{ open: false }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6" x-id="['filtro-patrimonios']" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimonios')">
@@ -267,26 +267,10 @@
               </button>
             </div>
 
-            @php
-            // Determina se cada coluna (entre as que podem ficar vazias com frequência) está vazia nesta página de resultados
-            $colVazia = [
-            'NUMOF' => $patrimonios->every(fn($p)=> blank($p->NUMOF)),
-            'CODOBJETO' => $patrimonios->every(fn($p)=> blank($p->CODOBJETO)),
-            'NMPLANTA' => $patrimonios->every(fn($p)=> blank($p->NMPLANTA)),
-            'NUSERIE' => $patrimonios->every(fn($p)=> blank($p->NUSERIE)),
-            'MODELO' => $patrimonios->every(fn($p)=> blank($p->MODELO)),
-            'MARCA' => $patrimonios->every(fn($p)=> blank($p->MARCA)),
-            'COR' => $patrimonios->every(fn($p)=> blank($p->COR)),
-            'DTAQUISICAO' => $patrimonios->every(fn($p)=> blank($p->DTAQUISICAO)),
-            'DTOPERACAO' => $patrimonios->every(fn($p)=> blank($p->DTOPERACAO)),
-            // Coluna USUARIO agora reflete quem CADASTROU (campo USUARIO texto) e não o responsável.
-            'USUARIO' => $patrimonios->every(fn($p)=> blank($p->USUARIO)),
-            ];
-            $shrink = fn($key) => $colVazia[$key] ? 'w-px px-0 text-[0] overflow-hidden' : 'px-4';
-            @endphp
+            {{-- Colunas fixas — sempre exibidas nesta ordem --}}
             <!-- Tabela Detalhada -->
-            <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0">
-              <table class="w-full text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0 min-w-0">
+              <table class="w-full table-fixed text-[11px] text-left rtl:text-right text-gray-500 dark:text-gray-400">
                 <thead
                   class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                   @php
@@ -309,25 +293,24 @@
                     '</a>';
                   }
                   @endphp
-                  <tr>
-                    <th class="px-4 py-3">Nº Pat.</th>
-                    <th class="{{ $shrink('NUMOF') }} py-3">OF</th>
-                    <th class="{{ $shrink('CODOBJETO') }} py-3">Cód. Objeto</th>
-                    <th class="{{ $shrink('NMPLANTA') }} py-3">Cód. Termo</th>
-                    <th class="{{ $shrink('NUSERIE') }} py-3">Nº Série</th>
-                    <th class="px-4 py-3">Projeto Associado</th>
-                    <th class="px-4 py-3">Código Local</th>
-                    <th class="{{ $shrink('MODELO') }} py-3">Modelo</th>
-                    <th class="{{ $shrink('MARCA') }} py-3">Marca</th>
-                    <th class="{{ $shrink('COR') }} py-3">Cor</th>
-                    <th class="px-4 py-3">Descrição</th>
-                    <th class="px-4 py-3">Situação</th>
-                    <th class="{{ $shrink('DTAQUISICAO') }} py-3">Dt. Aquisição</th>
-                    <th class="{{ $shrink('DTOPERACAO') }} py-3">Dt. Cadastro</th>
-                    <th class="px-4 py-3">Matrícula (Responsável)</th>
-                    <th class="{{ $shrink('USUARIO') }} py-3">Cadastrado Por</th>
+                  <tr class="divide-x divide-gray-200 dark:divide-gray-700">
+                    <th class="px-2 py-2">Nº Pat.</th>
+                    <th class="px-2 py-2">OF</th>
+                    <th class="px-2 py-2">Cód. Objeto</th>
+                    <th class="px-2 py-2">Cód. Termo</th>
+                    <th class="px-2 py-2">Nº Série</th>
+                    <th class="px-2 py-2">Projeto Associado</th>
+                    <th class="px-2 py-2">Código Local</th>
+                    <th class="px-2 py-2">Modelo</th>
+                    <th class="px-2 py-2">Marca</th>
+                    <th class="px-2 py-2">Descrição</th>
+                    <th class="px-2 py-2 text-xs">Situação</th>
+                    <th class="px-2 py-2">Dt. Aquisição</th>
+                    <th class="px-2 py-2">Dt. Cadastro</th>
+                    <th class="px-2 py-2">Responsavel</th>
+                    <th class="px-2 py-2">Cadastrador</th>
                     @if(Auth::user()->isAdmin())
-                    <th class="px-4 py-3">Ações</th>
+                    <th class="px-2 py-2">Ações</th>
                     @endif
                   </tr>
                 </thead>
@@ -336,14 +319,14 @@
                   @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
 
                   {{-- A ordem agora está 100% correta para corresponder ao seu thead --}}
-                  <td class="px-4 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
-                  <td class="{{ $shrink('NUMOF') }} py-2">{{ $patrimonio->NUMOF ?? '—' }}</td>
-                  <td class="{{ $shrink('CODOBJETO') }} py-2">{{ $patrimonio->CODOBJETO ?? '—' }}</td>
-                  <td class="{{ $shrink('NMPLANTA') }} py-2 font-bold">{{ $patrimonio->NMPLANTA ?? '—' }}</td>
-                  <td class="{{ $shrink('NUSERIE') }} py-2">{{ $patrimonio->NUSERIE ?? '—' }}</td>
+                  <td class="px-2 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
+                  <td class="px-2 py-2">{{ $patrimonio->NUMOF ?? '—' }}</td>
+                  <td class="px-2 py-2">{{ $patrimonio->CODOBJETO ?? '—' }}</td>
+                  <td class="px-2 py-2 font-bold">{{ $patrimonio->NMPLANTA ?? '—' }}</td>
+                  <td class="px-2 py-2">{{ $patrimonio->NUSERIE ?? '—' }}</td>
 
                   {{-- Projeto Associado: Código Projeto + Nome Projeto --}}
-                  <td class="px-4 py-2">
+                  <td class="px-2 py-2">
                     @if($patrimonio->local && $patrimonio->local->projeto)
                     <div class="leading-tight">
                       <span class="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400">{{ $patrimonio->local->projeto->CDPROJETO }}</span>
@@ -355,7 +338,7 @@
                   </td>
 
                   {{-- Código Local: Dinâmico com código + nome do local --}}
-                  <td class="px-4 py-2">
+                  <td class="px-2 py-2">
                     @if($patrimonio->local)
                     <div class="leading-tight">
                       <span class="font-mono text-xs font-semibold text-green-600 dark:text-green-400">{{ $patrimonio->local->cdlocal }}</span>
@@ -366,14 +349,50 @@
                     @endif
                   </td>
 
-                  <td class="{{ $shrink('MODELO') }} py-2">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,10,'...') : '—' }}</td>
-                  <td class="{{ $shrink('MARCA') }} py-2">{{ $patrimonio->MARCA ?? '—' }}</td>
-                  <td class="{{ $shrink('COR') }} py-2">{{ $patrimonio->COR ?? '—' }}</td>
-                  <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">{{ $patrimonio->DEPATRIMONIO ? Str::limit($patrimonio->DEPATRIMONIO,10,'...') : '—' }}</td>
-                  <td class="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis truncate">{{ $patrimonio->SITUACAO ?? '—' }}</td>
-                  <td class="{{ $shrink('DTAQUISICAO') }} py-2">{{ $patrimonio->dtaquisicao_pt_br ?? '—' }}</td>
-                  <td class="{{ $shrink('DTOPERACAO') }} py-2">{{ $patrimonio->dtoperacao_pt_br ?? '—' }}</td>
-                  <td class="px-4 py-2">
+                  <td class="px-2 py-2 truncate max-w-[90px]">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,12,'...') : '—' }}</td>
+                  <td class="px-2 py-2 truncate max-w-[90px]">{{ $patrimonio->MARCA ?? '—' }}</td>
+                  <td class="px-2 py-2 font-medium text-gray-900 dark:text-white truncate max-w-[200px]">{{ $patrimonio->DEPATRIMONIO ? Str::limit($patrimonio->DEPATRIMONIO,40,'...') : '—' }}</td>
+                  <td class="px-2 py-2">
+                    @php
+                      $situacao = $patrimonio->SITUACAO ?? '';
+                      // Remove quebras de linha e normaliza espaços
+                      $raw = preg_replace('/[\r\n]+/', ' ', trim($situacao));
+
+                      // Use Str::ascii para transliteração mais robusta (remove acentos)
+                      $norm = strtoupper(
+                        Illuminate\Support\Str::ascii($raw)
+                      );
+                      $norm = preg_replace('/\s+/', ' ', $norm);
+
+                      $situationBadgeMap = [
+                        'EM USO' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+                        'BAIXA' => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
+                        'CONSERTO' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+                        'A DISPOSICAO' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+                        'DISPONIVEL' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+                        'LAVOR' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+                      ];
+
+                      $badgeClasses = $situationBadgeMap[$norm] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+
+                      // Normaliza exibição: variantes de "à disposição" e "disponível" devem mostrar "Disponivel"
+                      if(in_array($norm, ['A DISPOSICAO', 'DISPONIVEL'])){
+                        $displaySituacao = 'Disponivel';
+                      } else {
+                        $displaySituacao = $raw !== '' ? $raw : null;
+                      }
+                    @endphp
+                    @if($displaySituacao)
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold {{ $badgeClasses }} shadow-sm">
+                        {{ $displaySituacao }}
+                      </span>
+                    @else
+                      <span class="text-gray-400">—</span>
+                    @endif
+                  </td>
+                  <td class="px-2 py-2">{{ $patrimonio->dtaquisicao_pt_br ?? '—' }}</td>
+                  <td class="px-2 py-2">{{ $patrimonio->dtoperacao_pt_br ?? '—' }}</td>
+                  <td class="px-2 py-2">
                     @if($patrimonio->CDMATRFUNCIONARIO)
                     <div class="leading-tight">
                       <span class="font-mono text-xs">{{ $patrimonio->CDMATRFUNCIONARIO }}</span>
@@ -383,7 +402,7 @@
                     <span class="text-gray-400 text-[10px]">—</span>
                     @endif
                   </td>
-                  <td class="px-4 py-2">{{ $patrimonio->cadastrado_por_nome ?? '—' }}</td>
+                  <td class="px-2 py-2 truncate max-w-[100px]">{{ $patrimonio->cadastrado_por_nome ?? '—' }}</td>
 
                   @if(Auth::user()->isAdmin())
                   <td class="px-2 py-2">
@@ -701,43 +720,43 @@
           </template>
         </p>
         <div class="flex-grow overflow-y-auto">
-          <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
+          <table class="w-full table-fixed text-[11px] text-left text-gray-500 dark:text-gray-400">
             <thead
-              class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0">
+                  class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0">
               <tr>
                 <!-- Coluna dinâmica em primeiro lugar (conforme o tipo de filtro) -->
-                <template x-if="tipoRelatorio === 'numero'">
-                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">Nº Patrimônio</th>
+                  <template x-if="tipoRelatorio === 'numero'">
+                  <th scope="col" class="px-6 py-3 font-bold">Nº Patrimônio</th>
                 </template>
                 <template x-if="tipoRelatorio === 'descricao'">
-                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">Descrição</th>
+                  <th scope="col" class="px-6 py-3 font-bold">Descrição</th>
                 </template>
                 <template x-if="tipoRelatorio === 'projeto'">
-                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">Código Projeto</th>
+                  <th scope="col" class="px-6 py-3 font-bold">Código Projeto</th>
                 </template>
                 <template x-if="tipoRelatorio === 'oc'">
-                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">OC</th>
+                  <th scope="col" class="px-6 py-3 font-bold">OC</th>
                 </template>
                 <template x-if="tipoRelatorio === 'uf'">
-                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">UF</th>
+                  <th scope="col" class="px-6 py-3 font-bold">UF</th>
                 </template>
                 <template x-if="tipoRelatorio === 'situacao'">
-                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">Situação</th>
+                  <th scope="col" class="px-6 py-3 font-bold text-xs">Situação</th>
                 </template>
                 <template x-if="tipoRelatorio === 'aquisicao'">
-                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">Data Aquisição</th>
+                  <th scope="col" class="px-6 py-3 font-bold">Data Aquisição</th>
                 </template>
                 <template x-if="tipoRelatorio === 'cadastro'">
-                  <th scope="col" :class="'px-6 py-3 font-bold ' + getColumnColor()">Data Cadastro</th>
+                  <th scope="col" class="px-6 py-3 font-bold">Data Cadastro</th>
                 </template>
 
                 <!-- Colunas fixas (sempre aparecem depois) -->
                 <th scope="col" class="px-6 py-3">Nº Patrimônio</th>
                 <th scope="col" class="px-6 py-3">Descrição</th>
                 <th scope="col" class="px-6 py-3">Modelo</th>
-                <th scope="col" class="px-6 py-3">Situação</th>
+                <th scope="col" class="px-6 py-3 text-xs">Situação</th>
                 <th scope="col" class="px-6 py-3">Local</th>
-                <th scope="col" class="px-6 py-3">Cadastrado por</th>
+                <th scope="col" class="px-6 py-3">Cadastrador</th>
               </tr>
             </thead>
             <tbody>
@@ -897,9 +916,9 @@
 
               {{-- TABELA SIMPLIFICADA MESMO ESTILO DO MODAL GERAR PLANILHA --}}
               <div class="overflow-y-auto border dark:border-gray-700 rounded mb-4" style="max-height:400px;" id="atribuir-modal-content">
-                <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
-                  <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
+                <table class="w-full table-fixed text-[11px] text-left text-gray-500 dark:text-gray-400">
+                  <thead class="text-[10px] text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr class="divide-x divide-gray-200 dark:divide-gray-700">
                       <th class="p-4 w-4"></th>
                       <th class="px-2 py-3">Nº Pat.</th>
                       <th class="px-2 py-3">Descrição</th>
@@ -952,9 +971,9 @@
               @csrf
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Selecione os patrimônios que terão o código de termo removido. Apenas itens com código atribuído são listados.</p>
               <div class="overflow-y-auto border dark:border-gray-700 rounded mb-4" style="max-height:400px;">
-                <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
+                <table class="w-full table-fixed text-sm text-left text-gray-500 dark:text-gray-400">
                   <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
+                    <tr class="divide-x divide-gray-200 dark:divide-gray-700">
                       <th class="p-3 w-4"></th>
                       <th class="px-2 py-3">Nº Pat.</th>
                       <th class="px-2 py-3">Descrição</th>

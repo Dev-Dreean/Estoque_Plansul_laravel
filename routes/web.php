@@ -203,6 +203,12 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // Rotas de Usuários (T:1003)
     Route::resource('usuarios', UserController::class)->middleware(['tela.access:1003', 'can.delete']);
     Route::get('usuarios/confirmacao', [UserController::class, 'confirmacao'])->name('usuarios.confirmacao')->middleware('tela.access:1003');
+    Route::get('/usuarios/{usuario}/supervisao', [UserController::class, 'gerenciarSupervisao'])->name('usuarios.supervisao')->middleware('tela.access:1003');
+    Route::put('/usuarios/{usuario}/supervisao', [UserController::class, 'atualizarSupervisao'])->name('usuarios.supervisao.update')->middleware('tela.access:1003');
+    // Impersonation / developer helpers (restritos a admin ou ambiente local dentro do controller)
+    Route::post('/usuarios/{usuario}/impersonate', [UserController::class, 'impersonate'])->name('usuarios.impersonate')->middleware('auth');
+    Route::post('/impersonate/stop', [UserController::class, 'stopImpersonate'])->name('impersonate.stop')->middleware('auth');
+    Route::post('/usuarios/{usuario}/reset-senha', [UserController::class, 'resetSenha'])->name('usuarios.resetSenha')->middleware('auth');
     // APIs auxiliares do formulário de usuário
     Route::get('/api/usuarios/por-matricula', [UserController::class, 'porMatricula'])->name('api.usuarios.porMatricula')->middleware('tela.access:1003');
     Route::get('/api/usuarios/sugerir-login', [UserController::class, 'sugerirLogin'])->name('api.usuarios.sugerirLogin')->middleware('tela.access:1003');

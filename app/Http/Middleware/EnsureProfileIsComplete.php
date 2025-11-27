@@ -13,11 +13,17 @@ class EnsureProfileIsComplete // <-- Verifique se o nome da classe está correto
 {
     public function handle(Request $request, Closure $next): Response
     {
+        // If we are impersonating another user for testing, skip the profile completion
+        if (session('is_impersonating') === true) {
+            return $next($request);
+        }
+
         $user = Auth::user();
 
         if ($user) {
             $needsProfile = is_null($user->UF);
-            $needsPassword = (property_exists($user, 'must_change_password') && $user->must_change_password) || ($user->password_policy_version ?? 0) < 1;
+            // Eloquent attributes must be checked via null-coalescing; property_exists doesn't work for dynamic attributes
+            $needsPassword = ($user->must_change_password ?? false) || ($user->password_policy_version ?? 0) < 1;
             if (($needsProfile || $needsPassword) && !$request->routeIs('profile.completion.*')) {
                 return redirect()->route('profile.completion.create')
                     ->with(

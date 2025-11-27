@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -55,6 +56,121 @@ class UserController extends Controller
         return view('usuarios.index', compact('usuarios'));
     }
 
+    /**
+     * Impersonate another user (developer/admin helper).
+     * Allowed only in local environment or for admins.
+     */
+    public function impersonate(User $usuario)
+    {
+        /** @var \App\Models\User $me */
+        $me = Auth::user();
+        if (!(app()->environment('local') || $me->isAdmin())) {
+            abort(403);
+        }
+
+        Log::info('Impersonation requested', [
+            'by_login' => $me->NMLOGIN ?? null,
+            'by_id' => $me->NUSEQUSUARIO ?? null,
+            'target_login' => $usuario->NMLOGIN ?? null,
+            'target_id' => $usuario->NUSEQUSUARIO ?? null,
+            'env' => app()->environment(),
+            'session_before' => session()->all(),
+        ]);
+
+        // Store original user id so we can restore and mark impersonation active
+        session([
+            'impersonator_id' => $me->NUSEQUSUARIO,
+            'is_impersonating' => true,
+        ]);
+        Auth::loginUsingId($usuario->NUSEQUSUARIO);
+
+        Log::info('Impersonation started', [
+            'by_login' => $me->NMLOGIN ?? null,
+            'by_id' => $me->NUSEQUSUARIO ?? null,
+            'target_login' => $usuario->NMLOGIN ?? null,
+            'target_id' => $usuario->NUSEQUSUARIO ?? null,
+            'session_after' => session()->all(),
+        ]);
+
+        return redirect()->route('dashboard')->with('success', "Agora você está como {$usuario->NOMEUSER} ({$usuario->NMLOGIN})");
+    }
+
+    /**
+     * Stop impersonation and restore original user.
+     */
+    public function stopImpersonate(Request $request)
+    {
+        // Log the incoming stop request for debugging
+        Log::info('Impersonation stop requested', [
+            'current_user' => Auth::user()->NMLOGIN ?? null,
+            'current_user_id' => Auth::id(),
+            'session_before' => session()->all(),
+            'request_ip' => $request->ip(),
+            'request_url' => $request->fullUrl(),
+        ]);
+
+        // Preferência: read value first, ensure it exists, then clear session keys
+        $impId = session()->get('impersonator_id');
+        if (!$impId) {
+            Log::warning('Impersonation stop failed: no impersonator_id in session', ['session' => session()->all()]);
+            abort(403);
+        }
+
+        // Clear impersonation flags from session
+        session()->forget(['impersonator_id', 'is_impersonating']);
+
+        // Restore original user and regenerate session to avoid fixation
+        $original = User::find($impId);
+        if (!$original) {
+            Log::error('Impersonation stop failed: original user not found', ['impersonator_id' => $impId]);
+            abort(404, 'Usuário original não encontrado');
+        }
+
+        Auth::login($original);
+        // regenerate session id and data to be safe
+        try {
+            session()->regenerate();
+        } catch (\Throwable $e) {
+            Log::debug('Session regenerate failed', ['error' => $e->getMessage()]);
+        }
+
+        Log::info('Impersonation stopped', [
+            'restored_login' => $original->NMLOGIN ?? null,
+            'restored_id' => $original->NUSEQUSUARIO ?? null,
+            'session_after' => session()->all(),
+        ]);
+
+        return redirect()->route('usuarios.index')->with('success', 'Impersonation finalizada. Você voltou à sua conta.');
+    }
+
+    /**
+     * Reset a user's password and return a temporary password (JSON).
+     * Allowed only in local environment or for admins.
+     */
+    public function resetSenha(User $usuario)
+    {
+        /** @var \App\Models\User $me */
+        $me = Auth::user();
+        if (!(app()->environment('local') || $me->isAdmin())) {
+            return response()->json(['success' => false, 'message' => 'Não autorizado'], 403);
+        }
+
+        // Gerar senha provisória: Plansul@ + 6 dígitos
+        $randomNumbers = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $senhaProvisoria = 'Plansul@' . $randomNumbers;
+
+        $usuario->SENHA = $senhaProvisoria; // mutator vai aplicar Hash::make
+        $usuario->must_change_password = true;
+        $usuario->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Senha provisória gerada com sucesso.',
+            'senha' => $senhaProvisoria,
+            'login' => $usuario->NMLOGIN,
+        ]);
+    }
+
     public function create(): View
     {
         return view('usuarios.create');
@@ -92,17 +208,42 @@ class UserController extends Controller
 
     public function edit(User $usuario): View
     {
-        return view('usuarios.edit', compact('usuario'));
+        // Carrega usuários USR disponíveis para supervisão
+        $usuariosUsrDisponiveis = User::where('PERFIL', 'USR')
+            ->where('NUSEQUSUARIO', '!=', $usuario->NUSEQUSUARIO)
+            ->orderBy('NOMEUSER')
+            ->get(['NUSEQUSUARIO', 'NOMEUSER', 'NMLOGIN']);
+
+        // Pré-compõe um array simples para uso em JS no template (evita eval complexa no Blade)
+        $usuariosUsrDisponiveisArray = $usuariosUsrDisponiveis->map(function ($u) {
+            return [
+                'NUSEQUSUARIO' => $u->NUSEQUSUARIO,
+                'NOMEUSER' => $u->NOMEUSER,
+                'NMLOGIN' => $u->NMLOGIN,
+            ];
+        })->values()->toArray();
+
+        return view('usuarios.edit', compact('usuario', 'usuariosUsrDisponiveis', 'usuariosUsrDisponiveisArray'));
     }
 
     public function update(Request $request, User $usuario): RedirectResponse
     {
+        // Normaliza supervisor_de para garantir que cada item seja string
+        if ($request->has('supervisor_de')) {
+            $vals = $request->input('supervisor_de');
+            if (is_array($vals)) {
+                $request->merge(['supervisor_de' => array_map('strval', $vals)]);
+            }
+        }
+
         $request->validate([
             'NOMEUSER' => ['required', 'string', 'max:80'],
             'NMLOGIN' => ['required', 'string', 'max:30', Rule::unique('usuario', 'NMLOGIN')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
             'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', Rule::unique('usuario', 'CDMATRFUNCIONARIO')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
             'PERFIL' => ['required', Rule::in(['ADM', 'USR'])],
-            'SENHA' => ['nullable', 'string', 'min:8'], // Senha é opcional na edição
+            'SENHA' => ['nullable', 'string', 'min:8'],
+            'supervisor_de' => ['nullable', 'array'],
+            'supervisor_de.*' => ['string'],
         ]);
 
         $usuario->NOMEUSER = $request->NOMEUSER;
@@ -111,7 +252,21 @@ class UserController extends Controller
         $usuario->PERFIL = $request->PERFIL;
 
         if ($request->filled('SENHA')) {
-            $usuario->SENHA = $request->SENHA; // O Model criptografa
+            $usuario->SENHA = $request->SENHA;
+        }
+
+        // Salvar supervisão se fornecida
+        if ($request->has('supervisor_de')) {
+            $novosSupervisionados = array_unique(array_filter($request->input('supervisor_de', [])));
+            
+            // Validar que todos os logins existem e são USR
+            $loginsValidos = User::whereIn('NMLOGIN', $novosSupervisionados)
+                ->where('PERFIL', 'USR')
+                ->where('NUSEQUSUARIO', '!=', $usuario->NUSEQUSUARIO)
+                ->pluck('NMLOGIN')
+                ->toArray();
+
+            $usuario->supervisor_de = count($loginsValidos) > 0 ? $loginsValidos : null;
         }
 
         $usuario->save();
@@ -259,5 +414,45 @@ class UserController extends Controller
     private function isLoginAvailable(string $login): bool
     {
         return !User::where('NMLOGIN', $login)->exists();
+    }
+
+    // === Supervisão de Usuários ===
+    public function gerenciarSupervisao(User $usuario)
+    {
+        // Lista de usuários USR disponíveis para supervisão
+        $usuariosDisponiveis = User::where('PERFIL', 'USR')
+            ->where('NUSEQUSUARIO', '!=', $usuario->NUSEQUSUARIO)
+            ->orderBy('NOMEUSER')
+            ->get(['NUSEQUSUARIO', 'NOMEUSER', 'NMLOGIN']);
+
+        $supervisionados = $usuario->supervisor_de ?? [];
+
+        return view('usuarios.supervisao', compact('usuario', 'usuariosDisponiveis', 'supervisionados'));
+    }
+
+    public function atualizarSupervisao(Request $request, User $usuario): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'supervisionados' => ['nullable', 'array'],
+            'supervisionados.*' => ['string'],
+        ]);
+
+        $novosSupervisionados = array_unique(array_filter($request->input('supervisionados', [])));
+        
+        // Validar que todos os logins existem e são USR
+        $loginsValidos = User::whereIn('NMLOGIN', $novosSupervisionados)
+            ->where('PERFIL', 'USR')
+            ->where('NUSEQUSUARIO', '!=', $usuario->NUSEQUSUARIO)
+            ->pluck('NMLOGIN')
+            ->toArray();
+
+        $usuario->supervisor_de = count($loginsValidos) > 0 ? $loginsValidos : null;
+        $usuario->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Supervisão atualizada! {$usuario->NOMEUSER} agora supervisiona " . count($loginsValidos) . " usuários.",
+            'count' => count($loginsValidos),
+        ]);
     }
 }
