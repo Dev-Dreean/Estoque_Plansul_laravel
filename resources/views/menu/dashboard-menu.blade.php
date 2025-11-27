@@ -1421,7 +1421,7 @@
                     <div class="service-icon">
                         <i class="fas fa-warehouse"></i>
                     </div>
-                    <div class="service-title">Controle de Almoxarifado</div>
+                    <div class="service-title">Controle de Estoque</div>
                     <div class="service-description">Controle completo de estoque e movimentação de itens</div>
                 </a>
             </div>
