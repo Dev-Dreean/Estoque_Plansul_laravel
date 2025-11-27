@@ -1405,25 +1405,25 @@
                 @auth
                     <a href="{{ route('patrimonios.index') }}" class="service-card patrimonio" onclick="showLoadingModal()" style="text-decoration: none; display: block;">
                         <div class="service-icon"><i class="fas fa-cube"></i></div>
-                        <div class="service-title">Cadastro de Patrimônio</div>
+                        <div class="service-title">Controle de Patrimônio</div>
                         <div class="service-description">Gerencie e registre todos os itens do seu patrimônio com facilidade</div>
                     </a>
                 @endauth
                 @guest
                     <button onclick="openLoginModal()" class="service-card patrimonio" style="border: none; background: none; padding: 0;">
                         <div class="service-icon"><i class="fas fa-cube"></i></div>
-                        <div class="service-title">Cadastro de Patrimônio</div>
+                        <div class="service-title">Controle de Patrimônio</div>
                         <div class="service-description">Gerencie e registre todos os itens do seu patrimônio com facilidade</div>
                     </button>
                 @endguest
 
-                <button onclick="openConstructionModal()" class="service-card almoxarifado" style="border: none; background: none; padding: 0;">
+                <a href="https://plansul.info/materiais/public/login" class="service-card almoxarifado" style="text-decoration: none; display: block;">
                     <div class="service-icon">
                         <i class="fas fa-warehouse"></i>
                     </div>
-                    <div class="service-title">Almoxarifado</div>
+                    <div class="service-title">Controle de Almoxarifado</div>
                     <div class="service-description">Controle completo de estoque e movimentação de itens</div>
-                </button>
+                </a>
             </div>
 
             <!-- User Info Card / Login Info Card -->
