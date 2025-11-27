@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('usuario', function (Blueprint $table) {
-            $table->json('supervisor_de')->nullable()->after('CDMATRFUNCIONARIO')
-                ->comment('Lista de logins (NMLOGIN) que este usuário pode supervisionar');
+            // Use longText for better compatibility (some MariaDB/MySQL versions lack JSON type)
+            $table->longText('supervisor_de')->nullable()->after('CDMATRFUNCIONARIO')
+                ->comment('Lista de logins (NMLOGIN) que este usuário pode supervisionar (armazenado como JSON)');
         });
     }
 
