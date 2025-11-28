@@ -12,7 +12,13 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        // API routes - GET requests don't mutate data
+        'api/projetos/*',
+        'api/locais/*',
+        'api/objetos/*',
+        'api/responsaveis/*',
+        'api/matriculas/*',
+        'api/weather*',
     ];
 
     /**
