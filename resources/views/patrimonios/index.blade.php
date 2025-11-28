@@ -216,7 +216,7 @@
                         <option value="">Usuário</option>
                         <option value="SISTEMA" @selected(request('cadastrado_por')==='SISTEMA' )>Sistema</option>
                         @foreach ($cadastradores as $cadastrador)
-                        <option value="{{ $cadastrador->CDMATRFUNCIONARIO }}" @selected(request('cadastrado_por')==$cadastrador->CDMATRFUNCIONARIO)>
+                        <option value="{{ $cadastrador->NMLOGIN }}" @selected(request('cadastrado_por')==$cadastrador->NMLOGIN)>
                           {{ Str::limit($cadastrador->NOMEUSER,18) }}
                         </option>
                         @endforeach

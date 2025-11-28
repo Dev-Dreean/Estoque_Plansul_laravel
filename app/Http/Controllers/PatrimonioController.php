@@ -122,7 +122,7 @@ class PatrimonioController extends Controller
 
             $cadastradores = $todosUsuarios->map(function ($user) {
                 return (object) [
-                    'CDMATRFUNCIONARIO' => $user->NUSEQUSUARIO, // Usar NUSEQUSUARIO como identificador único
+                    'CDMATRFUNCIONARIO' => $user->CDMATRFUNCIONARIO, // Usar CDMATRFUNCIONARIO real
                     'NOMEUSER' => $user->NOMEUSER,
                     'NMLOGIN' => $user->NMLOGIN,
                 ];
@@ -1618,24 +1618,38 @@ class PatrimonioController extends Controller
         }
         // Filtro por cadastrante (apenas Admin e Super Admin)
         if ($request->filled('cadastrado_por') && ($user->isGod() || $user->PERFIL === 'ADM')) {
-            if ($request->cadastrado_por === 'SISTEMA') {
-                $query->whereNull('CDMATRFUNCIONARIO');
+            $valorFiltro = $request->cadastrado_por;
+            if ($valorFiltro === 'SISTEMA') {
+                $query->whereNull('USUARIO');
             } else {
-                // O valor pode ser NUSEQUSUARIO (ID do usuário) ou CDMATRFUNCIONARIO
-                $usuarioFiltro = User::find($request->cadastrado_por);
-                
-                if ($usuarioFiltro) {
-                    // Se o usuário tem CDMATRFUNCIONARIO preenchido, usar esse
-                    if ($usuarioFiltro->CDMATRFUNCIONARIO) {
-                        $query->where('CDMATRFUNCIONARIO', $usuarioFiltro->CDMATRFUNCIONARIO);
-                    } else {
-                        // Se não tem CDMATRFUNCIONARIO (pré-cadastrado), buscar por USUARIO (o login)
-                        $query->where('USUARIO', $usuarioFiltro->NMLOGIN);
-                    }
+                // Aceitamos tanto NMLOGIN (login) quanto CDMATRFUNCIONARIO (matrícula)
+                // Construir filtro tolerante: USUARIO = login OR CDMATRFUNCIONARIO = matrícula
+                $loginFiltro = null;
+                $cdFiltro = null;
+
+                if (is_numeric($valorFiltro)) {
+                    $cdFiltro = $valorFiltro;
+                    $usuarioFiltro = User::where('CDMATRFUNCIONARIO', $valorFiltro)->first();
+                    $loginFiltro = $usuarioFiltro->NMLOGIN ?? null;
                 } else {
-                    // Se não encontrar como usuário, tenta direto como CDMATRFUNCIONARIO (compatibilidade)
-                    $query->where('CDMATRFUNCIONARIO', $request->cadastrado_por);
+                    // valor parece ser um login (NMLOGIN)
+                    $loginFiltro = $valorFiltro;
+                    $usuarioFiltro = User::where('NMLOGIN', $valorFiltro)->first();
+                    $cdFiltro = $usuarioFiltro->CDMATRFUNCIONARIO ?? null;
                 }
+
+                $query->where(function ($q) use ($loginFiltro, $cdFiltro, $valorFiltro) {
+                    if ($loginFiltro) {
+                        $q->where('USUARIO', $loginFiltro);
+                    }
+                    if ($cdFiltro) {
+                        $q->orWhere('CDMATRFUNCIONARIO', $cdFiltro);
+                    }
+                    // também aceitar se o frontend enviou diretamente o CD como string
+                    if (is_numeric($valorFiltro)) {
+                        $q->orWhere('CDMATRFUNCIONARIO', $valorFiltro);
+                    }
+                });
             }
         }
 
