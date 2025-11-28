@@ -398,20 +398,13 @@ class RelatorioController extends Controller
         $path = storage_path('app/' . $fileName);
         $writer = SimpleExcelWriter::create($path);
 
-        // Cabeçalhos
-        $writer->addRow([
-            'Matrícula',
-            'Nome do Funcionário',
-            'Data de Admissão',
-            'Código do Cargo'
-        ]);
-
+        // Escreve cada linha como array associativo — chaves viram cabeçalhos automaticamente
         foreach ($funcionarios as $f) {
             $writer->addRow([
-                $f->CDMATRFUNCIONARIO,
-                $f->NMFUNCIONARIO,
-                $f->DTADMISSAO,
-                $f->CDCARGO,
+                'Matrícula' => $f->CDMATRFUNCIONARIO,
+                'Nome do Funcionário' => $f->NMFUNCIONARIO,
+                'Data de Admissão' => $f->DTADMISSAO,
+                'Código do Cargo' => $f->CDCARGO,
             ]);
         }
 
