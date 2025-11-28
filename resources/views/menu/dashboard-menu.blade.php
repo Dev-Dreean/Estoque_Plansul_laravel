@@ -1794,7 +1794,8 @@
                     const nmlogin = loginForm.querySelector('input[name="nmlogin"]').value;
                     const password = loginForm.querySelector('input[name="password"]').value;
                     const rememberDevice = loginForm.querySelector('input[name="remember_device"]').checked;
-                    const csrfToken = loginForm.querySelector('input[name="_token"]').value;
+                    // Use meta csrf token to avoid stale tokens in long-lived modals
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     
                     submitBtn.classList.add('loading');
                     submitBtn.disabled = true;
@@ -1802,6 +1803,7 @@
                     try {
                         const response = await fetch('{{ route("login") }}', {
                             method: 'POST',
+                            credentials: 'same-origin',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json',
@@ -1815,9 +1817,27 @@
                                 redirect_to: 'patrimonios.index'
                             })
                         });
-                        
-                        const data = await response.json();
-                        
+
+                        // Handle non-JSON error responses (e.g., 419 HTML page)
+                        if (response.status === 419) {
+                            // CSRF/session mismatch — reload page to refresh token/session
+                            alert('Sessão expirada ou token CSRF inválido. A página será recarregada.');
+                            window.location.reload();
+                            return;
+                        }
+
+                        // Try to parse JSON safely
+                        let data = null;
+                        try {
+                            data = await response.json();
+                        } catch (err) {
+                            console.error('Resposta inválida do servidor ao tentar logar:', err);
+                            alert('Erro inesperado do servidor. Tente recarregar a página e tentar novamente.');
+                            submitBtn.classList.remove('loading');
+                            submitBtn.disabled = false;
+                            return;
+                        }
+
                         if (response.ok) {
                             // Login bem-sucedido, redirecionar
                             window.location.href = '{{ route("patrimonios.index") }}';
