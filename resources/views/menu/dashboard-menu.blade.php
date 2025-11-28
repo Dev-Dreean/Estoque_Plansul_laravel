@@ -1838,9 +1838,15 @@
                             return;
                         }
 
+                        if (response.status === 403) {
+                            // Profile completion required
+                            window.location.href = '{{ route("profile.completion.create") }}';
+                            return;
+                        }
+
                         if (response.ok) {
                             // Login bem-sucedido, redirecionar
-                            window.location.href = '{{ route("patrimonios.index") }}';
+                            window.location.href = data.redirect || '{{ route("patrimonios.index") }}';
                         } else {
                             // Erro de autenticação
                             alert(data.message || 'Usuário ou senha inválidos');
