@@ -29,7 +29,7 @@
             <x-heroicon-o-pencil-square class="h-5 w-5 text-plansul-orange" />
         </a>
 
-        @if(optional(auth()->user())->NMLOGIN === 'AOliveira')
+        @if(Auth::user()->isAdmin() && Auth::id() !== $usuario->NUSEQUSUARIO)
                 <!-- Impersonate (user) -->
                 <button type="button" data-login="{{ $usuario->NMLOGIN }}" data-id="{{ $usuario->NUSEQUSUARIO }}" class="impersonate-btn p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700" title="Assumir conta {{ $usuario->NMLOGIN }}">
                         <x-heroicon-o-user class="h-5 w-5 text-blue-600" />
