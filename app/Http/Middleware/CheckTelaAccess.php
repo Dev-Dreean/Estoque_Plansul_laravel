@@ -30,9 +30,9 @@ class CheckTelaAccess
             return $next($request);
         }
 
-        // Usuário comum (USR) só pode acessar telas 1000, 1001 e 1007
+        // Usuário comum (USR) só pode acessar telas 1000, 1001, 1006 e 1007
         if ($user->PERFIL === User::PERFIL_USUARIO) {
-            $telasPermitidas = [1000, 1001, 1007];
+            $telasPermitidas = [1000, 1001, 1006, 1007];
             
             if ($nuseqtela !== null && !in_array($nuseqtela, $telasPermitidas)) {
                 if ($request->expectsJson()) {
