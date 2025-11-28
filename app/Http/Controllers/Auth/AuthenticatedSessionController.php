@@ -22,7 +22,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse|\Illuminate\Http\JsonResponse
+    public function store(LoginRequest $request)
     {
         $request->authenticate();
 
@@ -32,6 +32,13 @@ class AuthenticatedSessionController extends Controller
         // immediately to the profile completion flow before anywhere else.
         $user = $request->user();
         if ($user && ($user->must_change_password ?? false)) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Você deve completar seu perfil antes de continuar',
+                    'redirect' => route('profile.completion.create')
+                ], 403);
+            }
             return redirect()->route('profile.completion.create');
         }
 

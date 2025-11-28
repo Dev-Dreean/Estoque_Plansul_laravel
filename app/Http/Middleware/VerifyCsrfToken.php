@@ -21,12 +21,13 @@ class VerifyCsrfToken extends Middleware
     public function handle($request, \Closure $next)
     {
         // For JSON requests with X-CSRF-TOKEN header (fetch API from modals),
-        // ensure the token is available in the expected format
-        if (($request->isJson() || $request->expectsJson()) && $request->hasHeader('X-CSRF-TOKEN')) {
-            // Set the _token field for CSRF verification
-            $request->merge(['_token' => $request->header('X-CSRF-TOKEN')]);
-        }
-
+        // Laravel's CSRF verification checks multiple places:
+        // 1. _token in POST data
+        // 2. X-CSRF-TOKEN header
+        // 3. X-XSRF-TOKEN header
+        // The X-CSRF-TOKEN header should be checked by default, but let's ensure it works
+        
+        // If it's a JSON request with X-CSRF-TOKEN, it should work with parent::handle()
         return parent::handle($request, $next);
     }
 }
