@@ -555,7 +555,10 @@ class PatrimonioController extends Controller
                 strcasecmp($usuario, $nmUser) === 0
             );
 
-            if (!$isResp && !$isCreator) {
+            // Permitir que qualquer usuário veja lançamentos do SISTEMA
+            $isSistema = strcasecmp($usuario, 'SISTEMA') === 0;
+
+            if (!$isResp && !$isCreator && !$isSistema) {
                 // Usuário não tem permissão
                 Log::warning('Tentativa de acesso não autorizado a patrimônio', [
                     'user_id' => $user->id,
@@ -596,7 +599,9 @@ class PatrimonioController extends Controller
                     $query->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
                         // OU criador (USUARIO)
                         ->orWhere('USUARIO', $user->NMLOGIN)
-                        ->orWhere('USUARIO', $user->NOMEUSER);
+                        ->orWhere('USUARIO', $user->NOMEUSER)
+                        // OU criado pelo SISTEMA — visível a todos
+                        ->orWhere('USUARIO', 'SISTEMA');
                 })
                     ->select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO'])
                     ->get()
@@ -1155,12 +1160,9 @@ class PatrimonioController extends Controller
         }
         // Se status for vazio ou 'todos', não aplica filtro de status
 
-        // FILTRO ESSENCIAL: Excluir patrimônios sem descrição (DEPATRIMONIO vazio/null)
-        // Se não tiver nome do item, não deveria aparecer na tela de atribuição
-        $query->where(function ($q) {
-            $q->whereNotNull('DEPATRIMONIO')
-              ->where('DEPATRIMONIO', '<>', '');
-        });
+                // Observação: originalmente excluíamos patrimônios sem DEPATRIMONIO,
+                // mas a regra atual exige que TODOS os patrimônios cadastrados
+                // apareçam na tela de atribuição. Portanto, removemos esse filtro.
 
         // Aplicar filtros se fornecidos
         if ($request->filled('filtro_numero')) {
@@ -1218,6 +1220,25 @@ class PatrimonioController extends Controller
 
         Log::info('📊 Total de patrimônios após filtro: ' . $patrimonios->total() . ' (Página ' . $patrimonios->currentPage() . ')');
         Log::info('📋 Patrimônios nesta página: ' . count($patrimonios));
+
+        // Preencher descrições ausentes usando a tabela de objetos (consulta em lote)
+        $codes = $patrimonios->pluck('CODOBJETO')->filter()->unique()->values()->all();
+        if (!empty($codes)) {
+            $descMap = \App\Models\ObjetoPatr::whereIn('NUSEQOBJETO', $codes)
+                ->pluck('DEOBJETO', 'NUSEQOBJETO')
+                ->toArray();
+        } else {
+            $descMap = [];
+        }
+        foreach ($patrimonios as $p) {
+            // Prioridade: DEPATRIMONIO (campo), depois DEOBJETO via CODOBJETO, senão compor por Marca/Modelo/Série
+            $display = $p->DEPATRIMONIO ?: ($descMap[$p->CODOBJETO] ?? null);
+            if (empty($display)) {
+                $parts = array_filter([$p->MODELO ?? null, $p->MARCA ?? null, $p->NUSERIE ?? null, $p->COR ?? null]);
+                $display = $parts ? implode(' - ', $parts) : null;
+            }
+            $p->DEPATRIMONIO = $display ?: 'SEM DESCRIÇÃO';
+        }
 
         // Agrupar por NMPLANTA para exibição
         $patrimonios_grouped = $patrimonios->groupBy(function ($item) {
@@ -1277,6 +1298,24 @@ class PatrimonioController extends Controller
 
         Log::info('[atribuirCodigos] 📊 Total de patrimônios após filtro: ' . $patrimonios->total() . ' (Página ' . $patrimonios->currentPage() . ')');
         Log::info('[atribuirCodigos] 📋 Patrimônios nesta página: ' . count($patrimonios));
+
+        // Preencher descrições ausentes usando a tabela de objetos (consulta em lote)
+        $codes = $patrimonios->pluck('CODOBJETO')->filter()->unique()->values()->all();
+        if (!empty($codes)) {
+            $descMap = \App\Models\ObjetoPatr::whereIn('NUSEQOBJETO', $codes)
+                ->pluck('DEOBJETO', 'NUSEQOBJETO')
+                ->toArray();
+        } else {
+            $descMap = [];
+        }
+        foreach ($patrimonios as $p) {
+            $display = $p->DEPATRIMONIO ?: ($descMap[$p->CODOBJETO] ?? null);
+            if (empty($display)) {
+                $parts = array_filter([$p->MODELO ?? null, $p->MARCA ?? null, $p->NUSERIE ?? null, $p->COR ?? null]);
+                $display = $parts ? implode(' - ', $parts) : null;
+            }
+            $p->DEPATRIMONIO = $display ?: 'SEM DESCRIÇÃO';
+        }
 
         // Agrupar por NMPLANTA para exibição
         $patrimonios_grouped = $patrimonios->groupBy(function ($item) {
@@ -1536,8 +1575,10 @@ class PatrimonioController extends Controller
                 // Ver seus próprios registros
                 $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
                     ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser]);
-                
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser])
+                    // Também permitir visualização de lançamentos feitos pelo SISTEMA
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', ['SISTEMA']);
+
                 // Se é supervisor, ver também os registros dos supervisionados
                 if ($user->isSupervisor()) {
                     $supervisionados = $user->getSupervisionados();
@@ -1643,20 +1684,29 @@ class PatrimonioController extends Controller
                 ->get();
 
             return response()->json([
-                'data' => $patrimonios->map(function ($p) {
-                    return [
-                        'NUSEQPATR' => $p->NUSEQPATR,
-                        'NUPATRIMONIO' => $p->NUPATRIMONIO,
-                        'DEPATRIMONIO' => $p->DEPATRIMONIO,
-                        'NMPLANTA' => $p->NMPLANTA,
-                        'MODELO' => $p->MODELO,
-                        // Adiciona projeto associado se existir
-                        'projeto' => $p->local ? [
-                            'CDPROJETO' => $p->local->CDPROJETO ?? null,
-                            'NOMEPROJETO' => $p->local->NOMEPROJETO ?? null
-                        ] : null,
-                    ];
-                }),
+                'data' => $patrimonios->map(function ($p) use ($patrimonios) {
+                        // Preencher descrição a partir de objetopatr se necessário
+                        if (empty($p->DEPATRIMONIO) && !empty($p->CODOBJETO)) {
+                            $obj = \App\Models\ObjetoPatr::where('NUSEQOBJETO', $p->CODOBJETO)->first();
+                            if ($obj) $p->DEPATRIMONIO = $obj->DEOBJETO;
+                        }
+                        if (empty($p->DEPATRIMONIO)) {
+                            $parts = array_filter([$p->MODELO ?? null, $p->MARCA ?? null, $p->NUSERIE ?? null, $p->COR ?? null]);
+                            $p->DEPATRIMONIO = $parts ? implode(' - ', $parts) : 'SEM DESCRIÇÃO';
+                        }
+                        return [
+                            'NUSEQPATR' => $p->NUSEQPATR,
+                            'NUPATRIMONIO' => $p->NUPATRIMONIO,
+                            'DEPATRIMONIO' => $p->DEPATRIMONIO,
+                            'NMPLANTA' => $p->NMPLANTA,
+                            'MODELO' => $p->MODELO,
+                            // Adiciona projeto associado se existir
+                            'projeto' => $p->local ? [
+                                'CDPROJETO' => $p->local->CDPROJETO ?? null,
+                                'NOMEPROJETO' => $p->local->NOMEPROJETO ?? null
+                            ] : null,
+                        ];
+                    }),
                 'current_page' => $page,
                 'last_page' => ceil($total / $perPage),
                 'per_page' => $perPage,

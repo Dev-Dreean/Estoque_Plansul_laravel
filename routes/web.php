@@ -179,13 +179,13 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::get('/api/locais/buscar', [App\Http\Controllers\PatrimonioController::class, 'buscarLocais'])->name('api.locais.buscar');
     Route::get('/api/locais/{id}', [App\Http\Controllers\PatrimonioController::class, 'buscarLocalPorId'])->name('api.locais.por-id');
     Route::get('/api/locais/debug', [App\Http\Controllers\PatrimonioController::class, 'debugLocaisPorCodigo'])->name('api.locais.debug');
-    Route::post('/api/locais/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalVinculadoProjeto'])->name('api.locais.criar')->middleware('tela.access:1002');
-    Route::post('/api/locais/criar-novo', [App\Http\Controllers\PatrimonioController::class, 'criarNovoLocal'])->name('api.locais.criar-novo')->middleware('tela.access:1002');
-    Route::post('/api/locais-projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalProjeto'])->name('api.locais-projetos.criar')->middleware('tela.access:1002');
-    Route::post('/api/locais-projetos/criar-simples', [ProjetoController::class, 'criarSimples'])->name('api.locais-projetos.criar-simples')->middleware('tela.access:1002');
-    Route::post('/api/locais/criar-com-projeto', [App\Http\Controllers\PatrimonioController::class, 'criarLocalComProjeto'])->name('api.locais.criar-com-projeto')->middleware('tela.access:1002');
+    Route::post('/api/locais/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalVinculadoProjeto'])->name('api.locais.criar')->middleware('auth');
+    Route::post('/api/locais/criar-novo', [App\Http\Controllers\PatrimonioController::class, 'criarNovoLocal'])->name('api.locais.criar-novo')->middleware('auth');
+    Route::post('/api/locais-projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalProjeto'])->name('api.locais-projetos.criar')->middleware('auth');
+    Route::post('/api/locais-projetos/criar-simples', [ProjetoController::class, 'criarSimples'])->name('api.locais-projetos.criar-simples')->middleware('auth');
+    Route::post('/api/locais/criar-com-projeto', [App\Http\Controllers\PatrimonioController::class, 'criarLocalComProjeto'])->name('api.locais.criar-com-projeto')->middleware('auth');
     Route::get('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'getLocaisPorProjeto'])->name('api.locais');
-    Route::post('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'criarLocalPorProjeto'])->name('api.locais.criar-por-projeto')->middleware('tela.access:1002');
+    Route::post('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'criarLocalPorProjeto'])->name('api.locais.criar-por-projeto')->middleware('auth');
 
     // Rotas de Códigos (API)
     Route::get('/api/codigos/buscar/{codigo}', [PatrimonioController::class, 'buscarCodigoObjeto'])->name('api.codigos.buscar');
