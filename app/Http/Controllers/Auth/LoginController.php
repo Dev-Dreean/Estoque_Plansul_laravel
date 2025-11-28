@@ -26,7 +26,7 @@ class LoginController extends Controller
     }
 
     // Processa a tentativa de login
-    public function login(Request $request): RedirectResponse
+    public function login(Request $request)
     {
         $credentials = $request->validate([
             'NMLOGIN' => ['required', 'string'],
@@ -37,7 +37,25 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
+            
+            // Return JSON for fetch requests, HTML redirect for form submissions
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Login realizado com sucesso',
+                    'redirect' => $request->input('redirect_to') ? route($request->input('redirect_to')) : route('patrimonios.index')
+                ]);
+            }
+            
             return redirect()->intended('/admin');
+        }
+
+        // For JSON requests, return JSON error
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuário ou senha inválidos'
+            ], 401);
         }
 
         throw ValidationException::withMessages([
