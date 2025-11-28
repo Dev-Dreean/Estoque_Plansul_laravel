@@ -140,16 +140,33 @@ class Patrimonio extends Model
 
     public function getCadastradoPorNomeAttribute(): string
     {
+        $fullName = null;
+
         if ($this->relationLoaded('creator') && $this->creator && $this->creator->NOMEUSER) {
-            return $this->creator->NOMEUSER;
-        }
-        if (!empty($this->USUARIO)) {
+            $fullName = $this->creator->NOMEUSER;
+        } elseif (!empty($this->USUARIO)) {
             $cacheKey = 'login_nome_' . $this->USUARIO;
-            return Cache::remember($cacheKey, 300, function () {
+            $fullName = Cache::remember($cacheKey, 300, function () {
                 return optional(User::where('NMLOGIN', $this->USUARIO)->first())->NOMEUSER ?? $this->USUARIO;
             });
+        } else {
+            return 'SISTEMA';
         }
-        return 'SISTEMA';
+
+        // Formatação: apenas primeiro e último nome
+        if ($fullName && is_string($fullName)) {
+            $parts = preg_split('/\s+/', trim($fullName));
+            $parts = array_values(array_filter($parts));
+            if (count($parts) === 0) {
+                return $fullName;
+            } elseif (count($parts) === 1) {
+                return $parts[0];
+            } else {
+                return $parts[0] . ' ' . $parts[count($parts) - 1];
+            }
+        }
+
+        return $fullName ?? 'SISTEMA';
     }
 
     public function getDtaquisicaoPtBrAttribute(): ?string
