@@ -629,48 +629,26 @@ class PatrimonioController extends Controller
 
     /**
      * Autocomplete de projetos. Busca por código numérico parcial ou parte do nome.
-     * FILTRADO por permissões de usuário: retorna apenas projetos que o usuário criou ou é responsável por patrimônios.
      * Limite: 10 resultados para performance.
      */
     public function pesquisarProjetos(Request $request): JsonResponse
     {
-        $user = Auth::user();
         $termo = trim((string) $request->input('q', ''));
 
-        // Determinar quais projetos o usuário pode acessar
-        if ($user->PERFIL === 'SUP' || $user->PERFIL === 'ADM') {
-            // Admin vê todos
-            $projetosPermitidos = Tabfant::where('CDPROJETO', '!=', 0)
-                ->pluck('CDPROJETO')
-                ->toArray();
-        } else {
-            // Usuários comuns veem apenas projetos associados a patrimônios que criaram ou são responsáveis
-            $nmLogin = $user->NMLOGIN ?? '';
-            $nomeUser = $user->NOMEUSER ?? '';
-            
-            $projetosPermitidos = Patrimonio::where(function ($query) use ($user, $nmLogin, $nomeUser) {
-                $query->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nomeUser]);
-            })
-            ->where('CDPROJETO', '!=', 0)
-            ->distinct()
-            ->pluck('CDPROJETO')
-            ->toArray();
-        }
-
-        // Se não há projetos permitidos, retornar array vazio
-        if (empty($projetosPermitidos)) {
-            return response()->json([]);
-        }
-
-        // Buscar projetos permitidos (excluindo código 0 - "Não se aplica")
+        // Buscar todos os projetos (excluindo código 0 - "Não se aplica")
         $projetos = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
-            ->whereIn('CDPROJETO', $projetosPermitidos)
+            ->where('CDPROJETO', '!=', 0)  // Excluir código 0
             ->distinct()
             ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')  // Ordenação numérica
             ->get()
             ->toArray();
+
+        // Debug log
+        Log::debug('pesquisarProjetos', [
+            'termo' => $termo,
+            'total_projetos' => count($projetos),
+            'primeiros_projetos' => array_slice($projetos, 0, 5),
+        ]);
 
         // Se há termo numérico, aplicar busca inteligente por magnitude
         if ($termo !== '' && is_numeric($termo)) {
@@ -690,6 +668,13 @@ class PatrimonioController extends Controller
 
         // Limitar a 30 resultados
         $filtrados = array_slice($filtrados, 0, 30);
+
+        // Debug log final
+        Log::debug('pesquisarProjetos filtrado', [
+            'termo' => $termo,
+            'resultados' => count($filtrados),
+            'dados' => $filtrados,
+        ]);
 
         return response()->json($filtrados);
     }
@@ -773,55 +758,16 @@ class PatrimonioController extends Controller
 
     /**
      * Busca projetos associados a um local específico.
-     * FILTRADO por permissões de usuário: retorna apenas projetos que o usuário pode acessar.
      * Retorna os projetos vinculados ao local informado pelo cdlocal.
      */
     public function buscarProjetosPorLocal($cdlocal): JsonResponse
     {
         try {
-            $user = Auth::user();
-            
-            // Determinar quais projetos o usuário pode acessar
-            $projetosPermitidos = [];
-            if ($user->PERFIL === 'SUP' || $user->PERFIL === 'ADM') {
-                // Admin vê todos
-                $projetosPermitidos = Tabfant::where('CDPROJETO', '!=', 0)
-                    ->pluck('id')
-                    ->toArray();
-            } else {
-                // Usuários comuns veem apenas projetos associados a patrimônios que criaram ou são responsáveis
-                $nmLogin = $user->NMLOGIN ?? '';
-                $nomeUser = $user->NOMEUSER ?? '';
-                
-                $projetosPermitidos = Patrimonio::where(function ($query) use ($user, $nmLogin, $nomeUser) {
-                    $query->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
-                        ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
-                        ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nomeUser]);
-                })
-                ->where('CDPROJETO', '!=', 0)
-                ->distinct()
-                ->pluck('CDPROJETO')
-                ->toArray();
-            }
-
-            // Se não há projetos permitidos, retornar array vazio
-            if (empty($projetosPermitidos)) {
-                return response()->json([]);
-            }
-
-            // Buscar projetos do local específico que o usuário pode acessar
-            $isAdmin = $user->PERFIL === 'SUP' || $user->PERFIL === 'ADM';
+            // Buscar TODOS os projetos vinculados a este local
             $locaisProjetos = LocalProjeto::with('projeto')
                 ->where('cdlocal', $cdlocal)
                 ->where('flativo', true)
-                ->whereHas('projeto', function ($query) use ($projetosPermitidos, $isAdmin) {
-                    // Admin usa id, usuarios comuns usam CDPROJETO
-                    if ($isAdmin) {
-                        $query->whereIn('id', $projetosPermitidos);
-                    } else {
-                        $query->whereIn('CDPROJETO', $projetosPermitidos);
-                    }
-                })
+                ->whereHas('projeto')
                 ->get();
 
             $projetos = [];
