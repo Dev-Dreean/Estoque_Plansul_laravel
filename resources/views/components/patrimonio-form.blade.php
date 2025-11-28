@@ -887,7 +887,7 @@
       async search() {
         this.loadingSearch = true;
         try {
-          const response = await fetch(`/api/patrimonios/pesquisar?q=${this.searchTerm}`);
+          const response = await fetch(`/api/patrimonios/pesquisar?q=${this.searchTerm}`, { credentials: 'same-origin' });
           if (response.ok) this.searchResults = await response.json();
         } catch (error) {
           console.error('Erro na pesquisa:', error);
@@ -921,7 +921,7 @@
         console.log('='.repeat(80));
         console.log('📌 NUPATRIMONIO:', this.formData.NUPATRIMONIO);
         try {
-          const response = await fetch(`/api/patrimonios/buscar/${this.formData.NUPATRIMONIO}`);
+          const response = await fetch(`/api/patrimonios/buscar/${this.formData.NUPATRIMONIO}`, { credentials: 'same-origin' });
           if (response.ok) {
             const data = await response.json();
             console.log('\n📦 [BUSCAR PATRIMONIO] DADOS RECEBIDOS DA API:');
@@ -967,7 +967,7 @@
               // Buscar nome do projeto para exibir no campo
               try {
                 console.log(`  🔍 Buscando nome do projeto ${cdProjetoCorreto}...`);
-                const projetoResp = await fetch(`/api/projetos/pesquisar?q=${cdProjetoCorreto}`);
+                const projetoResp = await fetch(`/api/projetos/pesquisar?q=${cdProjetoCorreto}`, { credentials: 'same-origin' });
                 if (projetoResp.ok) {
                   const projetos = await projetoResp.json();
                   console.log(`  📦 Projetos retornados: ${projetos.length}`);
@@ -1016,7 +1016,7 @@
                 // Se não veio no eager loading, buscar via API
                 console.log(`  🔍 Objeto local não veio do eager loading, buscando via API...`);
                 try {
-                  const localResp = await fetch(`/api/locais/buscar?termo=`);
+                  const localResp = await fetch(`/api/locais/buscar?termo=`, { credentials: 'same-origin' });
                   if (localResp.ok) {
                     const todosLocais = await localResp.json();
                     console.log(`  📦 Total de locais retornados pela API: ${todosLocais.length}`);
@@ -1291,7 +1291,7 @@
         }
         this.loadingUsers = true;
         try {
-          const resp = await fetch(`/api/funcionarios/pesquisar?q=${encodeURIComponent(termo)}`);
+          const resp = await fetch(`/api/funcionarios/pesquisar?q=${encodeURIComponent(termo)}`, { credentials: 'same-origin' });
           if (resp.ok) {
             // Normalizamos campos para manter nomenclatura existente (NOMEUSER -> NMFUNCIONARIO)
             const data = await resp.json();
@@ -1473,7 +1473,9 @@
         this.loadingProjetos = true;
         try {
           // Busca todos os projetos que contenham o termo (no código ou nome)
-          const resp = await fetch(`/api/projetos/pesquisar?q=${encodeURIComponent(termo)}`);
+          const resp = await fetch(`/api/projetos/pesquisar?q=${encodeURIComponent(termo)}`, {
+            credentials: 'same-origin',
+          });
           if (resp.ok) {
             this.projetosDisponiveisList = await resp.json();
             this.highlightedProjetoIndex = this.projetosDisponiveisList.length > 0 ? 0 : -1;
@@ -1801,7 +1803,7 @@
           return;
         }
         try {
-          const r = await fetch(`/api/codigos/pesquisar?q=${encodeURIComponent(valor)}`);
+          const r = await fetch(`/api/codigos/pesquisar?q=${encodeURIComponent(valor)}`, { credentials: 'same-origin' });
           if (r.ok) {
             const data = await r.json();
             // Se encontrar resultados, seleciona o primeiro
@@ -1839,7 +1841,7 @@
         }
         this.loadingCodigos = true;
         try {
-          const resp = await fetch(`/api/codigos/pesquisar?q=${encodeURIComponent(termo)}`);
+          const resp = await fetch(`/api/codigos/pesquisar?q=${encodeURIComponent(termo)}`, { credentials: 'same-origin' });
           if (resp.ok) {
             this.codigosLista = await resp.json();
             this.highlightedCodigoIndex = this.codigosLista.length > 0 ? 0 : -1;
