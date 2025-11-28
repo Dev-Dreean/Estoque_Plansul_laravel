@@ -1139,18 +1139,8 @@ class PatrimonioController extends Controller
     {
         $query = Patrimonio::query();
 
-        // Filtra patrimônios por usuário (exceto Admin e Super Admin)
-        /** @var User|null $user */
-        $user = Auth::user();
-        if ($user && !$user->isGod() && ($user->PERFIL ?? null) !== 'ADM') {
-            $nmLogin = (string) ($user->NMLOGIN ?? '');
-            $nmUser  = (string) ($user->NOMEUSER ?? '');
-            $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
-                $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser]);
-            });
-        }
+        // Nota: Removido filtro por usuário para que todos os patrimônios
+        // apareçam na tela de atribuição de códigos (requisito de negócio).
 
         // Filtro por status - default volta a 'disponivel'
         $status = $request->get('status', 'disponivel');
@@ -1245,18 +1235,8 @@ class PatrimonioController extends Controller
     {
         $query = Patrimonio::query();
 
-        // Filtra patrimônios por usuário (exceto Admin e Super Admin)
-        /** @var User|null $user */
-        $user = Auth::user();
-        if ($user && !$user->isGod() && ($user->PERFIL ?? null) !== 'ADM') {
-            $nmLogin = (string) ($user->NMLOGIN ?? '');
-            $nmUser  = (string) ($user->NOMEUSER ?? '');
-            $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
-                $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser]);
-            });
-        }
+        // Nota: Removido filtro por usuário para que todos os patrimônios
+        // apareçam na página de atribuição de códigos (requisito do produto).
 
         $status = $request->get('status', 'disponivel');
         Log::info('[atribuirCodigos] 🔍 Filtro Status: ' . $status);
@@ -1652,16 +1632,9 @@ class PatrimonioController extends Controller
                 ->orWhere('NMPLANTA', '') // Ou código vazio
                 ->orderBy('NUPATRIMONIO', 'asc');
 
-            // 🔐 FILTRO DE SEGURANÇA: Se não for Admin/SuperAdmin, filtrar por permissões
-            if (!($user->PERFIL === 'SUP' || $user->PERFIL === 'ADM')) {
-                $query->where(function ($q) use ($user) {
-                    // Responsável pelo patrimônio
-                    $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
-                        // OU criador
-                        ->orWhere('USUARIO', $user->NMLOGIN)
-                        ->orWhere('USUARIO', $user->NOMEUSER);
-                });
-            }
+            // Nota: Removido filtro de segurança que restringia patrimônios
+            // para não-admins. Todos os patrimônios serão retornados para a
+            // listagem de disponibilidade/atribuição conforme regra de negócio.
 
             // Paginar manualmente
             $total = $query->count();
