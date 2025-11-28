@@ -170,21 +170,21 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::get('/api/projetos/nome/{codigo}', function ($codigo) {
         $p = \App\Models\Tabfant::where('CDPROJETO', $codigo)->first();
         return $p ? response()->json(['exists' => true, 'nome' => $p->NOMEPROJETO]) : response()->json(['exists' => false]);
-    })->middleware('tela.access:1002');
-    Route::get('/api/projetos/buscar/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'buscarProjeto'])->name('api.projetos.buscar')->middleware('tela.access:1002');
-    Route::get('/api/projetos/pesquisar', [App\Http\Controllers\PatrimonioController::class, 'pesquisarProjetos'])->name('api.projetos.pesquisar')->middleware('tela.access:1002');
-    Route::get('/api/projetos/por-local/{cdlocal}', [App\Http\Controllers\PatrimonioController::class, 'buscarProjetosPorLocal'])->name('api.projetos.por-local')->middleware('tela.access:1002');
+    });
+    Route::get('/api/projetos/buscar/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'buscarProjeto'])->name('api.projetos.buscar');
+    Route::get('/api/projetos/pesquisar', [App\Http\Controllers\PatrimonioController::class, 'pesquisarProjetos'])->name('api.projetos.pesquisar');
+    Route::get('/api/projetos/por-local/{cdlocal}', [App\Http\Controllers\PatrimonioController::class, 'buscarProjetosPorLocal'])->name('api.projetos.por-local');
     Route::post('/api/projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarProjeto'])->name('api.projetos.criar')->middleware('tela.access:1002');
     Route::post('/api/projetos/criar-associado', [App\Http\Controllers\PatrimonioController::class, 'criarProjetoAssociado'])->name('api.projetos.criar-associado')->middleware('tela.access:1002');
-    Route::get('/api/locais/buscar', [App\Http\Controllers\PatrimonioController::class, 'buscarLocais'])->name('api.locais.buscar')->middleware('tela.access:1002');
-    Route::get('/api/locais/{id}', [App\Http\Controllers\PatrimonioController::class, 'buscarLocalPorId'])->name('api.locais.por-id')->middleware('tela.access:1002');
-    Route::get('/api/locais/debug', [App\Http\Controllers\PatrimonioController::class, 'debugLocaisPorCodigo'])->name('api.locais.debug')->middleware('tela.access:1002');
+    Route::get('/api/locais/buscar', [App\Http\Controllers\PatrimonioController::class, 'buscarLocais'])->name('api.locais.buscar');
+    Route::get('/api/locais/{id}', [App\Http\Controllers\PatrimonioController::class, 'buscarLocalPorId'])->name('api.locais.por-id');
+    Route::get('/api/locais/debug', [App\Http\Controllers\PatrimonioController::class, 'debugLocaisPorCodigo'])->name('api.locais.debug');
     Route::post('/api/locais/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalVinculadoProjeto'])->name('api.locais.criar')->middleware('tela.access:1002');
     Route::post('/api/locais/criar-novo', [App\Http\Controllers\PatrimonioController::class, 'criarNovoLocal'])->name('api.locais.criar-novo')->middleware('tela.access:1002');
     Route::post('/api/locais-projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalProjeto'])->name('api.locais-projetos.criar')->middleware('tela.access:1002');
     Route::post('/api/locais-projetos/criar-simples', [ProjetoController::class, 'criarSimples'])->name('api.locais-projetos.criar-simples')->middleware('tela.access:1002');
     Route::post('/api/locais/criar-com-projeto', [App\Http\Controllers\PatrimonioController::class, 'criarLocalComProjeto'])->name('api.locais.criar-com-projeto')->middleware('tela.access:1002');
-    Route::get('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'getLocaisPorProjeto'])->name('api.locais')->middleware('tela.access:1002');
+    Route::get('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'getLocaisPorProjeto'])->name('api.locais');
     Route::post('/api/locais/{cdprojeto}', [App\Http\Controllers\PatrimonioController::class, 'criarLocalPorProjeto'])->name('api.locais.criar-por-projeto')->middleware('tela.access:1002');
 
     // Rotas de Códigos (API)
