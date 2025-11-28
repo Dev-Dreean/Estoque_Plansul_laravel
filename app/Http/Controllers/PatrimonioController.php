@@ -42,6 +42,85 @@ class PatrimonioController extends Controller
             // Evita erro 500 no front: retorna 404 genérico quando houver exceção não crítica
             return response()->json(['found' => false, 'message' => 'Código não encontrado.'], 404);
         }
+
+        // Aplicar filtros do formulário (Nº Patrimônio, Projeto, Descrição, Situação, Modelo, Cód. Termo, Responsável)
+        if ($request->filled('nupatrimonio')) {
+            $val = trim((string)$request->input('nupatrimonio'));
+            if ($val !== '') {
+                // aceitar busca exata por número (garantir inteiro quando for numérico)
+                if (is_numeric($val)) {
+                    $intVal = (int) $val;
+                    Log::info('[Filtro] nupatrimonio aplicado (int)', ['val' => $intVal]);
+                    $query->where('NUPATRIMONIO', $intVal);
+                } else {
+                    // se o usuário digitou algo que não é número, usar LIKE por segurança
+                    Log::info('[Filtro] nupatrimonio aplicado (like)', ['val' => $val]);
+                    $query->whereRaw('LOWER(NUPATRIMONIO) LIKE ?', ['%' . mb_strtolower($val) . '%']);
+                }
+            }
+        }
+
+        if ($request->filled('cdprojeto')) {
+            $val = trim((string)$request->input('cdprojeto'));
+            if ($val !== '') {
+                // alguns registros guardam CDPROJETO no próprio patr, outros via relação local
+                $query->where(function($q) use ($val) {
+                    $q->where('CDPROJETO', $val)
+                      ->orWhereHas('local.projeto', function($q2) use ($val) {
+                          $q2->where('CDPROJETO', $val);
+                      });
+                });
+            }
+        }
+
+        if ($request->filled('descricao')) {
+            $val = trim((string)$request->input('descricao'));
+            if ($val !== '') {
+                $like = '%' . mb_strtolower($val) . '%';
+                $query->whereRaw('LOWER(DEPATRIMONIO) LIKE ?', [$like]);
+            }
+        }
+
+        if ($request->filled('situacao')) {
+            $val = trim((string)$request->input('situacao'));
+            if ($val !== '') {
+                $query->where('SITUACAO', $val);
+            }
+        }
+
+        if ($request->filled('modelo')) {
+            $val = trim((string)$request->input('modelo'));
+            if ($val !== '') {
+                $query->whereRaw('LOWER(MODELO) LIKE ?', ['%' . mb_strtolower($val) . '%']);
+            }
+        }
+
+        if ($request->filled('nmplanta')) {
+            $val = trim((string)$request->input('nmplanta'));
+            if ($val !== '') {
+                $query->where('NMPLANTA', $val);
+            }
+        }
+
+        if ($request->filled('matr_responsavel')) {
+            $val = trim((string)$request->input('matr_responsavel'));
+            if ($val !== '') {
+                if (is_numeric($val)) {
+                    $query->where('CDMATRFUNCIONARIO', $val);
+                } else {
+                    // procurar usuário por login ou nome e usar matrícula
+                    $usuarioFiltro = User::where('NMLOGIN', $val)->orWhereRaw('LOWER(NOMEUSER) LIKE ?', ['%' . mb_strtolower($val) . '%'])->first();
+                    if ($usuarioFiltro) {
+                        $query->where('CDMATRFUNCIONARIO', $usuarioFiltro->CDMATRFUNCIONARIO);
+                    } else {
+                        // fallback: pesquisar por trecho no NOME do funcionário via relação 'funcionario' se existir
+                        $query->whereHas('funcionario', function($q) use ($val) {
+                            $q->whereRaw('LOWER(NOMEFUNCIONARIO) LIKE ?', ['%' . mb_strtolower($val) . '%']);
+                        });
+                    }
+                }
+            }
+        }
     }
 
     // Autocomplete de códigos de objeto (CODOBJETO)
@@ -100,6 +179,8 @@ class PatrimonioController extends Controller
 
     public function index(Request $request): View
     {
+        Log::info('🏠 [INDEX] Iniciado', ['user' => Auth::user()->NMLOGIN ?? null]);
+        
         // Consulta de patrimônios
         $query = $this->getPatrimoniosQuery($request);
 
@@ -109,6 +190,66 @@ class PatrimonioController extends Controller
         if ($perPage > 500) $perPage = 500;
 
         $patrimonios = $query->paginate($perPage)->withQueryString();
+        
+        Log::info('📈 [INDEX] Resultado', [
+            'total' => $patrimonios->total(),
+            'per_page' => $perPage,
+            'current_page' => $patrimonios->currentPage(),
+            'items_this_page' => count($patrimonios->items()),
+        ]);
+
+        // Detectar colunas que estão totalmente vazias na página atual
+        $items = $patrimonios->items();
+        $showEmpty = (bool) $request->input('show_empty_columns', false);
+
+        // Colunas candidatas a ocultação (chave => função que verifica se a linha tem valor)
+        $columnChecks = [
+            'NUMOF' => fn($p) => !blank($p->NUMOF),
+            'NUSERIE' => fn($p) => !blank($p->NUSERIE),
+            'MODELO' => fn($p) => !blank($p->MODELO),
+            'MARCA' => fn($p) => !blank($p->MARCA),
+            'NMPLANTA' => fn($p) => !blank($p->NMPLANTA),
+            'CDLOCAL' => fn($p) => !blank($p->local?->cdlocal),
+            'PROJETO' => fn($p) => (bool) ($p->local && $p->local->projeto),
+            'DTAQUISICAO' => fn($p) => !blank($p->DTAQUISICAO),
+            'DTOPERACAO' => fn($p) => !blank($p->DTOPERACAO),
+            'SITUACAO' => fn($p) => !blank($p->SITUACAO),
+            'CDMATRFUNCIONARIO' => fn($p) => !blank($p->CDMATRFUNCIONARIO),
+            'CADASTRADOR' => fn($p) => !blank($p->USUARIO) || !blank($p->creator?->NOMEUSER),
+        ];
+
+        $visibleColumns = [];
+        foreach ($columnChecks as $key => $check) {
+            $visible = false;
+            foreach ($items as $it) {
+                if ($check($it)) {
+                    $visible = true;
+                    break;
+                }
+            }
+            $visibleColumns[$key] = $visible;
+        }
+
+        // Lista de colunas ocultas (nomes legíveis)
+        $friendly = [
+            'NUMOF' => 'OF',
+            'NUSERIE' => 'Nº Série',
+            'MODELO' => 'Modelo',
+            'MARCA' => 'Marca',
+            'NMPLANTA' => 'Cód. Termo',
+            'CDLOCAL' => 'Código Local',
+            'PROJETO' => 'Projeto',
+            'DTAQUISICAO' => 'Dt. Aquisição',
+            'DTOPERACAO' => 'Dt. Cadastro',
+            'SITUACAO' => 'Situação',
+            'CDMATRFUNCIONARIO' => 'Responsável',
+            'CADASTRADOR' => 'Cadastrador',
+        ];
+
+        $hiddenColumns = [];
+        foreach ($visibleColumns as $k => $v) {
+            if (!$v) $hiddenColumns[] = $friendly[$k] ?? $k;
+        }
 
         // Busca usuários que têm patrimônios cadastrados (apenas Admin)
         $cadastradores = [];
@@ -178,6 +319,9 @@ class PatrimonioController extends Controller
             'filters' => $request->only(['descricao', 'situacao', 'modelo', 'cadastrado_por']),
             // Definimos ordenação padrão por Data de Aquisição crescente
             'sort' => ['column' => $request->input('sort', 'DTAQUISICAO'), 'direction' => $request->input('direction', 'asc')],
+            'visibleColumns' => $visibleColumns ?? [],
+            'hiddenColumns' => $hiddenColumns ?? [],
+            'showEmptyColumns' => $showEmpty,
         ]);
     }
 
@@ -1594,6 +1738,14 @@ class PatrimonioController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
+        
+        Log::info('📍 [getPatrimoniosQuery] INICIADO', [
+            'user_id' => $user->NUSEQUSUARIO ?? null,
+            'user_login' => $user->NMLOGIN ?? null,
+            'user_perfil' => $user->PERFIL ?? null,
+            'all_request_params' => $request->all(),
+        ]);
+        
         $query = Patrimonio::with(['funcionario', 'local.projeto', 'creator']);
 
         // Filtra patrimônios por usuário (exceto Admin e Super Admin)
@@ -1665,6 +1817,117 @@ class PatrimonioController extends Controller
                 }
             }
         }
+
+        // ========== APLICAR FILTROS ADICIONAIS ==========
+        Log::info('📊 [FILTROS] Antes de aplicar filtros', [
+            'nupatrimonio' => $request->input('nupatrimonio'),
+            'cdprojeto' => $request->input('cdprojeto'),
+            'descricao' => $request->input('descricao'),
+            'situacao' => $request->input('situacao'),
+            'modelo' => $request->input('modelo'),
+            'nmplanta' => $request->input('nmplanta'),
+            'matr_responsavel' => $request->input('matr_responsavel'),
+        ]);
+
+        if ($request->filled('nupatrimonio')) {
+            $val = trim((string)$request->input('nupatrimonio'));
+            if ($val !== '') {
+                if (is_numeric($val)) {
+                    $intVal = (int) $val;
+                    Log::info('✅ [FILTRO] nupatrimonio aplicado (INT)', ['val' => $intVal]);
+                    $query->where('NUPATRIMONIO', $intVal);
+                } else {
+                    Log::info('✅ [FILTRO] nupatrimonio aplicado (LIKE)', ['val' => $val]);
+                    $query->whereRaw('LOWER(CAST(NUPATRIMONIO AS CHAR)) LIKE ?', ['%' . mb_strtolower($val) . '%']);
+                }
+            } else {
+                Log::info('⚠️  [FILTRO] nupatrimonio vazio (não aplicado)');
+            }
+        }
+
+        if ($request->filled('cdprojeto')) {
+            $val = trim((string)$request->input('cdprojeto'));
+            if ($val !== '') {
+                Log::info('✅ [FILTRO] cdprojeto aplicado', ['val' => $val]);
+                $query->where(function($q) use ($val) {
+                    $q->where('CDPROJETO', $val)
+                      ->orWhereHas('local.projeto', function($q2) use ($val) {
+                          $q2->where('CDPROJETO', $val);
+                      });
+                });
+            } else {
+                Log::info('⚠️  [FILTRO] cdprojeto vazio (não aplicado)');
+            }
+        }
+
+        if ($request->filled('descricao')) {
+            $val = trim((string)$request->input('descricao'));
+            if ($val !== '') {
+                $like = '%' . mb_strtolower($val) . '%';
+                Log::info('✅ [FILTRO] descricao aplicado', ['val' => $val]);
+                $query->whereRaw('LOWER(DEPATRIMONIO) LIKE ?', [$like]);
+            } else {
+                Log::info('⚠️  [FILTRO] descricao vazio (não aplicado)');
+            }
+        }
+
+        if ($request->filled('situacao')) {
+            $val = trim((string)$request->input('situacao'));
+            if ($val !== '') {
+                Log::info('✅ [FILTRO] situacao aplicado', ['val' => $val]);
+                $query->where('SITUACAO', $val);
+            } else {
+                Log::info('⚠️  [FILTRO] situacao vazio (não aplicado)');
+            }
+        }
+
+        if ($request->filled('modelo')) {
+            $val = trim((string)$request->input('modelo'));
+            if ($val !== '') {
+                Log::info('✅ [FILTRO] modelo aplicado', ['val' => $val]);
+                $query->whereRaw('LOWER(MODELO) LIKE ?', ['%' . mb_strtolower($val) . '%']);
+            } else {
+                Log::info('⚠️  [FILTRO] modelo vazio (não aplicado)');
+            }
+        }
+
+        if ($request->filled('nmplanta')) {
+            $val = trim((string)$request->input('nmplanta'));
+            if ($val !== '') {
+                Log::info('✅ [FILTRO] nmplanta aplicado', ['val' => $val]);
+                $query->where('NMPLANTA', $val);
+            } else {
+                Log::info('⚠️  [FILTRO] nmplanta vazio (não aplicado)');
+            }
+        }
+
+        if ($request->filled('matr_responsavel')) {
+            $val = trim((string)$request->input('matr_responsavel'));
+            if ($val !== '') {
+                Log::info('✅ [FILTRO] matr_responsavel aplicado', ['val' => $val]);
+                if (is_numeric($val)) {
+                    $query->where('CDMATRFUNCIONARIO', $val);
+                } else {
+                    $usuarioFiltro = User::where('NMLOGIN', $val)->orWhereRaw('LOWER(NOMEUSER) LIKE ?', ['%' . mb_strtolower($val) . '%'])->first();
+                    if ($usuarioFiltro) {
+                        Log::info('👤 [FILTRO] matr_responsavel encontrado usuário', ['cdmatr' => $usuarioFiltro->CDMATRFUNCIONARIO, 'nmlogin' => $usuarioFiltro->NMLOGIN]);
+                        $query->where('CDMATRFUNCIONARIO', $usuarioFiltro->CDMATRFUNCIONARIO);
+                    } else {
+                        Log::info('❌ [FILTRO] matr_responsavel usuário NÃO encontrado', ['val' => $val]);
+                        $query->whereHas('funcionario', function($q) use ($val) {
+                            $q->whereRaw('LOWER(NOMEFUNCIONARIO) LIKE ?', ['%' . mb_strtolower($val) . '%']);
+                        });
+                    }
+                }
+            } else {
+                Log::info('⚠️  [FILTRO] matr_responsavel vazio (não aplicado)');
+            }
+        }
+
+        Log::info('📊 [QUERY] SQL gerada', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+        ]);
 
         // Priorizar lançamentos do usuário autenticado no topo, depois ordenar por DTOPERACAO desc
         try {

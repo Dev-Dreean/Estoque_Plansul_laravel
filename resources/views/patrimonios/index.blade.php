@@ -170,18 +170,82 @@
         <div class="section">
           <div class="section-body max-w-full">
 
+            {{-- Mensagem sobre colunas ocultas por falta de dados --}}
+            @php
+              $visibleColumns = $visibleColumns ?? [];
+              $hiddenColumns = $hiddenColumns ?? [];
+              $showEmpty = $showEmptyColumns ?? false;
+            @endphp
+            @if(!empty($hiddenColumns) && !$showEmpty)
+              <div class="mb-4 p-3 rounded-md bg-yellow-50 border border-yellow-200 text-yellow-800">
+                <strong>Colunas ocultas:</strong>
+                <span>{{ implode(', ', $hiddenColumns) }}</span>
+                <span class="ml-3">(ocultas porque não há informações nesta página)</span>
+                <a href="{{ request()->fullUrlWithQuery(['show_empty_columns' => 1]) }}" class="ml-4 underline font-semibold">Mostrar colunas vazias</a>
+              </div>
+            @elseif(!empty($hiddenColumns) && $showEmpty)
+              <div class="mb-4 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800">
+                <strong>Exibindo colunas vazias:</strong>
+                <span>{{ implode(', ', $hiddenColumns) }}</span>
+                <a href="{{ request()->fullUrlWithQuery(['show_empty_columns' => 0]) }}" class="ml-4 underline font-semibold">Ocultar novamente</a>
+              </div>
+            @endif
+
             {{-- Formulário de Filtro --}}
-            <div x-data="{ open: false }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6" x-id="['filtro-patrimonios']" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimonios')">
-              <div class="flex justify-between items-center">
-                <h3 class="font-semibold text-lg">Filtros de Busca</h3>
-                <button type="button" @click="open = !open" aria-expanded="open" aria-controls="$id('filtro-patrimonios')" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <div x-data="{ open: false }" @click.outside="open = false" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6" x-id="['filtro-patrimonios']" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimonios')">
+              <div class="flex justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                  <h3 class="font-semibold text-lg">Filtros de Busca</h3>
+                  {{-- Badges que mostram filtros ativos quando o painel está recolhido --}}
+                  <div x-cloak x-show="!open" class="flex items-center gap-2 ml-3">
+                    @php
+                      // Não incluir 'per_page' entre os filtros visíveis
+                      $filterKeys = ['nupatrimonio','cdprojeto','descricao','situacao','modelo','nmplanta','matr_responsavel','cadastrado_por'];
+
+                      // Cores por filtro para badges mais agradáveis
+                      $badgeColors = [
+                        'nupatrimonio' => 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700',
+                        'cdprojeto' => 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700',
+                        'descricao' => 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700',
+                        'situacao' => 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700',
+                        'modelo' => 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700',
+                        'nmplanta' => 'bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-700',
+                        'matr_responsavel' => 'bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-700',
+                        'cadastrado_por' => 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700',
+                      ];
+                    @endphp
+                    @foreach($filterKeys as $k)
+                      @if(request()->filled($k))
+                        @php
+                          $labelsMap = [
+                            'nupatrimonio' => 'Nº Patr.',
+                            'cdprojeto' => 'Cód. Projeto',
+                            'descricao' => 'Descrição',
+                            'situacao' => 'Situação',
+                            'modelo' => 'Modelo',
+                            'nmplanta' => 'Cód. Termo',
+                            'matr_responsavel' => 'Responsável',
+                            'cadastrado_por' => 'Cadastrador',
+                          ];
+                          $label = $labelsMap[$k] ?? str_replace('_',' ',ucfirst($k));
+                          $value = request($k);
+                        @endphp
+                        <a href="{{ route('patrimonios.index', request()->except($k)) }}" class="inline-flex items-center text-xs px-2 py-1 rounded-full border hover:opacity-90 {{ $badgeColors[$k] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700' }}">
+                          <span class="truncate max-w-[120px]">{{ $label }}: {{ Str::limit((string)$value, 24) }}</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6.293 7.293a1 1 0 011.414 0L10 9.586l2.293-2.293a1 1 0 111.414 1.414L11.414 11l2.293 2.293a1 1 0 01-1.414 1.414L10 12.414l-2.293 2.293a1 1 0 01-1.414-1.414L8.586 11 6.293 8.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                        </a>
+                      @endif
+                    @endforeach
+                  </div>
+                </div>
+                <button type="button" @click="open = !open" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimonios')" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                   </svg>
                   <span class="sr-only">Expandir filtros</span>
                 </button>
               </div>
-              <div x-show="open" x-transition class="mt-4" style="display: none;" :id="$id('filtro-patrimonios')">
+              <div x-cloak x-show="open" x-transition class="mt-4" :id="$id('filtro-patrimonios')">
                 <form method="GET" action="{{ route('patrimonios.index') }}" @submit="open=false">
                   <div class="grid gap-3 sm:gap-4" style="grid-template-columns: repeat(auto-fit,minmax(150px,1fr));">
                     <div>
@@ -293,20 +357,42 @@
                   @endphp
                   <tr class="divide-x divide-gray-200 dark:divide-gray-700">
                     <th class="px-2 py-2">Nº Pat.</th>
+                    @if(($visibleColumns['NUMOF'] ?? true) || $showEmpty)
                     <th class="px-2 py-2">OF</th>
+                    @endif
                     <th class="px-2 py-2">Cód. Objeto</th>
+                    @if(($visibleColumns['NMPLANTA'] ?? true) || $showEmpty)
                     <th class="px-2 py-2">Cód. Termo</th>
+                    @endif
+                    @if(($visibleColumns['NUSERIE'] ?? true) || $showEmpty)
                     <th class="px-2 py-2">Nº Série</th>
+                    @endif
+                    @if(($visibleColumns['PROJETO'] ?? true) || $showEmpty)
                     <th class="px-2 py-2">Projeto Associado</th>
+                    @endif
+                    @if(($visibleColumns['CDLOCAL'] ?? true) || $showEmpty)
                     <th class="px-2 py-2">Código Local</th>
+                    @endif
+                    @if(($visibleColumns['MODELO'] ?? true) || $showEmpty)
                     <th class="px-2 py-2">Modelo</th>
+                    @endif
+                    @if(($visibleColumns['MARCA'] ?? true) || $showEmpty)
                     <th class="px-2 py-2">Marca</th>
+                    @endif
                     <th class="px-2 py-2">Descrição</th>
                     <th class="px-2 py-2 text-xs">Situação</th>
+                    @if(($visibleColumns['DTAQUISICAO'] ?? true) || $showEmpty)
                     <th class="px-2 py-2">Dt. Aquisição</th>
+                    @endif
+                    @if(($visibleColumns['DTOPERACAO'] ?? true) || $showEmpty)
                     <th class="px-2 py-2">Dt. Cadastro</th>
+                    @endif
+                    @if(($visibleColumns['CDMATRFUNCIONARIO'] ?? true) || $showEmpty)
                     <th class="px-2 py-2">Responsavel</th>
+                    @endif
+                    @if(($visibleColumns['CADASTRADOR'] ?? true) || $showEmpty)
                     <th class="px-2 py-2">Cadastrador</th>
+                    @endif
                     @if(Auth::user()->isAdmin())
                     <th class="px-2 py-2">Ações</th>
                     @endif
@@ -318,12 +404,19 @@
 
                   {{-- A ordem agora está 100% correta para corresponder ao seu thead --}}
                   <td class="px-2 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
+                  @if(($visibleColumns['NUMOF'] ?? true) || $showEmpty)
                   <td class="px-2 py-2">{{ $patrimonio->NUMOF ?? '—' }}</td>
+                  @endif
                   <td class="px-2 py-2">{{ $patrimonio->CODOBJETO ?? '—' }}</td>
+                  @if(($visibleColumns['NMPLANTA'] ?? true) || $showEmpty)
                   <td class="px-2 py-2 font-bold">{{ $patrimonio->NMPLANTA ?? '—' }}</td>
+                  @endif
+                  @if(($visibleColumns['NUSERIE'] ?? true) || $showEmpty)
                   <td class="px-2 py-2">{{ $patrimonio->NUSERIE ?? '—' }}</td>
+                  @endif
 
                   {{-- Projeto Associado: Código Projeto + Nome Projeto --}}
+                  @if(($visibleColumns['PROJETO'] ?? true) || $showEmpty)
                   <td class="px-2 py-2">
                     @if($patrimonio->local && $patrimonio->local->projeto)
                     <div class="leading-tight">
@@ -334,8 +427,10 @@
                     <span class="text-gray-400 text-[10px]">—</span>
                     @endif
                   </td>
+                  @endif
 
                   {{-- Código Local: Dinâmico com código + nome do local --}}
+                  @if(($visibleColumns['CDLOCAL'] ?? true) || $showEmpty)
                   <td class="px-2 py-2">
                     @if($patrimonio->local)
                     <div class="leading-tight">
@@ -346,10 +441,24 @@
                     <span class="text-gray-400 text-[10px]">—</span>
                     @endif
                   </td>
+                  @endif
 
+                  @if(($visibleColumns['MODELO'] ?? true) || $showEmpty)
                   <td class="px-2 py-2 truncate max-w-[90px]">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,12,'...') : '—' }}</td>
+                  @endif
+                  @if(($visibleColumns['MARCA'] ?? true) || $showEmpty)
                   <td class="px-2 py-2 truncate max-w-[90px]">{{ $patrimonio->MARCA ?? '—' }}</td>
-                  <td class="px-2 py-2 font-medium text-gray-900 dark:text-white truncate max-w-[200px]">{{ $patrimonio->DEPATRIMONIO ? Str::limit($patrimonio->DEPATRIMONIO,40,'...') : '—' }}</td>
+                  @endif
+                  @php $desc = trim((string)($patrimonio->DEPATRIMONIO ?? '')); @endphp
+                  <td class="px-2 py-2 font-medium text-gray-900 dark:text-white max-w-[200px]">
+                    @if($desc !== '')
+                      <div title="{{ $desc }}" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;line-clamp:2;-webkit-box-orient:vertical;">
+                        {{ $desc }}
+                      </div>
+                    @else
+                      <span class="text-gray-400">—</span>
+                    @endif
+                  </td>
                   <td class="px-2 py-2">
                     @php
                       $situacao = $patrimonio->SITUACAO ?? '';
@@ -388,8 +497,13 @@
                       <span class="text-gray-400">—</span>
                     @endif
                   </td>
+                  @if(($visibleColumns['DTAQUISICAO'] ?? true) || $showEmpty)
                   <td class="px-2 py-2">{{ $patrimonio->dtaquisicao_pt_br ?? '—' }}</td>
+                  @endif
+                  @if(($visibleColumns['DTOPERACAO'] ?? true) || $showEmpty)
                   <td class="px-2 py-2">{{ $patrimonio->dtoperacao_pt_br ?? '—' }}</td>
+                  @endif
+                  @if(($visibleColumns['CDMATRFUNCIONARIO'] ?? true) || $showEmpty)
                   <td class="px-2 py-2">
                     @if($patrimonio->CDMATRFUNCIONARIO)
                     <div class="leading-tight">
@@ -400,7 +514,10 @@
                     <span class="text-gray-400 text-[10px]">—</span>
                     @endif
                   </td>
+                  @endif
+                  @if(($visibleColumns['CADASTRADOR'] ?? true) || $showEmpty)
                   <td class="px-2 py-2 truncate max-w-[100px]">{{ $patrimonio->cadastrado_por_nome ?? '—' }}</td>
+                  @endif
 
                   @if(Auth::user()->isAdmin())
                   <td class="px-2 py-2">
