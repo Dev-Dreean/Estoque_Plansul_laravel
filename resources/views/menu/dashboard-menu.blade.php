@@ -1458,7 +1458,7 @@
                 </div>
 
                 <!-- Logout Button -->
-                <form action="{{ route('logout') }}" method="POST" style="width: 100%; max-width: 800px; margin-top: 20px;">
+                <form id="logoutForm" action="{{ route('logout') }}" method="POST" style="width: 100%; max-width: 800px; margin-top: 20px;">
                     @csrf
                     <button type="submit" class="logout-btn-full">
                         <i class="fas fa-sign-out-alt"></i>
@@ -1941,6 +1941,31 @@
             hideLoadingModal();
         });
         
+        // Ensure logout form uses the current CSRF token (prevents 419 when session/token changed)
+        document.addEventListener('submit', function(e) {
+            try {
+                const form = e.target;
+                if (!form) return;
+                // target the logout form by id or action
+                const isLogout = form.id === 'logoutForm' || (form.getAttribute && form.getAttribute('action') && form.getAttribute('action').includes('/logout'));
+                if (!isLogout) return;
+
+                const meta = document.querySelector('meta[name="csrf-token"]');
+                if (!meta) return;
+                const token = meta.getAttribute('content');
+                let tokenInput = form.querySelector('input[name="_token"]');
+                if (!tokenInput) {
+                    tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '_token';
+                    form.appendChild(tokenInput);
+                }
+                tokenInput.value = token;
+            } catch (err) {
+                console.warn('Erro ao atualizar token CSRF no logout:', err);
+            }
+        });
+
     </script>
 
     <!-- Loading Modal -->
