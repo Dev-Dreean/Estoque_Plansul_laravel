@@ -1536,7 +1536,7 @@
                 <div class="form-group">
                     <input 
                         type="text" 
-                        name="nmlogin" 
+                        name="NMLOGIN" 
                         class="form-input" 
                         placeholder="Digite seu usuário"
                         required 
