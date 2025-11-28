@@ -127,7 +127,37 @@ class PatrimonioController extends Controller
                     'NMLOGIN' => $user->NMLOGIN,
                 ];
             })->values();
+        } else {
+            // Usuário normal: expor apenas ele mesmo e a opção SISTEMA
+            $cadastradores = collect([
+                (object) [
+                    'CDMATRFUNCIONARIO' => $currentUser->CDMATRFUNCIONARIO,
+                    'NOMEUSER' => $currentUser->NOMEUSER,
+                    'NMLOGIN' => $currentUser->NMLOGIN,
+                ],
+                (object) [
+                    'CDMATRFUNCIONARIO' => null,
+                    'NOMEUSER' => 'Sistema',
+                    'NMLOGIN' => 'SISTEMA',
+                ],
+            ]);
         }
+
+        // Garantir que exista apenas uma entrada 'SISTEMA' (case-insensitive) e colocá-la no topo
+        $systemEntry = (object) [
+            'CDMATRFUNCIONARIO' => null,
+            'NOMEUSER' => 'Sistema',
+            'NMLOGIN' => 'SISTEMA',
+        ];
+
+        $cadastradores = collect($cadastradores ?? []);
+        // Remover qualquer ocorrência pré-existente de 'SISTEMA' (case-insensitive)
+        $cadastradores = $cadastradores->filter(function ($u) {
+            return strtoupper(trim((string) ($u->NMLOGIN ?? ''))) !== 'SISTEMA';
+        })->values();
+
+        // Prepend a entrada única 'SISTEMA' no topo
+        $cadastradores = $cadastradores->prepend($systemEntry)->values();
 
         // Busca locais para modal de relatório
         $locais = Tabfant::select('id as codigo', 'LOCAL as descricao')
@@ -1570,86 +1600,69 @@ class PatrimonioController extends Controller
         if (!$user->isGod() && $user->PERFIL !== 'ADM') {
             $nmLogin = (string) ($user->NMLOGIN ?? '');
             $nmUser  = (string) ($user->NOMEUSER ?? '');
-            
+
+            // Usuário normal vê: seus registros (por matrícula ou login) e lançamentos do SISTEMA
             $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
-                // Ver seus próprios registros
                 $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
                     ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
                     ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser])
-                    // Também permitir visualização de lançamentos feitos pelo SISTEMA
                     ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', ['SISTEMA']);
+            });
+        }
 
-                // Se é supervisor, ver também os registros dos supervisionados
-                if ($user->isSupervisor()) {
-                    $supervisionados = $user->getSupervisionados();
-                    if (!empty($supervisionados)) {
-                        $q->orWhereIn('USUARIO', $supervisionados);
-                    }
-                }
-            });
-        }
-        if ($request->filled('nupatrimonio')) {
-            $query->where('NUPATRIMONIO', $request->nupatrimonio);
-        }
-        if ($request->filled('cdprojeto')) {
-            $query->where('CDPROJETO', $request->cdprojeto);
-        }
-        if ($request->filled('descricao')) {
-            $query->where('DEPATRIMONIO', 'like', '%' . $request->descricao . '%');
-        }
-        if ($request->filled('situacao')) {
-            $query->where('SITUACAO', 'like', '%' . $request->situacao . '%');
-        }
-        if ($request->filled('modelo')) {
-            $query->where('MODELO', 'like', '%' . $request->modelo . '%');
-        }
-        if ($request->filled('nmplanta')) {
-            $query->where('NMPLANTA', $request->nmplanta);
-        }
-        // Filtro por matrícula do responsável (CDMATRFUNCIONARIO)
-        if ($request->filled('matr_responsavel')) {
-            $query->where('CDMATRFUNCIONARIO', $request->matr_responsavel);
-        }
-        // Filtro por matrícula do cadastrador (USUARIO)
-        if ($request->filled('matr_cadastrador')) {
-            $query->whereHas('creator', function ($q) use ($request) {
-                $q->where('CDMATRFUNCIONARIO', $request->matr_cadastrador);
-            });
-        }
-        // Filtro por cadastrante (apenas Admin e Super Admin)
-        if ($request->filled('cadastrado_por') && ($user->isGod() || $user->PERFIL === 'ADM')) {
-            $valorFiltro = $request->cadastrado_por;
-            if ($valorFiltro === 'SISTEMA') {
-                $query->whereNull('USUARIO');
+        // Filtro opcional por cadastrador (aceita NMLOGIN ou matrícula)
+        if ($request->filled('cadastrado_por')) {
+            $valorFiltro = $request->input('cadastrado_por');
+
+            // Valor especial para restaurar comportamento antigo: não aplicar filtro
+            if (trim((string)$valorFiltro) === '__TODOS__') {
+                // não filtrar
             } else {
-                // Aceitamos tanto NMLOGIN (login) quanto CDMATRFUNCIONARIO (matrícula)
-                // Construir filtro tolerante: USUARIO = login OR CDMATRFUNCIONARIO = matrícula
-                $loginFiltro = null;
-                $cdFiltro = null;
-
-                if (is_numeric($valorFiltro)) {
-                    $cdFiltro = $valorFiltro;
-                    $usuarioFiltro = User::where('CDMATRFUNCIONARIO', $valorFiltro)->first();
-                    $loginFiltro = $usuarioFiltro->NMLOGIN ?? null;
-                } else {
-                    // valor parece ser um login (NMLOGIN)
-                    $loginFiltro = $valorFiltro;
-                    $usuarioFiltro = User::where('NMLOGIN', $valorFiltro)->first();
-                    $cdFiltro = $usuarioFiltro->CDMATRFUNCIONARIO ?? null;
+                // Se usuário NÃO for Admin/SUP, só permita filtrar por ele mesmo ou por SISTEMA
+                if (!($user->isGod() || $user->PERFIL === 'ADM')) {
+                    $allowed = [strtoupper(trim((string)($user->NMLOGIN ?? ''))), 'SISTEMA'];
+                    if (!empty($user->CDMATRFUNCIONARIO)) {
+                        $allowed[] = (string)$user->CDMATRFUNCIONARIO;
+                    }
+                    if (!in_array(strtoupper(trim((string)$valorFiltro)), array_map('strtoupper', $allowed))) {
+                        // valor não permitido para este usuário; ignorar filtro
+                        $valorFiltro = null;
+                    }
                 }
 
-                $query->where(function ($q) use ($loginFiltro, $cdFiltro, $valorFiltro) {
-                    if ($loginFiltro) {
-                        $q->where('USUARIO', $loginFiltro);
+                if ($valorFiltro) {
+                    if (strcasecmp($valorFiltro, 'SISTEMA') === 0) {
+                        $query->where(function($q) {
+                            $q->whereNull('USUARIO')
+                              ->orWhere('USUARIO', 'SISTEMA');
+                        });
+                    } else {
+                        $loginFiltro = null;
+                        $cdFiltro = null;
+
+                        if (is_numeric($valorFiltro)) {
+                            $cdFiltro = $valorFiltro;
+                            $usuarioFiltro = User::where('CDMATRFUNCIONARIO', $valorFiltro)->first();
+                            $loginFiltro = $usuarioFiltro->NMLOGIN ?? null;
+                        } else {
+                            $loginFiltro = $valorFiltro;
+                            $usuarioFiltro = User::where('NMLOGIN', $valorFiltro)->first();
+                            $cdFiltro = $usuarioFiltro->CDMATRFUNCIONARIO ?? null;
+                        }
+
+                        $query->where(function ($q) use ($loginFiltro, $cdFiltro, $valorFiltro) {
+                            if ($loginFiltro) {
+                                $q->where('USUARIO', $loginFiltro);
+                            }
+                            if ($cdFiltro) {
+                                $q->orWhere('CDMATRFUNCIONARIO', $cdFiltro);
+                            }
+                            if (is_numeric($valorFiltro)) {
+                                $q->orWhere('CDMATRFUNCIONARIO', $valorFiltro);
+                            }
+                        });
                     }
-                    if ($cdFiltro) {
-                        $q->orWhere('CDMATRFUNCIONARIO', $cdFiltro);
-                    }
-                    // também aceitar se o frontend enviou diretamente o CD como string
-                    if (is_numeric($valorFiltro)) {
-                        $q->orWhere('CDMATRFUNCIONARIO', $valorFiltro);
-                    }
-                });
+                }
             }
         }
 

@@ -210,11 +210,10 @@
                         value="{{ request('matr_responsavel') }}"
                       />
                     </div>
-                    @if (Auth::user()->PERFIL === 'ADM')
                     <div>
                       <select name="cadastrado_por" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
                         <option value="">Usuário</option>
-                        <option value="SISTEMA" @selected(request('cadastrado_por')==='SISTEMA' )>Sistema</option>
+                        {{-- Opcional: opção legada para restaurar o comportamento antigo (mostrar todos) --}}
                         @foreach ($cadastradores as $cadastrador)
                         <option value="{{ $cadastrador->NMLOGIN }}" @selected(request('cadastrado_por')==$cadastrador->NMLOGIN)>
                           {{ Str::limit($cadastrador->NOMEUSER,18) }}
@@ -222,7 +221,6 @@
                         @endforeach
                       </select>
                     </div>
-                    @endif
                   </div>
 
                   <div class="flex flex-wrap items-center justify-between mt-4 gap-4">
