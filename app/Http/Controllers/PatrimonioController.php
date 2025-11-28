@@ -1639,7 +1639,19 @@ class PatrimonioController extends Controller
             }
         }
 
-        // Permitir ordenar também por DTAQUISICAO
+        // Priorizar lançamentos do usuário autenticado no topo, depois ordenar por DTOPERACAO desc
+        try {
+            $nmLogin = (string) ($user->NMLOGIN ?? '');
+            $cdMatr = $user->CDMATRFUNCIONARIO ?? null;
+            // CASE: 0 para registros do usuário (por login ou matrícula), 1 para outros
+            $query->orderByRaw("CASE WHEN LOWER(USUARIO) = LOWER(?) OR CDMATRFUNCIONARIO = ? THEN 0 ELSE 1 END", [$nmLogin, $cdMatr]);
+            $query->orderBy('DTOPERACAO', 'desc');
+        } catch (\Throwable $e) {
+            // se algo falhar, não interromper; continuar com ordenação padrão
+            Log::warning('Falha ao aplicar ordenação por usuário/DTOPERACAO: ' . $e->getMessage());
+        }
+
+        // Permitir ordenar também por DTAQUISICAO (ordena após a prioridade do usuário)
         $sortableColumns = ['NUPATRIMONIO', 'MODELO', 'DEPATRIMONIO', 'SITUACAO', 'DTAQUISICAO'];
         $sortColumn = $request->input('sort', 'DTAQUISICAO');
         $sortDirection = $request->input('direction', 'asc');

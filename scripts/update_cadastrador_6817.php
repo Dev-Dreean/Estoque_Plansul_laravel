@@ -18,19 +18,19 @@ $login = 'BEA.SC';
 $numeroPatrimonio = 6817;
 
 $user = User::where('NMLOGIN', $login)->first();
-if (!\$user) {
+if (!$user) {
     echo "Usuário '{$login}' não encontrado. Abortando.\n";
     exit(1);
 }
 
 // Procurar pelo patrimônio pelo número (NUPATRIMONIO)
 $patr = Patrimonio::where('NUPATRIMONIO', $numeroPatrimonio)->first();
-if (!\$patr) {
+if (!$patr) {
     // Tentar por NUSEQPATR caso o número informado seja a PK
     $patr = Patrimonio::where('NUSEQPATR', $numeroPatrimonio)->first();
 }
 
-if (!\$patr) {
+if (!$patr) {
     echo "Patrimônio com número {$numeroPatrimonio} não encontrado. Verifique o número.\n";
     exit(1);
 }
