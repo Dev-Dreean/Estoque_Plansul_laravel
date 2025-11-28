@@ -1643,6 +1643,22 @@ class PatrimonioController extends Controller
         $sortableColumns = ['NUPATRIMONIO', 'MODELO', 'DEPATRIMONIO', 'SITUACAO', 'DTAQUISICAO'];
         $sortColumn = $request->input('sort', 'DTAQUISICAO');
         $sortDirection = $request->input('direction', 'asc');
+        
+        // Priorizar registros criados pelo usuário atual (aparecem no topo)
+        try {
+            if (!empty($user)) {
+                $nmLoginLower = strtolower((string) ($user->NMLOGIN ?? ''));
+                $nmUserLower = strtolower((string) ($user->NOMEUSER ?? ''));
+                $cdMatr = $user->CDMATRFUNCIONARIO ?? 0;
+                $ownerExpr = "(CASE WHEN CDMATRFUNCIONARIO = ? OR LOWER(USUARIO) = ? OR LOWER(USUARIO) = ? THEN 1 ELSE 0 END)";
+                $query->orderByRaw($ownerExpr . " DESC", [$cdMatr, $nmLoginLower, $nmUserLower]);
+                // Dentro do grupo do usuário, ordenar por data de operação mais recente
+                $query->orderBy('DTOPERACAO', 'desc');
+            }
+        } catch (\Throwable $e) {
+            // Se algo falhar na expressão de ordenação, continuar com ordenação padrão
+            \Illuminate\Support\Facades\Log::warning('Ordenação priorizando usuário falhou: ' . $e->getMessage());
+        }
         if (in_array($sortColumn, $sortableColumns)) {
             $query->orderBy($sortColumn, $sortDirection);
         } else {
