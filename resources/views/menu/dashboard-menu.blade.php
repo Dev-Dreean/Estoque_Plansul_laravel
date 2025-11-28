@@ -1787,43 +1787,72 @@
 
             const loginForm = document.getElementById("loginModalForm");
             if (loginForm) {
-                loginForm.addEventListener("submit", function(e) {
-                    e.preventDefault();
+                loginForm.addEventListener("submit", async function(e) {
+                    e.preventDefault(); // Previne o submit padrão
                     
                     const submitBtn = loginForm.querySelector('button[type="submit"]');
-                    submitBtn.classList.add('loading');
-                    submitBtn.disabled = true;
-                    
-                    // Submit tradicio form (let Laravel handle CSRF via middleware)
-                    // Create a hidden form to submit
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{{ route("login") }}';
-                    
                     const nmlogin = loginForm.querySelector('input[name="nmlogin"]').value;
                     const password = loginForm.querySelector('input[name="password"]').value;
                     const rememberDevice = loginForm.querySelector('input[name="remember_device"]').checked;
+                    // Use meta csrf token to avoid stale tokens in long-lived modals
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     
-                    // Build form fields
-                    const fields = {
-                        '_token': csrfToken,
-                        'NMLOGIN': nmlogin,
-                        'password': password,
-                        'remember_device': rememberDevice ? '1' : '0',
-                        'redirect_to': 'patrimonios.index'
-                    };
+                    submitBtn.classList.add('loading');
+                    submitBtn.disabled = true;
                     
-                    Object.keys(fields).forEach(key => {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = key;
-                        input.value = fields[key];
-                        form.appendChild(input);
-                    });
-                    
-                    document.body.appendChild(form);
-                    form.submit();
+                    try {
+                        const response = await fetch('{{ route("login") }}', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({
+                                NMLOGIN: nmlogin,
+                                password: password,
+                                remember_device: rememberDevice,
+                                redirect_to: 'patrimonios.index'
+                            })
+                        });
+
+                        // Handle non-JSON error responses (e.g., 419 HTML page)
+                        if (response.status === 419) {
+                            // CSRF/session mismatch — reload page to refresh token/session
+                            alert('Sessão expirada ou token CSRF inválido. A página será recarregada.');
+                            window.location.reload();
+                            return;
+                        }
+
+                        // Try to parse JSON safely
+                        let data = null;
+                        try {
+                            data = await response.json();
+                        } catch (err) {
+                            console.error('Resposta inválida do servidor ao tentar logar:', err);
+                            alert('Erro inesperado do servidor. Tente recarregar a página e tentar novamente.');
+                            submitBtn.classList.remove('loading');
+                            submitBtn.disabled = false;
+                            return;
+                        }
+
+                        if (response.ok) {
+                            // Login bem-sucedido, redirecionar
+                            window.location.href = '{{ route("patrimonios.index") }}';
+                        } else {
+                            // Erro de autenticação
+                            alert(data.message || 'Usuário ou senha inválidos');
+                            submitBtn.classList.remove('loading');
+                            submitBtn.disabled = false;
+                        }
+                    } catch (error) {
+                        console.error('Erro no login:', error);
+                        alert('Erro ao tentar fazer login. Tente novamente.');
+                        submitBtn.classList.remove('loading');
+                        submitBtn.disabled = false;
+                    }
                 });
             }
         });
