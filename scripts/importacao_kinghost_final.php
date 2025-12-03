@@ -109,72 +109,98 @@ echo "════════════════════════�
 
 $file = __DIR__ . '/../storage/imports/Novo import/Patrimonio.txt';
 if (file_exists($file)) {
-    $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $lines = file($file, FILE_IGNORE_NEW_LINES);
     
     $pdo->beginTransaction();
     $created = $updated = $errors = 0;
     
-    for ($i = 2; $i < count($lines); $i++) {
-        $line = $lines[$i];
-        if (strpos($line, '===') !== false) continue;
+    // Cada registro ocupa 3 linhas: linha1 (dados), linha2 (descrição), linha3 (usuario/projeto)
+    for ($i = 2; $i < count($lines); $i += 3) {
+        if (!isset($lines[$i], $lines[$i+1], $lines[$i+2])) break;
         
-        if (!mb_check_encoding($line, 'UTF-8')) {
-            $line = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $line);
+        $linha1 = $lines[$i];
+        $linha2 = $lines[$i+1];
+        $linha3 = $lines[$i+2];
+        
+        if (strpos($linha1, '===') !== false) continue;
+        
+        // Converter encoding
+        if (!mb_check_encoding($linha1, 'UTF-8')) {
+            $linha1 = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $linha1);
+            $linha2 = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $linha2);
+            $linha3 = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $linha3);
         }
         
-        // Split por múltiplos espaços
-        $parts = preg_split('/\s{2,}/', trim($line));
-        if (count($parts) < 9) continue;
+        // Extrair dados da linha 1 (colunas fixas)
+        $nupatrimonio = trim(substr($linha1, 0, 16));
+        $situacao = trim(substr($linha1, 16, 35));
+        $marca = trim(substr($linha1, 51, 35));
+        $cdlocal = trim(substr($linha1, 86, 11));
+        $modelo = trim(substr($linha1, 97, 35));
+        $cor = trim(substr($linha1, 132, 20));
+        $dtaquisicao = trim(substr($linha1, 152, 11));
         
-        $nupatrimonio = trim($parts[0]);
-        $depatrimonio = trim($parts[1]);
-        $cdfunc = trim($parts[2] ?? '');
-        $cdobjeto = trim($parts[3] ?? '');
-        $cdlocal = trim($parts[4] ?? '');
-        $usuario = trim($parts[5] ?? 'SISTEMA');
-        $cdprojeto = trim($parts[6] ?? '');
-        $dtinclusao = trim($parts[7] ?? '');
-        $situacao = trim($parts[8] ?? '');
+        // Extrair descrição da linha 2
+        $depatrimonio = trim($linha2);
+        
+        // Extrair dados da linha 3 (colunas fixas)
+        $cdfunc = trim(substr($linha3, 0, 18));
+        $cdprojeto = trim(substr($linha3, 18, 13));
+        $nudocfiscal = trim(substr($linha3, 31, 15));
+        $usuario = trim(substr($linha3, 46, 15));
+        $dtoperacao = trim(substr($linha3, 61, 14));
+        $numof = trim(substr($linha3, 75, 10));
+        $cdobjeto = trim(substr($linha3, 85, 13));
+        
+        // Substituir <null> por vazio
+        $situacao = ($situacao === '<null>') ? '' : $situacao;
+        $marca = ($marca === '<null>') ? '' : $marca;
+        $cor = ($cor === '<null>') ? '' : $cor;
+        $usuario = ($usuario === '<null>' || empty($usuario)) ? 'SISTEMA' : $usuario;
         
         // Normalizar data
-        if (preg_match('#(\d{2})/(\d{2})/(\d{4})#', $dtinclusao, $m)) {
-            $dtinclusao = "{$m[3]}-{$m[2]}-{$m[1]}";
+        if (preg_match('#(\d{2})/(\d{2})/(\d{4})#', $dtaquisicao, $m)) {
+            $dtaquisicao = "{$m[3]}-{$m[2]}-{$m[1]}";
         }
         
-        if (empty($nupatrimonio)) continue;
+        if (empty($nupatrimonio) || !is_numeric($nupatrimonio)) continue;
         
         $stmt = $pdo->prepare("
             INSERT INTO patr (
-                NUPATRIMONIO, DEPATRIMONIO, CDFUNC, CDOBJETO, CDLOCAL,
-                USUARIO, CDPROJETO, DTINCLUSAO, SITUACAO, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                NUPATRIMONIO, DEPATRIMONIO, SITUACAO, MARCA, MODELO, COR,
+                CDLOCAL, CDFUNC, CDPROJETO, CDOBJETO, USUARIO,
+                DTINCLUSAO, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
             ON DUPLICATE KEY UPDATE
                 DEPATRIMONIO = VALUES(DEPATRIMONIO),
-                CDFUNC = VALUES(CDFUNC),
-                CDOBJETO = VALUES(CDOBJETO),
-                CDLOCAL = VALUES(CDLOCAL),
-                USUARIO = VALUES(USUARIO),
-                CDPROJETO = VALUES(CDPROJETO),
-                DTINCLUSAO = VALUES(DTINCLUSAO),
                 SITUACAO = VALUES(SITUACAO),
+                MARCA = VALUES(MARCA),
+                MODELO = VALUES(MODELO),
+                COR = VALUES(COR),
+                CDLOCAL = VALUES(CDLOCAL),
+                CDFUNC = VALUES(CDFUNC),
+                CDPROJETO = VALUES(CDPROJETO),
+                CDOBJETO = VALUES(CDOBJETO),
+                USUARIO = VALUES(USUARIO),
+                DTINCLUSAO = VALUES(DTINCLUSAO),
                 updated_at = NOW()
         ");
         
         try {
             $stmt->execute([
-                $nupatrimonio, $depatrimonio, $cdfunc, $cdobjeto, $cdlocal,
-                $usuario, $cdprojeto, $dtinclusao, $situacao
+                $nupatrimonio, $depatrimonio, $situacao, $marca, $modelo, $cor,
+                $cdlocal, $cdfunc, $cdprojeto, $cdobjeto, $usuario, $dtaquisicao
             ]);
             if ($stmt->rowCount() == 1) $created++;
             else $updated++;
         } catch (Exception $e) {
             $errors++;
-            if ($errors < 5) {
-                echo "  ⚠️  Erro linha $i: " . substr($e->getMessage(), 0, 60) . "\n";
+            if ($errors < 10) {
+                echo "  ⚠️  Erro patrimônio $nupatrimonio: " . substr($e->getMessage(), 0, 60) . "\n";
             }
         }
         
-        if (($created + $updated) % 1000 == 0) {
+        if (($created + $updated) > 0 && ($created + $updated) % 1000 == 0) {
             echo "  📊 Processados: " . ($created + $updated) . " (novos: $created | atualizados: $updated)\n";
         }
     }
