@@ -1,0 +1,879 @@
+CDFANTASIA    DEFANTASIA                                                       CDFILIAL    UFPROJ    
+==========    =============================================================    ========    ======    
+281           BRADESCO-RS                                                      1           RS        
+2             CASAN                                                            1           SC        
+47            CASAN/CAD                                                        1           SC        
+284           CEASA-RS                                                         1           RS        
+24            CEEE-RS                                                          1           RS        
+12            CEF - AC                                                         1           AC        
+4             CEF - CE                                                         1           CE        
+10            CEF - RR                                                         1           RR        
+201           CEF - RS                                                         1           RS        
+1             CEF - RS                                                         1           RS        
+16            CEF - SC                                                         1           SC        
+56            CEF/02-RS                                                        1           RS        
+55            CEF/HD-BA                                                        1           BA        
+70            xx.CEF/LIMP-RS                                                   1           RS        
+270           xCEF/LIMP-RS                                                     1           RS        
+69            CEF/OP-RS                                                        1           RS        
+26            CEF/SC-OESTE                                                     1           SC        
+83            CEF/TELE-BA                                                      1           BA        
+49            CEF/TELE-BA                                                      1           BA        
+51            CEF/TELE-CE                                                      1           CE        
+105           CEF/TELE-MG                                                      1           MG        
+46            CEF/TELE-MG                                                      1           MG        
+63            CEF/TELE-RN                                                      1           RN        
+39            CEF/TELE-RS                                                      1           RS        
+48            CEF/VARGINHA-MG                                                  1           MG        
+53            CEF-AM                                                           1           AM        
+127           CEF-AM                                                           1           AM        
+9             CEFAM-DT                                                         1           AM        
+45            CEFAM-OP                                                         1           AM        
+18            CEFAM-OP                                                         1           AM        
+73            CEF-BA                                                           1           BA        
+118           CEF-CE                                                           1           CE        
+128           CEF-ES                                                           1           ES        
+14            CEF-GO                                                           1           GO        
+50            CEF-MG                                                           1           MG        
+15            CEF-MG                                                           1           MG        
+34            CEF-RJ                                                           1           RJ        
+11            CEFRO-DT                                                         1           RO        
+17            CEFRO-OP                                                         1           PR        
+122           CEF-SC                                                           1           SC        
+20            CEF-SE                                                           1           SE        
+116           CEF-SP                                                           1           SP        
+117           CEF-SP 2                                                         1           SP        
+129           CEF-SP 3                                                         1           SP        
+104           CELESC                                                           1           SC        
+103           CIDASC                                                           1           SC        
+85            COHAB-SC                                                         1           SC        
+107           COND. TOP TOWER                                                  1           SC        
+3             DATAPREV - BA                                                    1           BA        
+5             DATAPREV - CE                                                    1           CE        
+7             DATAPREV - MT                                                    1           MT        
+30            DATAPREV/GO                                                      1           GO        
+21            DATAPREV/LOC-RS                                                  1           RS        
+6             DATAPREV/SER-RS                                                  1           RS        
+23            DATAPREV-AM                                                      1           AM        
+66            DEINFRA-SC                                                       1           SC        
+282           DETRAN-RS 1                                                      1           RS        
+283           DETRAN-RS 2                                                      1           RS        
+124           EBCT-1                                                           1           SC        
+125           EBCT-2                                                           1           SC        
+100           EBCT-SC                                                          1           SC        
+38            ELETRONORTE                                                      1           DF        
+119           ELETROSUL                                                        1           SC        
+102           FCEE-SC                                                          1           SC        
+200           FILIAL-RS                                                        1           RS        
+86            FUNASA-SC                                                        1           SC        
+120           FURNAS 2                                                         1           RJ        
+106           FURNAS-RJ                                                        1           RJ        
+998           FURNAS-RJ PROV                                                   1           SC        
+999           FURNAS-RJ2 PROV                                                  1           RJ        
+65            GRUPO UNIDOS                                                     1           SC        
+27            IBGE/AM                                                          1           AM        
+28            IBGE/RS                                                          1           RS        
+89            IBGE-PR                                                          1           PR        
+789           IBGE-PR                                                          1           PR        
+22            IBGE-RS                                                          1           RS        
+72            IBGE-SC                                                          1           SC        
+54            IBGE-SC                                                          1           SC        
+31            IBGE-SC                                                          1           SC        
+111           IBGE-SC                                                          1           SC        
+95            INC-DF                                                           1           DF        
+57            INCRA-SC                                                         1           SC        
+286           INPI-RS                                                          1           RS        
+13            INSS - RS                                                        1           RS        
+41            INSS-AM                                                          1           AM        
+52            xINSS-SC                                                         1           SC        
+123           IPHAN-SC                                                         1           SC        
+121           JF-SE                                                            1           SE        
+267           MERIDIONAL-RS                                                    1           RS        
+67            MERIDIONAL-RS                                                    1           RS        
+97            MINIST.SAUDE-SC                                                  1           SC        
+790           MP-PR                                                            1           PR        
+84            O ESTADO                                                         1           <null>    
+77            PF/AC-2                                                          1           AC        
+35            PF-AC                                                            1           AC        
+88            PF-BA                                                            1           BA        
+36            PF-DF                                                            1           DF        
+33            PF-MT                                                            1           MT        
+82            PF-MT/2                                                          1           MT        
+78            xPF-PR                                                           1           PR        
+778           XINSS-SP                                                         1           SP        
+43            PF-RS                                                            1           RS        
+110           PF-SC                                                            1           SC        
+96            PF-SE                                                            1           SE        
+109           PF-SE                                                            1           SE        
+115           PM JUIZ DE FORA                                                  1           SC        
+126           PMF-SC-1                                                         1           SC        
+42            PMF-SC                                                           1           SC        
+62            PM-SALVADOR                                                      1           BA        
+287           PRF-RS                                                           1           RS        
+237           PROCERGS                                                         1           RS        
+37            PROCERGS                                                         1           RS        
+92            R.FEDERAL LAGES                                                  1           SC        
+93            RFFSA                                                            1           SC        
+114           SANTUR                                                           1           SC        
+240           SEBRAE-RS                                                        1           RS        
+40            SEBRAE-RS                                                        1           RS        
+74            SEBRAE-SC                                                        1           SC        
+68            SEBRAE-SC                                                        1           SC        
+94            SEC.FAMILIA-SC                                                   1           SC        
+8             SEDE                                                             1           SC        
+76            SENAC                                                            1           SC        
+112           SENADO FEDERAL                                                   1           DF        
+91            SESC-SC                                                          1           SC        
+98            SES-RJ                                                           1           RJ        
+172           INSS -  PIRACICABA                                               1           SP        
+44            SMT-RS                                                           1           RS        
+19            SMT-RS                                                           1           RS        
+29            SMT-RS                                                           1           RS        
+75            SSM-FPOLIS                                                       1           SC        
+60            TELEACRE                                                         1           AC        
+61            TELESC                                                           1           SC        
+71            TJ-SC                                                            1           SC        
+108           TRIB.JUSTICA                                                     1           SC        
+113           UFS-SE                                                           1           SE        
+0             NÃO APLICÁVEL                                                    1           PR        
+288           CEF/LIMP-RS                                                      1           PR        
+90            ANATEL-SC                                                        1           SC        
+285           ASCAR-RS                                                         1           RS        
+87            BADESC                                                           1           SC        
+25            BB-AM                                                            1           AM        
+64            BCO. BRADESCO                                                    1           SC        
+32            BCO.MERIDIONAL                                                   1           SC        
+779           BRADESCO PR-1                                                    1           PR        
+780           BRADESCO PR-2                                                    1           PR        
+79            BRADESCO-PR/1                                                    1           PR        
+80            BRADESCO-PR/2                                                    1           PR        
+81            BRADESCO-RS                                                      1           RS        
+131           CEF - RJ1                                                        1           RJ        
+132           CEF - RJ2                                                        1           RJ        
+130           CEF-GO2                                                          1           GO        
+133           CEF-SP4                                                          1           SP        
+134           PM-S.BENTO SUL                                                   1           SC        
+289           CAIXA ESTADUAL-RS                                                1           RS        
+135           CEF - RJ3                                                        1           RJ        
+136           PETROBRAS-RJ                                                     1           RJ        
+137           ARCADIS                                                          5           SC        
+139           INMETRO-SC                                                       1           SC        
+138           CEF-RJ 4                                                         1           RJ        
+140           UDESC                                                            1           SC        
+290           SEBRAE-RS 2                                                      1           RS        
+142           TJ-SC 2                                                          1           SC        
+141           SDR-ITAJAI                                                       1           SC        
+143           GVT-SC                                                           1           SC        
+144           MF-RJ                                                            5           RJ        
+291           SEBRAE-RS 3                                                      1           RS        
+145           FEESC                                                            1           SC        
+292           CEF-REC-RS                                                       1           RS        
+146           UFS-SE2                                                          1           SE        
+147           FMS-FPOLIS                                                       1           SC        
+148           CEF-SP5                                                          1           SP        
+149           CEF-RJ 5                                                         1           RJ        
+293           JF-RS                                                            1           RS        
+150           UFRJ                                                             1           RJ        
+151           CLUBEDOZE                                                        1           SC        
+294           SEBRAE-RS 4                                                      1           RS        
+295           JF-RS 2                                                          1           RS        
+153           CEF-SP6                                                          1           SP        
+152           MF-RJ2                                                           1           RJ        
+154           ORLI KOCK-ME                                                     1           SC        
+296           PROCEMPA-RS                                                      1           RS        
+155           FUNASA-SE                                                        1           SE        
+297           PMPOA-SAMU                                                       1           RS        
+156           LAR SFA                                                          1           SC        
+298           JC-RS                                                            1           RS        
+157           COMLURB                                                          1           RJ        
+9999999       SUPER-ROSA                                                       1           SC        
+299           JF-RS 3                                                          1           RS        
+158           C.O SÃO JORGE                                                    1           SC        
+159           CASAN                                                            1           SC        
+300           PROCEMPA-RS 2                                                    1           RS        
+160           UDESC 2                                                          1           SC        
+161           INMETRO-GO                                                       1           GO        
+301           CEF-RS/APOIO                                                     1           RS        
+162           PSA INFORMÁTICA                                                  1           SC        
+163           PETROBRAS-RJ2                                                    1           RJ        
+302           PMPOA-SAMU2                                                      1           RS        
+303           PETROBRAS/RS                                                     1           RS        
+164           SDR-TAIO                                                         1           SC        
+165           CEF-SC/LIMP 1                                                    1           SC        
+166           CEF-SC/LIMP 2                                                    1           SC        
+167           CEF-PR 1                                                         1           PR        
+168           CEF-PR 2                                                         1           PR        
+169           BB-SP                                                            1           SP        
+170           SINE                                                             1           SC        
+304           PF-RS                                                            5           RS        
+171           DNPM-PR                                                          1           PR        
+173           CIANET                                                           1           SC        
+305           BB-RS                                                            1           RS        
+174           PETROBRAS-RJ3                                                    1           RJ        
+175           BB-MG                                                            1           MG        
+445           UFSC-2                                                           1           SC        
+176           AGU-SP                                                           1           SP        
+177           BB-DF                                                            1           DF        
+306           BB-RS2                                                           1           RS        
+307           BB-RS3                                                           1           RS        
+179           SERPRO                                                           1           SC        
+180           AGU-CE                                                           1           CE        
+178           CEF/APOIO-PR                                                     1           PR        
+308           SMS/RS                                                           1           RS        
+309           DRF/CXL-RS                                                       1           RS        
+181           BB-SP2                                                           1           SP        
+182           BB-PR                                                            1           PR        
+183           JF-RJ                                                            1           RJ        
+184           UFABC-SP                                                         1           SP        
+186           PF-SP                                                            1           SP        
+185           DRF/MARILIA-SP                                                   1           SP        
+310           MF-RS                                                            1           RS        
+187           PF-PR                                                            1           PR        
+188           PF-SC 2                                                          1           SC        
+190           INSS-SC                                                          1           SC        
+189           AGU-ES                                                           1           ES        
+311           DRF/SANTA MARIA-RS                                               1           RS        
+312           CEF-LIMP-RS 2                                                    1           RS        
+313           CEF-LIMP-RS 3                                                    1           RS        
+314           SMS-RS 2                                                         1           RS        
+315           SEBRAE/RS-5                                                      1           RS        
+191           EMBRATUR-DF                                                      1           DF        
+193           SENADO FEDERAL 2                                                 1           DF        
+192           CEF-RJ 6                                                         1           RJ        
+195           PLANSUL - RJ                                                     1           RJ        
+317           TJ-RS                                                            1           RS        
+402           INPI-CE                                                          1           CE        
+316           DENIT-RS                                                         1           RS        
+401           INPI-PE                                                          1           PE        
+196           PLANSUL - SE                                                     1           SE        
+198           PLANSUL - CE                                                     1           CE        
+199           PLANSUL - PR                                                     1           PR        
+318           PF-RS2                                                           1           RS        
+403           MC-SP                                                            1           SP        
+194           PLANSUL-CAMPINAS                                                 1           SP        
+197           PLANSUL - MG                                                     1           MG        
+404           DRF-SOROCABA-SP                                                  1           SP        
+405           DRF-SAOPAULO-SP                                                  1           SP        
+406           IPRAJ                                                            1           SE        
+409           CÂMARA - LIM                                                     1           DF        
+410           CÂMARA - RÁDIO                                                   1           DF        
+411           CÂMARA - TELE                                                    1           DF        
+412           CÂMARA - TV                                                      1           DF        
+408           BB-SP3                                                           1           SP        
+407           PLANSUL - DF                                                     1           DF        
+99991         CEF-CE-406                                                       1           CE        
+413           BB-ES                                                            1           ES        
+414           CÂMARA - OP                                                      1           DF        
+415           ACAFE-SC                                                         1           SC        
+416           CEF/TELE-DF                                                      1           DF        
+417           DNPM-DF                                                          1           DF        
+418           BB-PR-TEL                                                        1           PR        
+419           BB-PR-LIMP                                                       1           PR        
+319           SES-RS                                                           1           RS        
+320           DETRAN-RS-3                                                      1           RS        
+321           GHC-RS-1                                                         1           RS        
+322           GHC-RS-2                                                         1           RS        
+323           DNIT-RS-2                                                        1           RS        
+324           UFRGS                                                            1           RS        
+420           DRF-MARINGA-PR                                                   1           SC        
+9550          PLANSUL - ES                                                     1           ES        
+99992         PART. ROGERIO                                                    1           SC        
+99993         xPART. RODRIGO - Usar RBG                                        1           SC        
+99994         PART. SANDRA                                                     1           SC        
+99995         x PART. RAFAEL - Usar RBG                                        1           SC        
+99996         RCG                                                              1           SC        
+422           MEC-DF                                                           1           DF        
+421           TCE-CE                                                           1           CE        
+423           SENADO FEDERAL-3                                                 1           DF        
+424           TRT-SC                                                           1           SC        
+425           DRF-ITAJAI-SC                                                    1           SC        
+426           CÂMARA - GRAFICA                                                 1           DF        
+427           TRT-CAMPINAS-SP                                                  1           SP        
+428           CAMARA - OP2                                                     1           DF        
+429           BB-SP-4                                                          1           SP        
+430           CÂMARA - ELETRO                                                  1           DF        
+77770         CÂMARA GRAF. 7900                                                1           DF        
+77771         CEF-R1-131                                                       1           RJ        
+77772         CEF-RJ2-132                                                      1           RJ        
+77773         CAIXA-SC-122                                                     1           SC        
+77774         CEF-TELE-MG-105                                                  1           MG        
+431           CÂMARA - DESIGN                                                  1           DF        
+432           SENADO FEDERAL-4                                                 1           DF        
+433           CÂMARA - MANUTENÇÃO                                              1           DF        
+434           ACAFE-2                                                          1           SC        
+435           CONDOMINIO JOSE VEIGA                                            1           SC        
+77775         SENADO FEDERAL-112                                               1           DF        
+436           UFPR-1                                                           1           PR        
+551           INMET                                                            1           DF        
+437           UFPR-2                                                           1           PR        
+438           TST-DF                                                           1           DF        
+439           PMF-SC-2                                                         1           SC        
+441           IF-SC - ARARANGUA                                                1           SC        
+440           UFSC                                                             1           SC        
+442           CÂMARA - DESIGN - 2                                              1           DF        
+443           TRT-CAMPINAS-SP2                                                 1           SP        
+444           TCU-DF                                                           1           DF        
+325           JF-RS 4                                                          1           RS        
+77777         CÂMARA-MANUTENÇÃO-433                                            1           DF        
+77778         CEF-TELE-MG-105                                                  1           MG        
+77776         BB-PR-TEL-418                                                    1           PR        
+446           PF-SC-3                                                          1           SC        
+99999         TROCA                                                            1           <null>    
+326           PF-RS-3                                                          1           RS        
+447           TCU-DF-2                                                         1           DF        
+77779         BB-PR-182.                                                       1           PR        
+77780         CÂMARA MANUT2- 433                                               1           DF        
+77781         CEF-RJ1 B-131                                                    1           RJ        
+77782         CEF-RJ2 B- 132                                                   1           RJ        
+77783         CEF-RJ3 B - 135                                                  1           RJ        
+449           TCU-DF-3                                                         1           DF        
+327           TJ-RS-2                                                          1           RS        
+448           BB-ES-2                                                          1           ES        
+77784         SENADO FEDERAL A-112                                             1           DF        
+450           CEF-RJ-7                                                         1           RJ        
+328           BB-RS-4                                                          1           RS        
+329           PF-RS-4                                                          1           RS        
+330           PF-RS-5                                                          1           RS        
+331           PF-RS-6                                                          1           RS        
+77785         SENADO FEDERAL - 112                                             1           DF        
+451           FUFS-SE                                                          1           SE        
+452           CÂMARA - RESTAURAÇÃO                                             1           DF        
+453           EBCT-SC-3                                                        1           SC        
+99997         RBG                                                              1           SC        
+99998         ALPLAN                                                           1           BA        
+332           PF-RS-7                                                          1           RS        
+333           PF-RS-8                                                          1           RS        
+454           FUNASA-SC-2                                                      1           SC        
+455           FUNASA-SC-3                                                      1           SC        
+456           SESAI 1                                                          1           SC        
+457           SESAI-2                                                          1           SC        
+458           SESAI-3                                                          1           SC        
+334           TJ-RS-3                                                          1           RS        
+77786         JF-RS 4  -  325                                                  1           RS        
+335           PRINTSTORE-RS                                                    1           RS        
+459           PREVIC                                                           1           DF        
+777430        CÂMARA ELETRO - 430                                              1           DF        
+460           BB-RJ                                                            1           RJ        
+461           JF-SP                                                            1           SP        
+462           BB-SC                                                            1           SC        
+463           MF-SC                                                            5           SC        
+465           CÂMARA - DESIGN - 3                                              1           DF        
+464           FIOCRUZ                                                          20          RJ        
+466           DNPM-SC                                                          1           SC        
+336           PROCEMPA-RS-3                                                    1           RS        
+468           BB-MG-2                                                          1           MG        
+467           BB-PR-LIMP-2                                                     1           PR        
+777785        COHAB-SC-106                                                     1           SC        
+349           CEF-LIMP-RS-6                                                    1           RS        
+521           BB-SP-5                                                          1           SP        
+337           PRF-RS-2                                                         1           RS        
+338           BB-RS-5                                                          1           RS        
+77787         MF-RJ - 144                                                      1           RJ        
+469           CARGO DUTRA I                                                    1           RJ        
+470           CARGO DUTRA II                                                   1           RJ        
+471           CARGO DUTRA III                                                  1           RJ        
+472           CARGO VIA DUTRA                                                  1           RJ        
+473           CARGO CAXIAS I                                                   1           RJ        
+474           CARGO WASHINGTON LUIZ II                                         1           RJ        
+475           CARGO LINHA VERMELHA                                             1           RJ        
+476           CARGO MERCURIO                                                   1           RJ        
+477           CARGO GB ARMAZEM GERAIS                                          1           RJ        
+339           GHC-RS-3                                                         1           RS        
+77788         SEBRAE-SC - 74                                                   1           SC        
+478           CEF-SC/LIMP 3                                                    1           SC        
+479           CEF-SC/LIMP 4                                                    1           SC        
+480           CEF-SC/LIMP 5                                                    1           SC        
+481           CEF-PR 3                                                         1           PR        
+340           CEF-LIMP-RS-4                                                    1           RS        
+341           TJ-RS-4                                                          1           RS        
+342           TJ-RS-5                                                          1           RS        
+482           UFABC-SP-2                                                       1           SP        
+77789         UFRGS - 324                                                      1           RS        
+483           ANAC                                                             1           DF        
+484           BB-MG-3                                                          1           MG        
+343           DNIT RS-3                                                        1           RS        
+485           JF-SP 2                                                          1           SP        
+486           BB-SC-2                                                          1           SC        
+487           CEF-SC/LIMP-6                                                    10          SC        
+488           CEF-PR-4                                                         1           PR        
+489           CEF-LIMP-GO                                                      1           GO        
+77791         CEF-RJ5-149                                                      1           RJ        
+490           ACAFE-3                                                          1           SC        
+77792         SDR-ITAJAI-280                                                   1           SC        
+494           MP-SE                                                            15          SE        
+492           BB-SC-3                                                          1           SC        
+491           DRF-ITAJAI-2                                                     1           SC        
+344           GHC-RS-4                                                         1           RS        
+345           GHC-RS-5                                                         1           RS        
+495           SERT-SP                                                          1           SP        
+552           PLANSUL BAURU                                                    1           SP        
+496           CEF-RJ-8                                                         1           RJ        
+497           ELETROSUL-2                                                      1           SC        
+498           MF-DF                                                            1           DF        
+499           IPEA-DF                                                          1           DF        
+500           PR-SC-JLL                                                        1           SC        
+501           PR-SC-FLORIANOPOLIS                                              1           SC        
+502           PR-SC-TUBARAO                                                    1           SC        
+503           PR-SC-CRICIUMA                                                   1           SC        
+504           CEF-BA-2                                                         1           BA        
+346           BB-RS-6                                                          15          RS        
+505           CELESC-2                                                         1           SC        
+506           BB-MG-4                                                          1           MG        
+507           BB-MG-5                                                          1           MG        
+508           BB-MG-6                                                          1           MG        
+509           BB-MG-7                                                          1           MG        
+510           BB-MG-8                                                          1           MG        
+511           UFABC-SP-3                                                       1           SP        
+512           BB-MS                                                            1           MS        
+513           ACAFE-4                                                          1           SC        
+514           CAMARA - CENIN                                                   1           DF        
+515           CÂMARA-TV BANCO DE CONTEUDO                                      1           DF        
+516           CÂMARA-TV JORNALISMO                                             1           DF        
+347           CEF-LIMP-RS-5                                                    1           RS        
+9549          PLANSUL - MS                                                     1           MS        
+517           CEF-SP-7                                                         1           SP        
+348           PF-RS-9                                                          1           RS        
+518           BB-SC-4                                                          1           SC        
+519           SENADO-5                                                         10          DF        
+520           DRF-FPOLIS                                                       20          SC        
+522           TJ-MG-1                                                          1           MG        
+523           TJ-MG-2                                                          1           MG        
+525           CEF-RJ 9                                                         1           RJ        
+524           BB-MS-2                                                          1           MS        
+350           CEF-LIMP-RS-7                                                    1           RS        
+528           INFRAERO - MG                                                    1           MG        
+535           DRF-FOZ                                                          1           PR        
+529           TST-DF-2                                                         1           DF        
+527           MEC-DF-2                                                         1           DF        
+531           COBRA                                                            1           RJ        
+530           PLANSUL - SC                                                     1           SC        
+534           CEF-DF-1                                                         1           DF        
+777340        CEF-LIMP-RS-4 -340                                               1           RS        
+532           BB-SP-6                                                          1           SP        
+351           BB-RS-7                                                          1           RS        
+352           GHC-RS-6                                                         1           RS        
+536           JF-SP-3                                                          1           SP        
+533           BB-SP-7                                                          1           SP        
+537           JF-SP-4                                                          1           SP        
+99990         PLANSUL - GO                                                     1           GO        
+538           CEF-SP-8                                                         1           SP        
+353           GHC-RS-7                                                         1           RS        
+539           TST-DF-3                                                         1           DF        
+354           BB-RS-8                                                          1           RS        
+540           CÂMARA-CARREGADORES                                              1           DF        
+541           CÂMARA-TV-TECNICA                                                1           DF        
+542           ACAFE-5                                                          1           SC        
+543           CEF-TELE-CE-2                                                    1           CE        
+544           ANP-RJ                                                           1           RJ        
+545           PLANSUL - SP                                                     1           SP        
+546           TCU-DF-4                                                         1           DF        
+100001        PLANSUL EMPRESA                                                  1           SC        
+547           TJ-MG-3                                                          1           MG        
+548           TJ-MG-4                                                          1           MG        
+549           TJ-MG-5                                                          1           MG        
+550           ANATEL                                                           1           PR        
+553           SENADO FEDERAL-7                                                 1           DF        
+554           FURNAS-4                                                         1           RJ        
+555           FURNAS-5                                                         1           RJ        
+556           SENADO FEDERAL-6                                                 1           DF        
+557           ACAFE-6                                                          1           SC        
+558           ANS                                                              1           DF        
+560           PRF-SC                                                           1           SC        
+559           ESCRITORIO-AFASTADOS                                             1           PR        
+621           ANS-RJ                                                           1           RJ        
+561           UFMG-1                                                           1           MG        
+562           TRT-PR                                                           1           PR        
+563           UFMG-2                                                           1           MG        
+564           UFBA                                                             1           BA        
+565           UFMG-3                                                           1           MG        
+566           DPF-RJ                                                           1           RJ        
+567           UFPR-3                                                           1           PR        
+568           ACAFE-7                                                          1           SC        
+569           TRF-PE                                                           1           CE        
+573           ESCRITÓRIO-ES                                                    1           ES        
+570           ESCRITÓRIO-MS                                                    1           MS        
+571           ESCRITÓRIO-GO                                                    1           GO        
+574           CEF-PR-5                                                         1           PR        
+575           PR-SC-SMO                                                        1           SC        
+576           CÂMARA - COPA                                                    1           SC        
+526           ESCRITÓRIO-MG                                                    1           MG        
+577           CEF-SC-7                                                         1           SC        
+578           FNABUCO-PE                                                       1           CE        
+579           PF-SP-CAPITAL                                                    1           SP        
+580           PF-SP-ARAÇATUBA                                                  1           SP        
+581           PF-SP-ARARAQUARA                                                 1           SP        
+582           PF-SP-MARILIA                                                    1           SP        
+583           PF-SP-P.PRUDENTE                                                 1           SP        
+584           PF-SP-S.J.CAMPOS                                                 1           SP        
+585           CEF-SP-9                                                         1           SP        
+586           UFMS                                                             1           MS        
+587           TRE-CE                                                           1           CE        
+588           CEF-MS                                                           1           MS        
+589           SENADO-8                                                         10          DF        
+590           CEF-MS-2                                                         1           MS        
+665           ESCRITÓRIO-BA                                                    1           BA        
+777484        BB-MG-3 - 484                                                    1           MG        
+591           TRE-CE-2                                                         1           CE        
+355           CEF-RS-8                                                         1           RS        
+592           MEC-DF-3                                                         1           DF        
+593           FIOCRUZ-2                                                        1           RJ        
+356           ANAC-RS-3                                                        1           RS        
+357           BANRISUL                                                         1           RS        
+594           UFPE                                                             1           PE        
+595           IN                                                               1           DF        
+596           TJ-MG-6                                                          15          MG        
+597           TRE-CE-3                                                         1           CE        
+358           MF-RS-2                                                          10          RS        
+598           BB-CE                                                            1           CE        
+599           BB-DF-2                                                          15          DF        
+600           IBAMA-GO                                                         15          GO        
+602           ESCRITÓRIO-PE                                                    1           PE        
+603           TRE-CE-4                                                         1           CE        
+604           TRE-CE-5                                                         1           CE        
+605           FUNARTE                                                          20          RJ        
+606           BB-SP-8                                                          15          SP        
+359           PRF-RS-3                                                         1           RS        
+607           UFMS-2                                                           1           MS        
+608           FUNARTE-2                                                        20          RJ        
+609           CÂMARA-TV-2                                                      1           DF        
+610           TJ-MG-7                                                          15          MG        
+611           FUNARTE-3                                                        20          RJ        
+612           CÂMARA-TV-3                                                      1           DF        
+613           DRT-SC                                                           10          SC        
+614           TRT-BA                                                           5           BA        
+615           STJ                                                              20          DF        
+360           TJ-RS-6                                                          1           RS        
+361           UFRGS-2                                                          20          RS        
+616           UFLA                                                             5           MG        
+617           ANTT                                                             1           DF        
+618           TRT-SC-2                                                         20          SC        
+619           AGUAS PARANA                                                     1           PR        
+620           INMETRO-RJ                                                       20          RJ        
+622           MT-DF                                                            1           DF        
+623           SESP-PR                                                          5           PR        
+624           SESP-PR-2                                                        5           PR        
+803           REPR_3                                                           15          PR        
+625           ITCG-PR                                                          1           PR        
+626           FUNDEPAR                                                         10          PR        
+628           SEMA-PR                                                          10          PR        
+629           DNIT-ES                                                          20          ES        
+630           TST-DF-4                                                         20          DF        
+627           DNIT-MA                                                          1           CE        
+631           TJ-MG-8                                                          15          MG        
+632           BB-SC-5                                                          1           SC        
+633           TJ-MG-9                                                          15          MG        
+634           SFA-SC                                                           1           SC        
+635           COBRA-2                                                          10          RJ        
+636           UFMG-2                                                           15          MG        
+637           RTVE-PR                                                          10          PR        
+639           SESP-PR-3                                                        15          PR        
+638           FUNEAS-PR                                                        5           PR        
+640           FINEP-RJ                                                         5           RJ        
+641           FIOCRUZ-3                                                        1           RJ        
+642           SEEC-PR                                                          15          PR        
+643           SESP-PR-4                                                        20          PR        
+644           SESP-PR-5                                                        5           PR        
+645           FUFMT                                                            20          MT        
+646           SESP-PR-6                                                        1           PR        
+647           SESP-PR-7                                                        1           PR        
+648           MP-MG                                                            15          MG        
+649           TJ-RJ                                                            20          RJ        
+650           INSS-RJ                                                          20          RJ        
+651           SESP-PR-8                                                        5           PR        
+652           BB-SC-6                                                          1           SC        
+653           SESP-PR-9                                                        5           PR        
+654           CASA CIVIL-PR                                                    20          PR        
+655           SESA-PR                                                          5           PR        
+656           CETEM-ES                                                         15          ES        
+657           SESP-PR-10                                                       5           PR        
+658           DER-PR                                                           10          PR        
+659           SESP-PR-11                                                       5           PR        
+660           TJ-RJ2                                                           10          RJ        
+690           ESCRITORIO-MT                                                    1           MT        
+661           CEF-PR-6                                                         10          PR        
+662           RF-SP                                                            15          SP        
+663           RF-SP-2                                                          1           SP        
+664           ALMG                                                             20          MG        
+667           INCRA-RJ                                                         1           RJ        
+668           UFABC-SP-4                                                       10          SP        
+670           SEDEST-PR                                                        5           PR        
+669           SESP-PR-12                                                       1           PR        
+671           MDS-DF                                                           15          DF        
+742           COBRA-4-BA                                                       10          BA        
+9551          ESCRITÓRIO-PR2                                                   1           PR        
+672           TJ-SC-3                                                          20          SC        
+673           ANPRF-SC                                                         20          SC        
+674           COBRA-3                                                          10          RJ        
+675           TRT RJ                                                           1           RJ        
+676           BNB SP                                                           5           SP        
+677           IPHAN-SC-2                                                       5           SC        
+678           CEF-AL                                                           10          SC        
+679           ELETROSUL-3                                                      15          SC        
+680           ME-MT                                                            15          MT        
+681           FUNASA-MT                                                        20          MT        
+682           ESCRITÓRIO-MT2                                                   1           MT        
+683           TRE-BA                                                           5           BA        
+684           ESCRITÓRIO-AL                                                    1           AL        
+685           EMGEA-DF                                                         15          DF        
+686           CIDASC-2                                                         1           SC        
+687           TJ-SC-4                                                          20          SC        
+689           CADE-DF                                                          15          DF        
+688           RF-SP-3                                                          15          SP        
+362           TJ-RS-7                                                          1           RS        
+691           ON-RJ                                                            10          RJ        
+692           BB-ES-3                                                          15          ES        
+693           SENADO-9                                                         10          DF        
+694           CMU-MG                                                           15          MG        
+695           SENADO-10                                                        10          DF        
+696           RF-SP-4                                                          20          SP        
+697           IPHAN-PE                                                         10          CE        
+698           STJ-DF-2                                                         15          DF        
+699           COREN-SC                                                         1           SC        
+700           TRE-RJ                                                           1           RJ        
+701           TRT-SC-3                                                         1           SC        
+702           CÂMARA RESTAURAÇÃO-2                                             10          DF        
+703           MEC-DF-4                                                         1           DF        
+704           TJ-MT                                                            5           DF        
+705           PRF-SC-2                                                         15          SC        
+706           SENADO-11                                                        10          DF        
+363           MAPA-RS                                                          5           RS        
+707           CÂMARA-APOIO ADM                                                 15          DF        
+708           CETEM-RJ-ES                                                      15          RJ        
+709           CAIXA-SC-8                                                       1           SC        
+710           CAIXA-PR-7 - NAO USAR                                            1           PR        
+711           CEF-PR-7                                                         10          PR        
+712           RG PARTICIPAÇÕES                                                 1           SC        
+713           AL-MG-2                                                          20          MG        
+714           EBSERH-UFC                                                       1           CE        
+715           SIE-SC                                                           10          SC        
+716           ME-SP                                                            1           SP        
+717           CAMARA-CENIN-2                                                   20          DF        
+364           AL-RS                                                            1           RS        
+368           TJ-RS-8                                                          10          RS        
+366           AL-RS-2                                                          10          RS        
+718           CAMARA GRAFICA 2                                                 10          DF        
+719           TRT SC 4                                                         1           SC        
+720           CÂMARA DESIGN 4                                                  10          DF        
+721           CEF-PR-8                                                         10          PR        
+365           TJ-RS 9                                                          1           RS        
+722           MP-MT                                                            20          MT        
+723           ME-DF 5                                                          20          DF        
+367           TJ-RS-10                                                         1           RS        
+369           TJ-RS-11                                                         10          RS        
+724           DPU-AL-1                                                         1           CE        
+725           DPU-AL-2                                                         1           CE        
+737           UFMG-5                                                           15          MG        
+726           AEB-SP                                                           5           SP        
+727           TJ-SC-5                                                          20          SC        
+370           TJ-RS-12                                                         1           RS        
+728           MP-MT2                                                           20          MT        
+371           INMETRO-RS                                                       20          RS        
+729           ICMBIO SC                                                        15          SC        
+730           AL-MG-3                                                          15          MG        
+731           CNJ DF                                                           15          DF        
+732           TJ-MG-10                                                         15          MG        
+372           ICMBIO RS                                                        15          SC        
+733           ICMBIO BA                                                        15          BA        
+373           FURG                                                             15          RS        
+374           TJ RS 13                                                         1           RS        
+734           ICMBIO AL                                                        15          CE        
+735           UFMG-4                                                           15          MG        
+736           CEF-MG-2                                                         10          MG        
+738           TJ CE                                                            20          CE        
+739           INSS-DF                                                          20          DF        
+740           FUFMT 3                                                          20          MT        
+743           DNOCS                                                            20          CE        
+741           SEBRAE -SC                                                       5           SC        
+375           INMETRO-RS-2                                                     20          RS        
+744           AGU-DF                                                           20          DF        
+745           FIOCRUZ-PR                                                       15          PR        
+746           SESA-PR-2                                                        5           PR        
+747           TJ-MT-2                                                          5           MT        
+748           STF                                                              20          DF        
+749           PGE-PR                                                           10          PR        
+750           PLANSUL-COLOMBO-PR                                               1           PR        
+751           DER-PR-2                                                         10          PR        
+752           DER-PR-3                                                         10          PR        
+753           UFLA-2                                                           5           MG        
+754           UFMG-6                                                           15          MG        
+755           DER-PR-4                                                         10          PR        
+756           SENADO-12                                                        10          DF        
+757           IAT-PR                                                           10          PR        
+758           SEAB-PR                                                          10          PR        
+759           SESP-PR-13                                                       20          PR        
+760           DER-PR-5                                                         10          PR        
+761           SESP-PR-14                                                       5           PR        
+762           FUNASA-MS                                                        20          MS        
+376           TJ-RS-14                                                         10          RS        
+763           BCB                                                              20          DF        
+764           UFRJ-IG                                                          20          RJ        
+765           UFRJ-HESFA                                                       20          RJ        
+766           UFRJ                                                             20          RJ        
+767           UFRJ-IPPMG                                                       20          RJ        
+768           UFRJ-IPUB                                                        20          RJ        
+769           UFRJ-IDT                                                         20          RJ        
+377           BANRISUL-2                                                       20          RS        
+770           SEDEF-PR-2                                                       10          PR        
+771           PRTUR-PR                                                         5           PR        
+772           SESP-PR-15                                                       20          PR        
+773           TJ-MG-11                                                         15          MG        
+774           RE-PR                                                            15          PR        
+775           UFRJ-INDC                                                        20          RJ        
+776           TJ-AL                                                            20          CE        
+777           EBSERH-BA                                                        20          BA        
+791           UFLA-3                                                           20          MG        
+793           INSS-SP                                                          5           SP        
+792           ON RJ-2                                                          10          RJ        
+794           UFRJ-IG-2                                                        20          RJ        
+781           REPR_2                                                           15          PR        
+782           UFRJ-INDC-2                                                      20          RJ        
+795           TRT-MG                                                           10          MG        
+797           SIE-SC-2                                                         10          SC        
+798           UNPRF-SC                                                         20          SC        
+796           COBRA-5-DF                                                       10          DF        
+799           SECID-PR-1                                                       10          PR        
+800           SECID-PR-2                                                       10          PR        
+801           NAO USAR                                                         10          PR        
+802           SECID-PR-3                                                       10          PR        
+804           UFRJ-HUCFF                                                       20          RJ        
+805           SESA-PR-3                                                        5           PR        
+806           SESA-PR-4                                                        5           PR        
+809           UNIFAL-MG-3                                                      20          MG        
+808           UNIFAL-MG-2                                                      20          MG        
+807           UNIFAL-MG-1                                                      20          MG        
+810           ANS-RJ-2                                                         20          RJ        
+811           SENADO-13                                                        1           DF        
+812           CEF-MT                                                           1           MT        
+813           ICMBIO-SC-2                                                      1           SC        
+814           UFMG-7                                                           1           MG        
+815           SESP-PR-16                                                       10          PR        
+816           FINEP-SP                                                         5           SP        
+817           ADAPAR-PR                                                        10          PR        
+818           MP-MG-2                                                          1           MG        
+819           UFRJ-IG-3                                                        20          RJ        
+820           SEDEF_PR                                                         10          PR        
+821           SEAB-PR-2                                                        10          PR        
+822           IAPAR-PR                                                         10          PR        
+823           SEJU-PR-1                                                        10          PR        
+824           SEJU-PR-2                                                        10          PR        
+825           SEJU-PR-3                                                        10          PR        
+826           SESP-PR-17                                                       10          PR        
+827           SESP-PR-18                                                       10          PR        
+828           SETR-PR-1                                                        10          PR        
+829           SETR-PR-2                                                        10          PR        
+830           SETR-PR-3                                                        10          PR        
+831           SESP-PR-19                                                       10          PR        
+832           UFRJ-CCJE                                                        20          RJ        
+833           BB-SC-7                                                          1           SC        
+834           MGISP-SP                                                         5           SP        
+835           TJ GO 1                                                          1           DF        
+836           TJ GO 2                                                          1           GO        
+837           TJ GO 3                                                          1           GO        
+838           INSS SP 2                                                        5           SP        
+839           TCU-DF-5                                                         1           DF        
+840           INSS-SP-3                                                        5           SP        
+378           UFRGS-3                                                          1           RS        
+841           IFBA -BA                                                         1           BA        
+842           IPEN_SP                                                          5           SP        
+843           SENADO-14                                                        1           DF        
+844           INMETRO_DF                                                       1           GO        
+845           AGU-DF-2                                                         1           DF        
+846           SENADO-15                                                        1           DF        
+847           PGFN-DF                                                          1           DF        
+848           ANTT 2 - DF                                                      1           DF        
+849           PRF-SC-3                                                         1           SC        
+850           UFMG-8                                                           1           MG        
+851           INSS-SC                                                          1           SC        
+379           CAIXA RS 9                                                       1           RS        
+852           BANRISUL 3                                                       20          RJ        
+853           ICMBIO RJ                                                        20          RJ        
+854           TRT BA 2                                                         1           BA        
+855           BB-ES-4                                                          1           ES        
+856           UFSC-3                                                           1           SC        
+857           TCU-DF-6                                                         <null>      DF        
+858           AGU-MS                                                           <null>      MS        
+859           SEED-PR                                                          <null>      PR        
+999911        CASA J. ATLAN.                                                   <null>      SC        
+999912        CASA AGRO. 190                                                   <null>      SC        
+999913        CASA AGRO. 223                                                   <null>      SC        
+860           MD-DF                                                            <null>      DF        
+861           AGU-MS-2                                                         <null>      MS        
+862           TJ-MG-12                                                         <null>      MG        
+863           TJ-MG-13                                                         <null>      MG        
+864           TJ-MG-14                                                         <null>      MG        
+865           COBRA-6-DF                                                       <null>      DF        
+866           AL-MG-4                                                          <null>      MG        
+867           ENAP                                                             <null>      DF        
+868           PRF-SC-4                                                         <null>      SC        
+869           MINTUR                                                           <null>      DF        
+870           MINC                                                             <null>      DF        
+871           TJ-CE-4                                                          <null>      CE        
+872           EBC DF                                                           <null>      DF        
+873           MAPA-DF                                                          <null>      DF        
+874           AGU-MS-3                                                         <null>      MS        
+875           SENADO-16                                                        <null>      DF        
+876           PREVIC                                                           <null>      DF        
+877           COPEL-PR                                                         <null>      PR        
+878           BB-SC-8                                                          <null>      SC        
+880           ANAC-PR-RS                                                       <null>      PR        
+881           ANAC-PE                                                          <null>      CE        
+882           MGISP-SC                                                         <null>      SC        
+883           SEDF-GO                                                          <null>      DF        
+884           DNIT-SE                                                          <null>      SE        
+885           SETUR-RN                                                         <null>      CE        
+879           FILIAL DF                                                        <null>      DF        
+886           TRE-AL                                                           <null>      AL        
+887           IBRAM-RJ                                                         <null>      RJ        
+888           TJ-MG-15                                                         <null>      MG        
+889           TJ-MG-16                                                         <null>      MG        
+890           PALMARES-DF                                                      <null>      DF        
+891           ANPD-DF                                                          <null>      DF        
+892           SERINT-DF                                                        <null>      DF        
+893           IPHAN-DF                                                         <null>      DF        
+894           FNABUCO-PE-2                                                     <null>      CE        
+895           SEED-PR-2                                                        <null>      PR        
+896           SERINT-GO                                                        <null>      GO        
+897           ITI-DF                                                           <null>      DF        
+898           BCB-2                                                            <null>      DF        
+899           RF-SP-5                                                          <null>      SP        
+904           RF-SP-9                                                          <null>      SP        
+903           RF-SP-8                                                          <null>      SP        
+900           RF-SP-6                                                          <null>      SP        
+902           RF-SP-7                                                          <null>      SP        
+905           ALESC                                                            <null>      SC        
+906           MP-CE                                                            <null>      CE        
+908           ELETROSUL-3 - XANXARÊ                                            <null>      SC        
+909           ELETROSUL-3 - GRAVATAÍ                                           <null>      SC        
+910           ELETROSUL-3 - CAMPO GRANDE                                       <null>      SC        
+911           ELETROSUL-3 - CURITIBA                                           <null>      SC        
+907           ELETROSUL-3 - SÃO JOSE                                           <null>      SC        
+912           MP-CE-2                                                          <null>      CE        
+913           TJ-MG-17                                                         <null>      MG        
+914           TJ-MG-18                                                         <null>      MG        
+915           ANM-SC                                                           <null>      SC        
+916           PF-DF                                                            <null>      DF        
+917           BANRISUL-SC                                                      <null>      SC        
+918           RF-SP-10                                                         <null>      SP        
+919           BRDE-SC                                                          <null>      SC        
+920           FUFMT-4                                                          <null>      MT        
+921           CBMSC                                                            <null>      SC        
+922           MMULHER-DF                                                       <null>      DF        
+923           INCRA-DF                                                         <null>      DF        
+924           MP-CE-3                                                          <null>      CE        
+925           ANP-PF-DF                                                        <null>      DF        
+926           BCB-3                                                            <null>      DF        
+927           TRF-DF                                                           <null>      DF        
+928           CAMARA-TV-4                                                      <null>      DF        
+929           TSE-DF                                                           <null>      DF        
+930           TJ-CE-5                                                          <null>      CE        
+931           SEJU-PR-1                                                        <null>      RJ        
+932           SEJU-PR-2                                                        <null>      PR        
+933           SEJU-PR-3                                                        <null>      PR        
+934           CAIXA-PB                                                         <null>      CE        
+999914        ARQUIVO CENTRAL                                                  <null>      SC        
+999915        ALMOXARIFADO CENTRAL                                             <null>      SC        
+935           ESCRITÓRIO-PB                                                    <null>      PE        
+936           PF-SC-4                                                          <null>      SC        
+937           FNABUCO-PE-3                                                     <null>      PB        
+938           AGU-MS-4                                                         <null>      MS        
+939           TJ-BA                                                            <null>      BA        

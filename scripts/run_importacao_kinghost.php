@@ -23,12 +23,22 @@ if (!file_exists($envFile)) {
     exit(1);
 }
 
-$env = parse_ini_file($envFile);
+// Parse .env manualmente
+$env = [];
+foreach (file($envFile) as $line) {
+    $line = trim($line);
+    if (empty($line) || strpos($line, '#') === 0) continue;
+    list($key, $val) = explode('=', $line, 2) + [null, null];
+    if ($key && $val) {
+        $env[trim($key)] = trim($val, '"\'');
+    }
+}
+
 $dbHost = $env['DB_HOST'] ?? 'localhost';
 $dbPort = $env['DB_PORT'] ?? 3306;
-$dbName = $env['DB_DATABASE'];
-$dbUser = $env['DB_USERNAME'];
-$dbPass = $env['DB_PASSWORD'];
+$dbName = $env['DB_DATABASE'] ?? '';
+$dbUser = $env['DB_USERNAME'] ?? '';
+$dbPass = $env['DB_PASSWORD'] ?? '';
 
 // Conectar
 try {

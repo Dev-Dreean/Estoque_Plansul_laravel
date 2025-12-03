@@ -1987,19 +1987,40 @@ class PatrimonioController extends Controller
 
             return response()->json([
                 'data' => $patrimonios->map(function ($p) use ($patrimonios) {
-                        // Preencher descrição a partir de objetopatr se necessário
-                        if (empty($p->DEPATRIMONIO) && !empty($p->CODOBJETO)) {
+                        // Definir texto de exibição com prioridade: DEPATRIMONIO -> MODELO -> MARCA -> OBJETO(DEOBJETO) -> fallback
+                        $displayText = null;
+                        $displaySource = null;
+
+                        if (!empty($p->DEPATRIMONIO)) {
+                            $displayText = $p->DEPATRIMONIO;
+                            $displaySource = 'DEPATRIMONIO';
+                        } elseif (!empty($p->MODELO)) {
+                            $displayText = $p->MODELO;
+                            $displaySource = 'MODELO';
+                        } elseif (!empty($p->MARCA)) {
+                            $displayText = $p->MARCA;
+                            $displaySource = 'MARCA';
+                        } elseif (!empty($p->CODOBJETO)) {
                             $obj = \App\Models\ObjetoPatr::where('NUSEQOBJETO', $p->CODOBJETO)->first();
-                            if ($obj) $p->DEPATRIMONIO = $obj->DEOBJETO;
+                            if ($obj && !empty($obj->DEOBJETO)) {
+                                $displayText = $obj->DEOBJETO;
+                                $displaySource = 'OBJETO';
+                            }
                         }
-                        if (empty($p->DEPATRIMONIO)) {
-                            $parts = array_filter([$p->MODELO ?? null, $p->MARCA ?? null, $p->NUSERIE ?? null, $p->COR ?? null]);
-                            $p->DEPATRIMONIO = $parts ? implode(' - ', $parts) : 'SEM DESCRIÇÃO';
+
+                        if (empty($displayText)) {
+                            // Último fallback: tentar juntar campos menores (número série, cor) ou usar texto padrão
+                            $parts = array_filter([$p->NUSERIE ?? null, $p->COR ?? null]);
+                            $displayText = $parts ? implode(' - ', $parts) : 'SEM DESCRIÇÃO';
+                            $displaySource = $parts ? 'COMPOSITE' : 'FALLBACK';
                         }
+
                         return [
                             'NUSEQPATR' => $p->NUSEQPATR,
                             'NUPATRIMONIO' => $p->NUPATRIMONIO,
-                            'DEPATRIMONIO' => $p->DEPATRIMONIO,
+                            // DEPATRIMONIO entregue como texto amigável de exibição (nunca vazio)
+                            'DEPATRIMONIO' => $displayText,
+                            'DEPATRIMONIO_SOURCE' => $displaySource,
                             'NMPLANTA' => $p->NMPLANTA,
                             'MODELO' => $p->MODELO,
                             // Adiciona projeto associado se existir
