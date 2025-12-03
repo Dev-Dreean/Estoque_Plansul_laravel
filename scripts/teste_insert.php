@@ -5,7 +5,7 @@
 $host = 'mysql07-farm10.kinghost.net';
 $db = 'plansul04';
 $user = 'plansul004_add2';
-$pass = 'Pl@n2024';
+$pass = 'A33673170a';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
