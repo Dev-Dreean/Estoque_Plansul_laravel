@@ -43,7 +43,7 @@ try {
 echo "🏗️  ETAPA 1: IMPORTANDO LOCAIS\n";
 echo "════════════════════════════════════════════════════════════\n";
 
-$file = __DIR__ . '/../storage/imports/Novo import/LocalProjeto.TXT';
+$file = __DIR__ . '/../LocalProjeto_NOVO.TXT';
 if (file_exists($file)) {
     $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     
@@ -106,8 +106,8 @@ if (file_exists($file)) {
 echo "🏛️  ETAPA 2: IMPORTANDO PATRIMÔNIOS\n";
 echo "════════════════════════════════════════════════════════════\n";
 
-// Arquivo está na RAIZ do projeto, não em storage/imports
-$file = __DIR__ . '/../patrimonio.TXT';
+// Arquivo está na RAIZ do projeto - VERSÃO NOVA (atualizada)
+$file = __DIR__ . '/../Patrimonio_NOVO.TXT';
 if (file_exists($file)) {
     $lines = file($file, FILE_IGNORE_NEW_LINES);
     
