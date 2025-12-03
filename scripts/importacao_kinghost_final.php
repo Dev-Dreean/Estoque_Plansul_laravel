@@ -107,50 +107,55 @@ if (file_exists($file)) {
 echo "🏛️  ETAPA 2: IMPORTANDO PATRIMÔNIOS\n";
 echo "════════════════════════════════════════════════════════════\n";
 
-$file = __DIR__ . '/../storage/imports/Novo import/Patrimonio.txt';
+// Arquivo está na RAIZ do projeto, não em storage/imports
+$file = __DIR__ . '/../patrimonio.TXT';
 if (file_exists($file)) {
     $lines = file($file, FILE_IGNORE_NEW_LINES);
     
     $pdo->beginTransaction();
     $created = $updated = $errors = 0;
     
-    // Cada registro ocupa 3 linhas: linha1 (dados), linha2 (descrição), linha3 (usuario/projeto)
-    for ($i = 2; $i < count($lines); $i += 3) {
-        if (!isset($lines[$i], $lines[$i+1], $lines[$i+2])) break;
+    // Cada linha é 1 registro completo (588 chars)
+    // Pular linha 0 (cabeçalho) e linha 1 (separador ====)
+    for ($i = 2; $i < count($lines); $i++) {
+        $line = $lines[$i];
         
-        $linha1 = $lines[$i];
-        $linha2 = $lines[$i+1];
-        $linha3 = $lines[$i+2];
-        
-        if (strpos($linha1, '===') !== false) continue;
-        
-        // Converter encoding
-        if (!mb_check_encoding($linha1, 'UTF-8')) {
-            $linha1 = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $linha1);
-            $linha2 = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $linha2);
-            $linha3 = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $linha3);
+        // Pular linhas vazias, cabeçalhos ou separadores
+        if (strlen(trim($line)) < 10 || strpos($line, '===') !== false) {
+            continue;
         }
         
-        // Extrair dados da linha 1 (colunas fixas)
-        $nupatrimonio = trim(substr($linha1, 0, 16));
-        $situacao = trim(substr($linha1, 16, 35));
-        $marca = trim(substr($linha1, 51, 35));
-        $cdlocal = trim(substr($linha1, 86, 11));
-        $modelo = trim(substr($linha1, 97, 35));
-        $cor = trim(substr($linha1, 132, 20));
-        $dtaquisicao = trim(substr($linha1, 152, 11));
+        // Converter encoding se necessário
+        if (!mb_check_encoding($line, 'UTF-8')) {
+            $line = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $line);
+        }
         
-        // Extrair descrição da linha 2
-        $depatrimonio = trim($linha2);
+        // Extrair dados por posição (baseado na análise: 588 chars por linha)
+        $nupatrimonio = trim(substr($line, 0, 16));
         
-        // Extrair dados da linha 3 (colunas fixas)
-        $cdfunc = trim(substr($linha3, 0, 18));
-        $cdprojeto = trim(substr($linha3, 18, 13));
-        $nudocfiscal = trim(substr($linha3, 31, 15));
-        $usuario = trim(substr($linha3, 46, 15));
-        $dtoperacao = trim(substr($linha3, 61, 14));
-        $numof = trim(substr($linha3, 75, 10));
-        $cdobjeto = trim(substr($linha3, 85, 13));
+        // Validar se é número (não é cabeçalho)
+        if (!is_numeric($nupatrimonio)) {
+            continue;
+        }
+        
+        $situacao = trim(substr($line, 16, 35));
+        $marca = trim(substr($line, 51, 35));
+        $cdlocal = trim(substr($line, 86, 11));
+        $modelo = trim(substr($line, 97, 35));
+        $cor = trim(substr($line, 132, 20));
+        $dtaquisicao_raw = trim(substr($line, 152, 11));
+        
+        // DEPATRIMONIO está após DTAQUISICAO (aprox posição 163)
+        $depatrimonio = trim(substr($line, 163, 285));
+        
+        // CDMATRFUNCIONARIO, CDPROJETO, USUARIO estão no final
+        $cdfunc = trim(substr($line, 448, 18));
+        $cdprojeto = trim(substr($line, 466, 13));
+        $nudocfiscal = trim(substr($line, 479, 15));
+        $usuario = trim(substr($line, 494, 15));
+        $dtoperacao = trim(substr($line, 509, 14));
+        $numof = trim(substr($line, 523, 10));
+        $cdobjeto = trim(substr($line, 533, 13));
         
         // Substituir <null> por vazio
         $situacao = ($situacao === '<null>') ? '' : $situacao;
@@ -159,7 +164,8 @@ if (file_exists($file)) {
         $usuario = ($usuario === '<null>' || empty($usuario)) ? 'SISTEMA' : $usuario;
         
         // Normalizar data
-        if (preg_match('#(\d{2})/(\d{2})/(\d{4})#', $dtaquisicao, $m)) {
+        $dtaquisicao = $dtaquisicao_raw;
+        if (preg_match('#(\d{2})/(\d{2})/(\d{4})#', $dtaquisicao_raw, $m)) {
             $dtaquisicao = "{$m[3]}-{$m[2]}-{$m[1]}";
         }
         
