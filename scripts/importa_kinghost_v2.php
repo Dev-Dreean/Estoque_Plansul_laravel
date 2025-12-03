@@ -41,20 +41,21 @@ if (file_exists($file)) {
     $pdo->beginTransaction();
     $count = 0;
     if ($h = fopen($file, 'r')) {
-        fgets($h); fgets($h);
+        fgets($h); fgets($h);  // Pula cabeçalho
         while ($line = fgets($h)) {
             if (empty(trim($line))) continue;
             if (!mb_check_encoding($line, 'UTF-8')) 
                 $line = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $line);
             
-            $p = str_getcsv(trim($line), ';');
+            // Usar espaços como separador
+            $p = preg_split('/\s+/', trim($line), -1, PREG_SPLIT_NO_EMPTY);
             if (count($p) < 3) continue;
             
             $stmt = $pdo->prepare("INSERT INTO locais_projeto (cdlocal, descricao, cdprojeto, created_at, updated_at) 
                 VALUES (?, ?, ?, NOW(), NOW()) 
                 ON DUPLICATE KEY UPDATE descricao=VALUES(descricao), updated_at=NOW()");
             try {
-                $stmt->execute([trim($p[0]), trim($p[1]), trim($p[2])]);
+                $stmt->execute([$p[0], trim($p[1] . ' ' . ($p[2]??'')), $p[count($p)-1]]);
                 $count++;
             } catch (Exception $e) {}
         }
