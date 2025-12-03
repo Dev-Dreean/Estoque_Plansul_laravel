@@ -174,9 +174,9 @@ if (file_exists($file)) {
         $stmt = $pdo->prepare("
             INSERT INTO patr (
                 NUPATRIMONIO, DEPATRIMONIO, SITUACAO, MARCA, MODELO, COR,
-                CDLOCAL, CDFUNC, CDPROJETO, CDOBJETO, USUARIO,
-                DTINCLUSAO, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                CDLOCAL, CDMATRFUNCIONARIO, CDPROJETO, CODOBJETO, USUARIO,
+                DTAQUISICAO
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE
                 DEPATRIMONIO = VALUES(DEPATRIMONIO),
                 SITUACAO = VALUES(SITUACAO),
@@ -184,12 +184,11 @@ if (file_exists($file)) {
                 MODELO = VALUES(MODELO),
                 COR = VALUES(COR),
                 CDLOCAL = VALUES(CDLOCAL),
-                CDFUNC = VALUES(CDFUNC),
+                CDMATRFUNCIONARIO = VALUES(CDMATRFUNCIONARIO),
                 CDPROJETO = VALUES(CDPROJETO),
-                CDOBJETO = VALUES(CDOBJETO),
+                CODOBJETO = VALUES(CODOBJETO),
                 USUARIO = VALUES(USUARIO),
-                DTINCLUSAO = VALUES(DTINCLUSAO),
-                updated_at = NOW()
+                DTAQUISICAO = VALUES(DTAQUISICAO)
         ");
         
         try {
