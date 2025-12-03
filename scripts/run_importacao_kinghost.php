@@ -97,7 +97,10 @@ echo "🏗️  ETAPA 2: IMPORTANDO LOCAIS\n";
 echo "════════════════════════════════════════════════════════════\n";
 
 $localFile = __DIR__ . '/../storage/imports/Novo import/LocalProjeto.TXT';
+echo "📍 Procurando arquivo: $localFile\n";
+
 if (file_exists($localFile)) {
+    echo "✅ Arquivo encontrado\n\n";
     $lines = readFileLines($localFile);
     $pdo->beginTransaction();
     
@@ -138,7 +141,10 @@ echo "🏛️  ETAPA 3: IMPORTANDO PATRIMÔNIOS\n";
 echo "════════════════════════════════════════════════════════════\n";
 
 $patriFile = __DIR__ . '/../storage/imports/Novo import/Patrimonio.txt';
+echo "📍 Procurando arquivo: $patriFile\n";
+
 if (file_exists($patriFile)) {
+    echo "✅ Arquivo encontrado\n\n";
     $lines = readFileLines($patriFile);
     $total = count($lines) - 2;
     
@@ -216,7 +222,10 @@ echo "📜 ETAPA 4: IMPORTANDO HISTÓRICO\n";
 echo "════════════════════════════════════════════════════════════\n";
 
 $histFile = __DIR__ . '/../storage/imports/Novo import/Hist_movpatr.TXT';
+echo "📍 Procurando arquivo: $histFile\n";
+
 if (file_exists($histFile)) {
+    echo "✅ Arquivo encontrado\n\n";
     $lines = readFileLines($histFile);
     
     $pdo->beginTransaction();
