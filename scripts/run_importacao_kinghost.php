@@ -1,12 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-/**
- * Script de Importação Completa para KingHost
- * Versão simplificada - conexão direta com banco de dados
- */
-
-set_time_limit(600); // 10 minutos
+set_time_limit(600);
 ini_set('memory_limit', '512M');
 
 echo "\n╔════════════════════════════════════════════════════════════╗\n";
@@ -16,19 +11,13 @@ echo "╚═══════════════════════�
 
 $startTime = microtime(true);
 
-// Carregar .env
+// Parse .env
 $envFile = __DIR__ . '/../.env';
-if (!file_exists($envFile)) {
-    echo "❌ Erro: .env não encontrado\n";
-    exit(1);
-}
-
-// Parse .env manualmente
 $env = [];
 foreach (file($envFile) as $line) {
     $line = trim($line);
     if (empty($line) || strpos($line, '#') === 0) continue;
-    list($key, $val) = explode('=', $line, 2) + [null, null];
+    @list($key, $val) = explode('=', $line, 2) + [null, null];
     if ($key && $val) {
         $env[trim($key)] = trim($val, '"\'');
     }
@@ -40,7 +29,6 @@ $dbName = $env['DB_DATABASE'] ?? '';
 $dbUser = $env['DB_USERNAME'] ?? '';
 $dbPass = $env['DB_PASSWORD'] ?? '';
 
-// Conectar
 try {
     $pdo = new PDO(
         "mysql:host=$dbHost;port=$dbPort;dbname=$dbName;charset=utf8mb4",
@@ -52,26 +40,6 @@ try {
 } catch (Exception $e) {
     echo "❌ Erro: " . $e->getMessage() . "\n";
     exit(1);
-}
-
-// Função para ler arquivo com encoding correto
-function readFileLines($path) {
-    $lines = [];
-    $handle = fopen($path, 'r');
-    if (!$handle) return [];
-    
-    while (($line = fgets($handle)) !== false) {
-        $line = trim($line);
-        // Tentar detectar encoding
-        if (!mb_check_encoding($line, 'UTF-8')) {
-            $line = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $line);
-        }
-        if (!empty($line)) {
-            $lines[] = $line;
-        }
-    }
-    fclose($handle);
-    return $lines;
 }
 
 // ETAPA 1: Criar backup
