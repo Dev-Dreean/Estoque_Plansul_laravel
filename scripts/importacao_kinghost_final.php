@@ -170,33 +170,50 @@ if (file_exists($file)) {
         
         if (empty($nupatrimonio) || !is_numeric($nupatrimonio)) continue;
         
-        $stmt = $pdo->prepare("
-            INSERT INTO patr (
-                NUPATRIMONIO, DEPATRIMONIO, SITUACAO, MARCA, MODELO, COR,
-                CDLOCAL, CDMATRFUNCIONARIO, CDPROJETO, CODOBJETO, USUARIO,
-                DTAQUISICAO
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE
-                DEPATRIMONIO = VALUES(DEPATRIMONIO),
-                SITUACAO = VALUES(SITUACAO),
-                MARCA = VALUES(MARCA),
-                MODELO = VALUES(MODELO),
-                COR = VALUES(COR),
-                CDLOCAL = VALUES(CDLOCAL),
-                CDMATRFUNCIONARIO = VALUES(CDMATRFUNCIONARIO),
-                CDPROJETO = VALUES(CDPROJETO),
-                CODOBJETO = VALUES(CODOBJETO),
-                USUARIO = VALUES(USUARIO),
-                DTAQUISICAO = VALUES(DTAQUISICAO)
-        ");
+        // Verificar se já existe
+        $checkStmt = $pdo->prepare("SELECT NUSEQPATR FROM patr WHERE NUPATRIMONIO = ? LIMIT 1");
+        $checkStmt->execute([$nupatrimonio]);
+        $exists = $checkStmt->fetch();
         
         try {
-            $stmt->execute([
-                $nupatrimonio, $depatrimonio, $situacao, $marca, $modelo, $cor,
-                $cdlocal, $cdfunc, $cdprojeto, $cdobjeto, $usuario, $dtaquisicao
-            ]);
-            if ($stmt->rowCount() == 1) $created++;
-            else $updated++;
+            if ($exists) {
+                // UPDATE
+                $stmt = $pdo->prepare("
+                    UPDATE patr SET
+                        DEPATRIMONIO = ?,
+                        SITUACAO = ?,
+                        MARCA = ?,
+                        MODELO = ?,
+                        COR = ?,
+                        CDLOCAL = ?,
+                        CDMATRFUNCIONARIO = ?,
+                        CDPROJETO = ?,
+                        CODOBJETO = ?,
+                        USUARIO = ?,
+                        DTAQUISICAO = ?
+                    WHERE NUPATRIMONIO = ?
+                ");
+                $stmt->execute([
+                    $depatrimonio, $situacao, $marca, $modelo, $cor,
+                    $cdlocal, $cdfunc, $cdprojeto, $cdobjeto, $usuario, $dtaquisicao,
+                    $nupatrimonio
+                ]);
+                if ($stmt->rowCount() > 0) $updated++;
+            } else {
+                // INSERT
+                $stmt = $pdo->prepare("
+                    INSERT INTO patr (
+                        NUPATRIMONIO, DEPATRIMONIO, SITUACAO, MARCA, MODELO, COR,
+                        CDLOCAL, CDMATRFUNCIONARIO, CDPROJETO, CODOBJETO, USUARIO,
+                        DTAQUISICAO
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([
+                    $nupatrimonio, $depatrimonio, $situacao, $marca, $modelo, $cor,
+                    $cdlocal, $cdfunc, $cdprojeto, $cdobjeto, $usuario, $dtaquisicao
+                ]);
+                $created++;
+            }
         } catch (Exception $e) {
             $errors++;
             if ($errors < 10) {
