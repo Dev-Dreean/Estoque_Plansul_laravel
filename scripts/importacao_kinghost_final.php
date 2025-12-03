@@ -78,12 +78,11 @@ if (file_exists($file)) {
         if (empty($cdlocal)) continue;
         
         $stmt = $pdo->prepare("
-            INSERT INTO locais_projeto (cdlocal, descricao, cdprojeto, created_at, updated_at)
-            VALUES (?, ?, ?, NOW(), NOW())
+            INSERT INTO locais_projeto (cdlocal, delocal, codigo_projeto)
+            VALUES (?, ?, ?)
             ON DUPLICATE KEY UPDATE 
-                descricao = VALUES(descricao),
-                cdprojeto = VALUES(cdprojeto),
-                updated_at = NOW()
+                delocal = VALUES(delocal),
+                codigo_projeto = VALUES(codigo_projeto)
         ");
         
         try {
@@ -219,9 +218,12 @@ if (file_exists($file)) {
 // ============================================================================
 // ETAPA 3: IMPORTAR HISTÓRICO
 // ============================================================================
-echo "📜 ETAPA 3: IMPORTANDO HISTÓRICO\n";
+echo "📜 ETAPA 3: HISTÓRICO (DESABILITADO)\n";
 echo "════════════════════════════════════════════════════════════\n";
+echo "⚠️  Estrutura da tabela movpartr é diferente do esperado\n";
+echo "   A importação de histórico precisa ser adaptada\n\n";
 
+if (false) { // DESABILITADO TEMPORARIAMENTE
 $file = __DIR__ . '/../storage/imports/Novo import/Hist_movpatr.TXT';
 if (file_exists($file)) {
     $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -275,6 +277,7 @@ if (file_exists($file)) {
     
     $pdo->commit();
     echo "✅ Histórico: $created novos ($errors duplicados/erros)\n\n";
+}
 } else {
     echo "⚠️  Arquivo não encontrado\n\n";
 }
