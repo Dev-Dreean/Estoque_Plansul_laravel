@@ -37,28 +37,29 @@ foreach ($duplicatas as $dup) {
     
     echo "🔄 Limpando patrimônio #$nupatrimonio...\n";
     
-    // Pegar o ID do registro mais antigo
+    // Pegar TODOS os registros, ordenados do MAIS RECENTE para o mais antigo
     $stmt = $pdo->prepare("
         SELECT NUSEQPATR, SITUACAO, USUARIO, CDPROJETO 
         FROM patr 
         WHERE NUPATRIMONIO = ? 
-        ORDER BY NUSEQPATR ASC
+        ORDER BY NUSEQPATR DESC
     ");
     $stmt->execute([$nupatrimonio]);
     $registros = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     echo "  Registros encontrados:\n";
     foreach ($registros as $idx => $reg) {
-        echo sprintf("    [%d] NUSEQPATR=%s | SITUACAO=%s | USUARIO=%s | CDPROJETO=%s\n",
+        echo sprintf("    [%d] NUSEQPATR=%s | SITUACAO=%s | USUARIO=%s | CDPROJETO=%s %s\n",
             $idx + 1,
             $reg['NUSEQPATR'],
             $reg['SITUACAO'] ?: '(vazio)',
             $reg['USUARIO'] ?: '(vazio)',
-            $reg['CDPROJETO'] ?: '(vazio)'
+            $reg['CDPROJETO'] ?: '(vazio)',
+            $idx == 0 ? '← MANTER (mais recente)' : ''
         );
     }
     
-    // Manter o primeiro (mais antigo), deletar os demais
+    // Manter o primeiro (MAIS RECENTE), deletar os demais
     $keepId = $registros[0]['NUSEQPATR'];
     
     $deleteStmt = $pdo->prepare("DELETE FROM patr WHERE NUPATRIMONIO = ? AND NUSEQPATR != ?");
