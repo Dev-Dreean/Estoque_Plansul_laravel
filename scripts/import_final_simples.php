@@ -129,6 +129,11 @@ for ($i = 2; $i < $total; $i++) {
         
         if ($existe) {
             // UPDATE
+            if ($i <= 5) {
+                echo "DEBUG: #$nupatrimonio - Preparando UPDATE...\n";
+                flush();
+            }
+            
             $sql = "UPDATE patr SET 
                 DEPATRIMONIO = ?, SITUACAO = ?, MARCA = ?, MODELO = ?, COR = ?,
                 CDLOCAL = ?, CDMATRFUNCIONARIO = ?, CDPROJETO = ?, CODOBJETO = ?, 
@@ -136,12 +141,23 @@ for ($i = 2; $i < $total; $i++) {
                 WHERE NUPATRIMONIO = ?";
             
             $stmt = $pdo->prepare($sql);
+            
+            if ($i <= 5) {
+                echo "DEBUG: #$nupatrimonio - Executando UPDATE...\n";
+                flush();
+            }
+            
             $stmt->execute([
                 $depatrimonio, $situacao, $marca, $modelo, $cor,
                 $cdlocal, $cdfunc, $cdprojeto, $cdobjeto,
                 $usuario, $dtaquisicao,
                 $nupatrimonio
             ]);
+            
+            if ($i <= 5) {
+                echo "DEBUG: #$nupatrimonio - UPDATE OK, rowCount=" . $stmt->rowCount() . "\n";
+                flush();
+            }
             
             if ($stmt->rowCount() > 0) {
                 $atualizados++;
