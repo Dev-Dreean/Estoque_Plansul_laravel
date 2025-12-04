@@ -112,13 +112,17 @@ if (file_exists($file)) {
     $lines = file($file, FILE_IGNORE_NEW_LINES);
     $totalLinhas = count($lines);
     echo "📄 Arquivo carregado: $totalLinhas linhas\n";
-    echo "⏳ Processando (feedback a cada 100 registros)...\n\n";
-    
-    $pdo->beginTransaction();
-    $created = $updated = $errors = 0;
-    $processados = 0;
-    
-    // Cada linha é 1 registro completo (588 chars)
+echo "⏳ Processando (feedback a cada 100 registros)...\n\n";
+
+// Configurações para script longo
+set_time_limit(0);
+ini_set('max_execution_time', 0);
+echo "💾 Memory limit: " . ini_get('memory_limit') . "\n";
+echo "⏱️  Time limit: unlimited\n\n";
+
+$pdo->beginTransaction();
+$created = $updated = $errors = 0;
+$processados = 0;    // Cada linha é 1 registro completo (588 chars)
     // Pular linha 0 (cabeçalho) e linha 1 (separador ====)
     for ($i = 2; $i < count($lines); $i++) {
         try {
@@ -182,10 +186,20 @@ if (file_exists($file)) {
         
         if (empty($nupatrimonio) || !is_numeric($nupatrimonio)) continue;
         
+        // Debug: primeiro registro
+        if ($processados == 1) {
+            echo "🔍 Primeiro registro: NUPATRIMONIO=$nupatrimonio\n";
+            echo "🔍 Verificando se existe no banco...\n";
+        }
+        
         // Verificar se já existe
         $checkStmt = $pdo->prepare("SELECT NUSEQPATR FROM patr WHERE NUPATRIMONIO = ? LIMIT 1");
         $checkStmt->execute([$nupatrimonio]);
         $exists = $checkStmt->fetch();
+        
+        if ($processados == 1) {
+            echo "🔍 Resultado: " . ($exists ? "EXISTS (UPDATE)" : "NEW (INSERT)") . "\n";
+        }
         
         try {
             if ($exists) {
@@ -236,6 +250,11 @@ if (file_exists($file)) {
         // Feedback a cada 100 registros (mais frequente)
         if (($created + $updated) > 0 && ($created + $updated) % 100 == 0) {
             echo "  📊 Processados: " . ($created + $updated) . " (novos: $created | atualizados: $updated | erros: $errors)\n";
+            flush();
+            
+            // Commit parcial (MyISAM não mantém transaction bem)
+            $pdo->commit();
+            $pdo->beginTransaction();
         }
         
         } catch (Exception $ex) {
