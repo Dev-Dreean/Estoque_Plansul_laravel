@@ -2,6 +2,77 @@
 
 Resumo rápido
 - Projeto: aplicação Laravel de gerenciamento de patrimônio (backend em PHP + Blade views + scripts auxiliares).
+- Objetivo: instruções concisas e acionáveis para agentes de código serem imediatamente produtivos neste repositório.
+
+1) Arquitetura e fluxo (alto nível)
+- Laravel clássico: `routes/` → `app/Http/Controllers/` → `app/Models/` → `resources/views/`.
+- Tarefas em lote e importações: `app/Console/Commands/` e `scripts/`.
+- Backups/data exports: `storage/backups/` e `archive/backups/`.
+
+2) Comandos e verificações rápidas
+- Instalação: `composer install`, `npm install`, `npm run build` (ou `npm run dev`).
+- Dev server: `php artisan serve` (verifique `.env`).
+- Lint PHP: `php -l <file.php>`; atualizar autoload: `composer dump-autoload`.
+
+3) Regras operacionais obrigatórias
+- Backups: sempre criar `archive/backups/pre_action_<YYYY-MM-DD_HHMM>.zip` antes de alterações em massa.
+- Git: nunca execute `git push` sem autorização explícita; commits locais podem ser feitos se solicitado.
+- Documentação gerada: NÃO criar múltiplos `.md` automaticamente; use `.txt` para documentação auxiliar. Esta exceção é o arquivo `.github/copilot-instructions.md`.
+
+4) Scripts one-off (diagnóstico/execução pontual)
+- Marcar scripts temporários como `one-off` (comentário na primeira linha).
+- Procedimento: avisar no chat que o script é one-off → executar (preferir `--dry-run`) → gerar LOG → documentar o que foi feito → REMOVER o script automaticamente após uso, a menos que mantenedor peça preservação.
+
+5) Logs e rastreabilidade (obrigatório)
+- Todo script que modifique dados ou importe/exporte deve gerar logs em `storage/logs/` (ou `storage/app/logs/`).
+- Formato mínimo de log: `[YYYY-MM-DD HH:MM:SS] LEVEL contexto: mensagem` (ex.: `[2025-12-04 15:04:05] INFO import_patr: processou 123 registros; erros=2`).
+- Oferecer flags `--dry-run` e `--log-path` quando aplicável; implementar rotação/remoção configurável.
+
+6) Implantação alvo — KingHost
+- Ambiente alvo: KingHost (SSH: `plansul@ftp.plansul.info`). Desenvolver considerando compatibilidade local ↔ KingHost (versões PHP, permissões, paths).
+- Pré-deploy: confirmar `php -v`, `composer` e permissões de `storage/` e `bootstrap/cache`.
+- Paths: prefira `__DIR__` ou variáveis de ambiente em vez de caminhos hard-coded.
+- Fornecer exemplos de comandos para PowerShell e Bash quando aplicável.
+
+7) Organização e mudanças de estrutura
+- Antes de mover/renomear arquivos, proponha um mapa de reorganização (origem -> destino) no chat e aguarde confirmação.
+- Mantenha diretórios essenciais intactos (`app/`, `config/`, `public/`, `resources/`, `routes/`, `database/migrations/`, `vendor/`) a menos que haja plano e testes.
+
+8) Análise completa antes de correções
+- Antes de alterar um trecho solicitado, analisar todo o fluxo relacionado (controllers, services, models, views, migrations) para garantir que a correção seja suficiente.
+- Se houver múltiplos problemas interdependentes, apresentar um plano com todas as mudanças necessárias e impacto estimado.
+
+9) Leia arquivos auxiliares criados
+- Sempre que um arquivo auxiliar for criado (ex.: `.txt`, scripts de diagnóstico, addendums), o agente deve publicar no chat uma instrução curta indicando que o arquivo existe e deve ser LIDO antes de executar ações baseadas nele.
+- Exemplo de mensagem automática: "Arquivo criado: `.github/copilot-addendum.txt`. Leia antes de executar scripts relacionados — contém opções de deploy, logs e instruções one-off."
+
+10) Formato das respostas do agente
+- Respostas em `pt-br`, objetivas e simples.
+- Estrutura padrão:
+  1) Uma frase inicial — o que farei.
+  2) Bullets (3–6) com ações/arquivos/comandos essenciais.
+  3) Comandos/código prontos para copiar (PowerShell e Bash quando necessário).
+  4) Pergunta final: próximo passo (commit/push/restore).
+
+11) Auditoria e rollback
+- Preserve backups em `archive/backups/` antes de mudanças destrutivas.
+- O assistente pode restaurar/extrair arquivos do backup mediante solicitação.
+
+12) Observações finais e exemplos rápidos
+- Exemplo de log: `[2025-12-04 15:04:05] INFO import_patr: processou 123 registros; erros=2`.
+- Comando para checar PHP e permissões no servidor (Bash):
+```
+ssh plansul@ftp.plansul.info
+php -v; composer --version; ls -ld storage bootstrap/cache
+```
+
+Data da última atualização: 2025-12-04
+
+*** FIM — consolidado em 2025-12-04 ***
+# Copilot / AI agent instructions for Estoque_Plansul_laravel
+
+Resumo rápido
+- Projeto: aplicação Laravel de gerenciamento de patrimônio (backend em PHP + Blade views + scripts auxiliares).
 - Objetivo deste arquivo: dar instruções concisas e específicas para agentes de código (Copilot/AI) serem imediatamente produtivos.
 
 Arquitetura e fluxo principal
@@ -41,6 +112,14 @@ Como o agente deve agir (regras operacionais)
 2. Evitar criar `.md` automaticamente — caso de documentação ser necessária, usar `.txt` (o repositório do mantenedor prefere `.txt`).
 3. Não executar `git push` sem autorização explícita; `git commit` local pode ser feito se solicitado.
 4. Preferir aplicar mudanças pequenas e testáveis (ex.: mover um script e rodar `php -l`), reportar resultados imediatos.
+5. Scripts ou utilitários criados para análise/execução pontual: se o script for feito apenas para executar uma tarefa investigativa ou uma correção pontual e **não** for destinado a permanecer como ferramenta reutilizável, o agente deve:
+  - avisar no chat que o script é one-off antes de executá-lo;
+  - executar e documentar o que foi feito;
+  - remover (deletar) o script automaticamente após o uso, a menos que o mantenedor peça explicitamente para preservá-lo.
+
+6. Organização e estrutura: manter código e pastas sempre bem organizados. Antes de mover/renomear arquivos, o agente deve propor um mapa de reorganização (paths de origem -> destino) e só aplicar após confirmação do mantenedor.
+
+7. Análise completa antes de agir: antes de modificar um trecho solicitado para correção, o agente deve analisar todo o fluxo relacionado (funções chamadas, controllers, serviços, migrations, views envolvidas) para avaliar se a correção local resolve o problema global. Se detectar múltiplos problemas interdependentes, reportar um plano com todas as correções necessárias em vez de aplicar apenas a primeira alteração.
 
 Arquivos/chaves para inspeção rápida
 - `app/Console/Commands/ImportarTodosPatrimonios.php` — lógica de importação em lote
