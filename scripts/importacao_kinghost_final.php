@@ -199,10 +199,13 @@ $processados = 0;    // Cada linha é 1 registro completo (588 chars)
         
         if ($processados == 1) {
             echo "🔍 Resultado: " . ($exists ? "EXISTS (UPDATE)" : "NEW (INSERT)") . "\n";
+            echo "🔍 Preparando " . ($exists ? "UPDATE" : "INSERT") . "...\n";
         }
         
         try {
             if ($exists) {
+                if ($processados == 1) echo "🔍 Executando UPDATE...\n";
+                
                 // UPDATE
                 $stmt = $pdo->prepare("
                     UPDATE patr SET
@@ -219,11 +222,17 @@ $processados = 0;    // Cada linha é 1 registro completo (588 chars)
                         DTAQUISICAO = ?
                     WHERE NUPATRIMONIO = ?
                 ");
+                
+                if ($processados == 1) echo "🔍 Executando bind parameters...\n";
+                
                 $stmt->execute([
                     $depatrimonio, $situacao, $marca, $modelo, $cor,
                     $cdlocal, $cdfunc, $cdprojeto, $cdobjeto, $usuario, $dtaquisicao,
                     $nupatrimonio
                 ]);
+                
+                if ($processados == 1) echo "🔍 UPDATE executado! rowCount=" . $stmt->rowCount() . "\n";
+                
                 if ($stmt->rowCount() > 0) $updated++;
             } else {
                 // INSERT
