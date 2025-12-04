@@ -43,7 +43,7 @@ try {
 echo "🏗️  ETAPA 1: IMPORTANDO LOCAIS\n";
 echo "════════════════════════════════════════════════════════════\n";
 
-$file = __DIR__ . '/../LocalProjeto_NOVO.TXT';
+$file = __DIR__ . '/../storage/imports/Novo import/LocalProjeto.TXT';
 if (file_exists($file)) {
     $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     
@@ -78,11 +78,12 @@ if (file_exists($file)) {
         if (empty($cdlocal)) continue;
         
         $stmt = $pdo->prepare("
-            INSERT INTO locais_projeto (cdlocal, delocal, codigo_projeto)
-            VALUES (?, ?, ?)
+            INSERT INTO locais_projeto (cdlocal, descricao, cdprojeto, created_at, updated_at)
+            VALUES (?, ?, ?, NOW(), NOW())
             ON DUPLICATE KEY UPDATE 
-                delocal = VALUES(delocal),
-                codigo_projeto = VALUES(codigo_projeto)
+                descricao = VALUES(descricao),
+                cdprojeto = VALUES(cdprojeto),
+                updated_at = NOW()
         ");
         
         try {
@@ -106,188 +107,77 @@ if (file_exists($file)) {
 echo "🏛️  ETAPA 2: IMPORTANDO PATRIMÔNIOS\n";
 echo "════════════════════════════════════════════════════════════\n";
 
-// Arquivo está na RAIZ do projeto - VERSÃO NOVA (atualizada)
-$file = __DIR__ . '/../Patrimonio_NOVO.TXT';
+$file = __DIR__ . '/../storage/imports/Novo import/Patrimonio.txt';
 if (file_exists($file)) {
-    $lines = file($file, FILE_IGNORE_NEW_LINES);
-    $totalLinhas = count($lines);
-    echo "📄 Arquivo carregado: $totalLinhas linhas\n";
-echo "⏳ Processando (feedback a cada 100 registros)...\n\n";
-
-// Configurações para script longo
-set_time_limit(0);
-ini_set('max_execution_time', 0);
-echo "💾 Memory limit: " . ini_get('memory_limit') . "\n";
-echo "⏱️  Time limit: unlimited\n\n";
-
-$pdo->beginTransaction();
-$created = $updated = $errors = 0;
-$processados = 0;    // Cada linha é 1 registro completo (588 chars)
-    // Pular linha 0 (cabeçalho) e linha 1 (separador ====)
+    $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    
+    $pdo->beginTransaction();
+    $created = $updated = $errors = 0;
+    
     for ($i = 2; $i < count($lines); $i++) {
-        try {
-            if ($processados == 0 || $processados == 1) {
-                echo "🔍 Loop i=$i, processados=$processados\n";
-            }
-            
-            $line = $lines[$i];
-            
-            // Debug: primeiro registro
-            if ($processados == 0) {
-                echo "🔍 Iniciando processamento...\n";
-            }
-            
-            // Pular linhas vazias, cabeçalhos ou separadores
-            if (strlen(trim($line)) < 10 || strpos($line, '===') !== false) {
-                continue;
-            }
-            
-            // Converter encoding se necessário
-            if (!mb_check_encoding($line, 'UTF-8')) {
-                $line = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $line);
-            }
-            
-            // Extrair dados por posição (baseado na análise: 588 chars por linha)
-            $nupatrimonio = trim(substr($line, 0, 16));
-            
-            // Validar se é número (não é cabeçalho)
-            if (!is_numeric($nupatrimonio)) {
-                continue;
-            }
-            
-            $processados++;
-            
-            $situacao = trim(substr($line, 16, 35));
-            $marca = trim(substr($line, 51, 35));
-            $cdlocal = trim(substr($line, 86, 11));
-        $modelo = trim(substr($line, 97, 35));
-        $cor = trim(substr($line, 132, 20));
-        $dtaquisicao_raw = trim(substr($line, 152, 11));
+        $line = $lines[$i];
+        if (strpos($line, '===') !== false) continue;
         
-        // DEPATRIMONIO está após DTAQUISICAO (aprox posição 163)
-        $depatrimonio = trim(substr($line, 163, 285));
+        if (!mb_check_encoding($line, 'UTF-8')) {
+            $line = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $line);
+        }
         
-        // CDMATRFUNCIONARIO, CDPROJETO, USUARIO estão no final
-        $cdfunc = trim(substr($line, 448, 18));
-        $cdprojeto = trim(substr($line, 466, 13));
-        $nudocfiscal = trim(substr($line, 479, 15));
-        $usuario = trim(substr($line, 494, 15));
-        $dtoperacao = trim(substr($line, 509, 14));
-        $numof = trim(substr($line, 523, 10));
-        $cdobjeto = trim(substr($line, 533, 13));
+        // Split por múltiplos espaços
+        $parts = preg_split('/\s{2,}/', trim($line));
+        if (count($parts) < 9) continue;
         
-        // Substituir <null> por vazio
-        $situacao = ($situacao === '<null>') ? '' : $situacao;
-        $marca = ($marca === '<null>') ? '' : $marca;
-        $cor = ($cor === '<null>') ? '' : $cor;
-        $usuario = ($usuario === '<null>' || empty($usuario)) ? 'SISTEMA' : $usuario;
+        $nupatrimonio = trim($parts[0]);
+        $depatrimonio = trim($parts[1]);
+        $cdfunc = trim($parts[2] ?? '');
+        $cdobjeto = trim($parts[3] ?? '');
+        $cdlocal = trim($parts[4] ?? '');
+        $usuario = trim($parts[5] ?? 'SISTEMA');
+        $cdprojeto = trim($parts[6] ?? '');
+        $dtinclusao = trim($parts[7] ?? '');
+        $situacao = trim($parts[8] ?? '');
         
         // Normalizar data
-        $dtaquisicao = $dtaquisicao_raw;
-        if (preg_match('#(\d{2})/(\d{2})/(\d{4})#', $dtaquisicao_raw, $m)) {
-            $dtaquisicao = "{$m[3]}-{$m[2]}-{$m[1]}";
+        if (preg_match('#(\d{2})/(\d{2})/(\d{4})#', $dtinclusao, $m)) {
+            $dtinclusao = "{$m[3]}-{$m[2]}-{$m[1]}";
         }
         
-        if (empty($nupatrimonio) || !is_numeric($nupatrimonio)) continue;
+        if (empty($nupatrimonio)) continue;
         
-        // Debug: primeiro registro
-        if ($processados == 1) {
-            echo "🔍 Primeiro registro: NUPATRIMONIO=$nupatrimonio\n";
-            echo "🔍 Verificando se existe no banco...\n";
-        }
-        
-        // Verificar se já existe
-        $checkStmt = $pdo->prepare("SELECT NUSEQPATR FROM patr WHERE NUPATRIMONIO = ? LIMIT 1");
-        $checkStmt->execute([$nupatrimonio]);
-        $exists = $checkStmt->fetch();
-        
-        if ($processados == 1) {
-            echo "🔍 Resultado: " . ($exists ? "EXISTS (UPDATE)" : "NEW (INSERT)") . "\n";
-            echo "🔍 Preparando " . ($exists ? "UPDATE" : "INSERT") . "...\n";
-        }
+        $stmt = $pdo->prepare("
+            INSERT INTO patr (
+                NUPATRIMONIO, DEPATRIMONIO, CDFUNC, CDOBJETO, CDLOCAL,
+                USUARIO, CDPROJETO, DTINCLUSAO, SITUACAO, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+            ON DUPLICATE KEY UPDATE
+                DEPATRIMONIO = VALUES(DEPATRIMONIO),
+                CDFUNC = VALUES(CDFUNC),
+                CDOBJETO = VALUES(CDOBJETO),
+                CDLOCAL = VALUES(CDLOCAL),
+                USUARIO = VALUES(USUARIO),
+                CDPROJETO = VALUES(CDPROJETO),
+                DTINCLUSAO = VALUES(DTINCLUSAO),
+                SITUACAO = VALUES(SITUACAO),
+                updated_at = NOW()
+        ");
         
         try {
-            if ($exists) {
-                if ($processados == 1) echo "🔍 Executando UPDATE...\n";
-                
-                // UPDATE
-                $stmt = $pdo->prepare("
-                    UPDATE patr SET
-                        DEPATRIMONIO = ?,
-                        SITUACAO = ?,
-                        MARCA = ?,
-                        MODELO = ?,
-                        COR = ?,
-                        CDLOCAL = ?,
-                        CDMATRFUNCIONARIO = ?,
-                        CDPROJETO = ?,
-                        CODOBJETO = ?,
-                        USUARIO = ?,
-                        DTAQUISICAO = ?
-                    WHERE NUPATRIMONIO = ?
-                ");
-                
-                if ($processados == 1) echo "🔍 Executando bind parameters...\n";
-                
-                $stmt->execute([
-                    $depatrimonio, $situacao, $marca, $modelo, $cor,
-                    $cdlocal, $cdfunc, $cdprojeto, $cdobjeto, $usuario, $dtaquisicao,
-                    $nupatrimonio
-                ]);
-                
-                if ($processados == 1) echo "🔍 UPDATE executado! rowCount=" . $stmt->rowCount() . "\n";
-                
-                if ($stmt->rowCount() > 0) $updated++;
-            } else {
-                if ($processados == 1) echo "🔍 Caso INSERT (não deve acontecer no primeiro)...\n";
-                
-                // INSERT
-                $stmt = $pdo->prepare("
-                    INSERT INTO patr (
-                        NUPATRIMONIO, DEPATRIMONIO, SITUACAO, MARCA, MODELO, COR,
-                        CDLOCAL, CDMATRFUNCIONARIO, CDPROJETO, CODOBJETO, USUARIO,
-                        DTAQUISICAO
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ");
-                $stmt->execute([
-                    $nupatrimonio, $depatrimonio, $situacao, $marca, $modelo, $cor,
-                    $cdlocal, $cdfunc, $cdprojeto, $cdobjeto, $usuario, $dtaquisicao
-                ]);
-                $created++;
-            }
-            
-            if ($processados == 1) echo "🔍 Fim do try interno, indo para feedback...\n";
-            
+            $stmt->execute([
+                $nupatrimonio, $depatrimonio, $cdfunc, $cdobjeto, $cdlocal,
+                $usuario, $cdprojeto, $dtinclusao, $situacao
+            ]);
+            if ($stmt->rowCount() == 1) $created++;
+            else $updated++;
         } catch (Exception $e) {
             $errors++;
-            if ($errors < 10) {
-                echo "  ⚠️  Erro patrimônio $nupatrimonio: " . substr($e->getMessage(), 0, 60) . "\n";
+            if ($errors < 5) {
+                echo "  ⚠️  Erro linha $i: " . substr($e->getMessage(), 0, 60) . "\n";
             }
         }
         
-        if ($processados == 1) echo "🔍 Passou do try-catch interno, verificando feedback...\n";
-        
-        // Feedback a cada 100 registros (mais frequente)
-        if (($created + $updated) > 0 && ($created + $updated) % 100 == 0) {
-            echo "  📊 Processados: " . ($created + $updated) . " (novos: $created | atualizados: $updated | erros: $errors)\n";
-            flush();
-            
-            // Commit parcial (MyISAM não mantém transaction bem)
-            $pdo->commit();
-            $pdo->beginTransaction();
+        if (($created + $updated) % 1000 == 0) {
+            echo "  📊 Processados: " . ($created + $updated) . " (novos: $created | atualizados: $updated)\n";
         }
-        
-        } catch (Exception $ex) {
-            // Catch do try EXTERNO (linha 128)
-            $errors++;
-            echo "  💥 ERRO FATAL linha $i: " . $ex->getMessage() . "\n";
-            flush();
-            if ($errors > 20) {
-                echo "❌ Muitos erros, abortando...\n";
-                break;
-            }
-        }
-    } // Fim do for loop
+    }
     
     $pdo->commit();
     echo "✅ Patrimônios: $created novos + $updated atualizados ($errors erros)\n\n";
@@ -298,12 +188,9 @@ $processados = 0;    // Cada linha é 1 registro completo (588 chars)
 // ============================================================================
 // ETAPA 3: IMPORTAR HISTÓRICO
 // ============================================================================
-echo "📜 ETAPA 3: HISTÓRICO (DESABILITADO)\n";
+echo "📜 ETAPA 3: IMPORTANDO HISTÓRICO\n";
 echo "════════════════════════════════════════════════════════════\n";
-echo "⚠️  Estrutura da tabela movpartr é diferente do esperado\n";
-echo "   A importação de histórico precisa ser adaptada\n\n";
 
-if (false) { // DESABILITADO TEMPORARIAMENTE
 $file = __DIR__ . '/../storage/imports/Novo import/Hist_movpatr.TXT';
 if (file_exists($file)) {
     $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -357,7 +244,6 @@ if (file_exists($file)) {
     
     $pdo->commit();
     echo "✅ Histórico: $created novos ($errors duplicados/erros)\n\n";
-}
 } else {
     echo "⚠️  Arquivo não encontrado\n\n";
 }
