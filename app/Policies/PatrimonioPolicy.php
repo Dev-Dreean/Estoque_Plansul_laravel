@@ -35,7 +35,7 @@ class PatrimonioPolicy
 
     /**
      * Quem pode ver UM patrimônio específico?
-     * (Não-admins: podem ver se são responsáveis OU se foram os criadores)
+     * (Não-admins: podem ver se são responsáveis OU se foram os criadores OU se supervisionam quem criou)
      */
     public function view(User $user, Patrimonio $patrimonio): bool
     {
@@ -47,7 +47,14 @@ class PatrimonioPolicy
             strcasecmp($usuario, $nmLogin) === 0 ||
             strcasecmp($usuario, $nmUser) === 0
         );
-        return $isResp || $isCreator;
+        
+        // Verificar se o usuário é supervisor do criador
+        $isSupervisor = false;
+        if ($user->supervisor_de && is_array($user->supervisor_de) && $usuario !== '') {
+            $isSupervisor = in_array($usuario, $user->supervisor_de, true);
+        }
+        
+        return $isResp || $isCreator || $isSupervisor;
     }
 
     /**
@@ -60,7 +67,7 @@ class PatrimonioPolicy
 
     /**
      * Quem pode atualizar?
-     * God/Admin já liberado no 'before'. Para não-admins, permitir se responsável OU criador.
+     * God/Admin já liberado no 'before'. Para não-admins, permitir se responsável OU criador OU supervisor do criador.
      */
     public function update(User $user, Patrimonio $patrimonio): bool
     {
@@ -72,18 +79,43 @@ class PatrimonioPolicy
             strcasecmp($usuario, $nmLogin) === 0 ||
             strcasecmp($usuario, $nmUser) === 0
         );
-        return $isResp || $isCreator;
+        
+        // Verificar se o usuário é supervisor do criador
+        $isSupervisor = false;
+        if ($user->supervisor_de && is_array($user->supervisor_de) && $usuario !== '') {
+            $isSupervisor = in_array($usuario, $user->supervisor_de, true);
+        }
+        
+        return $isResp || $isCreator || $isSupervisor;
     }
 
     /**
      * Quem pode deletar?
      * God/Admin pode deletar TUDO (verificado no 'before').
-     * NINGUÉM mais pode deletar.
+     * Supervisores podem deletar patrimônios dos seus supervisionados.
+     * Qualquer usuário autenticado pode deletar seus próprios patrimônios.
      */
     public function delete(User $user, Patrimonio $patrimonio): bool
     {
-        // Esta linha nunca será alcançada se God/Admin,
-        // pois o before() retorna true antes.
+        $usuario = trim((string)($patrimonio->USUARIO ?? ''));
+        $nmLogin = trim((string)($user->NMLOGIN ?? ''));
+        $nmUser  = trim((string)($user->NOMEUSER ?? ''));
+        
+        // Pode deletar se for o criador
+        $isCreator = $usuario !== '' && (
+            strcasecmp($usuario, $nmLogin) === 0 ||
+            strcasecmp($usuario, $nmUser) === 0
+        );
+        
+        if ($isCreator) {
+            return true;
+        }
+        
+        // Pode deletar se for supervisor do criador
+        if ($user->supervisor_de && is_array($user->supervisor_de) && $usuario !== '') {
+            return in_array($usuario, $user->supervisor_de, true);
+        }
+        
         return false;
     }
 

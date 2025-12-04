@@ -393,9 +393,7 @@
                     @if(($visibleColumns['CADASTRADOR'] ?? true) || $showEmpty)
                     <th class="px-2 py-2">Cadastrador</th>
                     @endif
-                    @if(Auth::user()->isAdmin())
                     <th class="px-2 py-2">Ações</th>
-                    @endif
                   </tr>
                 </thead>
                 @forelse ($patrimonios as $patrimonio)
@@ -519,25 +517,20 @@
                   <td class="px-2 py-2 truncate max-w-[100px]">{{ $patrimonio->cadastrado_por_nome ?? '—' }}</td>
                   @endif
 
-                  @if(Auth::user()->isAdmin())
                   <td class="px-2 py-2">
                     <div class="flex items-center gap-2">
                       <button 
                         type="button"
-                        class="text-red-600 dark:text-red-500 hover:text-red-700 delete-patrimonio-btn"
-                        data-patrimonio-id="{{ $patrimonio->id }}"
-                        data-patrimonio-name="{{ $patrimonio->DEPATRIMONIO }}"
-                        title="Apagar"
-                        onclick="event.stopPropagation()">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        class="delete-patrimonio-btn text-red-600 dark:text-red-500 hover:text-red-700 dark:hover:text-red-400 transition"
+                        data-patrimonio-id="{{ $patrimonio->NUSEQPATR }}"
+                        data-patrimonio-name="{{ $patrimonio->DEPATRIMONIO ?? 'Sem nome' }}"
+                        title="Apagar patrimônio">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                         </svg>
                       </button>
                     </div>
                   </td>
-                  @else
-                  <td class="px-2 py-2"></td>
-                  @endif
                 </tr>
                 @empty
                 <tr>
@@ -1269,187 +1262,79 @@
 
   })();
 
-  // ===== SISTEMA DE DELEÇÃO DE PATRIMÔNIO (FORA DO IIFE) =====
-  let patrimonioParaDelecao = null;
-  let modalDelecao = null;
+  // ===== NOVO SISTEMA DE DELEÇÃO: handlers ligados diretamente aos botões =====
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Inicializando sistema de deleção (bind direto nos botões)');
 
-  function initDeletePatrimonio() {
-    // Criar modal se não existir
-    if (!document.getElementById('modalDelecaoPatrimonio')) {
-      const modal = document.createElement('div');
-      modal.id = 'modalDelecaoPatrimonio';
-      modal.className = 'fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4';
-      modal.style.display = 'none';
-      modal.innerHTML = `
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-sm" onclick="event.stopPropagation();">
-          <div class="px-6 py-3 border-b border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar Remoção</h3>
-          </div>
-          <div class="px-6 py-4">
-            <p class="text-gray-600 dark:text-gray-300">
-              Tem certeza que deseja remover o patrimônio "<strong id="nomePatrimonioDelecao"></strong>"?
-            </p>
-          </div>
-          <div class="px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex gap-3 justify-end">
-            <button 
-              type="button"
-              id="btnCancelarDelecao"
-              class="px-4 py-2 text-sm bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 rounded transition font-medium">
-              Cancelar
-            </button>
-            <button 
-              type="button"
-              id="btnConfirmarDelecao"
-              class="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition font-semibold flex items-center gap-2">
-              <span id="textoBotaoDelecao">Remover</span>
-              <svg id="spinnerDelecao" class="animate-spin h-4 w-4 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(modal);
-    }
+    function bindDeleteButtons() {
+      const buttons = document.querySelectorAll('.delete-patrimonio-btn');
+      buttons.forEach(btn => {
+        if (btn.dataset.deleteBound === '1') return; // já ligado
+        btn.dataset.deleteBound = '1';
 
-    modalDelecao = document.getElementById('modalDelecaoPatrimonio');
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
 
-    // Event delegation para botão deletar
-    document.removeEventListener('click', handleDeleteClick);
-    document.addEventListener('click', handleDeleteClick);
+          const id = this.dataset.patrimonioId;
+          const nome = this.dataset.patrimonioName || 'este patrimônio';
 
-    // Botão cancelar
-    const btnCancelar = document.getElementById('btnCancelarDelecao');
-    if (btnCancelar) {
-      btnCancelar.removeEventListener('click', handleCancelarDelecao);
-      btnCancelar.addEventListener('click', handleCancelarDelecao);
-    }
+          console.log('🗑️ Botão delete clicado (handler direto):', { id, nome });
 
-    // Botão confirmar
-    const btnConfirmar = document.getElementById('btnConfirmarDelecao');
-    if (btnConfirmar) {
-      btnConfirmar.removeEventListener('click', handleConfirmarDelecao);
-      btnConfirmar.addEventListener('click', handleConfirmarDelecao);
-    }
+          if (!id) {
+            alert('Erro: ID do patrimônio não encontrado');
+            return;
+          }
 
-    // Fechar ao clicar fora
-    if (modalDelecao) {
-      modalDelecao.removeEventListener('click', handleClickFora);
-      modalDelecao.addEventListener('click', handleClickFora);
-    }
+          if (!confirm(`Tem certeza que deseja remover o patrimônio "${nome}"?\n\nID: ${id}\n\nEsta ação não pode ser desfeita.`)) {
+            console.log('❌ Deleção cancelada pelo usuário');
+            return;
+          }
 
-    // Fechar com ESC
-    document.removeEventListener('keydown', handleKeyDown);
-    document.addEventListener('keydown', handleKeyDown);
-  }
-
-  function handleDeleteClick(e) {
-    const btn = e.target.closest('.delete-patrimonio-btn');
-    if (!btn) return;
-
-    const patrimonioId = btn.getAttribute('data-patrimonio-id');
-    const patrimonioNome = btn.getAttribute('data-patrimonio-name');
-    
-    patrimonioParaDelecao = { id: patrimonioId, nome: patrimonioNome };
-    const nomeEl = document.getElementById('nomePatrimonioDelecao');
-    if (nomeEl) nomeEl.textContent = patrimonioNome;
-    
-    if (modalDelecao) {
-      modalDelecao.style.display = 'flex';
-    }
-  }
-
-  function handleCancelarDelecao() {
-    if (modalDelecao) modalDelecao.style.display = 'none';
-    patrimonioParaDelecao = null;
-  }
-
-  async function handleConfirmarDelecao(event) {
-    event.preventDefault();
-    
-    if (!patrimonioParaDelecao?.id) {
-      alert('Erro ao obter patrimônio');
-      return;
-    }
-
-    const btnConfirmar = document.getElementById('btnConfirmarDelecao');
-    const textoBotao = document.getElementById('textoBotaoDelecao');
-    const spinner = document.getElementById('spinnerDelecao');
-    
-    // Desabilitar botão corretamente
-    btnConfirmar.disabled = true;
-    if (textoBotao) textoBotao.textContent = 'Removendo...';
-    if (spinner) spinner.classList.remove('hidden');
-
-    try {
-      const response = await fetch(`/patrimonios/${patrimonioParaDelecao.id}`, {
-        method: 'DELETE',
-        headers: {
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
+          deletarPatrimonio(id, nome);
+        }, { passive: false });
       });
-      
-      if (response.status === 204 || response.status === 200) {
-        const nomePatrimonio = patrimonioParaDelecao.nome;
-        alert(`✓ Patrimônio "${nomePatrimonio}" removido com sucesso!`);
-        
-        // Fechar modal
-        if (modalDelecao) modalDelecao.style.display = 'none';
-        patrimonioParaDelecao = null;
-        
-        // Recarregar página
-        setTimeout(() => location.reload(), 300);
-      } else {
-        let errorMessage = 'Erro ao remover patrimônio';
-        try {
-          const data = await response.json();
-          errorMessage = data.message || errorMessage;
-        } catch (e) {
-          // Se não conseguir fazer parse do JSON, usa mensagem padrão
-        }
-        throw new Error(errorMessage);
-      }
-    } catch (error) {
-      console.error('❌ Erro:', error);
-      alert('❌ Erro ao remover: ' + (error.message || 'Tente novamente'));
-      
-      // Re-habilitar botão
-      btnConfirmar.disabled = false;
-      if (textoBotao) textoBotao.textContent = 'Remover';
-      if (spinner) spinner.classList.add('hidden');
     }
-  }
 
-  function handleClickFora(e) {
-    if (e.target === modalDelecao) handleCancelarDelecao();
-  }
+    async function deletarPatrimonio(id, nome) {
+      const url = `/patrimonio/delete/${id}`;
+      console.log('📤 Enviando DELETE para:', url);
 
-  function handleKeyDown(e) {
-    if (e.key === 'Escape' && modalDelecao?.style.display === 'flex') handleCancelarDelecao();
-  }
+      try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        console.log('🔑 CSRF Token:', csrfToken ? 'Encontrado' : 'NÃO encontrado');
 
-  // Inicializar quando DOM estiver pronto - APENAS UMA VEZ
-  document.addEventListener('DOMContentLoaded', function initOnce() {
-    initDeletePatrimonio();
-    
-    // Remover listener depois da primeira execução
-    document.removeEventListener('DOMContentLoaded', initOnce);
-    
-    // Observar mudanças NO MODAL para reinicializar listeners
-    const observerDelete = new MutationObserver((mutations) => {
-      // Se o botão existe mas modal foi removido, recria
-      if (document.querySelector('.delete-patrimonio-btn') && !document.getElementById('modalDelecaoPatrimonio')) {
-        initDeletePatrimonio();
+        const response = await fetch(url, {
+          method: 'DELETE',
+          headers: {
+            'X-CSRF-TOKEN': csrfToken || '',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log('📥 Resposta servidor:', response.status, response.statusText);
+        const data = await response.json().catch(() => ({}));
+        console.log('📦 Payload:', data);
+
+        if (response.ok && data.success) {
+          alert(`✓ Patrimônio "${nome}" (ID: ${id}) removido com sucesso!`);
+          setTimeout(() => window.location.reload(), 400);
+        } else {
+          const msg = data.message || `Erro ${response.status}`;
+          alert('❌ Erro ao remover patrimônio:\n' + msg);
+        }
+      } catch (err) {
+        console.error('❌ Erro na requisição:', err);
+        alert('❌ Erro ao remover patrimônio:\n' + err.message);
       }
-    });
-    
-    observerDelete.observe(document.body, { 
-      childList: true, 
-      subtree: true 
-    });
+    }
+
+    // Bind inicial e observar mudanças dinâmicas
+    bindDeleteButtons();
+    const observer = new MutationObserver(() => bindDeleteButtons());
+    observer.observe(document.body, { childList: true, subtree: true });
+    console.log('✅ Sistema de deleção pronto (bindings aplicados)');
   });
 </script>
 @endpush

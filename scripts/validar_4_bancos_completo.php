@@ -73,7 +73,7 @@ foreach ($projetos_teste as $cdproj) {
         if ($local_proj['NOMEPROJETO'] === $kinghost_proj['NOMEPROJETO']) {
             echo "✅ Projeto $cdproj: OK\n";
         } else {
-            echo "❌ Projeto $cdproj: DIVERGÊNCIA - LOCAL='${local_proj['NOMEPROJETO']}' vs KINGHOST='${kinghost_proj['NOMEPROJETO']}'\n";
+            echo "❌ Projeto $cdproj: DIVERGÊNCIA - LOCAL='" . $local_proj['NOMEPROJETO'] . "' vs KINGHOST='" . $kinghost_proj['NOMEPROJETO'] . "'\n";
         }
     } elseif (!$kinghost_proj) {
         echo "❌ Projeto $cdproj: FALTA NO KINGHOST\n";

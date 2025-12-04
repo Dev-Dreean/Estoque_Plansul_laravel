@@ -15,6 +15,14 @@ class Patrimonio extends Model
     protected $primaryKey = 'NUSEQPATR';
     public $timestamps = false;
 
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'NUSEQPATR';
+    }
+
     protected $fillable = [
         'NUPATRIMONIO',
         'SITUACAO',

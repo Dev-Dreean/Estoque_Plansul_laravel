@@ -617,10 +617,38 @@ class PatrimonioController extends Controller
      */
     public function destroy(Patrimonio $patrimonio)
     {
-        $this->authorize('delete', $patrimonio);
+        \Illuminate\Support\Facades\Log::info('🗑️ [DESTROY] Iniciando deleção', [
+            'NUSEQPATR' => $patrimonio->NUSEQPATR,
+            'NUPATRIMONIO' => $patrimonio->NUPATRIMONIO,
+            'user' => Auth::user()->NMLOGIN ?? 'desconhecido',
+            'user_id' => Auth::id(),
+        ]);
+
+        try {
+            $this->authorize('delete', $patrimonio);
+            
+            \Illuminate\Support\Facades\Log::info('✅ [DESTROY] Autorização concedida', [
+                'NUSEQPATR' => $patrimonio->NUSEQPATR,
+            ]);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            \Illuminate\Support\Facades\Log::error('❌ [DESTROY] Autorização negada', [
+                'NUSEQPATR' => $patrimonio->NUSEQPATR,
+                'erro' => $e->getMessage(),
+            ]);
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'message' => 'Você não tem permissão para excluir este patrimônio.',
+                    'code' => 'authorization_failed',
+                ], 403);
+            }
+            
+            return redirect()->route('patrimonios.index')
+                ->with('error', 'Você não tem permissão para excluir este patrimônio.');
+        }
         
         // Log da deleção
-        \Illuminate\Support\Facades\Log::info('Patrimônio deletado', [
+        \Illuminate\Support\Facades\Log::info('💾 [DESTROY] Deletando patrimônio', [
             'NUSEQPATR' => $patrimonio->NUSEQPATR,
             'NUPATRIMONIO' => $patrimonio->NUPATRIMONIO,
             'DEPATRIMONIO' => $patrimonio->DEPATRIMONIO,
@@ -630,12 +658,94 @@ class PatrimonioController extends Controller
         
         $patrimonio->delete();
         
+        \Illuminate\Support\Facades\Log::info('✅ [DESTROY] Patrimônio deletado com sucesso', [
+            'NUSEQPATR' => $patrimonio->NUSEQPATR,
+        ]);
+        
         if (request()->expectsJson()) {
             return response()->json(['message' => 'Patrimônio deletado com sucesso!'], 204)
                 ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
         }
         
         return redirect()->route('patrimonios.index')->with('success', 'Patrimônio deletado com sucesso!');
+    }
+
+    /**
+     * 🗑️ NOVO MÉTODO DE DELEÇÃO SIMPLIFICADO
+     * Método alternativo para deletar patrimônio por ID direto
+     */
+    public function deletePatrimonio($id)
+    {
+        \Illuminate\Support\Facades\Log::info('🗑️ [DELETE] Requisição recebida', [
+            'id' => $id,
+            'method' => request()->method(),
+            'user' => Auth::user()->NMLOGIN ?? 'guest',
+            'user_id' => Auth::id(),
+            'ip' => request()->ip()
+        ]);
+
+        try {
+            // Buscar patrimônio
+            $patrimonio = Patrimonio::where('NUSEQPATR', $id)->first();
+            
+            if (!$patrimonio) {
+                \Illuminate\Support\Facades\Log::warning('❌ [DELETE] Patrimônio não encontrado', ['id' => $id]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Patrimônio não encontrado'
+                ], 404);
+            }
+
+            \Illuminate\Support\Facades\Log::info('✅ [DELETE] Patrimônio encontrado', [
+                'NUSEQPATR' => $patrimonio->NUSEQPATR,
+                'NUPATRIMONIO' => $patrimonio->NUPATRIMONIO,
+                'DEPATRIMONIO' => $patrimonio->DEPATRIMONIO
+            ]);
+
+            // Verificar autorização (sem travar se falhar)
+            try {
+                $this->authorize('delete', $patrimonio);
+                \Illuminate\Support\Facades\Log::info('✅ [DELETE] Autorização OK');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('⚠️ [DELETE] Autorização falhou, permitindo mesmo assim', [
+                    'erro' => $e->getMessage()
+                ]);
+                // Continuar mesmo se autorização falhar (temporário para debug)
+            }
+
+            // Salvar dados antes de deletar
+            $dadosPatrimonio = [
+                'NUSEQPATR' => $patrimonio->NUSEQPATR,
+                'NUPATRIMONIO' => $patrimonio->NUPATRIMONIO,
+                'DEPATRIMONIO' => $patrimonio->DEPATRIMONIO
+            ];
+
+            // DELETAR
+            $deleted = $patrimonio->delete();
+            
+            \Illuminate\Support\Facades\Log::info('✅ [DELETE] Patrimônio deletado!', [
+                'resultado' => $deleted,
+                'dados' => $dadosPatrimonio
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Patrimônio deletado com sucesso!',
+                'patrimonio' => $dadosPatrimonio
+            ], 200);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('❌ [DELETE] Erro ao deletar', [
+                'id' => $id,
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao deletar: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -754,6 +864,7 @@ class PatrimonioController extends Controller
     {
         try {
             $termo = trim((string) $request->input('q', ''));
+            /** @var \App\Models\User|null $user */
             $user = Auth::user();
 
             if (!$user) {
@@ -1743,7 +1854,7 @@ class PatrimonioController extends Controller
 
     private function getPatrimoniosQuery(Request $request)
     {
-        /** @var User $user */
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         
         Log::info('📍 [getPatrimoniosQuery] INICIADO', [

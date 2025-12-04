@@ -1,0 +1,6 @@
+-- Correção do Patrimônio 19269 para Projeto 200 (FILIAL-RS)
+UPDATE patr SET CDLOCAL = 1422, CDPROJETO = 200 WHERE NUPATRIMONIO = 19269;
+
+-- Verificação
+SELECT 'Patrimônio 19269 após correção:' as Verificacao;
+SELECT NUPATRIMONIO, CDLOCAL, CDPROJETO FROM patr WHERE NUPATRIMONIO = 19269;

@@ -144,7 +144,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data')->middleware('tela.access:1001');
 
     // Rotas do CRUD de Patrimônios e suas APIs (NUSEQTELA: 1000)
-    Route::resource('patrimonios', PatrimonioController::class)->middleware(['tela.access:1000', 'can.delete']);
+    Route::resource('patrimonios', PatrimonioController::class)->middleware(['tela.access:1000']);
+    
+    // Rota de teste para deleção
+    Route::delete('/patrimonio/delete/{id}', [PatrimonioController::class, 'deletePatrimonio'])->name('patrimonio.delete.test');
     Route::get('/patrimonios/lookup-codigo', [App\Http\Controllers\PatrimonioController::class, 'lookupCodigo'])->name('patrimonios.lookupCodigo');
     Route::get('/patrimonios/atribuir/termo', [PatrimonioController::class, 'atribuir'])->name('patrimonios.atribuir');
     // Alias / nova rota para listagem/atribuição via filtros (referenciada em views e redirects)

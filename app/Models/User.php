@@ -18,12 +18,14 @@ use Illuminate\Support\Facades\DB;
  * @property string|null $NMLOGIN
  * @property string|null $NOMEUSER
  * @property string|null $CDMATRFUNCIONARIO
+ * @property array|null $supervisor_de
  * 
  * @method bool isGod()
  * @method bool isAdmin()
  * @method bool podeExcluir()
  * @method bool temAcessoTela(int|string $nuseqtela)
  * @method bool telaVisivel(int|string $nuseqtela)
+ * @method array getSupervisionados()
  * @method \Illuminate\Database\Eloquent\Relations\HasMany acessos()
  */
 class User extends Authenticatable
