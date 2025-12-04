@@ -143,20 +143,28 @@ foreach ($registros as $reg) {
         $bloco = $reg['bloco'];
         $linhas_bloco = explode("\n", $bloco);
         
+        // LINHA 1: NUPATRIMONIO SITUACAO MARCA CDLOCAL MODELO
         $linha1 = $linhas_bloco[0];
         $situacao = trim(substr($linha1, 16, 35));
         $marca = trim(substr($linha1, 51, 35));
         $cdlocal = trim(substr($linha1, 86, 11));
         $modelo = trim(substr($linha1, 97, 35));
-        $cor = trim(substr($linha1, 132, 20));
-        $dtaquisicao_raw = trim(substr($linha1, 152, 11));
-        $depatrimonio = trim(substr($linha1, 163, 285));
         
+        // LINHA 2: COR DTAQUISICAO DEPATRIMONIO
+        $linha2 = isset($linhas_bloco[1]) ? $linhas_bloco[1] : '';
+        $cor = trim(substr($linha2, 0, 20));
+        $dtaquisicao_raw = trim(substr($linha2, 20, 15));
+        $depatrimonio = trim(substr($linha2, 35, 280));
+        
+        // LINHA 5 (última): CDFUNC CDPROJETO NUDOCFISCAL USUARIO DTOPERACAO NUMOF CODOBJETO
         $ultima = end($linhas_bloco);
         $cdfunc = trim(substr($ultima, 0, 20));
-        $cdprojeto = trim(substr($ultima, 20, 15));
-        $usuario = trim(substr($ultima, 50, 15));
-        $codobjeto = trim(substr($ultima, 90, 15));
+        $cdprojeto = trim(substr($ultima, 20, 13));
+        $nudocfiscal = trim(substr($ultima, 33, 15));
+        $usuario = trim(substr($ultima, 48, 15));
+        $dtoperacao_raw = trim(substr($ultima, 63, 15));
+        $numof = trim(substr($ultima, 78, 10));
+        $codobjeto = trim(substr($ultima, 88, 13));
         
         // Limpar
         $situacao = ($situacao === '<null>' || $situacao === '') ? 'EM USO' : $situacao;
