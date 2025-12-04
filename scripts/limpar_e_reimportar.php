@@ -130,19 +130,19 @@ foreach ($registros as $reg) {
         $nupatrimonio = $reg['num'];
         $linha = $reg['linha'];
         
-        // TUDO em uma linha de ~591 chars! Posições baseadas no debug
+        // POSIÇÕES CORRETAS confirmadas pelo debug (linha tem 587 chars)
         $situacao = trim(substr($linha, 16, 35));
         $marca = trim(substr($linha, 51, 35));
         $cdlocal = trim(substr($linha, 86, 11));
         $modelo = trim(substr($linha, 97, 35));
         $cor = trim(substr($linha, 132, 20));
-        $dtaquisicao_raw = trim(substr($linha, 152, 15));
-        $depatrimonio = trim(substr($linha, 167, 90));
-        $cdfunc = trim(substr($linha, 257, 20));
+        $dtaquisicao_raw = trim(substr($linha, 153, 15));  // Pos 153
+        $depatrimonio = trim(substr($linha, 167, 90));     // Pos 167 (OK)
+        $cdfunc = trim(substr($linha, 472, 20));           // Pos 472 !!!
         $cdprojeto = trim(substr($linha, 277, 13));
         $nudocfiscal = trim(substr($linha, 290, 15));
-        $usuario = trim(substr($linha, 305, 15));
-        $dtoperacao_raw = trim(substr($linha, 320, 15));
+        $usuario = trim(substr($linha, 521, 15));          // Pos 521 !!!
+        $dtoperacao_raw = trim(substr($linha, 536, 15));   // Pos 536
         $numof = trim(substr($linha, 335, 10));
         $codobjeto = trim(substr($linha, 345, 13));
         
