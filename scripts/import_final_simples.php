@@ -50,6 +50,13 @@ echo "⏳ Processando...\n\n";
 
 // Processar cada linha (pular cabeçalho linhas 0 e 1)
 for ($i = 2; $i < $total; $i++) {
+    
+    // Debug primeiros registros
+    if ($i <= 5) {
+        echo "DEBUG: Linha $i iniciando...\n";
+        flush();
+    }
+    
     $linha = $linhas[$i];
     
     // Pular linhas pequenas ou separadores
@@ -104,10 +111,21 @@ for ($i = 2; $i < $total; $i++) {
     }
     
     try {
+        // Debug
+        if ($i <= 5) {
+            echo "DEBUG: #$nupatrimonio - Verificando existência...\n";
+            flush();
+        }
+        
         // Verificar se existe
         $check = $pdo->prepare("SELECT NUSEQPATR FROM patr WHERE NUPATRIMONIO = ? LIMIT 1");
         $check->execute([$nupatrimonio]);
         $existe = $check->fetch(PDO::FETCH_ASSOC);
+        
+        if ($i <= 5) {
+            echo "DEBUG: #$nupatrimonio - " . ($existe ? "EXISTE" : "NAO EXISTE") . "\n";
+            flush();
+        }
         
         if ($existe) {
             // UPDATE
