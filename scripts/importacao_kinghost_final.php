@@ -235,6 +235,8 @@ $processados = 0;    // Cada linha é 1 registro completo (588 chars)
                 
                 if ($stmt->rowCount() > 0) $updated++;
             } else {
+                if ($processados == 1) echo "🔍 Caso INSERT (não deve acontecer no primeiro)...\n";
+                
                 // INSERT
                 $stmt = $pdo->prepare("
                     INSERT INTO patr (
@@ -249,12 +251,17 @@ $processados = 0;    // Cada linha é 1 registro completo (588 chars)
                 ]);
                 $created++;
             }
+            
+            if ($processados == 1) echo "🔍 Fim do try interno, indo para feedback...\n";
+            
         } catch (Exception $e) {
             $errors++;
             if ($errors < 10) {
                 echo "  ⚠️  Erro patrimônio $nupatrimonio: " . substr($e->getMessage(), 0, 60) . "\n";
             }
         }
+        
+        if ($processados == 1) echo "🔍 Passou do try-catch interno, verificando feedback...\n";
         
         // Feedback a cada 100 registros (mais frequente)
         if (($created + $updated) > 0 && ($created + $updated) % 100 == 0) {
