@@ -1,0 +1,44 @@
+INSTRUÇÕES PADRÃO DO ASSISTENTE (NÃO EDITAR SEM AVISO)
+
+Propósito:
+- Este arquivo contém o checklist padrão que o assistente segue ANTES de executar mudanças no repositório.
+- O objetivo é garantir transparência: backups, pré-avisos, descrição das ações e relatórios em linguagem objetiva.
+
+Regras gerais:
+- Nunca criar arquivos `.md` para documentação gerada automaticamente. Usar arquivos `.txt` quando necessário.
+- Todo comando que modifique arquivos será precedido por um preâmbulo curto no chat explicando o que será feito.
+- Antes de qualquer exclusão ou movimentação em massa, será criado um backup ZIP em `archive/backups/`.
+- Arquivos que estiverem ligados diretamente ao funcionamento do sistema (pastas `app/`, `config/`, `database/migrations/`, `public/`, `resources/`, `routes/`, `artisan`, `composer.json`, `package.json`, `vendor/`) NÃO serão removidos automaticamente.
+
+Checklist pré-operação (seguido sempre):
+1) Aviso rápido no chat (1-2 frases) com o propósito da ação.
+2) Identificar e listar os arquivos-alvo e os caminhos completos.
+3) Criar backup ZIP em `archive/backups/pre_action_<YYYY-MM-DD_HHMM>.zip` contendo os itens que serão alterados/removidos.
+4) Executar a ação (mover, excluir, criar) usando comandos ou patches.
+5) Verificar resultados (scan por extensão, `php -l` em PHP movido, etc.).
+6) Informar no chat o relatório resumido (o que mudou, onde está o backup, próximos passos).
+
+Formatação das respostas no chat:
+- Sempre em português (pt-br), objetivas e fáceis de ler.
+- Primeiro parágrafo: o que eu farei em 1 frase.
+- Em seguida: lista curta de ações realizadas (bullets) e arquivos principais afetados.
+- Final: opções claras de próximo passo (ex.: commit, push, restaurar backup).
+
+Operações de git:
+- Não executarei `git push` sem autorização explícita. Posso commitar localmente se solicitado.
+- Quando fizer commits, aviso a mensagem sugerida e o conjunto de arquivos adicionados.
+
+Segurança e recuperação:
+- Backups são obrigatórios antes de remoções em massa.
+- Se quiser que backups sejam removidos automaticamente depois de X dias, peça e eu crio a regra.
+
+Exemplo de preâmbulo que usarei no chat:
+"Vou criar um backup e remover X arquivos não essenciais — confirmo quando terminar." 
+
+Alterações neste arquivo:
+- Se desejar atualizar este checklist, peça aqui no chat com a alteração desejada; eu atualizo o `ASSISTANT_INSTRUCTIONS.txt` após confirmação.
+
+Observação final:
+- Este arquivo é de referência para todas as operações futuras conduzidas por mim neste repositório. Ele não substitui instruções específicas que você der no chat — instruções do usuário têm prioridade.
+
+Data de criação: 2025-12-04

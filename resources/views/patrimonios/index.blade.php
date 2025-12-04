@@ -285,6 +285,24 @@
                         @endforeach
                       </select>
                     </div>
+
+                    {{-- Novo: Filtro Multi-Select para Supervisores acompanharem múltiplos cadastradores --}}
+                    <div class="col-span-full md:col-span-2" id="filtro-multi-cadastradores-wrapper" style="display:none;">
+                      <div class="flex items-center gap-2 mb-2">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Acompanhar Múltiplos Cadastradores
+                        </label>
+                        <span class="inline-block px-2 py-1 rounded text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                          Supervisor
+                        </span>
+                      </div>
+                      <div id="filtro-multi-cadastradores" class="border border-gray-300 dark:border-gray-600 rounded-md p-3 bg-white dark:bg-gray-900 max-h-32 overflow-y-auto">
+                        <div class="text-sm text-gray-600 dark:text-gray-400 py-2">
+                          Carregando cadastradores disponíveis...
+                        </div>
+                      </div>
+                      <input type="hidden" name="cadastrados_por" id="input-cadastrados-por" value="{{ request('cadastrados_por') }}" />
+                    </div>
                   </div>
 
                   <div class="flex flex-wrap items-center justify-between mt-4 gap-4">
@@ -1335,6 +1353,91 @@
     const observer = new MutationObserver(() => bindDeleteButtons());
     observer.observe(document.body, { childList: true, subtree: true });
     console.log('✅ Sistema de deleção pronto (bindings aplicados)');
+  });
+
+  // ===== FILTRO MULTI-SELECT DE CADASTRADORES PARA SUPERVISORES =====
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎯 Inicializando filtro multi-select de cadastradores');
+
+    const wrapper = document.getElementById('filtro-multi-cadastradores-wrapper');
+    const container = document.getElementById('filtro-multi-cadastradores');
+    const inputHidden = document.getElementById('input-cadastrados-por');
+
+    if (!wrapper || !container || !inputHidden) {
+      console.warn('⚠️ Elementos do filtro multi-select não encontrados');
+      return;
+    }
+
+    // Carregar lista de cadastradores disponíveis
+    async function carregarCadradores() {
+      try {
+        const response = await fetch('{{ route("api.patrimonios.listar-cadastradores") }}', {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          console.error('❌ Erro ao carregar cadastradores:', response.status);
+          container.innerHTML = '<div class="text-sm text-red-600 dark:text-red-400">Erro ao carregar cadastradores</div>';
+          return;
+        }
+
+        const cadastradores = await response.json();
+        console.log('✅ Cadastradores carregados:', cadastradores.length);
+
+        // Se há mais de 1 cadastrador disponível, mostrar o filtro
+        if (cadastradores.length > 1) {
+          renderizarFiltro(cadastradores);
+          wrapper.style.display = 'block';
+        } else {
+          console.log('ℹ️ Apenas 1 cadastrador disponível, filtro ocultado');
+          wrapper.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('❌ Erro ao carregar cadastradores:', error);
+        container.innerHTML = '<div class="text-sm text-red-600 dark:text-red-400">Erro ao carregar dados</div>';
+      }
+    }
+
+    // Renderizar checkboxes dos cadastradores
+    function renderizarFiltro(cadastradores) {
+      const valoresAtuais = inputHidden.value ? inputHidden.value.split(',').map(v => v.trim()) : [];
+
+      container.innerHTML = cadastradores.map(cad => `
+        <label class="flex items-center gap-2 py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 px-2 rounded">
+          <input 
+            type="checkbox" 
+            data-value="${cad.value}"
+            class="checkbox-cadastrador rounded border-gray-300 dark:border-gray-600"
+            ${valoresAtuais.includes(cad.value) ? 'checked' : ''}
+          />
+          <span class="text-sm text-gray-700 dark:text-gray-300">
+            ${cad.label}
+            ${cad.type === 'supervisionado' ? '<span class="ml-1 text-xs text-blue-600 dark:text-blue-400">(supervisionado)</span>' : ''}
+          </span>
+        </label>
+      `).join('');
+
+      // Bind aos checkboxes
+      document.querySelectorAll('.checkbox-cadastrador').forEach(checkbox => {
+        checkbox.addEventListener('change', atualizarValorHidden);
+      });
+    }
+
+    // Atualizar campo hidden com seleção
+    function atualizarValorHidden() {
+      const selecionados = Array.from(document.querySelectorAll('.checkbox-cadastrador:checked'))
+        .map(cb => cb.dataset.value)
+        .join(',');
+
+      inputHidden.value = selecionados;
+      console.log('📝 Valor cadastrados_por atualizado:', selecionados || '(vazio)');
+    }
+
+    // Carregar cadastradores ao iniciar
+    carregarCadradores();
   });
 </script>
 @endpush

@@ -1850,6 +1850,81 @@ class PatrimonioController extends Controller
         }
     }
 
+    /**
+     * 🎯 API: Retorna lista de cadastradores disponíveis para filtro multi-select
+     * Para supervisores: retorna seus supervisionados
+     * Para admins: retorna todos os usuários
+     * Para usuários comuns: retorna apenas ele mesmo + SISTEMA
+     */
+    public function listarCadradores(Request $request): JsonResponse
+    {
+        try {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            
+            $isSupervisor = !empty($user->getSupervisionados() ?? []);
+            $isAdmin = $user->isGod() || $user->PERFIL === 'ADM';
+
+            $cadastradores = [];
+
+            // SISTEMA (sempre disponível)
+            $cadastradores[] = [
+                'label' => 'Sistema',
+                'value' => 'SISTEMA',
+                'type' => 'sistema'
+            ];
+
+            if ($isAdmin) {
+                // Admin vê todos os usuários que já cadastraram algo
+                $usuarios = User::whereIn('PERFIL', ['USR', 'ADM'])
+                    ->where('LGATIVO', 'S')
+                    ->orderBy('NOMEUSER')
+                    ->get(['NMLOGIN', 'NOMEUSER', 'CDMATRFUNCIONARIO']);
+
+                foreach ($usuarios as $u) {
+                    $cadastradores[] = [
+                        'label' => $u->NOMEUSER . ' (' . $u->NMLOGIN . ')',
+                        'value' => $u->NMLOGIN,
+                        'type' => 'usuario'
+                    ];
+                }
+            } elseif ($isSupervisor) {
+                // Supervisor vê seus supervisionados
+                $supervisionados = $user->getSupervisionados() ?? [];
+                
+                foreach ($supervisionados as $login) {
+                    $u = User::where('NMLOGIN', $login)->first(['NMLOGIN', 'NOMEUSER']);
+                    if ($u) {
+                        $cadastradores[] = [
+                            'label' => $u->NOMEUSER . ' (' . $u->NMLOGIN . ')',
+                            'value' => $u->NMLOGIN,
+                            'type' => 'supervisionado'
+                        ];
+                    }
+                }
+            } else {
+                // Usuário comum vê apenas ele mesmo
+                $cadastradores[] = [
+                    'label' => $user->NOMEUSER . ' (' . $user->NMLOGIN . ')',
+                    'value' => $user->NMLOGIN,
+                    'type' => 'usuario'
+                ];
+            }
+
+            Log::info('📋 [API] Listar cadastradores executado', [
+                'user_login' => $user->NMLOGIN,
+                'is_supervisor' => $isSupervisor,
+                'is_admin' => $isAdmin,
+                'total_cadastradores' => count($cadastradores)
+            ]);
+
+            return response()->json($cadastradores);
+        } catch (\Exception $e) {
+            Log::error('Erro ao listar cadastradores: ' . $e->getMessage());
+            return response()->json([], 200);
+        }
+    }
+
     // --- MÉTODOS AUXILIARES ---
 
     private function getPatrimoniosQuery(Request $request)
@@ -1888,57 +1963,124 @@ class PatrimonioController extends Controller
             });
         }
 
-        // Filtro opcional por cadastrador (aceita NMLOGIN ou matrícula)
-        if ($request->filled('cadastrado_por')) {
-            $valorFiltro = $request->input('cadastrado_por');
+        // Filtro MULTI-SELECT para cadastrador (para supervisores acompanharem múltiplos usuários)
+        $cadastradoresMulti = $request->input('cadastrados_por', []);
+        if (is_string($cadastradoresMulti)) {
+            // Se vier como string separada por vírgula, converter para array
+            $cadastradoresMulti = array_filter(array_map('trim', explode(',', $cadastradoresMulti)));
+        }
 
-            // Valor especial para restaurar comportamento antigo: não aplicar filtro
-            if (trim((string)$valorFiltro) === '__TODOS__') {
-                // não filtrar
-            } else {
-                // Se usuário NÃO for Admin/SUP, só permita filtrar por ele mesmo ou por SISTEMA
-                if (!($user->isGod() || $user->PERFIL === 'ADM')) {
-                    $allowed = [strtoupper(trim((string)($user->NMLOGIN ?? ''))), 'SISTEMA'];
-                    if (!empty($user->CDMATRFUNCIONARIO)) {
-                        $allowed[] = (string)$user->CDMATRFUNCIONARIO;
-                    }
-                    if (!in_array(strtoupper(trim((string)$valorFiltro)), array_map('strtoupper', $allowed))) {
-                        // valor não permitido para este usuário; ignorar filtro
-                        $valorFiltro = null;
+        if (!empty($cadastradoresMulti)) {
+            Log::info('🎯 [FILTRO MULTI] Cadastradores múltiplos solicitados', [
+                'valores' => $cadastradoresMulti,
+                'count' => count($cadastradoresMulti)
+            ]);
+
+            // Para supervisores: permitir filtrar por seus supervisionados
+            // Para admins: permitir qualquer usuário
+            $supervisionados = $user->getSupervisionados() ?? [];
+            $isSupervisor = !empty($supervisionados);
+            $isAdmin = $user->isGod() || $user->PERFIL === 'ADM';
+
+            // Construir lista de logins/matrículas permitidas
+            $permitidos = [];
+            foreach ($cadastradoresMulti as $valor) {
+                $valor = trim((string)$valor);
+                if (empty($valor)) continue;
+
+                // Se for admin, permitir qualquer um
+                if ($isAdmin) {
+                    $permitidos[] = $valor;
+                    continue;
+                }
+
+                // Se for supervisor, permitir apenas supervisionados
+                if ($isSupervisor) {
+                    if (in_array($valor, $supervisionados) || strcasecmp($valor, 'SISTEMA') === 0) {
+                        $permitidos[] = $valor;
                     }
                 }
 
-                if ($valorFiltro) {
-                    if (strcasecmp($valorFiltro, 'SISTEMA') === 0) {
-                        $query->where(function($q) {
-                            $q->whereNull('USUARIO')
-                              ->orWhere('USUARIO', 'SISTEMA');
-                        });
-                    } else {
-                        $loginFiltro = null;
-                        $cdFiltro = null;
+                // Se for usuário comum, permitir apenas ele mesmo e SISTEMA
+                if (!$isSupervisor && !$isAdmin) {
+                    if (strcasecmp($valor, $user->NMLOGIN ?? '') === 0 || strcasecmp($valor, 'SISTEMA') === 0) {
+                        $permitidos[] = $valor;
+                    }
+                }
+            }
 
-                        if (is_numeric($valorFiltro)) {
-                            $cdFiltro = $valorFiltro;
-                            $usuarioFiltro = User::where('CDMATRFUNCIONARIO', $valorFiltro)->first();
-                            $loginFiltro = $usuarioFiltro->NMLOGIN ?? null;
+            if (!empty($permitidos)) {
+                Log::info('🎯 [FILTRO MULTI] Aplicando filtro com usuários permitidos', [
+                    'permitidos' => $permitidos
+                ]);
+
+                $query->where(function ($q) use ($permitidos) {
+                    foreach ($permitidos as $index => $valor) {
+                        $condition = $index === 0 ? 'where' : 'orWhere';
+                        if (strcasecmp($valor, 'SISTEMA') === 0) {
+                            $q->$condition(function($qInner) {
+                                $qInner->whereNull('USUARIO')
+                                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', ['SISTEMA']);
+                            });
                         } else {
-                            $loginFiltro = $valorFiltro;
-                            $usuarioFiltro = User::where('NMLOGIN', $valorFiltro)->first();
-                            $cdFiltro = $usuarioFiltro->CDMATRFUNCIONARIO ?? null;
+                            $q->$condition(DB::raw('LOWER(USUARIO)'), 'LIKE', '%' . mb_strtolower($valor) . '%');
                         }
+                    }
+                });
+            }
+        } else {
+            // Filtro SINGLE para compatibilidade com formulário antigo (se não houver multi-select)
+            if ($request->filled('cadastrado_por')) {
+                $valorFiltro = $request->input('cadastrado_por');
 
-                        $query->where(function ($q) use ($loginFiltro, $cdFiltro, $valorFiltro) {
-                            if ($loginFiltro) {
-                                $q->where('USUARIO', $loginFiltro);
-                            }
-                            if ($cdFiltro) {
-                                $q->orWhere('CDMATRFUNCIONARIO', $cdFiltro);
-                            }
+                // Valor especial para restaurar comportamento antigo: não aplicar filtro
+                if (trim((string)$valorFiltro) === '__TODOS__') {
+                    // não filtrar
+                } else {
+                    // Se usuário NÃO for Admin/SUP, só permita filtrar por ele mesmo ou por SISTEMA
+                    if (!($user->isGod() || $user->PERFIL === 'ADM')) {
+                        $allowed = [strtoupper(trim((string)($user->NMLOGIN ?? ''))), 'SISTEMA'];
+                        if (!empty($user->CDMATRFUNCIONARIO)) {
+                            $allowed[] = (string)$user->CDMATRFUNCIONARIO;
+                        }
+                        if (!in_array(strtoupper(trim((string)$valorFiltro)), array_map('strtoupper', $allowed))) {
+                            // valor não permitido para este usuário; ignorar filtro
+                            $valorFiltro = null;
+                        }
+                    }
+
+                    if ($valorFiltro) {
+                        if (strcasecmp($valorFiltro, 'SISTEMA') === 0) {
+                            $query->where(function($q) {
+                                $q->whereNull('USUARIO')
+                                  ->orWhere('USUARIO', 'SISTEMA');
+                            });
+                        } else {
+                            $loginFiltro = null;
+                            $cdFiltro = null;
+
                             if (is_numeric($valorFiltro)) {
-                                $q->orWhere('CDMATRFUNCIONARIO', $valorFiltro);
+                                $cdFiltro = $valorFiltro;
+                                $usuarioFiltro = User::where('CDMATRFUNCIONARIO', $valorFiltro)->first();
+                                $loginFiltro = $usuarioFiltro->NMLOGIN ?? null;
+                            } else {
+                                $loginFiltro = $valorFiltro;
+                                $usuarioFiltro = User::where('NMLOGIN', $valorFiltro)->first();
+                                $cdFiltro = $usuarioFiltro->CDMATRFUNCIONARIO ?? null;
                             }
-                        });
+
+                            $query->where(function ($q) use ($loginFiltro, $cdFiltro, $valorFiltro) {
+                                if ($loginFiltro) {
+                                    $q->where('USUARIO', $loginFiltro);
+                                }
+                                if ($cdFiltro) {
+                                    $q->orWhere('CDMATRFUNCIONARIO', $cdFiltro);
+                                }
+                                if (is_numeric($valorFiltro)) {
+                                    $q->orWhere('CDMATRFUNCIONARIO', $valorFiltro);
+                                }
+                            });
+                        }
                     }
                 }
             }
