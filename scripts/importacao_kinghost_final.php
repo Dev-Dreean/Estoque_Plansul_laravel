@@ -110,6 +110,9 @@ echo "════════════════════════�
 $file = __DIR__ . '/../Patrimonio_NOVO.TXT';
 if (file_exists($file)) {
     $lines = file($file, FILE_IGNORE_NEW_LINES);
+    $totalLinhas = count($lines);
+    echo "📄 Arquivo carregado: $totalLinhas linhas\n";
+    echo "⏳ Processando (feedback a cada 100 registros)...\n\n";
     
     $pdo->beginTransaction();
     $created = $updated = $errors = 0;
@@ -221,8 +224,9 @@ if (file_exists($file)) {
             }
         }
         
-        if (($created + $updated) > 0 && ($created + $updated) % 1000 == 0) {
-            echo "  📊 Processados: " . ($created + $updated) . " (novos: $created | atualizados: $updated)\n";
+        // Feedback a cada 100 registros (mais frequente)
+        if (($created + $updated) > 0 && ($created + $updated) % 100 == 0) {
+            echo "  📊 Processados: " . ($created + $updated) . " (novos: $created | atualizados: $updated | erros: $errors)\n";
         }
     }
     
