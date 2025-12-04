@@ -116,33 +116,42 @@ if (file_exists($file)) {
     
     $pdo->beginTransaction();
     $created = $updated = $errors = 0;
+    $processados = 0;
     
     // Cada linha é 1 registro completo (588 chars)
     // Pular linha 0 (cabeçalho) e linha 1 (separador ====)
     for ($i = 2; $i < count($lines); $i++) {
-        $line = $lines[$i];
-        
-        // Pular linhas vazias, cabeçalhos ou separadores
-        if (strlen(trim($line)) < 10 || strpos($line, '===') !== false) {
-            continue;
-        }
-        
-        // Converter encoding se necessário
-        if (!mb_check_encoding($line, 'UTF-8')) {
-            $line = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $line);
-        }
-        
-        // Extrair dados por posição (baseado na análise: 588 chars por linha)
-        $nupatrimonio = trim(substr($line, 0, 16));
-        
-        // Validar se é número (não é cabeçalho)
-        if (!is_numeric($nupatrimonio)) {
-            continue;
-        }
-        
-        $situacao = trim(substr($line, 16, 35));
-        $marca = trim(substr($line, 51, 35));
-        $cdlocal = trim(substr($line, 86, 11));
+        try {
+            $line = $lines[$i];
+            
+            // Debug: primeiro registro
+            if ($processados == 0) {
+                echo "🔍 Iniciando processamento...\n";
+            }
+            
+            // Pular linhas vazias, cabeçalhos ou separadores
+            if (strlen(trim($line)) < 10 || strpos($line, '===') !== false) {
+                continue;
+            }
+            
+            // Converter encoding se necessário
+            if (!mb_check_encoding($line, 'UTF-8')) {
+                $line = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $line);
+            }
+            
+            // Extrair dados por posição (baseado na análise: 588 chars por linha)
+            $nupatrimonio = trim(substr($line, 0, 16));
+            
+            // Validar se é número (não é cabeçalho)
+            if (!is_numeric($nupatrimonio)) {
+                continue;
+            }
+            
+            $processados++;
+            
+            $situacao = trim(substr($line, 16, 35));
+            $marca = trim(substr($line, 51, 35));
+            $cdlocal = trim(substr($line, 86, 11));
         $modelo = trim(substr($line, 97, 35));
         $cor = trim(substr($line, 132, 20));
         $dtaquisicao_raw = trim(substr($line, 152, 11));
@@ -227,6 +236,15 @@ if (file_exists($file)) {
         // Feedback a cada 100 registros (mais frequente)
         if (($created + $updated) > 0 && ($created + $updated) % 100 == 0) {
             echo "  📊 Processados: " . ($created + $updated) . " (novos: $created | atualizados: $updated | erros: $errors)\n";
+        }
+        
+        } catch (Exception $ex) {
+            $errors++;
+            echo "  💥 ERRO FATAL linha $i: " . $ex->getMessage() . "\n";
+            if ($errors > 20) {
+                echo "❌ Muitos erros, abortando...\n";
+                break;
+            }
         }
     }
     
