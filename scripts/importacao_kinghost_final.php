@@ -126,6 +126,10 @@ $processados = 0;    // Cada linha é 1 registro completo (588 chars)
     // Pular linha 0 (cabeçalho) e linha 1 (separador ====)
     for ($i = 2; $i < count($lines); $i++) {
         try {
+            if ($processados == 0 || $processados == 1) {
+                echo "🔍 Loop i=$i, processados=$processados\n";
+            }
+            
             $line = $lines[$i];
             
             // Debug: primeiro registro
