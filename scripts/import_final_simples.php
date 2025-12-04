@@ -52,7 +52,7 @@ echo "⏳ Processando...\n\n";
 for ($i = 2; $i < $total; $i++) {
     
     // Debug primeiros registros
-    if ($i <= 5) {
+    if ($i <= 10) {
         echo "DEBUG: Linha $i iniciando...\n";
         flush();
     }
@@ -112,7 +112,7 @@ for ($i = 2; $i < $total; $i++) {
     
     try {
         // Debug
-        if ($i <= 5) {
+        if ($i <= 10) {
             echo "DEBUG: #$nupatrimonio - Verificando existência...\n";
             flush();
         }
@@ -122,14 +122,14 @@ for ($i = 2; $i < $total; $i++) {
         $check->execute([$nupatrimonio]);
         $existe = $check->fetch(PDO::FETCH_ASSOC);
         
-        if ($i <= 5) {
+        if ($i <= 10) {
             echo "DEBUG: #$nupatrimonio - " . ($existe ? "EXISTE" : "NAO EXISTE") . "\n";
             flush();
         }
         
         if ($existe) {
             // UPDATE
-            if ($i <= 5) {
+            if ($i <= 10) {
                 echo "DEBUG: #$nupatrimonio - Preparando UPDATE...\n";
                 flush();
             }
@@ -142,7 +142,7 @@ for ($i = 2; $i < $total; $i++) {
             
             $stmt = $pdo->prepare($sql);
             
-            if ($i <= 5) {
+            if ($i <= 10) {
                 echo "DEBUG: #$nupatrimonio - Executando UPDATE...\n";
                 flush();
             }
@@ -154,7 +154,7 @@ for ($i = 2; $i < $total; $i++) {
                 $nupatrimonio
             ]);
             
-            if ($i <= 5) {
+            if ($i <= 10) {
                 echo "DEBUG: #$nupatrimonio - UPDATE OK, rowCount=" . $stmt->rowCount() . "\n";
                 flush();
             }
