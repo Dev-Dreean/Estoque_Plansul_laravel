@@ -274,14 +274,16 @@ $processados = 0;    // Cada linha é 1 registro completo (588 chars)
         }
         
         } catch (Exception $ex) {
+            // Catch do try EXTERNO (linha 128)
             $errors++;
             echo "  💥 ERRO FATAL linha $i: " . $ex->getMessage() . "\n";
+            flush();
             if ($errors > 20) {
                 echo "❌ Muitos erros, abortando...\n";
                 break;
             }
         }
-    }
+    } // Fim do for loop
     
     $pdo->commit();
     echo "✅ Patrimônios: $created novos + $updated atualizados ($errors erros)\n\n";
