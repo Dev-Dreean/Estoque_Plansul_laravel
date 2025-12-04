@@ -106,27 +106,15 @@ if ($pos_sep === false) {
 $dados_raw = substr($conteudo, $pos_sep + 160);
 $linhas_dados = explode("\n", $dados_raw);
 
-// Detectar registros
+// Detectar registros (cada linha é um registro completo!)
 $registros = [];
-foreach ($linhas_dados as $idx => $linha) {
+foreach ($linhas_dados as $linha) {
     $linha_trim = trim($linha);
+    if (strlen($linha_trim) < 50) continue;
     
-    if (preg_match('/^(\d+)\s{10,}/', $linha_trim)) {
-        preg_match('/^(\d+)/', $linha_trim, $m);
+    if (preg_match('/^(\d+)/', $linha_trim, $m)) {
         $nupatrimonio = (int)$m[1];
-        
-        $bloco = $linha;
-        $j = $idx + 1;
-        while ($j < count($linhas_dados)) {
-            $prox = $linhas_dados[$j];
-            if (preg_match('/^(\d+)\s{10,}/', trim($prox)) && $j != $idx + 1) {
-                break;
-            }
-            $bloco .= "\n" . $prox;
-            $j++;
-        }
-        
-        $registros[] = ['num' => $nupatrimonio, 'bloco' => $bloco];
+        $registros[] = ['num' => $nupatrimonio, 'linha' => $linha];
     }
 }
 
@@ -140,31 +128,23 @@ $erros = 0;
 foreach ($registros as $reg) {
     try {
         $nupatrimonio = $reg['num'];
-        $bloco = $reg['bloco'];
-        $linhas_bloco = explode("\n", $bloco);
+        $linha = $reg['linha'];
         
-        // LINHA 1: NUPATRIMONIO SITUACAO MARCA CDLOCAL MODELO
-        $linha1 = $linhas_bloco[0];
-        $situacao = trim(substr($linha1, 16, 35));
-        $marca = trim(substr($linha1, 51, 35));
-        $cdlocal = trim(substr($linha1, 86, 11));
-        $modelo = trim(substr($linha1, 97, 35));
-        
-        // LINHA 2: COR DTAQUISICAO DEPATRIMONIO
-        $linha2 = isset($linhas_bloco[1]) ? $linhas_bloco[1] : '';
-        $cor = trim(substr($linha2, 0, 20));
-        $dtaquisicao_raw = trim(substr($linha2, 20, 15));
-        $depatrimonio = trim(substr($linha2, 35, 280));
-        
-        // LINHA 5 (última): CDFUNC CDPROJETO NUDOCFISCAL USUARIO DTOPERACAO NUMOF CODOBJETO
-        $ultima = end($linhas_bloco);
-        $cdfunc = trim(substr($ultima, 0, 20));
-        $cdprojeto = trim(substr($ultima, 20, 13));
-        $nudocfiscal = trim(substr($ultima, 33, 15));
-        $usuario = trim(substr($ultima, 48, 15));
-        $dtoperacao_raw = trim(substr($ultima, 63, 15));
-        $numof = trim(substr($ultima, 78, 10));
-        $codobjeto = trim(substr($ultima, 88, 13));
+        // TUDO em uma linha de ~591 chars! Posições baseadas no debug
+        $situacao = trim(substr($linha, 16, 35));
+        $marca = trim(substr($linha, 51, 35));
+        $cdlocal = trim(substr($linha, 86, 11));
+        $modelo = trim(substr($linha, 97, 35));
+        $cor = trim(substr($linha, 132, 20));
+        $dtaquisicao_raw = trim(substr($linha, 152, 15));
+        $depatrimonio = trim(substr($linha, 167, 90));
+        $cdfunc = trim(substr($linha, 257, 20));
+        $cdprojeto = trim(substr($linha, 277, 13));
+        $nudocfiscal = trim(substr($linha, 290, 15));
+        $usuario = trim(substr($linha, 305, 15));
+        $dtoperacao_raw = trim(substr($linha, 320, 15));
+        $numof = trim(substr($linha, 335, 10));
+        $codobjeto = trim(substr($linha, 345, 13));
         
         // Limpar
         $situacao = ($situacao === '<null>' || $situacao === '') ? 'EM USO' : $situacao;
