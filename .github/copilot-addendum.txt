@@ -1,0 +1,29 @@
+REQUISITOS DE IMPLANTAÇÃO E LOGS (ADDENDUM)
+
+1) Ambiente alvo
+- Hospedagem principal: KingHost (acesso SSH: plansul@ftp.plansul.info).
+- Todo código fornecido deve ser testado para rodar localmente e no KingHost; considerar diferenças de SO, versão do PHP e permissões.
+
+2) Validações pré-deploy (obrigatórias)
+- `php -v` e `composer` (quando necessário) devem existir no servidor.
+- Verificar permissões de escrita em `storage/` e `bootstrap/cache`.
+- Preferir paths configuráveis (env/config) ou `__DIR__` para evitar problemas de path no deploy.
+
+3) Logs
+- Todo script que faça alterações ou import/export deve gerar logs em `storage/logs/` (ou `storage/app/logs/`).
+- Formato mínimo: `[YYYY-MM-DD HH:MM:SS] LEVEL contexto: mensagem`.
+- Incluir: timestamp, contexto (nome do script/ação), contagem de registros processados, número de erros.
+- Fornecer flag `--dry-run` quando aplicável e flag `--log-path=<path>` para sobrescrever destino do log.
+
+4) Scripts one-off
+- Se for um script criado apenas para diagnóstico/correção pontual, ele deverá ser marcado como `one-off` na primeira linha do script (comentário) e será removido automaticamente após execução, a menos que o mantenedor solicite preservação.
+
+5) Organização do repositório
+- Propor um mapa de reorganização antes de mover arquivos (origem -> destino). Não mover sem confirmação.
+- Manter `app/`, `config/`, `public/`, `resources/`, `routes/`, `database/migrations/` e `vendor/` intactos a menos que mudanças sejam explícitas e testadas.
+
+6) Comunicação e formato das respostas do agente
+- Respostas em `pt-br`, objetivas e diretas.
+- Estrutura: 1 frase inicial (ação), bullets com passos/arquivos/comandos, comandos em bloco para copiar, 1 pergunta final (próximo passo).
+
+Data: 2025-12-04
