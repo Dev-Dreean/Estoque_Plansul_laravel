@@ -768,7 +768,9 @@ class PatrimonioController extends Controller
                     ->toArray();
             } else {
                 // Usuários comuns: só podem ver patrimonios que são responsáveis ou criadores
-                $patrimonios = Patrimonio::where(function ($query) use ($user) {
+                $supervisionados = $user->getSupervisionados();
+                
+                $patrimonios = Patrimonio::where(function ($query) use ($user, $supervisionados) {
                     // Responsável pelo patrimônio
                     $query->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
                         // OU criador (USUARIO)
@@ -776,6 +778,11 @@ class PatrimonioController extends Controller
                         ->orWhere('USUARIO', $user->NOMEUSER)
                         // OU criado pelo SISTEMA — visível a todos
                         ->orWhere('USUARIO', 'SISTEMA');
+                    
+                    // Se for supervisor, ver também registros dos supervisionados
+                    if (!empty($supervisionados)) {
+                        $query->orWhereIn(DB::raw('LOWER(USUARIO)'), array_map('strtolower', $supervisionados));
+                    }
                 })
                     ->select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO'])
                     ->get()
@@ -1752,13 +1759,21 @@ class PatrimonioController extends Controller
         if (!$user->isGod() && $user->PERFIL !== 'ADM') {
             $nmLogin = (string) ($user->NMLOGIN ?? '');
             $nmUser  = (string) ($user->NOMEUSER ?? '');
+            
+            // Verificar se é supervisor
+            $supervisionados = $user->getSupervisionados(); // Array de logins supervisionados
 
-            // Usuário normal vê: seus registros (por matrícula ou login) e lançamentos do SISTEMA
-            $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
+            $query->where(function ($q) use ($user, $nmLogin, $nmUser, $supervisionados) {
+                // Ver seus próprios registros
                 $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
                     ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
                     ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser])
                     ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', ['SISTEMA']);
+                
+                // Se for supervisor, ver também registros dos supervisionados
+                if (!empty($supervisionados)) {
+                    $q->orWhereIn(DB::raw('LOWER(USUARIO)'), array_map('strtolower', $supervisionados));
+                }
             });
         }
 

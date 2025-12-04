@@ -13,6 +13,7 @@ use Spatie\SimpleExcel\SimpleExcelWriter;
 use Barryvdh\DomPDF\Facade\Pdf;
 // Removido uso de Maatwebsite\Excel; usaremos SimpleExcelWriter já presente
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class RelatorioController extends Controller
 {
@@ -105,10 +106,17 @@ class RelatorioController extends Controller
             if ($user && !$user->isGod() && ($user->PERFIL ?? null) !== 'ADM') {
                 $nmLogin = (string) ($user->NMLOGIN ?? '');
                 $nmUser  = (string) ($user->NOMEUSER ?? '');
-                $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
+                $supervisionados = $user->getSupervisionados();
+                
+                $query->where(function ($q) use ($user, $nmLogin, $nmUser, $supervisionados) {
                     $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
                         ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
                         ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser]);
+                    
+                    // Se for supervisor, ver também registros dos supervisionados
+                    if (!empty($supervisionados)) {
+                        $q->orWhereIn(DB::raw('LOWER(USUARIO)'), array_map('strtolower', $supervisionados));
+                    }
                 });
             }
             switch ($tipo) {
@@ -210,10 +218,17 @@ class RelatorioController extends Controller
         if ($user && !$user->isGod() && ($user->PERFIL ?? null) !== 'ADM') {
             $nmLogin = (string) ($user->NMLOGIN ?? '');
             $nmUser  = (string) ($user->NOMEUSER ?? '');
-            $query->where(function ($q) use ($user, $nmLogin, $nmUser) {
+            $supervisionados = $user->getSupervisionados();
+            
+            $query->where(function ($q) use ($user, $nmLogin, $nmUser, $supervisionados) {
                 $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
                     ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
                     ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser]);
+                
+                // Se for supervisor, ver também registros dos supervisionados
+                if (!empty($supervisionados)) {
+                    $q->orWhereIn(DB::raw('LOWER(USUARIO)'), array_map('strtolower', $supervisionados));
+                }
             });
         }
         switch ($validated['tipo_relatorio']) {
