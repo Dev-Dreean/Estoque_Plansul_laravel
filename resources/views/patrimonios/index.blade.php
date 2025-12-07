@@ -1,1443 +1,352 @@
 <x-app-layout>
-  {{-- Abas de navegação do patrimônio --}}
   <x-patrimonio-nav-tabs />
   
-  <div x-data="{
-    relatorioModalOpen: false,
-    termoModalOpen: false,
-    atribuirTermoModalOpen: false,
-    desatribuirTermoModalOpen: false,
-    resultadosModalOpen: false,
-    isLoading: false,
-    reportData: [],
-    reportFilters: {},
-    tipoRelatorio: 'numero', // <-- A variável agora vive aqui, no lugar certo.
-    relatorioErrors: {},
-    relatorioGlobalError: null,
-    init() {
-        if (window.location.hash === '#atribuir-termo') {
-            this.atribuirTermoModalOpen = true;
-        }
-        this.$watch('atribuirTermoModalOpen', v => {
-            document.documentElement.classList.toggle('overflow-hidden', v);
-            document.body.classList.toggle('overflow-hidden', v);
-        });
-    // Limpa erros quando usuário troca o tipo de relatório
-    this.$watch('tipoRelatorio', () => { this.relatorioErrors = {}; this.relatorioGlobalError = null; });
-        // Reabrir modal de atribuir termo se a paginação foi clicada mantendo hash
-        window.addEventListener('hashchange', () => {
-            if(window.location.hash === '#atribuir-termo') {
-                this.atribuirTermoModalOpen = true;
-            }
-        });
-    },
-
-  gerarRelatorio: function(event) {
-        this.isLoading = true;
-    this.relatorioErrors = {};
-    this.relatorioGlobalError = null;
-        const formData = new FormData(event.target);
-    fetch('{{ route('relatorios.patrimonios.gerar') }}', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
-        'Accept': 'application/json'
-      }
-    })
-    .then(async response => {
-      const data = await response.json().catch(()=>({}));
-      if (!response.ok) {
-        if (response.status === 422 && data.errors) {
-          console.warn('Detalhes validação relatório:', data.errors);
-          this.relatorioErrors = data.errors;
-          this.relatorioGlobalError = data.message || 'Erros de validação.';
-          throw new Error('validation');
-        }
-        this.relatorioGlobalError = data.message || 'Falha inesperada ao gerar relatório.';
-        throw new Error(data.message || 'erro');
-      }
-      return data;
-    })
-    .then(data => {
-      this.reportData = data.resultados;
-      this.reportFilters = data.filtros;
-      this.relatorioModalOpen = false;
-      this.$nextTick(() => {
-        this.resultadosModalOpen = true;
-      });
-    })
-    .catch(error => {
-      if (error.message === 'validation') return; // erros já exibidos inline
-      console.error('Erro ao gerar relatório:', error);
-    })
-    .finally(() => {
-      this.isLoading = false;
-    });
-    },
-  limparErrosAoMudarTipo() {
-    this.$watch('tipoRelatorio', () => { this.relatorioErrors = {}; this.relatorioGlobalError = null; });
-  },
-
-  getFilterLabel() {
-    const labels = {
-      'numero': 'Relatório por Número de Patrimônio',
-      'descricao': 'Relatório por Descrição',
-      'aquisicao': 'Relatório por Período de Aquisição',
-      'cadastro': 'Relatório por Período de Cadastro',
-      'projeto': 'Relatório por Projeto',
-      'oc': 'Relatório por OC',
-      'uf': 'Relatório por UF',
-      'situacao': 'Relatório por Situação'
-    };
-    return labels[this.tipoRelatorio] || 'Relatório';
-  },
-
-  getColumnColor() {
-    const colors = {
-      'numero': 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300',
-      'descricao': 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300',
-      'aquisicao': 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300',
-      'cadastro': 'bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300',
-      'projeto': 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300',
-      'oc': 'bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-300',
-      'uf': 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
-      'situacao': 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
-    };
-    return colors[this.tipoRelatorio] || 'bg-gray-100 dark:bg-gray-900';
-  },
-
-    exportarRelatorio: function(format) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-
-        switch (format) {
-            case 'excel':
-                form.action = '{{ route('relatorios.patrimonios.exportar.excel') }}';
-                break;
-            case 'csv':
-                form.action = '{{ route('relatorios.patrimonios.exportar.csv') }}';
-                break;
-            case 'ods':
-                form.action = '{{ route('relatorios.patrimonios.exportar.ods') }}';
-                break;
-            case 'pdf':
-                form.action = '{{ route('relatorios.patrimonios.exportar.pdf') }}';
-                break;
-        }
-
-        const csrf = document.createElement('input');
-        csrf.type = 'hidden';
-        csrf.name = '_token';
-        csrf.value = '{{ csrf_token() }}';
-        form.appendChild(csrf);
-
-        for (const key in this.reportFilters) {
-            if (this.reportFilters[key] !== null) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = this.reportFilters[key];
-                form.appendChild(input);
-            }
-        }
-
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
-    }
-  }">
-    <div class="py-12">
-      <div class="w-full px-2 sm:px-6 lg:px-12 max-w-screen-xl mx-auto">
-        @if(session('success'))
-        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-          <strong class="font-bold">Sucesso!</strong>
-          <span class="block sm:inline">{{ session('success') }}</span>
-        </div>
-        @endif
-        @if(session('error'))
-        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong class="font-bold">Erro!</strong>
-          <span class="block sm:inline">{{ session('error') }}</span>
-        </div>
-        @endif
-        @if($errors->any())
-        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong class="font-bold">Erro de Validação!</strong>
-          <span class="block sm:inline">{{ $errors->first() }}</span>
-        </div>
-        @endif
-        <div class="section">
-          <div class="section-body max-w-full">
-
-            {{-- Mensagem sobre colunas ocultas por falta de dados --}}
-            @php
-              $visibleColumns = $visibleColumns ?? [];
-              $hiddenColumns = $hiddenColumns ?? [];
-              $showEmpty = $showEmptyColumns ?? false;
-            @endphp
-            @if(!empty($hiddenColumns) && !$showEmpty)
-              <div class="mb-4 p-3 rounded-md bg-yellow-50 border border-yellow-200 text-yellow-800">
-                <strong>Colunas ocultas:</strong>
-                <span>{{ implode(', ', $hiddenColumns) }}</span>
-                <span class="ml-3">(ocultas porque não há informações nesta página)</span>
-                <a href="{{ request()->fullUrlWithQuery(['show_empty_columns' => 1]) }}" class="ml-4 underline font-semibold">Mostrar colunas vazias</a>
-              </div>
-            @elseif(!empty($hiddenColumns) && $showEmpty)
-              <div class="mb-4 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800">
-                <strong>Exibindo colunas vazias:</strong>
-                <span>{{ implode(', ', $hiddenColumns) }}</span>
-                <a href="{{ request()->fullUrlWithQuery(['show_empty_columns' => 0]) }}" class="ml-4 underline font-semibold">Ocultar novamente</a>
-              </div>
-            @endif
-
-            {{-- Formulário de Filtro --}}
-            <div x-data="{ open: false }" @click.outside="open = false" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6" x-id="['filtro-patrimonios']" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimonios')">
-              <div class="flex justify-between items-center gap-3">
-                <div class="flex items-center gap-3">
-                  <h3 class="font-semibold text-lg">Filtros de Busca</h3>
-                  {{-- Badges que mostram filtros ativos quando o painel está recolhido --}}
-                  <div x-cloak x-show="!open" class="flex items-center gap-2 ml-3">
-                    @php
-                      // Não incluir 'per_page' entre os filtros visíveis
-                      $filterKeys = ['nupatrimonio','cdprojeto','descricao','situacao','modelo','nmplanta','matr_responsavel','cadastrado_por'];
-
-                      // Cores por filtro para badges mais agradáveis
-                      $badgeColors = [
-                        'nupatrimonio' => 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700',
-                        'cdprojeto' => 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700',
-                        'descricao' => 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700',
-                        'situacao' => 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700',
-                        'modelo' => 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700',
-                        'nmplanta' => 'bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-700',
-                        'matr_responsavel' => 'bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-700',
-                        'cadastrado_por' => 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700',
-                      ];
-                    @endphp
-                    @foreach($filterKeys as $k)
-                      @if(request()->filled($k))
-                        @php
-                          $labelsMap = [
-                            'nupatrimonio' => 'Nº Patr.',
-                            'cdprojeto' => 'Cód. Projeto',
-                            'descricao' => 'Descrição',
-                            'situacao' => 'Situação',
-                            'modelo' => 'Modelo',
-                            'nmplanta' => 'Cód. Termo',
-                            'matr_responsavel' => 'Responsável',
-                            'cadastrado_por' => 'Cadastrador',
-                          ];
-                          $label = $labelsMap[$k] ?? str_replace('_',' ',ucfirst($k));
-                          $value = request($k);
-                        @endphp
-                        <a href="{{ route('patrimonios.index', request()->except($k)) }}" class="inline-flex items-center text-xs px-2 py-1 rounded-full border hover:opacity-90 {{ $badgeColors[$k] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700' }}">
-                          <span class="truncate max-w-[120px]">{{ $label }}: {{ Str::limit((string)$value, 24) }}</span>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6.293 7.293a1 1 0 011.414 0L10 9.586l2.293-2.293a1 1 0 111.414 1.414L11.414 11l2.293 2.293a1 1 0 01-1.414 1.414L10 12.414l-2.293 2.293a1 1 0 01-1.414-1.414L8.586 11 6.293 8.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-                        </a>
-                      @endif
-                    @endforeach
-                  </div>
-                </div>
-                <button type="button" @click="open = !open" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimonios')" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                  <span class="sr-only">Expandir filtros</span>
-                </button>
-              </div>
-              <div x-cloak x-show="open" x-transition class="mt-4" :id="$id('filtro-patrimonios')">
-                <form method="GET" action="{{ route('patrimonios.index') }}" @submit="open=false">
-                  <div class="grid gap-3 sm:gap-4" style="grid-template-columns: repeat(auto-fit,minmax(150px,1fr));">
-                    <div>
-                      <input type="text" name="nupatrimonio" placeholder="Nº Patr." value="{{ request('nupatrimonio') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
-                    </div>
-                    <div>
-                      <input type="text" name="cdprojeto" placeholder="Cód. Projeto" value="{{ request('cdprojeto') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
-                    </div>
-                    <div class="col-span-full md:col-span-2">
-                      <input type="text" name="descricao" placeholder="Descrição" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
-                    </div>
-                    <div>
-                      <input type="text" name="situacao" placeholder="Situação" value="{{ request('situacao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
-                    </div>
-                    <div>
-                      <input type="text" name="modelo" placeholder="Modelo" value="{{ request('modelo') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
-                    </div>
-                    <div>
-                      <input type="number" name="nmplanta" placeholder="Cód. Termo" value="{{ request('nmplanta') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
-                    </div>
-                    <div>
-                      <x-employee-autocomplete 
-                        id="matr_responsavel_search"
-                        name="matr_responsavel"
-                        placeholder="Responsável (matrícula ou nome)"
-                        value="{{ request('matr_responsavel') }}"
-                      />
-                    </div>
-                    <div>
-                      <select name="cadastrado_por" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
-                        <option value="">Usuário</option>
-                        {{-- Opcional: opção legada para restaurar o comportamento antigo (mostrar todos) --}}
-                        @foreach ($cadastradores as $cadastrador)
-                        <option value="{{ $cadastrador->NMLOGIN }}" @selected(request('cadastrado_por')==$cadastrador->NMLOGIN)>
-                          {{ Str::limit($cadastrador->NOMEUSER,18) }}
-                        </option>
-                        @endforeach
-                      </select>
-                    </div>
-
-                    {{-- Novo: Filtro Multi-Select para Supervisores acompanharem múltiplos cadastradores --}}
-                    <div class="col-span-full md:col-span-2" id="filtro-multi-cadastradores-wrapper" style="display:none;">
-                      <div class="flex items-center gap-2 mb-2">
-                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Acompanhar Múltiplos Cadastradores
-                        </label>
-                        <span class="inline-block px-2 py-1 rounded text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                          Supervisor
-                        </span>
-                      </div>
-                      <div id="filtro-multi-cadastradores" class="border border-gray-300 dark:border-gray-600 rounded-md p-3 bg-white dark:bg-gray-900 max-h-32 overflow-y-auto">
-                        <div class="text-sm text-gray-600 dark:text-gray-400 py-2">
-                          Carregando cadastradores disponíveis...
-                        </div>
-                      </div>
-                      <input type="hidden" name="cadastrados_por" id="input-cadastrados-por" value="{{ request('cadastrados_por') }}" />
-                    </div>
-                  </div>
-
-                  <div class="flex flex-wrap items-center justify-between mt-4 gap-4">
-                    <div class="flex items-center gap-3">
-                      <x-primary-button class="h-10 px-4">
-                        {{ __('Filtrar') }}
-                      </x-primary-button>
-
-                      <a href="{{ route('patrimonios.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">
-                        Limpar
-                      </a>
-                    </div>
-
-                    <label class="flex items-center gap-2 ml-auto shrink-0">
-                      <span class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Itens por página</span>
-                      <select name="per_page" class="h-10 px-2 sm:px-3 w-24 text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
-                        @foreach([10,30,50,100,200] as $opt)
-                        <option value="{{ $opt }}" @selected(request('per_page', 30)==$opt)>{{ $opt }}</option>
-                        @endforeach
-                      </select>
-                    </label>
-                  </div>
-                </form>
-              </div>
-            </div>
-
-            {{-- Ações removidas da listagem conforme solicitado --}}
-
-            <div class="flex items-center gap-3 mb-4">
-              <a href="{{ route('patrimonios.create') }}" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center shadow">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                </svg>
-                <span>Cadastrar</span>
-              </a>
-
-              <button @click="relatorioModalOpen = true" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
-                <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"></path>
-                </svg>
-                <span>Gerar Relatório</span>
-              </button>
-            </div>
-
-            {{-- Colunas fixas — sempre exibidas nesta ordem --}}
-            <!-- Tabela Detalhada -->
-            <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0 min-w-0">
-              <table class="w-full table-fixed text-[11px] text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead
-                  class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+  <div class="py-12">
+    <div class="w-full px-2 sm:px-6 lg:px-12 max-w-screen-xl mx-auto">
+      
+      {{-- Mensagens --}}
+      @if(session('success'))
+      <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative dark:bg-green-900 dark:border-green-700 dark:text-green-200">
+        <strong class="font-bold">Sucesso!</strong>
+        <span class="block sm:inline">{{ session('success') }}</span>
+      </div>
+      @endif
+      
+      @if(session('error'))
+      <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative dark:bg-red-900 dark:border-red-700 dark:text-red-200">
+        <strong class="font-bold">Erro!</strong>
+        <span class="block sm:inline">{{ session('error') }}</span>
+      </div>
+      @endif
+      
+      @if($errors->any())
+      <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative dark:bg-red-900 dark:border-red-700 dark:text-red-200">
+        <strong class="font-bold">Erro!</strong>
+        <span class="block sm:inline">{{ $errors->first() }}</span>
+      </div>
+      @endif
+      
+      <div class="section">
+        <div class="section-body max-w-full">
+          
+          {{-- Filtros --}}
+          <div x-data="{ open: false }" @click.outside="open = false" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
+            <div class="flex justify-between items-center gap-3">
+              <div class="flex items-center gap-3">
+                <h3 class="font-semibold text-lg text-gray-900 dark:text-gray-100">Filtros de Busca</h3>
+                
+                <div x-cloak x-show="!open" class="flex items-center gap-2 ml-3">
                   @php
-                  function sortable_link($column, $label)
-                  {
-                  $direction =
-                  request('sort') === $column && request('direction') === 'asc'
-                  ? 'desc'
-                  : 'asc';
-                  return '<a href="' .
-                                                route(
-                                                    'patrimonios.index',
-                                                    array_merge(request()->query(), [
-                                                        'sort' => $column,
-                                                        'direction' => $direction,
-                                                    ]),
-                                                ) .
-                                                '">' .
-                    $label .
-                    '</a>';
-                  }
+                    $filterKeys = ['nupatrimonio','cdprojeto','descricao','situacao','modelo','nmplanta','matr_responsavel'];
+                    $badgeColors = [
+                      'nupatrimonio' => 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700',
+                      'cdprojeto' => 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700',
+                      'descricao' => 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700',
+                      'situacao' => 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700',
+                      'modelo' => 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700',
+                      'nmplanta' => 'bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-700',
+                      'matr_responsavel' => 'bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-700',
+                    ];
                   @endphp
-                  <tr class="divide-x divide-gray-200 dark:divide-gray-700">
-                    <th class="px-2 py-2">Nº Pat.</th>
-                    @if(($visibleColumns['NUMOF'] ?? true) || $showEmpty)
-                    <th class="px-2 py-2">OF</th>
-                    @endif
-                    <th class="px-2 py-2">Cód. Objeto</th>
-                    @if(($visibleColumns['NMPLANTA'] ?? true) || $showEmpty)
-                    <th class="px-2 py-2">Cód. Termo</th>
-                    @endif
-                    @if(($visibleColumns['NUSERIE'] ?? true) || $showEmpty)
-                    <th class="px-2 py-2">Nº Série</th>
-                    @endif
-                    @if(($visibleColumns['PROJETO'] ?? true) || $showEmpty)
-                    <th class="px-2 py-2">Projeto Associado</th>
-                    @endif
-                    @if(($visibleColumns['CDLOCAL'] ?? true) || $showEmpty)
-                    <th class="px-2 py-2">Código Local</th>
-                    @endif
-                    @if(($visibleColumns['MODELO'] ?? true) || $showEmpty)
-                    <th class="px-2 py-2">Modelo</th>
-                    @endif
-                    @if(($visibleColumns['MARCA'] ?? true) || $showEmpty)
-                    <th class="px-2 py-2">Marca</th>
-                    @endif
-                    <th class="px-2 py-2">Descrição</th>
-                    <th class="px-2 py-2 text-xs">Situação</th>
-                    @if(($visibleColumns['DTAQUISICAO'] ?? true) || $showEmpty)
-                    <th class="px-2 py-2">Dt. Aquisição</th>
-                    @endif
-                    @if(($visibleColumns['DTOPERACAO'] ?? true) || $showEmpty)
-                    <th class="px-2 py-2">Dt. Cadastro</th>
-                    @endif
-                    @if(($visibleColumns['CDMATRFUNCIONARIO'] ?? true) || $showEmpty)
-                    <th class="px-2 py-2">Responsavel</th>
-                    @endif
-                    @if(($visibleColumns['CADASTRADOR'] ?? true) || $showEmpty)
-                    <th class="px-2 py-2">Cadastrador</th>
-                    @endif
-                    <th class="px-2 py-2">Ações</th>
-                  </tr>
-                </thead>
-                @forelse ($patrimonios as $patrimonio)
-                <tr class="tr-hover text-sm cursor-pointer"
-                  @click="window.location.href='{{ route('patrimonios.edit', $patrimonio) }}'">
-
-                  {{-- A ordem agora está 100% correta para corresponder ao seu thead --}}
-                  <td class="px-2 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
-                  @if(($visibleColumns['NUMOF'] ?? true) || $showEmpty)
-                  <td class="px-2 py-2">{{ $patrimonio->NUMOF ?? '—' }}</td>
-                  @endif
-                  <td class="px-2 py-2">{{ $patrimonio->CODOBJETO ?? '—' }}</td>
-                  @if(($visibleColumns['NMPLANTA'] ?? true) || $showEmpty)
-                  <td class="px-2 py-2 font-bold">{{ $patrimonio->NMPLANTA ?? '—' }}</td>
-                  @endif
-                  @if(($visibleColumns['NUSERIE'] ?? true) || $showEmpty)
-                  <td class="px-2 py-2">{{ $patrimonio->NUSERIE ?? '—' }}</td>
-                  @endif
-
-                  {{-- Projeto Associado: Código Projeto + Nome Projeto --}}
-                  @if(($visibleColumns['PROJETO'] ?? true) || $showEmpty)
-                  <td class="px-2 py-2">
-                    @if($patrimonio->local && $patrimonio->local->projeto)
-                    <div class="leading-tight">
-                      <span class="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400">{{ $patrimonio->local->projeto->CDPROJETO }}</span>
-                      <div class="text-[10px] text-gray-600 dark:text-gray-400 truncate max-w-[130px]">{{ $patrimonio->local->projeto->NOMEPROJETO }}</div>
-                    </div>
-                    @else
-                    <span class="text-gray-400 text-[10px]">—</span>
-                    @endif
-                  </td>
-                  @endif
-
-                  {{-- Código Local: Dinâmico com código + nome do local --}}
-                  @if(($visibleColumns['CDLOCAL'] ?? true) || $showEmpty)
-                  <td class="px-2 py-2">
-                    @if($patrimonio->local)
-                    <div class="leading-tight">
-                      <span class="font-mono text-xs font-semibold text-green-600 dark:text-green-400">{{ $patrimonio->local->cdlocal }}</span>
-                      <div class="text-[10px] text-gray-600 dark:text-gray-400 truncate max-w-[120px]">{{ $patrimonio->local->delocal }}</div>
-                    </div>
-                    @else
-                    <span class="text-gray-400 text-[10px]">—</span>
-                    @endif
-                  </td>
-                  @endif
-
-                  @if(($visibleColumns['MODELO'] ?? true) || $showEmpty)
-                  <td class="px-2 py-2 truncate max-w-[90px]">{{ $patrimonio->MODELO ? Str::limit($patrimonio->MODELO,12,'...') : '—' }}</td>
-                  @endif
-                  @if(($visibleColumns['MARCA'] ?? true) || $showEmpty)
-                  <td class="px-2 py-2 truncate max-w-[90px]">{{ $patrimonio->MARCA ?? '—' }}</td>
-                  @endif
-                  @php $desc = trim((string)($patrimonio->DEPATRIMONIO ?? '')); @endphp
-                  <td class="px-2 py-2 font-medium text-gray-900 dark:text-white max-w-[200px]">
-                    @if($desc !== '')
-                      <div title="{{ $desc }}" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;line-clamp:2;-webkit-box-orient:vertical;">
-                        {{ $desc }}
-                      </div>
-                    @else
-                      <span class="text-gray-400">—</span>
-                    @endif
-                  </td>
-                  <td class="px-2 py-2">
-                    @php
-                      $situacao = $patrimonio->SITUACAO ?? '';
-                      // Remove quebras de linha e normaliza espaços
-                      $raw = preg_replace('/[\r\n]+/', ' ', trim($situacao));
-
-                      // Use Str::ascii para transliteração mais robusta (remove acentos)
-                      $norm = strtoupper(
-                        Illuminate\Support\Str::ascii($raw)
-                      );
-                      $norm = preg_replace('/\s+/', ' ', $norm);
-
-                      $situationBadgeMap = [
-                        'EM USO' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-                        'BAIXA' => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
-                        'CONSERTO' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-                        'A DISPOSICAO' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-                        'DISPONIVEL' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-                        'LAVOR' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-                      ];
-
-                      $badgeClasses = $situationBadgeMap[$norm] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-
-                      // Normaliza exibição: variantes de "à disposição" e "disponível" devem mostrar "Disponivel"
-                      if(in_array($norm, ['A DISPOSICAO', 'DISPONIVEL'])){
-                        $displaySituacao = 'Disponivel';
-                      } else {
-                        $displaySituacao = $raw !== '' ? $raw : null;
-                      }
-                    @endphp
-                    @if($displaySituacao)
-                      <span class="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold {{ $badgeClasses }} shadow-sm">
-                        {{ $displaySituacao }}
-                      </span>
-                    @else
-                      <span class="text-gray-400">—</span>
-                    @endif
-                  </td>
-                  @if(($visibleColumns['DTAQUISICAO'] ?? true) || $showEmpty)
-                  <td class="px-2 py-2">{{ $patrimonio->dtaquisicao_pt_br ?? '—' }}</td>
-                  @endif
-                  @if(($visibleColumns['DTOPERACAO'] ?? true) || $showEmpty)
-                  <td class="px-2 py-2">{{ $patrimonio->dtoperacao_pt_br ?? '—' }}</td>
-                  @endif
-                  @if(($visibleColumns['CDMATRFUNCIONARIO'] ?? true) || $showEmpty)
-                  <td class="px-2 py-2">
-                    @if($patrimonio->CDMATRFUNCIONARIO)
-                    <div class="leading-tight">
-                      <span class="font-mono text-xs">{{ $patrimonio->CDMATRFUNCIONARIO }}</span>
-                      <div class="text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[110px]">{{ $patrimonio->funcionario?->NMFUNCIONARIO }}</div>
-                    </div>
-                    @else
-                    <span class="text-gray-400 text-[10px]">—</span>
-                    @endif
-                  </td>
-                  @endif
-                  @if(($visibleColumns['CADASTRADOR'] ?? true) || $showEmpty)
-                  <td class="px-2 py-2 truncate max-w-[100px]">{{ $patrimonio->cadastrado_por_nome ?? '—' }}</td>
-                  @endif
-
-                  <td class="px-2 py-2">
-                    <div class="flex items-center gap-2">
-                      <button 
-                        type="button"
-                        class="delete-patrimonio-btn text-red-600 dark:text-red-500 hover:text-red-700 dark:hover:text-red-400 transition"
-                        data-patrimonio-id="{{ $patrimonio->NUSEQPATR }}"
-                        data-patrimonio-name="{{ $patrimonio->DEPATRIMONIO ?? 'Sem nome' }}"
-                        title="Apagar patrimônio">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  @foreach($filterKeys as $k)
+                    @if(request()->filled($k))
+                      @php
+                        $labelsMap = [
+                          'nupatrimonio' => 'Nº Patr.',
+                          'cdprojeto' => 'Cód. Projeto',
+                          'descricao' => 'Descrição',
+                          'situacao' => 'Situação',
+                          'modelo' => 'Modelo',
+                          'nmplanta' => 'Cód. Termo',
+                          'matr_responsavel' => 'Responsável',
+                        ];
+                        $label = $labelsMap[$k] ?? str_replace('_',' ',ucfirst($k));
+                        $value = request($k);
+                      @endphp
+                      <a href="{{ route('patrimonios.index', request()->except($k)) }}" class="inline-flex items-center text-xs px-2 py-1 rounded-full border hover:opacity-90 {{ $badgeColors[$k] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700' }}">
+                        <span class="truncate max-w-[120px]">{{ $label }}: {{ Str::limit((string)$value, 24) }}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M6.293 7.293a1 1 0 011.414 0L10 9.586l2.293-2.293a1 1 0 111.414 1.414L11.414 11l2.293 2.293a1 1 0 01-1.414 1.414L10 12.414l-2.293 2.293a1 1 0 01-1.414-1.414L8.586 11 6.293 8.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
                         </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                @empty
-                <tr>
-                  {{-- Corrigindo o colspan para o número correto de colunas --}}
-                  <td colspan="16"
-                    class="px-6 py-4 text-center">Nenhum patrimônio encontrado para os
-                    filtros atuais.</td>
-                </tr>
-                @endforelse
-              </table>
-            </div>
-            <div class="mt-4">
-              {{ $patrimonios->appends(request()->query())->links() }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-    <div x-show="relatorioModalOpen" x-transition
-      class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">
-      <div @click.outside="relatorioModalOpen = false"
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl p-6">
-        <div>
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Relatório Geral de Bens
-          </h3>
-          <template x-if="relatorioGlobalError">
-            <div class="mb-4 p-3 rounded-md bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-sm text-red-800 dark:text-red-300">
-              <strong class="font-semibold" x-text="relatorioGlobalError"></strong>
-              <ul class="list-disc ml-5 mt-1 space-y-0.5" x-html="Object.values(relatorioErrors).map(e=>`<li>${e}</li>`).join('')"></ul>
-            </div>
-          </template>
-          <form @submit.prevent="gerarRelatorio">
-            @csrf
-            <div class="space-y-4">
-              <div class="grid grid-cols-2 gap-x-6 gap-y-4">
-                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="numero" x-model="tipoRelatorio"
-                    class="form-radio text-indigo-600"><span
-                    class="text-gray-700 dark:text-gray-300">Por Número</span></label>
-                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="descricao" x-model="tipoRelatorio"
-                    class="form-radio text-indigo-600"><span
-                    class="text-gray-700 dark:text-gray-300">Por Descrição</span></label>
-                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="aquisicao" x-model="tipoRelatorio"
-                    class="form-radio text-indigo-600"><span
-                    class="text-gray-700 dark:text-gray-300">Por Período de
-                    Aquisição</span></label>
-                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="cadastro" x-model="tipoRelatorio"
-                    class="form-radio text-indigo-600"><span
-                    class="text-gray-700 dark:text-gray-300">Por Período Cadastro</span></label>
-                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="projeto" x-model="tipoRelatorio"
-                    class="form-radio text-indigo-600"><span
-                    class="text-gray-700 dark:text-gray-300">Por Projeto</span></label>
-                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="oc" x-model="tipoRelatorio"
-                    class="form-radio text-indigo-600"><span
-                    class="text-gray-700 dark:text-gray-300">Por OC</span></label>
-                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="uf" x-model="tipoRelatorio"
-                    class="form-radio text-indigo-600"><span
-                    class="text-gray-700 dark:text-gray-300">Por UF</span></label>
-                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="situacao" x-model="tipoRelatorio"
-                    class="form-radio text-indigo-600"><span
-                    class="text-gray-700 dark:text-gray-300">Por Situação</span></label>
-              </div>
-              <!-- Campo de busca de descrição quando tipo descricao -->
-              <div x-show="tipoRelatorio === 'descricao'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div class="md:col-span-2">
-                    <label for="descricao_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Descrição contém</label>
-                    <input type="text" id="descricao_busca" name="descricao_busca" placeholder="Parte da descrição" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
-                  </div>
-                  <div>
-                    <label for="sort_direction" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Ordem</label>
-                    <select id="sort_direction" name="sort_direction" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                      <option value="asc">Crescente (A-Z)</option>
-                      <option value="desc">Decrescente (Z-A)</option>
-                    </select>
-                  </div>
+                      </a>
+                    @endif
+                  @endforeach
                 </div>
               </div>
-              <!-- Campo projeto múltiplos códigos -->
-              <div x-show="tipoRelatorio === 'projeto'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div class="md:col-span-2">
-                    <label for="projeto_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Códigos de Projeto (separar por vírgula)</label>
-                    <input type="text" id="projeto_busca" name="projeto_busca" placeholder="Ex: 101, 202, 303" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
-                  </div>
-                  <div>
-                    <label for="sort_direction_proj" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Ordem Nº Patr.</label>
-                    <select id="sort_direction_proj" name="sort_direction" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                      <option value="asc">Crescente</option>
-                      <option value="desc">Decrescente</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <hr class="dark:border-gray-600 my-4">
-              <div x-show="tipoRelatorio === 'aquisicao'"
-                class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div><label for="data_inicio_aquisicao"
-                      class="block font-medium text-sm text-gray-700 dark:text-gray-300">Data
-                      Início</label><input type="date" id="data_inicio_aquisicao"
-                      name="data_inicio_aquisicao"
-                      class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                    <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.periodo && tipoRelatorio==='aquisicao'" x-text="relatorioErrors.periodo"></p>
-                  </div>
-                  <div><label for="data_fim_aquisicao"
-                      class="block font-medium text-sm text-gray-700 dark:text-gray-300">Data
-                      Fim</label><input type="date" id="data_fim_aquisicao"
-                      name="data_fim_aquisicao"
-                      class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                  </div>
-                </div>
-              </div>
-              <div x-show="tipoRelatorio === 'cadastro'"
-                class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div><label for="data_inicio_cadastro"
-                      class="block font-medium text-sm text-gray-700 dark:text-gray-300">Data
-                      Início</label><input type="date" id="data_inicio_cadastro"
-                      name="data_inicio_cadastro"
-                      class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                    <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.periodo && tipoRelatorio==='cadastro'" x-text="relatorioErrors.periodo"></p>
-                  </div>
-                  <div><label for="data_fim_cadastro"
-                      class="block font-medium text-sm text-gray-700 dark:text-gray-300">Data
-                      Fim</label><input type="date" id="data_fim_cadastro"
-                      name="data_fim_cadastro"
-                      class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                  </div>
-                </div>
-              </div>
-              <div x-show="tipoRelatorio === 'numero'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <div>
-                  <label for="numero_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Número do Patrimônio</label>
-                  <input type="number" id="numero_busca" name="numero_busca" placeholder="Digite o número" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                  <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.numero_busca" x-text="relatorioErrors.numero_busca"></p>
-                </div>
-              </div>
-
-              <div x-show="tipoRelatorio === 'aquisicao'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display: none;">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label for="data_inicio_aquisicao" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Data Início</label>
-                    <input type="date" id="data_inicio_aquisicao" name="data_inicio_aquisicao" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                  </div>
-                  <div>
-                    <label for="data_fim_aquisicao" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Data Fim</label>
-                    <input type="date" id="data_fim_aquisicao" name="data_fim_aquisicao" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                  </div>
-                </div>
-              </div>
-              <div x-show="tipoRelatorio === 'oc'"
-                class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div><label for="oc_busca"
-                      class="block font-medium text-sm text-gray-700 dark:text-gray-300">OC</label><input
-                      type="text" id="oc_busca" name="oc_busca" placeholder="Digite a OC"
-                      class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                    <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.oc_busca" x-text="relatorioErrors.oc_busca"></p>
-                  </div>
-                  <div><label
-                      class="block font-medium text-sm text-gray-700 dark:text-gray-300">Combo
-                      OC</label><select
-                      class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm"
-                      disabled>
-                      <option>A definir</option>
-                    </select></div>
-                </div>
-              </div>
-              <!-- Campo UF quando tipo uf -->
-              <div x-show="tipoRelatorio === 'uf'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
-                <div>
-                  <label for="uf_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Unidade Federativa (UF)</label>
-                  <select id="uf_busca" name="uf_busca" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                    <option value="">-- Selecione uma UF --</option>
-                    <option value="AC">Acre</option>
-                    <option value="AL">Alagoas</option>
-                    <option value="AP">Amapá</option>
-                    <option value="AM">Amazonas</option>
-                    <option value="BA">Bahia</option>
-                    <option value="CE">Ceará</option>
-                    <option value="DF">Distrito Federal</option>
-                    <option value="ES">Espírito Santo</option>
-                    <option value="GO">Goiás</option>
-                    <option value="MA">Maranhão</option>
-                    <option value="MT">Mato Grosso</option>
-                    <option value="MS">Mato Grosso do Sul</option>
-                    <option value="MG">Minas Gerais</option>
-                    <option value="PA">Pará</option>
-                    <option value="PB">Paraíba</option>
-                    <option value="PR">Paraná</option>
-                    <option value="PE">Pernambuco</option>
-                    <option value="PI">Piauí</option>
-                    <option value="RJ">Rio de Janeiro</option>
-                    <option value="RN">Rio Grande do Norte</option>
-                    <option value="RS">Rio Grande do Sul</option>
-                    <option value="RO">Rondônia</option>
-                    <option value="RR">Roraima</option>
-                    <option value="SC">Santa Catarina</option>
-                    <option value="SP">São Paulo</option>
-                    <option value="SE">Sergipe</option>
-                    <option value="TO">Tocantins</option>
-                  </select>
-                  <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.uf_busca" x-text="relatorioErrors.uf_busca"></p>
-                </div>
-              </div>
-              <!-- Campo Situação quando tipo situacao -->
-              <div x-show="tipoRelatorio === 'situacao'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
-                <div>
-                  <label for="situacao_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Situação do Patrimônio</label>
-                  <select id="situacao_busca" name="situacao_busca" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                    <option value="">-- Selecione uma Situação --</option>
-                    <option value="EM USO">Em Uso</option>
-                    <option value="CONSERTO">Conserto</option>
-                    <option value="BAIXADO">Baixado</option>
-                    <option value="EMPRESTADO">Emprestado</option>
-                    <option value="DANIFICADO">Danificado</option>
-                    <option value="INATIVO">Inativo</option>
-                    <option value="DESAPARECIDO">Desaparecido</option>
-                  </select>
-                  <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.situacao_busca" x-text="relatorioErrors.situacao_busca"></p>
-                </div>
-              </div>
-            </div>
-            <div class="mt-6 flex justify-end space-x-4">
-              <div class="mr-auto flex items-center">
-                <a href="{{ route('relatorios.funcionarios.exportar.excel') }}" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center" title="Exportar lista completa de funcionários">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
-                  </svg>
-                  <span>Relatório de Funcionários</span>
-                </a>
-              </div>
-              <button type="button" @click="relatorioModalOpen = false"
-                class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500"
-                :disabled="isLoading">Sair</button>
-
-              <button type="submit"
-                class="px-4 py-2 bg-plansul-blue text-white rounded-md hover:bg-opacity-90 flex items-center min-w-[100px] justify-center"
-                :disabled="isLoading">
-                <span x-show="!isLoading">Gerar</span>
-                <span x-show="isLoading">
-                  <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10"
-                      stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                    </path>
-                  </svg>
-                  Gerando...
-                </span>
+              
+              <button type="button" @click="open = !open" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform text-gray-600 dark:text-gray-400" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
             </div>
-          </form>
-        </div>
-      </div>
-    </div>
-    {{-- INÍCIO DO NOVO MODAL DE RESULTADOS --}}
-    <div x-show="resultadosModalOpen" x-transition
-      class="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center" style="display: none;">
-      <div @click.outside="resultadosModalOpen = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-7xl p-6 max-h-[90vh] flex flex-col">
-        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Resultado do Relatório</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          <strong>Filtro:</strong> <span x-text="getFilterLabel(tipoRelatorio)"></span>
-          <template x-if="tipoRelatorio === 'numero'">
-            <span> → <strong x-text="reportFilters.numero_busca || 'Todos'"></strong></span>
-          </template>
-          <template x-if="tipoRelatorio === 'descricao'">
-            <span> → <strong x-text="reportFilters.descricao_busca || 'Todos'"></strong></span>
-          </template>
-          <template x-if="tipoRelatorio === 'projeto'">
-            <span> → <strong x-text="reportFilters.projeto_busca || 'Todos'"></strong></span>
-          </template>
-          <template x-if="tipoRelatorio === 'oc'">
-            <span> → <strong x-text="reportFilters.oc_busca || 'Todos'"></strong></span>
-          </template>
-          <template x-if="tipoRelatorio === 'uf'">
-            <span> → <strong x-text="reportFilters.uf_busca"></strong></span>
-          </template>
-          <template x-if="tipoRelatorio === 'situacao'">
-            <span> → <strong x-text="reportFilters.situacao_busca"></strong></span>
-          </template>
-          <template x-if="['aquisicao', 'cadastro'].includes(tipoRelatorio)">
-            <span> → <strong x-text="(reportFilters.data_inicio_aquisicao || reportFilters.data_inicio_cadastro) + ' a ' + (reportFilters.data_fim_aquisicao || reportFilters.data_fim_cadastro)"></strong></span>
-          </template>
-        </p>
-        <div class="flex-grow overflow-y-auto">
-          <table class="w-full table-fixed text-[11px] text-left text-gray-500 dark:text-gray-400">
-            <thead
-                  class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0">
-              <tr>
-                <!-- Coluna dinâmica em primeiro lugar (conforme o tipo de filtro) -->
-                  <template x-if="tipoRelatorio === 'numero'">
-                  <th scope="col" class="px-6 py-3 font-bold">Nº Patrimônio</th>
-                </template>
-                <template x-if="tipoRelatorio === 'descricao'">
-                  <th scope="col" class="px-6 py-3 font-bold">Descrição</th>
-                </template>
-                <template x-if="tipoRelatorio === 'projeto'">
-                  <th scope="col" class="px-6 py-3 font-bold">Código Projeto</th>
-                </template>
-                <template x-if="tipoRelatorio === 'oc'">
-                  <th scope="col" class="px-6 py-3 font-bold">OC</th>
-                </template>
-                <template x-if="tipoRelatorio === 'uf'">
-                  <th scope="col" class="px-6 py-3 font-bold">UF</th>
-                </template>
-                <template x-if="tipoRelatorio === 'situacao'">
-                  <th scope="col" class="px-6 py-3 font-bold text-xs">Situação</th>
-                </template>
-                <template x-if="tipoRelatorio === 'aquisicao'">
-                  <th scope="col" class="px-6 py-3 font-bold">Data Aquisição</th>
-                </template>
-                <template x-if="tipoRelatorio === 'cadastro'">
-                  <th scope="col" class="px-6 py-3 font-bold">Data Cadastro</th>
-                </template>
-
-                <!-- Colunas fixas (sempre aparecem depois) -->
-                <th scope="col" class="px-6 py-3">Nº Patrimônio</th>
-                <th scope="col" class="px-6 py-3">Descrição</th>
-                <th scope="col" class="px-6 py-3">Modelo</th>
-                <th scope="col" class="px-6 py-3 text-xs">Situação</th>
-                <th scope="col" class="px-6 py-3">Local</th>
-                <th scope="col" class="px-6 py-3">Cadastrador</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template x-if="reportData.length === 0">
-                <tr>
-                  <td colspan="10" class="px-6 py-4 text-center text-lg">
-                    Nenhum patrimônio encontrado para os filtros aplicados.
-                  </td>
-                </tr>
-              </template>
-              <template x-for="patrimonio in reportData" :key="patrimonio.NUSEQPATR">
-                <tr
-                  class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <!-- Coluna dinâmica em primeiro lugar (conforme o tipo de filtro) -->
-                  <template x-if="tipoRelatorio === 'numero'">
-                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
-                      <span x-text="patrimonio.NUPATRIMONIO || 'N/A'"></span>
-                    </td>
-                  </template>
-                  <template x-if="tipoRelatorio === 'descricao'">
-                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
-                      <span x-text="patrimonio.DEPATRIMONIO || 'N/A'"></span>
-                    </td>
-                  </template>
-                  <template x-if="tipoRelatorio === 'projeto'">
-                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
-                      <span x-text="patrimonio.CDPROJETO || 'N/A'"></span>
-                    </td>
-                  </template>
-                  <template x-if="tipoRelatorio === 'oc'">
-                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
-                      <span x-text="patrimonio.NUMOF || 'N/A'"></span>
-                    </td>
-                  </template>
-                  <template x-if="tipoRelatorio === 'uf'">
-                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
-                      <span x-text="patrimonio.projeto_uf || 'N/A'"></span>
-                    </td>
-                  </template>
-                  <template x-if="tipoRelatorio === 'situacao'">
-                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
-                      <span x-text="patrimonio.SITUACAO || 'N/A'"></span>
-                    </td>
-                  </template>
-                  <template x-if="tipoRelatorio === 'aquisicao'">
-                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
-                      <span x-text="patrimonio.DTAQUISICAO || 'N/A'"></span>
-                    </td>
-                  </template>
-                  <template x-if="tipoRelatorio === 'cadastro'">
-                    <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">
-                      <span x-text="patrimonio.DTOPERACAO || 'N/A'"></span>
-                    </td>
-                  </template>
-
-                  <!-- Colunas fixas (sempre aparecem depois) -->
-                  <td class="px-6 py-4" x-text="patrimonio.NUPATRIMONIO || 'N/A'"></td>
-                  <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-                    x-text="patrimonio.DEPATRIMONIO"></td>
-                  <td class="px-6 py-4" x-text="patrimonio.MODELO || 'N/A'"></td>
-                  <td class="px-6 py-4" x-text="patrimonio.SITUACAO"></td>
-                  <td class="px-6 py-4"
-                    x-text="patrimonio.local ? patrimonio.local.LOCAL : 'SISTEMA'"></td>
-                  <td class="px-6 py-4"
-                    x-text="patrimonio.creator ? patrimonio.creator.NOMEUSER : 'SISTEMA'">
-                  </td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
-        <div class="mt-4 pt-4 border-t dark:border-gray-700 flex justify-between items-center">
-          <span class="text-sm text-gray-500">
-            Total de registros encontrados: <strong x-text="reportData.length"></strong>
-          </span>
-
-          <div class="flex items-center space-x-2">
-            {{-- Botão PDF (vermelho) --}}
-            <button @click="exportarRelatorio('pdf')" title="Exportar para PDF"
-              class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded inline-flex items-center">
-              <x-heroicon-o-document-text class="w-5 h-5 mr-2" />
-              <span>PDF</span>
-            </button>
-            {{-- Botão Excel (verde) --}}
-            <button @click="exportarRelatorio('excel')" title="Exportar para Excel"
-              class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded inline-flex items-center">
-              <x-heroicon-o-table-cells class="w-5 h-5 mr-2" />
-              <span>Excel</span>
-            </button>
-            {{-- Botão CSV (verde-escuro) --}}
-            <button @click="exportarRelatorio('csv')" title="Exportar para CSV"
-              class="bg-green-800 hover:bg-green-900 text-white font-bold py-2 px-3 rounded inline-flex items-center">
-              <x-heroicon-o-document-chart-bar class="w-5 h-5 mr-2" />
-              <span>CSV</span>
-            </button>
-            {{-- Botão ODS (azul) --}}
-            <button @click="exportarRelatorio('ods')" title="Exportar para LibreOffice/OpenOffice"
-              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded inline-flex items-center">
-              <x-heroicon-o-document-duplicate class="w-5 h-5 mr-2" />
-              <span>ODS</span>
-            </button>
-            {{-- Botão Fechar --}}
-            <button @click="resultadosModalOpen = false"
-              class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded">
-              Fechar
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {{-- Modal: Gerar Planilha do Termo (controlado por 'termoModalOpen') --}}
-    <div x-show="termoModalOpen" x-transition class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">
-      <div @click.outside="termoModalOpen = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6">
-        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Gerar Planilha por Termo</h3>
-        <form action="{{ route('termos.exportar.excel') }}" method="POST">
-          @csrf
-          <div>
-            <label for="cod_termo" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Cód Termo:</label>
-            <input type="number" id="cod_termo" name="cod_termo" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" required>
-          </div>
-          <div class="mt-6 flex justify-end space-x-4">
-            <button type="button" @click="termoModalOpen = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Sair</button>
-            <button type="submit" class="px-4 py-2 bg-plansul-blue text-white rounded-md hover:bg-opacity-90">Gerar Planilha Excel</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    {{-- Modal: Atribuir Código de Termo (controlado por 'atribuirTermoModalOpen') --}}
-    <template x-teleport="body">
-      <div x-show="atribuirTermoModalOpen" x-cloak>
-        <!-- Overlay separado para garantir escurecimento imediato -->
-        <div x-show="atribuirTermoModalOpen" x-transition.opacity class="fixed inset-0 bg-black/80 z-[2147483600]" aria-hidden="true" @click="atribuirTermoModalOpen=false; history.replaceState(null,'',window.location.pathname+window.location.search)"></div>
-        <!-- Wrapper de posicionamento do modal -->
-        <div class="fixed inset-0 z-[2147483647] flex items-center justify-center pointer-events-none">
-          <div x-show="atribuirTermoModalOpen" x-transition.opacity.scale @click.outside="atribuirTermoModalOpen = false" class="relative pointer-events-auto bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full max-w-4xl p-6 max-h-[calc(100vh-80px)] flex flex-col border border-gray-300 dark:border-gray-700 overflow-hidden focus:outline-none" role="dialog" aria-modal="true" aria-label="Atribuir Código de Termo" tabindex="-1">
-            <button type="button" @click="atribuirTermoModalOpen=false; history.replaceState(null,'',window.location.pathname+window.location.search)" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200" aria-label="Fechar">✕</button>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Atribuir Código de Termo</h3>
-            <form action="{{ route('termos.atribuir.store') }}" method="POST" class="flex-1 flex flex-col min-h-0">
-              @csrf
-
-              {{-- CABEÇALHO COM O BOTÃO GERAR --}}
-              <div class="flex flex-wrap gap-3 justify-between items-center mb-4 px-1">
-                <p class="text-gray-600 dark:text-gray-400 flex-1 min-w-[220px]">Selecione os patrimônios para agrupar em um novo Termo.</p>
-                <div class="flex items-center gap-2">
-                  <button type="button" @click="desatribuirTermoModalOpen = true; atribuirTermoModalOpen=false;" class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center" title="Desatribuir códigos de termo">
-                    <x-heroicon-o-minus-circle class="w-5 h-5 mr-2" />
-                    <span>Desatribuir</span>
-                  </button>
-                  <button type="submit" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
-                    <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
-                    <span>Gerar e Atribuir</span>
-                  </button>
+            
+            <div x-cloak x-show="open" x-transition class="mt-4">
+              <form method="GET" action="{{ route('patrimonios.index') }}" @submit="open=false">
+                <div class="grid gap-3 sm:gap-4" style="grid-template-columns: repeat(auto-fit,minmax(150px,1fr));">
+                  <div>
+                    <input type="text" name="nupatrimonio" placeholder="Nº Patr." value="{{ request('nupatrimonio') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                  </div>
+                  <div>
+                    <input type="text" name="cdprojeto" placeholder="Cód. Projeto" value="{{ request('cdprojeto') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                  </div>
+                  <div class="col-span-full md:col-span-2">
+                    <input type="text" name="descricao" placeholder="Descrição" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                  </div>
+                  <div>
+                    <input type="text" name="situacao" placeholder="Situação" value="{{ request('situacao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                  </div>
+                  <div>
+                    <input type="text" name="modelo" placeholder="Modelo" value="{{ request('modelo') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                  </div>
+                  <div>
+                    <input type="number" name="nmplanta" placeholder="Cód. Termo" value="{{ request('nmplanta') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                  </div>
+                  <div>
+                    <x-employee-autocomplete 
+                      id="matr_responsavel_search"
+                      name="matr_responsavel"
+                      placeholder="Responsável"
+                      value="{{ request('matr_responsavel') }}"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {{-- TABELA SIMPLIFICADA MESMO ESTILO DO MODAL GERAR PLANILHA --}}
-              <div class="overflow-y-auto border dark:border-gray-700 rounded mb-4" style="max-height:400px;" id="atribuir-modal-content">
-                <table class="w-full table-fixed text-[11px] text-left text-gray-500 dark:text-gray-400">
-                  <thead class="text-[10px] text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr class="divide-x divide-gray-200 dark:divide-gray-700">
-                      <th class="p-4 w-4"></th>
-                      <th class="px-2 py-3">Nº Pat.</th>
-                      <th class="px-2 py-3">Descrição</th>
-                      <th class="px-2 py-3">Cód. Termo</th>
-                      <th class="px-2 py-3">Modelo</th>
-                    </tr>
-                  </thead>
-                  <tbody id="atribuir-table-body">
-                    @forelse ($patrimoniosDisponiveis as $patrimonio)
-                    <tr class="border-b dark:border-gray-700">
-                      <td class="p-4"><input type="checkbox" name="patrimonio_ids[]" value="{{ $patrimonio->NUSEQPATR }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"></td>
-                      <td class="px-2 py-2">{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
-                      <td class="px-2 py-2">{{ $patrimonio->DEPATRIMONIO }}</td>
-                      <td class="px-2 py-2 font-bold">{{ $patrimonio->NMPLANTA }}</td>
-                      <td class="px-2 py-2">{{ $patrimonio->MODELO }}</td>
-                    </tr>
-                    @empty
-                    <tr>
-                      <td colspan="5" class="py-4 text-center">Nenhum patrimônio disponível.</td>
-                    </tr>
-                    @endforelse
-                  </tbody>
-                </table>
-              </div>
-              <div class="mt-4" id="atribuir-pagination">
-                {{ $patrimoniosDisponiveis->appends(request()->except('page', 'disponiveisPage'))->links('pagination::tailwind') }}
-              </div>
-              <div class="mt-6 flex justify-end space-x-4 border-t border-gray-200 dark:border-gray-700 pt-6">
-                <button type="button" @click="atribuirTermoModalOpen=false; history.replaceState(null,'',window.location.pathname+window.location.search)" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Fechar</button>
-                <button type="submit" class="px-4 py-2 bg-plansul-blue text-white rounded-md hover:bg-opacity-90 flex items-center">
-                  <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
-                  <span>Gerar e Atribuir Termo</span>
-                </button>
-              </div>
-            </form>
+                <div class="flex flex-wrap items-center justify-between mt-4 gap-4">
+                  <div class="flex items-center gap-3">
+                    <x-primary-button class="h-10 px-4">Filtrar</x-primary-button>
+                    <a href="{{ route('patrimonios.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">Limpar</a>
+                  </div>
+
+                  <label class="flex items-center gap-2 ml-auto shrink-0">
+                    <span class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Itens por página</span>
+                    <select name="per_page" class="h-10 px-2 sm:px-3 w-24 text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
+                      @foreach([10,30,50,100,200] as $opt)
+                      <option value="{{ $opt }}" @selected(request('per_page', 30)==$opt)>{{ $opt }}</option>
+                      @endforeach
+                    </select>
+                  </label>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          {{-- Ações --}}
+          <div class="flex items-center gap-3 mb-4">
+            <a href="{{ route('patrimonios.create') }}" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center shadow">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+              </svg>
+              <span>Cadastrar</span>
+            </a>
+
+            <a href="#" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+              <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"></path>
+              </svg>
+              <span>Gerar Relatório</span>
+            </a>
+          </div>
+
+          {{-- Grid Reutilizável --}}
+          <x-patrimonio-table 
+            :patrimonios="$patrimonios" 
+            :columns="['nupatrimonio', 'numof', 'codobjeto', 'nmplanta', 'nuserie', 'projeto', 'local', 'modelo', 'marca', 'descricao', 'situacao', 'dtaquisicao', 'dtoperacao', 'responsavel', 'cadastrador']"
+            :showActions="true"
+            :clickable="true"
+            onRowClick="{{ route('patrimonios.edit', ':id') }}"
+            actionsView="patrimonios.partials.table-actions"
+          />
+          
+          {{-- Paginação --}}
+          <div class="mt-4">
+            {{ $patrimonios->appends(request()->query())->links() }}
           </div>
         </div>
       </div>
-    </template>
-
-    {{-- Modal: Desatribuir Código de Termo --}}
-    <template x-teleport="body">
-      <div x-show="desatribuirTermoModalOpen" x-cloak>
-        <div x-show="desatribuirTermoModalOpen" x-transition.opacity class="fixed inset-0 bg-black/70 z-[2147483600]" aria-hidden="true" @click="desatribuirTermoModalOpen=false"></div>
-        <div class="fixed inset-0 z-[2147483647] flex items-center justify-center pointer-events-none">
-          <div x-show="desatribuirTermoModalOpen" x-transition.opacity.scale @click.outside="desatribuirTermoModalOpen = false" class="relative pointer-events-auto bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full max-w-3xl p-6 max-h-[calc(100vh-80px)] flex flex-col border border-gray-300 dark:border-gray-700 overflow-hidden" role="dialog" aria-modal="true" aria-label="Desatribuir Código de Termo">
-            <button type="button" @click="desatribuirTermoModalOpen=false" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200" aria-label="Fechar">✕</button>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Desatribuir Código de Termo</h3>
-            <form action="{{ route('termos.desatribuir') }}" method="POST" class="flex-1 flex flex-col min-h-0">
-              @csrf
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Selecione os patrimônios que terão o código de termo removido. Apenas itens com código atribuído são listados.</p>
-              <div class="overflow-y-auto border dark:border-gray-700 rounded mb-4" style="max-height:400px;">
-                <table class="w-full table-fixed text-sm text-left text-gray-500 dark:text-gray-400">
-                  <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr class="divide-x divide-gray-200 dark:divide-gray-700">
-                      <th class="p-3 w-4"></th>
-                      <th class="px-2 py-3">Nº Pat.</th>
-                      <th class="px-2 py-3">Descrição</th>
-                      <th class="px-2 py-3">Cód. Termo</th>
-                      <th class="px-2 py-3">Modelo</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @php $patrimoniosComTermo = $patrimonios->filter(fn($p)=> !blank($p->NMPLANTA)); @endphp
-                    @forelse ($patrimoniosComTermo as $pat)
-                    <tr class="border-b dark:border-gray-700">
-                      <td class="p-3"><input type="checkbox" name="patrimonio_ids[]" value="{{ $pat->NUSEQPATR }}" class="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500"></td>
-                      <td class="px-2 py-2">{{ $pat->NUPATRIMONIO ?? 'N/A' }}</td>
-                      <td class="px-2 py-2">{{ $pat->DEPATRIMONIO }}</td>
-                      <td class="px-2 py-2 font-bold">{{ $pat->NMPLANTA }}</td>
-                      <td class="px-2 py-2">{{ $pat->MODELO }}</td>
-                    </tr>
-                    @empty
-                    <tr>
-                      <td colspan="5" class="py-4 text-center">Nenhum patrimônio com código de termo nesta página.</td>
-                    </tr>
-                    @endforelse
-                  </tbody>
-                </table>
-              </div>
-              <div class="mt-6 flex justify-end space-x-4 border-t border-gray-200 dark:border-gray-700 pt-6">
-                <button type="button" @click="desatribuirTermoModalOpen=false" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Fechar</button>
-                <button type="submit" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md font-semibold flex items-center">
-                  <x-heroicon-o-minus-circle class="w-5 h-5 mr-2" />
-                  <span>Remover Códigos Selecionados</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </template>
-  </div>
+    </div>
   </div>
 </x-app-layout>
+
 @push('scripts')
 <script>
-  (function() {
-    let selectedPatrimonios = new Set(); // Mantém selecionados entre páginas
-    let currentAtribuirPage = 1; // Página interna independente
-    let totalPages = 1; // Total de páginas disponíveis
-    let patrimoniosData = []; // Cache local dos dados
-    let isLoading = false;
-
-    function preserveSelections() {
-      // Salva seleções atuais
-      document.querySelectorAll('#atribuir-table-body input[type="checkbox"]:checked').forEach(input => {
-        selectedPatrimonios.add(input.value);
-      });
-    }
-
-    function restoreSelections() {
-      // Restaura seleções após carregar nova página
-      document.querySelectorAll('#atribuir-table-body input[type="checkbox"]').forEach(input => {
-        if (selectedPatrimonios.has(input.value)) {
-          input.checked = true;
-        }
-      });
-    }
-
-    function generateTableRows(patrimonios) {
-      if (!patrimonios || patrimonios.length === 0) {
-        return '<tr><td colspan="5" class="py-4 text-center">Nenhum patrimônio disponível.</td></tr>';
-      }
-
-      return patrimonios.map(patrimonio => `
-                <tr class="border-b dark:border-gray-700">
-                    <td class="p-4">
-                        <input type="checkbox" name="patrimonio_ids[]" value="${patrimonio.NUSEQPATR}" 
-                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
-                    </td>
-                    <td class="px-2 py-2">${patrimonio.NUPATRIMONIO || 'N/A'}</td>
-                    <td class="px-2 py-2">${patrimonio.DEPATRIMONIO || ''}</td>
-                    <td class="px-2 py-2 font-bold">${patrimonio.NMPLANTA || ''}</td>
-                    <td class="px-2 py-2">${patrimonio.MODELO || ''}</td>
-                </tr>
-            `).join('');
-    }
-
-    function generatePagination(currentPage, total) {
-      if (total <= 1) return '';
-
-      let pagination = '<nav class="flex items-center justify-between"><div class="flex-1 flex justify-between sm:hidden">';
-
-      // Previous button
-      if (currentPage > 1) {
-        pagination += `<a href="#" data-page="${currentPage - 1}" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Previous</a>`;
-      }
-
-      // Next button  
-      if (currentPage < total) {
-        pagination += `<a href="#" data-page="${currentPage + 1}" class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Next</a>`;
-      }
-
-      pagination += '</div><div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"><div><p class="text-sm text-gray-700">Showing <span class="font-medium">' + ((currentPage - 1) * 30 + 1) + '</span> to <span class="font-medium">' + Math.min(currentPage * 30, total * 30) + '</span></p></div><div><nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">';
-
-      // Page numbers
-      for (let i = Math.max(1, currentPage - 2); i <= Math.min(total, currentPage + 2); i++) {
-        const isActive = i === currentPage;
-        pagination += `<a href="#" data-page="${i}" class="relative inline-flex items-center px-4 py-2 text-sm font-medium ${isActive ? 'bg-blue-600 text-white' : 'text-gray-500 bg-white hover:bg-gray-50'} border border-gray-300">${i}</a>`;
-      }
-
-      pagination += '</nav></div></div></nav>';
-      return pagination;
-    }
-
-    function loadAtribuirPageAPI(page) {
-      if (isLoading) return;
-      isLoading = true;
-
-      preserveSelections();
-
-      // Criar rota API específica para buscar patrimônios
-      fetch(`{{ route('patrimonios.index') }}/api/disponiveis?page=${page}`, {
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-          }
-        })
-        .then(response => response.json())
-        .then(data => {
-          currentAtribuirPage = page;
-          totalPages = data.last_page || 1;
-
-          // Atualiza tabela
-          document.getElementById('atribuir-table-body').innerHTML = generateTableRows(data.data);
-
-          // Atualiza paginação
-          document.getElementById('atribuir-pagination').innerHTML = generatePagination(currentAtribuirPage, totalPages);
-
-          restoreSelections();
-          handleAtribuirPagination(); // Re-bind eventos
-          isLoading = false;
-        })
-        .catch(error => {
-          console.error('Erro ao carregar página:', error);
-          isLoading = false;
-        });
-    }
-
-    function handleAtribuirPagination() {
-      const paginationContainer = document.getElementById('atribuir-pagination');
-      if (!paginationContainer) return;
-
-      paginationContainer.addEventListener('click', function(e) {
-        if (e.target.tagName === 'A' && e.target.dataset.page) {
-          e.preventDefault();
-          const targetPage = parseInt(e.target.dataset.page);
-          if (targetPage && targetPage !== currentAtribuirPage) {
-            loadAtribuirPageAPI(targetPage);
-          }
-        }
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      handleAtribuirPagination();
-
-      // Bind ao abrir modal
-      const observer = new MutationObserver(() => {
-        if (document.querySelector('#atribuir-modal-content')) {
-          handleAtribuirPagination();
-          restoreSelections();
-        }
-      });
-
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-    });
-
-  })();
-
-  // ===== NOVO SISTEMA DE DELEÇÃO: handlers ligados diretamente aos botões =====
+  console.log('✅ [JS LOADED] Script de deleção de patrimônios carregado');
+  
   document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Inicializando sistema de deleção (bind direto nos botões)');
+    console.log('🚀 [DOMContentLoaded] Inicializando sistema de deleção');
+
+    const boundButtons = new Set();
+    let bindingAttempts = 0;
 
     function bindDeleteButtons() {
+      bindingAttempts++;
       const buttons = document.querySelectorAll('.delete-patrimonio-btn');
-      buttons.forEach(btn => {
-        if (btn.dataset.deleteBound === '1') return; // já ligado
-        btn.dataset.deleteBound = '1';
+      console.log(`📌 [BIND ATTEMPT #${bindingAttempts}] Encontrados ${buttons.length} botões com classe .delete-patrimonio-btn`);
+      
+      if (buttons.length === 0) {
+        console.warn('⚠️ [BIND] Nenhum botão encontrado! Verifique se a tabela foi renderizada.');
+      }
+      
+      buttons.forEach((btn, index) => {
+        if (boundButtons.has(btn)) {
+          console.log(`⏭️ [BIND] Botão ${index} já vinculado, pulando...`);
+          return;
+        }
+        boundButtons.add(btn);
 
-        btn.addEventListener('click', function(e) {
+        const id = btn.dataset.patrimonioId;
+        const nome = btn.dataset.patrimonioName || 'Patrimônio';
+        const url = btn.dataset.deleteUrl;
+
+        console.log(`✅ [BIND] Botão ${index} vinculado:`, { id, nome, url });
+
+        btn.addEventListener('click', async function(e) {
+          console.log('⚡ [CLICK EVENT] Clique no botão detectado!', { 
+            id: this.dataset.patrimonioId,
+            classe: this.className, 
+            dataset: this.dataset 
+          });
+          
           e.preventDefault();
           e.stopPropagation();
 
-          const id = this.dataset.patrimonioId;
-          const nome = this.dataset.patrimonioName || 'este patrimônio';
+          const patrimonio_id = this.dataset.patrimonioId;
+          const patrimonio_nome = this.dataset.patrimonioName || 'Patrimônio';
+          const delete_url = this.dataset.deleteUrl || `/patrimonio/delete/${patrimonio_id}`;
 
-          console.log('🗑️ Botão delete clicado (handler direto):', { id, nome });
+          console.log('🗑️ [DELETE FLOW] Iniciando fluxo de deleção:', { 
+            patrimonio_id, 
+            patrimonio_nome, 
+            delete_url, 
+            btn_element: this 
+          });
 
-          if (!id) {
-            alert('Erro: ID do patrimônio não encontrado');
+          if (!patrimonio_id) {
+            console.error('❌ [ERROR] ID não encontrado no data-attribute');
+            alert('❌ Erro: ID do patrimônio não encontrado');
             return;
           }
 
-          if (!confirm(`Tem certeza que deseja remover o patrimônio "${nome}"?\n\nID: ${id}\n\nEsta ação não pode ser desfeita.`)) {
-            console.log('❌ Deleção cancelada pelo usuário');
+          const confirmacao = confirm(`🗑️ Remover "${patrimonio_nome}" (ID: ${patrimonio_id})?\n\n⚠️ Esta ação NÃO pode ser desfeita!`);
+          console.log('📋 [CONFIRM] Usuário respondeu:', confirmacao ? 'SIM' : 'NÃO');
+          
+          if (!confirmacao) {
+            console.log('⏸️ [CANCELLED] Deleção cancelada pelo usuário');
             return;
           }
 
-          deletarPatrimonio(id, nome);
-        }, { passive: false });
+          const btn_original_html = this.innerHTML;
+          const btn_original_disabled = this.disabled;
+          this.disabled = true;
+          this.innerHTML = '<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+
+          try {
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+            
+            console.log('📡 [FETCH] Preparando requisição DELETE:', {
+              url: delete_url,
+              method: 'DELETE',
+              csrf_present: !!csrf,
+              headers: {
+                'X-CSRF-TOKEN': csrf ? '✅ Presente' : '❌ Ausente',
+                'Accept': 'application/json'
+              }
+            });
+
+            const response = await fetch(delete_url, {
+              method: 'DELETE',
+              headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              }
+            });
+
+            console.log('📊 [RESPONSE] Resposta HTTP recebida:', {
+              status: response.status,
+              statusText: response.statusText,
+              ok: response.ok,
+              content_type: response.headers.get('content-type'),
+              url_final: response.url
+            });
+
+            let data = {};
+            try {
+              const text = await response.clone().text();
+              console.log('📄 [RESPONSE BODY] Conteúdo bruto:', text.substring(0, 200));
+              data = JSON.parse(text);
+              console.log('✅ [JSON PARSED] Dados parseados:', data);
+            } catch (parseErr) {
+              console.error('❌ [PARSE ERROR] Erro ao fazer parse do JSON:', parseErr.message);
+              data = { message: 'Erro ao processar resposta' };
+            }
+
+            if (response.ok && response.status === 200) {
+              console.log('✅ [SUCCESS] Patrimônio deletado com sucesso! Response OK (200)');
+              console.log('📌 [SUCCESS DATA]', data);
+              
+              alert(`✅ "${patrimonio_nome}" foi removido com sucesso!`);
+              console.log('🔄 [RELOAD] Recarregando página em 500ms...');
+              setTimeout(() => {
+                console.log('🔄 [RELOAD NOW] Recarregando...');
+                window.location.reload();
+              }, 500);
+            } else if (response.status === 403) {
+              console.error('❌ [AUTH ERROR] Permissão negada (403):', data.message);
+              alert('❌ Permissão negada!\n\n' + (data.message || 'Você não tem permissão para deletar este patrimônio.'));
+              this.disabled = btn_original_disabled;
+              this.innerHTML = btn_original_html;
+            } else if (response.status === 404) {
+              console.error('❌ [NOT FOUND] Patrimônio não encontrado (404):', data.message);
+              alert('❌ Erro: Patrimônio não encontrado!');
+              this.disabled = btn_original_disabled;
+              this.innerHTML = btn_original_html;
+            } else {
+              console.error('❌ [ERROR] Erro HTTP:', { status: response.status, statusText: response.statusText, data });
+              alert('❌ Erro ' + response.status + ': ' + (data.message || response.statusText));
+              this.disabled = btn_original_disabled;
+              this.innerHTML = btn_original_html;
+            }
+          } catch (err) {
+            console.error('❌ [NETWORK ERROR] Erro na requisição fetch:', {
+              message: err.message,
+              name: err.name,
+              stack: err.stack
+            });
+            alert('❌ Erro na comunicação com o servidor:\n' + err.message);
+            this.disabled = btn_original_disabled;
+            this.innerHTML = btn_original_html;
+          }
+        });
       });
     }
 
-    async function deletarPatrimonio(id, nome) {
-      const url = `/patrimonio/delete/${id}`;
-      console.log('📤 Enviando DELETE para:', url);
-
-      try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-        console.log('🔑 CSRF Token:', csrfToken ? 'Encontrado' : 'NÃO encontrado');
-
-        const response = await fetch(url, {
-          method: 'DELETE',
-          headers: {
-            'X-CSRF-TOKEN': csrfToken || '',
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        });
-
-        console.log('📥 Resposta servidor:', response.status, response.statusText);
-        const data = await response.json().catch(() => ({}));
-        console.log('📦 Payload:', data);
-
-        if (response.ok && data.success) {
-          alert(`✓ Patrimônio "${nome}" (ID: ${id}) removido com sucesso!`);
-          setTimeout(() => window.location.reload(), 400);
-        } else {
-          const msg = data.message || `Erro ${response.status}`;
-          alert('❌ Erro ao remover patrimônio:\n' + msg);
-        }
-      } catch (err) {
-        console.error('❌ Erro na requisição:', err);
-        alert('❌ Erro ao remover patrimônio:\n' + err.message);
-      }
-    }
-
-    // Bind inicial e observar mudanças dinâmicas
+    // Vincular botões pela primeira vez
     bindDeleteButtons();
-    const observer = new MutationObserver(() => bindDeleteButtons());
-    observer.observe(document.body, { childList: true, subtree: true });
-    console.log('✅ Sistema de deleção pronto (bindings aplicados)');
-  });
 
-  // ===== FILTRO MULTI-SELECT DE CADASTRADORES PARA SUPERVISORES =====
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎯 Inicializando filtro multi-select de cadastradores');
-
-    const wrapper = document.getElementById('filtro-multi-cadastradores-wrapper');
-    const container = document.getElementById('filtro-multi-cadastradores');
-    const inputHidden = document.getElementById('input-cadastrados-por');
-
-    if (!wrapper || !container || !inputHidden) {
-      console.warn('⚠️ Elementos do filtro multi-select não encontrados');
-      return;
-    }
-
-    // Carregar lista de cadastradores disponíveis
-    async function carregarCadradores() {
-      try {
-        const response = await fetch('{{ route("api.patrimonios.listar-cadastradores") }}', {
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-          console.error('❌ Erro ao carregar cadastradores:', response.status);
-          container.innerHTML = '<div class="text-sm text-red-600 dark:text-red-400">Erro ao carregar cadastradores</div>';
-          return;
-        }
-
-        const cadastradores = await response.json();
-        console.log('✅ Cadastradores carregados:', cadastradores.length);
-
-        // Se há mais de 1 cadastrador disponível, mostrar o filtro
-        if (cadastradores.length > 1) {
-          renderizarFiltro(cadastradores);
-          wrapper.style.display = 'block';
-        } else {
-          console.log('ℹ️ Apenas 1 cadastrador disponível, filtro ocultado');
-          wrapper.style.display = 'none';
-        }
-      } catch (error) {
-        console.error('❌ Erro ao carregar cadastradores:', error);
-        container.innerHTML = '<div class="text-sm text-red-600 dark:text-red-400">Erro ao carregar dados</div>';
-      }
-    }
-
-    // Renderizar checkboxes dos cadastradores
-    function renderizarFiltro(cadastradores) {
-      const valoresAtuais = inputHidden.value ? inputHidden.value.split(',').map(v => v.trim()) : [];
-
-      container.innerHTML = cadastradores.map(cad => `
-        <label class="flex items-center gap-2 py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 px-2 rounded">
-          <input 
-            type="checkbox" 
-            data-value="${cad.value}"
-            class="checkbox-cadastrador rounded border-gray-300 dark:border-gray-600"
-            ${valoresAtuais.includes(cad.value) ? 'checked' : ''}
-          />
-          <span class="text-sm text-gray-700 dark:text-gray-300">
-            ${cad.label}
-            ${cad.type === 'supervisionado' ? '<span class="ml-1 text-xs text-blue-600 dark:text-blue-400">(supervisionado)</span>' : ''}
-          </span>
-        </label>
-      `).join('');
-
-      // Bind aos checkboxes
-      document.querySelectorAll('.checkbox-cadastrador').forEach(checkbox => {
-        checkbox.addEventListener('change', atualizarValorHidden);
+    // Rebind se houver mudanças no DOM (paginação, filtros, etc)
+    console.log('👀 [OBSERVER] Monitorando mudanças no DOM...');
+    new MutationObserver((mutations) => {
+      const hasRelevantChange = mutations.some(m => {
+        const addedNodes = Array.from(m.addedNodes);
+        return addedNodes.some(n => 
+          n.classList?.contains('delete-patrimonio-btn') ||
+          n.querySelector?.('.delete-patrimonio-btn') ||
+          n.classList?.contains('patrimonio-row') ||
+          n.classList?.contains('pagination')
+        );
       });
-    }
+      
+      if (hasRelevantChange) {
+        console.log('🔄 [OBSERVER TRIGGERED] Mudanças no DOM detectadas, rebinding botões...');
+        bindDeleteButtons();
+      }
+    }).observe(document.body, { 
+      childList: true, 
+      subtree: true 
+    });
 
-    // Atualizar campo hidden com seleção
-    function atualizarValorHidden() {
-      const selecionados = Array.from(document.querySelectorAll('.checkbox-cadastrador:checked'))
-        .map(cb => cb.dataset.value)
-        .join(',');
-
-      inputHidden.value = selecionados;
-      console.log('📝 Valor cadastrados_por atualizado:', selecionados || '(vazio)');
-    }
-
-    // Carregar cadastradores ao iniciar
-    carregarCadradores();
+    console.log('✅ [INIT COMPLETE] Sistema de deleção inicializado com sucesso');
   });
 </script>
 @endpush

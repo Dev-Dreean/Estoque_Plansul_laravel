@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste API Listar Cadastradores</title>
+</head>
+<body>
+    <h1>Teste da API de Cadastradores</h1>
+    <button onclick="testarAPI()">Testar API</button>
+    <pre id="resultado"></pre>
+
+    <script>
+        async function testarAPI() {
+            const resultado = document.getElementById('resultado');
+            resultado.textContent = 'Carregando...';
+
+            try {
+                const response = await fetch('/api/patrimonios/listar-cadastradores', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                resultado.textContent = JSON.stringify(data, null, 2) + '\n\nTotal: ' + data.length;
+            } catch (error) {
+                resultado.textContent = 'ERRO: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

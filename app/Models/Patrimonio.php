@@ -52,11 +52,11 @@ class Patrimonio extends Model
     ];
 
     protected $casts = [
-        'DTAQUISICAO' => 'date',
-        'DTOPERACAO'  => 'date',
-        'DTBAIXA'     => 'date',
-        'DTGARANTIA'  => 'date',
-        'DTLAUDO'     => 'date',
+        'DTAQUISICAO' => 'date:Y-m-d',
+        'DTOPERACAO'  => 'date:Y-m-d',
+        'DTBAIXA'     => 'date:Y-m-d',
+        'DTGARANTIA'  => 'date:Y-m-d',
+        'DTLAUDO'     => 'date:Y-m-d',
     ];
 
     protected $appends = ['projeto_correto'];
@@ -179,12 +179,48 @@ class Patrimonio extends Model
 
     public function getDtaquisicaoPtBrAttribute(): ?string
     {
-        return $this->DTAQUISICAO ? $this->DTAQUISICAO->format('d/m/Y') : null;
+        if (!$this->DTAQUISICAO) {
+            return null;
+        }
+        
+        try {
+            $date = is_string($this->attributes['DTAQUISICAO'] ?? null) 
+                ? \Carbon\Carbon::parse($this->attributes['DTAQUISICAO'])
+                : $this->DTAQUISICAO;
+            
+            // Validar se o ano é razoável (entre 1990 e próximos 5 anos)
+            $year = $date->year;
+            if ($year < 1990 || $year > 2030) {
+                return null; // Retorna null para datas inválidas
+            }
+            
+            return $date->format('d/m/Y');
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     public function getDtoperacaoPtBrAttribute(): ?string
     {
-        return $this->DTOPERACAO ? $this->DTOPERACAO->format('d/m/Y') : null;
+        if (!$this->DTOPERACAO) {
+            return null;
+        }
+        
+        try {
+            $date = is_string($this->attributes['DTOPERACAO'] ?? null) 
+                ? \Carbon\Carbon::parse($this->attributes['DTOPERACAO'])
+                : $this->DTOPERACAO;
+            
+            // Validar se o ano é razoável (entre 1990 e próximos 5 anos)
+            $year = $date->year;
+            if ($year < 1990 || $year > 2030) {
+                return null; // Retorna null para datas inválidas
+            }
+            
+            return $date->format('d/m/Y');
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     /**

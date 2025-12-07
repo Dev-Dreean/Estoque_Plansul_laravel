@@ -27,3 +27,8 @@ REQUISITOS DE IMPLANTAÇÃO E LOGS (ADDENDUM)
 - Estrutura: 1 frase inicial (ação), bullets com passos/arquivos/comandos, comandos em bloco para copiar, 1 pergunta final (próximo passo).
 
 Data: 2025-12-04
+
+AVISO IMPORTANTE SOBRE ARQUIVOS AUXILIARES
+- Sempre que for criado um arquivo auxiliar (ex.: `.txt`, scripts de diagnóstico, addendums), o agente deve imediatamente publicar no chat uma instrução curta indicando que o arquivo existe e que deve ser LIDO antes de executar qualquer ação baseada nele.
+- Exemplo automático a ser postado após criação: "Arquivo criado: `.github/copilot-addendum.txt`. Leia-o antes de executar scripts relacionados; contém instruções de deploy, logs e políticas one-off." 
+

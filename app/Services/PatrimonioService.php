@@ -1,0 +1,585 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Patrimonio;
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+
+class PatrimonioService
+{
+    public function listarParaIndex(Request $request, User $user, int $perPage = 30): array
+    {
+        Log::info('[PatrimonioService] Montando listagem index', [
+            'user' => $user->NMLOGIN ?? null,
+            'params' => $request->all(),
+        ]);
+
+        $perPage = max(10, min($perPage, 500));
+        $query = $this->montarConsultaFiltrada($request, $user);
+
+        $patrimonios = $query->paginate($perPage)->withQueryString();
+        $showEmpty = (bool) $request->boolean('show_empty_columns', false);
+
+        [$visibleColumns, $hiddenColumns] = $this->detectarColunasVisiveis($patrimonios->items(), $showEmpty);
+
+        return [
+            'patrimonios' => $patrimonios,
+            'visibleColumns' => $visibleColumns,
+            'hiddenColumns' => $hiddenColumns,
+            'showEmptyColumns' => $showEmpty,
+        ];
+    }
+
+    public function montarConsultaFiltrada(Request $request, User $user): Builder
+    {
+        Log::info('[PatrimonioService] Consulta filtrada iniciada', [
+            'user' => $user->NMLOGIN ?? null,
+            'perfil' => $user->PERFIL ?? null,
+        ]);
+
+        $query = Patrimonio::with(['funcionario', 'local.projeto', 'creator']);
+
+        if (!$user->isGod() && $user->PERFIL !== 'ADM') {
+            $nmLogin = (string) ($user->NMLOGIN ?? '');
+            $nmUser = (string) ($user->NOMEUSER ?? '');
+            $supervisionados = $user->getSupervisionados();
+
+            $query->where(function ($q) use ($user, $nmLogin, $nmUser, $supervisionados) {
+                $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser])
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', ['SISTEMA']);
+
+                if (!empty($supervisionados)) {
+                    $q->orWhereIn(DB::raw('LOWER(USUARIO)'), array_map('strtolower', $supervisionados));
+                }
+            });
+        }
+
+        $this->aplicarFiltroCadastradores($query, $request, $user);
+        $this->aplicarFiltrosPrincipais($query, $request);
+        $this->aplicarOrdenacao($query, $request, $user);
+
+        Log::info('[PatrimonioService] Consulta pronta', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+        ]);
+
+        return $query;
+    }
+
+    public function listarCadastradoresParaFiltro(User $user): Collection
+    {
+        $query = Patrimonio::query();
+
+        if (!($user->isGod() || $user->PERFIL === 'ADM')) {
+            $nmLogin = (string) ($user->NMLOGIN ?? '');
+            $nmUser = (string) ($user->NOMEUSER ?? '');
+            $supervisionados = $user->getSupervisionados();
+
+            $query->where(function ($q) use ($user, $nmLogin, $nmUser, $supervisionados) {
+                $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser])
+                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', ['SISTEMA']);
+
+                if (!empty($supervisionados)) {
+                    $q->orWhereIn(DB::raw('LOWER(USUARIO)'), array_map('strtolower', $supervisionados));
+                }
+            });
+        }
+
+        $logins = $query
+            ->selectRaw("DISTINCT COALESCE(NULLIF(TRIM(USUARIO), ''), 'SISTEMA') as login")
+            ->pluck('login')
+            ->filter()
+            ->map(fn($v) => strtoupper(trim((string) $v)))
+            ->unique()
+            ->values();
+
+        if (!$logins->contains(fn($v) => strcasecmp($v, 'SISTEMA') === 0)) {
+            $logins->push('SISTEMA');
+        }
+
+        $logins = $logins->unique()->values();
+
+        $usuarios = User::whereIn(DB::raw('UPPER(NMLOGIN)'), $logins->all())
+            ->get(['NMLOGIN', 'NOMEUSER', 'CDMATRFUNCIONARIO'])
+            ->keyBy(fn($u) => strtoupper($u->NMLOGIN));
+
+        return $logins
+            ->map(function ($login) use ($usuarios) {
+                $key = strtoupper($login);
+                $dbUser = $usuarios[$key] ?? null;
+                $nome = $dbUser->NOMEUSER ?? ($key === 'SISTEMA' ? 'Sistema' : $login);
+
+                return (object) [
+                    'CDMATRFUNCIONARIO' => $dbUser->CDMATRFUNCIONARIO ?? null,
+                    'NOMEUSER' => $nome,
+                    'NMLOGIN' => $login,
+                ];
+            })
+            ->sortBy('NOMEUSER', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+    }
+
+    public function listarDisponiveisParaTermo(Request $request, int $perPage = 30)
+    {
+        $perPage = max(10, min($perPage, 200));
+
+        return Patrimonio::whereNull('NMPLANTA')
+            ->orderBy('DEPATRIMONIO')
+            ->paginate($perPage, ['*'], 'disponiveisPage')
+            ->withQueryString()
+            ->fragment('atribuir-termo');
+    }
+
+    public function listar(array $filtros = [], int $perPage = 15)
+    {
+        Log::info('[PatrimonioService] Listando patrimonios', [
+            'filtros' => $filtros,
+            'perPage' => $perPage,
+        ]);
+        
+        $query = Patrimonio::query()
+            ->with(['usuario', 'localprojeto', 'objeto', 'situacao']);
+        
+        if (!empty($filtros['search'])) {
+            $search = $filtros['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('NUPATRIMONIO', 'like', "%{$search}%")
+                  ->orWhere('DEPATRIMONIO', 'like', "%{$search}%")
+                  ->orWhere('MODELO', 'like', "%{$search}%")
+                  ->orWhere('MARCA', 'like', "%{$search}%");
+            });
+        }
+        
+        if (!empty($filtros['situacao'])) {
+            $query->where('CDSITUACAO', $filtros['situacao']);
+        }
+        
+        if (!empty($filtros['usuario_id'])) {
+            $query->where('NUSEQPESSOA', $filtros['usuario_id']);
+        }
+        
+        if (!empty($filtros['projeto_id'])) {
+            $query->where('CDLOCALPROJETO', $filtros['projeto_id']);
+        }
+        
+        $sortField = $filtros['sort'] ?? 'DTOPERACAO';
+        $sortDirection = $filtros['direction'] ?? 'desc';
+        $query->orderBy($sortField, $sortDirection);
+        
+        return $query->paginate($perPage)->withQueryString();
+    }
+    
+    public function buscarPorId(int $id): ?Patrimonio
+    {
+        return Patrimonio::with(['usuario', 'localprojeto', 'objeto', 'situacao'])
+            ->where('NUSEQPATR', $id)
+            ->first();
+    }
+    
+    public function criar(array $dados, int $usuarioId): Patrimonio
+    {
+        Log::info('[PatrimonioService] Criando patrimonio', [
+            'dados' => $dados,
+            'usuario_id' => $usuarioId
+        ]);
+        
+        DB::beginTransaction();
+        try {
+            $patrimonio = Patrimonio::create(array_merge($dados, [
+                'NUCADASTRADOR' => $usuarioId,
+                'DTCADASTRO' => now(),
+                'DTOPERACAO' => now()
+            ]));
+            
+            DB::commit();
+            
+            Log::info('[PatrimonioService] Patrimonio criado', [
+                'id' => $patrimonio->NUSEQPATR
+            ]);
+            
+            return $patrimonio;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('[PatrimonioService] Erro ao criar patrimonio', [
+                'erro' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+    
+    public function atualizar(int $id, array $dados): Patrimonio
+    {
+        Log::info('[PatrimonioService] Atualizando patrimonio', [
+            'id' => $id,
+            'dados' => $dados
+        ]);
+        
+        DB::beginTransaction();
+        try {
+            $patrimonio = $this->buscarPorId($id);
+            
+            if (!$patrimonio) {
+                throw new \Exception("Patrimonio #{$id} nao encontrado");
+            }
+            
+            $patrimonio->update(array_merge($dados, [
+                'DTOPERACAO' => now()
+            ]));
+            
+            DB::commit();
+            
+            Log::info('[PatrimonioService] Patrimonio atualizado', [
+                'id' => $patrimonio->NUSEQPATR
+            ]);
+            
+            return $patrimonio->fresh();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('[PatrimonioService] Erro ao atualizar patrimonio', [
+                'id' => $id,
+                'erro' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+    
+    public function deletar(int $id, int $usuarioId): bool
+    {
+        Log::info('[PatrimonioService] Deletando patrimonio', [
+            'id' => $id,
+            'usuario_id' => $usuarioId
+        ]);
+        
+        DB::beginTransaction();
+        try {
+            $patrimonio = $this->buscarPorId($id);
+            
+            if (!$patrimonio) {
+                throw new \Exception("Patrimonio #{$id} nao encontrado");
+            }
+            
+            $deleted = $patrimonio->delete();
+            
+            DB::commit();
+            
+            Log::info('[PatrimonioService] Patrimonio deletado', [
+                'id' => $id,
+                'resultado' => $deleted
+            ]);
+            
+            return $deleted;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('[PatrimonioService] Erro ao deletar patrimonio', [
+                'id' => $id,
+                'erro' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+    
+    public function estatisticas(): array
+    {
+        return [
+            'total' => Patrimonio::count(),
+            'ativos' => Patrimonio::where('CDSITUACAO', 1)->count(),
+            'baixados' => Patrimonio::where('CDSITUACAO', 2)->count(),
+            'em_manutencao' => Patrimonio::where('CDSITUACAO', 3)->count(),
+            'por_usuario' => Patrimonio::select('NUSEQPESSOA', DB::raw('count(*) as total'))
+                ->groupBy('NUSEQPESSOA')
+                ->orderByDesc('total')
+                ->limit(10)
+                ->get()
+        ];
+    }
+
+    protected function aplicarFiltroCadastradores(Builder $query, Request $request, User $user): void
+    {
+        $multi = $request->input('cadastrados_por', []);
+        if (is_string($multi)) {
+            $multi = array_filter(array_map('trim', explode(',', $multi)));
+        }
+
+        $multi = collect($multi)
+            ->map(fn($v) => trim((string) $v))
+            ->filter()
+            ->unique(fn($v) => mb_strtolower($v));
+
+        if ($multi->isNotEmpty()) {
+            Log::info('[PatrimonioService] Filtro multi cadastradores', ['valores' => $multi]);
+
+            $includeSistema = false;
+            $logins = [];
+
+            foreach ($multi as $valor) {
+                if (strcasecmp($valor, 'SISTEMA') === 0) {
+                    $includeSistema = true;
+                    continue;
+                }
+                $logins[] = mb_strtolower($valor);
+            }
+
+            $query->where(function ($q) use ($logins, $includeSistema) {
+                $applied = false;
+
+                if ($includeSistema) {
+                    $q->whereNull('USUARIO')
+                        ->orWhereRaw('LOWER(USUARIO) = ?', ['sistema']);
+                    $applied = true;
+                }
+
+                foreach ($logins as $login) {
+                    if (!$applied) {
+                        $q->whereRaw('LOWER(USUARIO) = ?', [$login]);
+                        $applied = true;
+                    } else {
+                        $q->orWhereRaw('LOWER(USUARIO) = ?', [$login]);
+                    }
+                }
+            });
+
+            return;
+        }
+
+        if ($request->filled('cadastrado_por')) {
+            $valorFiltro = trim((string) $request->input('cadastrado_por'));
+
+            if ($valorFiltro === '__TODOS__') {
+                return;
+            }
+
+            if (!($user->isGod() || $user->PERFIL === 'ADM')) {
+                $allowed = [strtoupper(trim((string) ($user->NMLOGIN ?? ''))), 'SISTEMA'];
+                if (!empty($user->CDMATRFUNCIONARIO)) {
+                    $allowed[] = (string) $user->CDMATRFUNCIONARIO;
+                }
+                if (!in_array(strtoupper($valorFiltro), array_map('strtoupper', $allowed))) {
+                    $valorFiltro = null;
+                }
+            }
+
+            if ($valorFiltro) {
+                if (strcasecmp($valorFiltro, 'SISTEMA') === 0) {
+                    $query->where(function ($q) {
+                        $q->whereNull('USUARIO')
+                            ->orWhereRaw('LOWER(USUARIO) = ?', ['sistema']);
+                    });
+                } else {
+                    $loginFiltro = $valorFiltro;
+                    $loginPorMatricula = null;
+
+                    if (is_numeric($valorFiltro)) {
+                        $usuarioFiltro = User::where('CDMATRFUNCIONARIO', $valorFiltro)->first();
+                        $loginPorMatricula = $usuarioFiltro->NMLOGIN ?? null;
+                    }
+
+                    $query->where(function ($q) use ($loginFiltro, $loginPorMatricula, $valorFiltro) {
+                        $q->whereRaw('LOWER(USUARIO) = ?', [mb_strtolower($loginFiltro)]);
+
+                        if ($loginPorMatricula) {
+                            $q->orWhereRaw('LOWER(USUARIO) = ?', [mb_strtolower($loginPorMatricula)]);
+                        }
+
+                        if (is_numeric($valorFiltro)) {
+                            $q->orWhere('CDMATRFUNCIONARIO', $valorFiltro);
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    protected function aplicarFiltrosPrincipais(Builder $query, Request $request): void
+    {
+        if ($request->filled('nupatrimonio')) {
+            $val = trim((string) $request->input('nupatrimonio'));
+            if ($val !== '') {
+                // Filtrar por prefixo NUPATRIMONIO e ordenar numericamente
+                // Exemplo: "6" encontrará 6, 60-69, 160, 260, etc (em ordem numérica crescente)
+                $query->whereRaw('CAST(NUPATRIMONIO AS CHAR) LIKE ?', [$val . '%'])
+                      ->orderByRaw('CAST(NUPATRIMONIO AS UNSIGNED) ASC');
+            }
+        }
+
+        if ($request->filled('cdprojeto')) {
+            $val = trim((string) $request->input('cdprojeto'));
+            if ($val !== '') {
+                $query->where(function ($q) use ($val) {
+                    $q->where('CDPROJETO', $val)
+                        ->orWhereHas('local.projeto', function ($q2) use ($val) {
+                            $q2->where('CDPROJETO', $val);
+                        });
+                });
+            }
+        }
+
+        if ($request->filled('cdlocal')) {
+            $val = trim((string) $request->input('cdlocal'));
+            if ($val !== '') {
+                $query->where('CDLOCAL', $val);
+            }
+        }
+
+        if ($request->filled('descricao')) {
+            $val = trim((string) $request->input('descricao'));
+            if ($val !== '') {
+                $like = '%' . mb_strtolower($val) . '%';
+                // Buscar em: DEPATRIMONIO (1ª prioridade), depois MARCA, depois MODELO
+                $query->where(function ($q) use ($like) {
+                    $q->whereRaw('LOWER(DEPATRIMONIO) LIKE ?', [$like])
+                      ->orWhereRaw('LOWER(MARCA) LIKE ?', [$like])
+                      ->orWhereRaw('LOWER(MODELO) LIKE ?', [$like]);
+                });
+            }
+        }
+
+        if ($request->filled('situacao')) {
+            $val = trim((string) $request->input('situacao'));
+            if ($val !== '') {
+                $query->where('SITUACAO', $val);
+            }
+        }
+
+        if ($request->filled('modelo')) {
+            $val = trim((string) $request->input('modelo'));
+            if ($val !== '') {
+                $query->whereRaw('LOWER(MODELO) LIKE ?', ['%' . mb_strtolower($val) . '%']);
+            }
+        }
+
+        if ($request->filled('marca')) {
+            $val = trim((string) $request->input('marca'));
+            if ($val !== '') {
+                $query->whereRaw('LOWER(MARCA) LIKE ?', ['%' . mb_strtolower($val) . '%']);
+            }
+        }
+
+        if ($request->filled('nmplanta')) {
+            $val = trim((string) $request->input('nmplanta'));
+            if ($val !== '') {
+                $query->where('NMPLANTA', $val);
+            }
+        }
+
+        if ($request->filled('matr_responsavel')) {
+            $val = trim((string) $request->input('matr_responsavel'));
+            if ($val !== '') {
+                $matrValues = array_map('trim', explode(',', $val));
+                $matrValues = array_filter($matrValues, function($v) { return $v !== ''; });
+                
+                if (count($matrValues) > 0) {
+                    if (count(array_filter($matrValues, 'is_numeric')) === count($matrValues)) {
+                        $query->whereIn('CDMATRFUNCIONARIO', $matrValues);
+                    } else {
+                        $query->where(function($q) use ($matrValues) {
+                            foreach ($matrValues as $val) {
+                                if (is_numeric($val)) {
+                                    $q->orWhere('CDMATRFUNCIONARIO', $val);
+                                } else {
+                                    $usuario = User::where('NMLOGIN', $val)
+                                        ->orWhereRaw('LOWER(NOMEUSER) LIKE ?', ['%' . mb_strtolower($val) . '%'])
+                                        ->first();
+                                    
+                                    if ($usuario) {
+                                        $q->orWhere('CDMATRFUNCIONARIO', $usuario->CDMATRFUNCIONARIO);
+                                    } else {
+                                        $q->orWhereHas('funcionario', function ($qf) use ($val) {
+                                            $qf->whereRaw('LOWER(NOMEFUNCIONARIO) LIKE ?', ['%' . mb_strtolower($val) . '%']);
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    protected function aplicarOrdenacao(Builder $query, Request $request, User $user): void
+    {
+        try {
+            $nmLogin = (string) ($user->NMLOGIN ?? '');
+            $cdMatr = $user->CDMATRFUNCIONARIO ?? null;
+            $query->orderByRaw("CASE WHEN LOWER(USUARIO) = LOWER(?) OR CDMATRFUNCIONARIO = ? THEN 0 ELSE 1 END", [$nmLogin, $cdMatr]);
+            $query->orderBy('DTOPERACAO', 'desc');
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao aplicar ordenacao por usuario/DTOPERACAO: ' . $e->getMessage());
+        }
+
+        $sortableColumns = ['NUPATRIMONIO', 'MODELO', 'DEPATRIMONIO', 'SITUACAO', 'DTAQUISICAO'];
+        $sortColumn = $request->input('sort', 'DTAQUISICAO');
+        $sortDirection = $request->input('direction', 'asc');
+
+        if (in_array($sortColumn, $sortableColumns)) {
+            $query->orderBy($sortColumn, $sortDirection);
+        } else {
+            $query->orderBy('DTAQUISICAO', 'asc');
+        }
+    }
+
+    protected function detectarColunasVisiveis(array $items, bool $showEmpty): array
+    {
+        $checks = [
+            'NUMOF' => fn($p) => !blank($p->NUMOF),
+            'NUSERIE' => fn($p) => !blank($p->NUSERIE),
+            'MODELO' => fn($p) => !blank($p->MODELO),
+            'MARCA' => fn($p) => !blank($p->MARCA),
+            'NMPLANTA' => fn($p) => !blank($p->NMPLANTA),
+            'CDLOCAL' => fn($p) => !blank($p->local?->cdlocal),
+            'PROJETO' => fn($p) => (bool) ($p->local && $p->local->projeto),
+            'DTAQUISICAO' => fn($p) => !blank($p->DTAQUISICAO),
+            'DTOPERACAO' => fn($p) => !blank($p->DTOPERACAO),
+            'SITUACAO' => fn($p) => !blank($p->SITUACAO),
+            'CDMATRFUNCIONARIO' => fn($p) => !blank($p->CDMATRFUNCIONARIO),
+            'CADASTRADOR' => fn($p) => !blank($p->USUARIO) || !blank($p->creator?->NOMEUSER),
+        ];
+
+        $visibleColumns = [];
+        foreach ($checks as $key => $fn) {
+            $visibleColumns[$key] = false;
+            foreach ($items as $item) {
+                if ($fn($item)) {
+                    $visibleColumns[$key] = true;
+                    break;
+                }
+            }
+            if ($showEmpty) {
+                $visibleColumns[$key] = true;
+            }
+        }
+
+        $friendly = [
+            'NUMOF' => 'OF',
+            'NUSERIE' => 'Nº Serie',
+            'MODELO' => 'Modelo',
+            'MARCA' => 'Marca',
+            'NMPLANTA' => 'Cod. Termo',
+            'CDLOCAL' => 'Codigo Local',
+            'PROJETO' => 'Projeto',
+            'DTAQUISICAO' => 'Dt. Aquisição',
+            'DTOPERACAO' => 'Dt. Cadastro',
+            'SITUACAO' => 'Situacao',
+            'CDMATRFUNCIONARIO' => 'Responsavel',
+            'CADASTRADOR' => 'Cadastrador',
+        ];
+
+        $hiddenColumns = [];
+        foreach ($visibleColumns as $k => $v) {
+            if (!$v) {
+                $hiddenColumns[] = $friendly[$k] ?? $k;
+            }
+        }
+
+        return [$visibleColumns, $hiddenColumns];
+    }
+}
