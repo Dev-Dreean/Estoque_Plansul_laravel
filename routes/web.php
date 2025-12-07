@@ -166,6 +166,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // Nova rota: pesquisa de funcionários
     Route::get('/api/funcionarios/pesquisar', [\App\Http\Controllers\FuncionarioController::class, 'pesquisar'])->name('api.funcionarios.pesquisar');
 
+    // API de cadastradores (usuários que cadastraram patrimônios)
+    Route::get('/api/cadastradores/pesquisar', [PatrimonioController::class, 'pesquisarCadastradores'])->name('api.cadastradores.pesquisar');
+    Route::get('/api/cadastradores/nomes', [PatrimonioController::class, 'buscarNomesCadastradores'])->name('api.cadastradores.nomes');
+
     // Rotas de Projetos/Locais e suas APIs (T:1002 - Cadastro de Locais)
     Route::resource('projetos', ProjetoController::class)->middleware(['tela.access:1002', 'can.delete']);
     Route::get('projetos/{projeto}/duplicar', [ProjetoController::class, 'duplicate'])->name('projetos.duplicate')->middleware('tela.access:1002');

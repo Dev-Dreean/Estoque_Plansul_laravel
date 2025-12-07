@@ -184,8 +184,8 @@
                     <label class="flex items-center gap-2 ml-auto shrink-0">
                       <span class="text-sm text-gray-700 dark:text-gray-300">Itens por página</span>
                       <select id="per_page" name="per_page" class="h-10 px-2 pr-8 w-24 border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm">
-                        @foreach([15,30,50,100] as $opt)
-                        <option value="{{ $opt }}" @selected(request('per_page',15)==$opt)>{{ $opt }}</option>
+                        @foreach([30,50,100,200] as $opt)
+                        <option value="{{ $opt }}" @selected(request('per_page',30)==$opt)>{{ $opt }}</option>
                         @endforeach
                       </select>
                     </label>
@@ -221,57 +221,26 @@
 
             <!-- Tabela (estrutura idêntica ao index) -->
             <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0">
+              {{-- MODO DISPONÍVEIS: Usa componente reutilizável --}}
+              @if(!request('status') || request('status')=='disponivel')
+              @php
+                // Colunas simplificadas para evitar confusão com a tela principal
+                $colsDisponiveis = ['nupatrimonio','projeto','local','descricao','situacao','responsavel','cadastrador'];
+              @endphp
+              <x-patrimonio-table 
+                :patrimonios="$patrimonios"
+                :columns="$colsDisponiveis"
+                :show-checkbox="true"
+                :show-actions="false"
+                :clickable="false"
+                on-checkbox-change="updateCounter()"
+                on-select-all-change="toggleAll($event)"
+                checkbox-class="patrimonio-checkbox"
+                empty-message="Nenhum patrimônio encontrado. Não há patrimônios disponíveis para atribuição ou nenhum atende aos filtros aplicados."
+              />
+              {{-- MODO ATRIBUÍDOS: Mantém estrutura original agrupada --}}
+              @else
               <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
-                {{-- MODO DISPONÍVEIS: Tabela Normal --}}
-                @if(!request('status') || request('status')=='disponivel')
-                <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-600 dark:text-gray-100">
-                  <tr>
-                    <th class="px-4 py-3" style="width: 50px;">
-                      <input type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600" @change="toggleAll($event)">
-                    </th>
-                    <th class="px-4 py-3">Nº Pat.</th>
-                    <th class="px-4 py-3">Itens</th>
-                    <th class="px-4 py-3">Modelo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @forelse($patrimonios as $patrimonio)
-                  <tr class="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-                    data-row-id="{{ $patrimonio->NUSEQPATR }}">
-                    <td class="px-4 py-3 text-gray-500 dark:text-gray-400">
-                      <div class="flex items-center justify-center">
-                        @if(empty($patrimonio->NMPLANTA))
-                        <input class="patrimonio-checkbox h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600"
-                          type="checkbox" name="ids[]" value="{{ $patrimonio->NUSEQPATR }}" @change="updateCounter()">
-                        @endif
-                      </div>
-                    </td>
-                    <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
-                      {{ $patrimonio->NUPATRIMONIO }}
-                    </td>
-                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs truncate" :title="'{{ $patrimonio->DEPATRIMONIO }}'">
-                      {{ Str::limit($patrimonio->DEPATRIMONIO, 50) }}
-                    </td>
-                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
-                      {{ $patrimonio->MODELO ?? '—' }}
-                    </td>
-                  </tr>
-                  @empty
-                  <tr>
-                    <td colspan="4" class="px-6 py-12 text-center">
-                      <div class="flex flex-col items-center justify-center text-gray-600 dark:text-gray-400">
-                        <svg class="w-12 h-12 mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
-                        </svg>
-                        <h3 class="text-base font-semibold mb-1">Nenhum patrimônio encontrado</h3>
-                        <p class="text-sm">Não há patrimônios disponíveis para atribuição ou nenhum atende aos filtros aplicados.</p>
-                      </div>
-                    </td>
-                  </tr>
-                  @endforelse
-                </tbody>
-                {{-- MODO ATRIBUÍDOS: Tabela Agrupada por Termo --}}
-                @else
                 <tbody>
                   @forelse($patrimonios_grouped as $grupo_codigo => $grupo_patrimonios)
                   @php
@@ -344,7 +313,7 @@
                             <span class="text-xs font-semibold text-gray-900 dark:text-gray-100">{{ $item_count === 1 ? 'item' : 'itens' }}</span>
                           </span>
 
-                          @if(!$is_sem_termo && $grupo_patrimonios->first()?->CDMATRFUNCIONARIO)
+                          @if(!$is_sem_termo)
                           {{-- Botão Baixar Documento Termo (Word - Azul Office) --}}
                           <button type="button"
                             @click.stop="downloadTermoGrupo([{{ $grupo_patrimonios->pluck('NUSEQPATR')->join(',') }}])"
@@ -414,11 +383,24 @@
                     <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
                       {{ $grupo_dados['primeiro']->NUPATRIMONIO }}
                     </td>
-                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs truncate" :title="'{{ $grupo_dados['primeiro']->DEPATRIMONIO }}'">
-                      {{ Str::limit($grupo_dados['primeiro']->DEPATRIMONIO, 50) }}
+                    @php
+                      $primeiro = $grupo_dados['primeiro'];
+                      $descRaw = trim((string) ($primeiro->DEPATRIMONIO ?? ''));
+                      $descAscii = strtoupper(Str::ascii($descRaw));
+                      $descUpper = strtoupper($descRaw);
+                      // Captura casos acentuados e casos corrompidos (SEM DESCRIÃ etc)
+                      $semDescricao = $descRaw === '' ||
+                        str_contains($descAscii, 'SEM DESCRICAO') ||
+                        str_contains($descUpper, 'SEM DESCRI') ||
+                        str_contains($descRaw, 'SEM DESCRI');
+                      $fallback = $primeiro->MARCA ?: ($primeiro->MODELO ?: '-');
+                      $displayDesc = $semDescricao ? $fallback : $descRaw;
+                    @endphp
+                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs truncate" :title="'{{ $displayDesc }}'">
+                      {{ Str::limit($displayDesc, 50) }}
                     </td>
                     <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
-                      {{ $grupo_dados['primeiro']->MODELO ?? '—' }}
+                      {{ $grupo_dados['primeiro']->MODELO ?? '-' }}
                     </td>
                     <td class="px-4 py-3" colspan="2">
                       <div class="flex items-center justify-between gap-3">
@@ -449,8 +431,8 @@
                   </tr>
                   @endforelse
                 </tbody>
-                @endif
               </table>
+              @endif
             </div>
             <div class="mt-4">
               {{ $patrimonios->appends(request()->query())->links() }}

@@ -78,11 +78,11 @@
             <table class="w-full text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
               <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
-                  <th class="px-4 py-3">Nº Pat.</th>
-                  <th class="px-4 py-3">Cód. Projeto</th>
-                  <th class="px-4 py-3">Detalhe</th>
-                  <th class="px-4 py-3 text-center">Usuário</th>
-                  <th class="px-4 py-3">Data Operação</th>
+                  <th class="px-2 py-2">Nº Pat.</th>
+                  <th class="px-2 py-2">Cód. Projeto</th>
+                  <th class="px-2 py-2">Detalhe</th>
+                  <th class="px-2 py-2 text-center">Usuário</th>
+                  <th class="px-2 py-2">Data Operação</th>
                 </tr>
               </thead>
               <tbody>
@@ -116,10 +116,10 @@
                 };
                 };
                 @endphp
-                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-sm border-l-4 {{ $border }}">
-                  <td class="px-4 py-2">{{ $h->NUPATR }}</td>
-                  <td class="px-4 py-2">{{ $h->CODPROJ }}</td>
-                  <td class="px-4 py-2">
+                <tr class="tr-hover text-sm border-b dark:border-gray-700 border-l-4 {{ $border }}">
+                  <td class="px-2 py-2">{{ $h->NUPATR }}</td>
+                  <td class="px-2 py-2">{{ $h->CODPROJ }}</td>
+                  <td class="px-2 py-2">
                     @if($tipo === 'termo')
                     @if(is_null($de) && !is_null($para))
                     Atribuído: <span class="font-mono">{{ $para }}</span>
@@ -142,7 +142,7 @@
                     —
                     @endif
                   </td>
-                  <td class="px-4 py-2 text-gray-800 dark:text-gray-200 text-center">
+                  <td class="px-2 py-2 text-gray-800 dark:text-gray-200">
                     <div class="leading-tight">
                       <div class="font-semibold">{{ $h->NM_USUARIO ?? $h->USUARIO }}</div>
                       @if(!empty($h->MAT_USUARIO))
@@ -158,11 +158,11 @@
                     </div>
                     @endif
                   </td>
-                  <td class="px-4 py-2 font-semibold">{{ \Carbon\Carbon::parse($h->DTOPERACAO)->timezone(config('app.timezone'))->format('d/m/Y H:i') }}</td>
+                  <td class="px-2 py-2 font-semibold">{{ \Carbon\Carbon::parse($h->DTOPERACAO)->timezone(config('app.timezone'))->format('d/m/Y H:i') }}</td>
                 </tr>
                 @empty
                 <tr>
-                  <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Nenhum registro encontrado.</td>
+                  <td colspan="5" class="px-2 py-6 text-center text-gray-500 dark:text-gray-400">Nenhum registro encontrado.</td>
                 </tr>
                 @endforelse
               </tbody>

@@ -340,8 +340,11 @@ class TermoDocxController extends Controller
             foreach ($items->values() as $index => $item) {
                 $i = $index + 1; // cloneRow usa índice 1-based
 
-                // Nome do item
-                $itemName = $item->DEPATRIMONIO ?? 'Item sem descrição';
+                // Nome do item: Prioridade DEPATRIMONIO -> MARCA -> fallback
+                $itemName = !empty($item->DEPATRIMONIO) 
+                    ? $item->DEPATRIMONIO 
+                    : ($item->MARCA ?? 'Item sem descrição');
+                
                 if (!empty($item->MODELO)) {
                     $itemName .= " - {$item->MODELO}";
                 }

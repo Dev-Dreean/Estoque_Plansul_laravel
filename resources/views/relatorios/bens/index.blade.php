@@ -118,32 +118,46 @@
                         </button>
                     </div>
 
-                    {{-- TABELA (única) --}}
-                    <div class="table-wrap">
-                        <table class="table-var">
-                            <thead>
-                                <tr>
-                                    <th class="px-4 py-3">Descrição</th>
-                                    <th class="px-4 py-3">Tipo</th>
-                                    <th class="px-4 py-3">Cód. Tipo</th>
+                    {{-- TABELA (reutilizável com colunas customizadas) --}}
+                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0 min-w-0">
+                        <table class="w-full table-fixed text-[11px] text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <tr class="divide-x divide-gray-200 dark:divide-gray-700">
+                                    <th class="px-2 py-2">Descrição</th>
+                                    <th class="px-2 py-2">Tipo</th>
+                                    <th class="px-2 py-2">Cód. Tipo</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($bens as $bem)
                                 <tr class="tr-hover text-sm">
-                                    <td class="td font-medium">
-                                        {{ $bem->DEOBJETO }}
+                                    <td class="px-2 py-2 font-medium text-gray-900 dark:text-white max-w-[200px]">
+                                        @php $desc = trim((string)($bem->DEOBJETO ?? '')); @endphp
+                                        @if($desc !== '')
+                                            <div title="{{ $desc }}" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;line-clamp:2;">
+                                                {{ $desc }}
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
                                     </td>
-                                    <td class="td">
+                                    <td class="px-2 py-2">
                                         {{ $bem->tipo->DETIPOPATR ?? '—' }}
                                     </td>
-                                    <td class="td">
+                                    <td class="px-2 py-2">
                                         {{ $bem->NUSEQTIPOPATR }}
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="3" class="td text-center">Nenhum registro encontrado.</td>
+                                    <td colspan="3" class="px-6 py-12 text-center">
+                                        <div class="flex flex-col items-center justify-center text-gray-600 dark:text-gray-400">
+                                            <svg class="w-12 h-12 mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+                                            </svg>
+                                            <h3 class="text-base font-semibold mb-1">Nenhum registro encontrado.</h3>
+                                        </div>
+                                    </td>
                                 </tr>
                                 @endforelse
                             </tbody>

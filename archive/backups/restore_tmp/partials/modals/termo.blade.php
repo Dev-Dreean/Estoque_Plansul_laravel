@@ -74,7 +74,7 @@
                 </table>
               </div>
               <div class="mt-4" id="atribuir-pagination">
-                {{ $patrimoniosDisponiveis->appends(request()->except('page', 'disponiveisPage'))->fragment('atribuir-termo')->links('pagination::tailwind') }}
+                {{ $patrimoniosDisponiveis->appends(request()->except('page', 'disponiveisPage'))->links('pagination::tailwind') }}
               </div>
               <div class="mt-6 flex justify-end space-x-4 border-t border-gray-200 dark:border-gray-700 pt-6">
                 <button type="button" @click="atribuirTermoModalOpen=false; history.replaceState(null,'',window.location.pathname+window.location.search)" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Fechar</button>

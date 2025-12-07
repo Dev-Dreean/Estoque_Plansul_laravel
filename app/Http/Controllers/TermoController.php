@@ -94,10 +94,15 @@ class TermoController extends Controller
         $writer->addRow(['Projeto Nº', 'Patr.', 'Descrição']);
 
         foreach ($query->cursor() as $patrimonio) {
+            // Prioridade: DEPATRIMONIO -> MARCA -> fallback
+            $descricao = !empty($patrimonio->DEPATRIMONIO) 
+                ? $patrimonio->DEPATRIMONIO 
+                : ($patrimonio->MARCA ?? 'Item sem descrição');
+                
             $writer->addRow([
                 'Projeto Nº' => $patrimonio->CDPROJETO,
                 'Patr.' => $patrimonio->NUPATRIMONIO,
-                'Descrição' => $patrimonio->DEPATRIMONIO,
+                'Descrição' => $descricao,
             ]);
         }
 
