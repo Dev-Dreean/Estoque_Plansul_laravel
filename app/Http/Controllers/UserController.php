@@ -92,7 +92,7 @@ class UserController extends Controller
             'session_after' => session()->all(),
         ]);
 
-        return redirect()->route('dashboard')->with('success', "Agora você está como {$usuario->NOMEUSER} ({$usuario->NMLOGIN})");
+        return redirect()->route('patrimonios.index')->with('success', "Agora você está como {$usuario->NOMEUSER} ({$usuario->NMLOGIN})");
     }
 
     /**
