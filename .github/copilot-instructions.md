@@ -34,6 +34,61 @@ Resumo rápido
 - Paths: prefira `__DIR__` ou variáveis de ambiente em vez de caminhos hard-coded.
 - Fornecer exemplos de comandos para PowerShell e Bash quando aplicável.
 
+**6a) Acesso SSH com PHP 8.2+ no KingHost (REFERÊNCIA RÁPIDA)**
+⚠️ **IMPORTANTE:** O KingHost possui múltiplas versões PHP (5.6, 7.0-7.4, 8.0-8.2). A aplicação requer **PHP 8.2+**.
+
+**Diretório da aplicação no KingHost:**
+```
+SSH: ssh plansul@ftp.plansul.info
+App: ~/www/estoque-laravel (não /home/plansul/public_html/)
+```
+
+**Versões PHP disponíveis:**
+- `php` = PHP 5.6 (padrão, não usar para Laravel 11)
+- `php82` = PHP 8.2 ✅ (usar este)
+- `php81` = PHP 8.1 (não compatível com composer.lock)
+- `php80`, `php74`, etc. = versões anteriores
+
+**Fluxo padrão de SSH (quando solicitado):**
+
+1) **Pull do repositório:**
+```bash
+ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && git pull origin main && git log --oneline -1"
+```
+
+2) **Verificação pré-comando:**
+```bash
+ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && php82 --version && ls -la storage/backups/ | tail -3"
+```
+
+3) **Executar comando Artisan (exemplo: dry-run):**
+```bash
+ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && php82 artisan users:unify --user=BEATRIZ.SC --dry-run"
+```
+
+4) **Executar comando Artisan (produção, com confirmação automática):**
+```bash
+ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && echo 'yes' | php82 artisan users:unify --user=BEATRIZ.SC 2>&1"
+```
+
+5) **Verificar backup foi criado:**
+```bash
+ssh plansul@ftp.plansul.info "ls -lah ~/www/estoque-laravel/storage/backups/user_unify_backup*.json | tail -1"
+```
+
+**Troubleshooting comum:**
+- ❌ "Parse error: unexpected ':'" → Usar `php82` em vez de `php`
+- ❌ "root composer.json requires php ^8.2" → Usar `php82 ~/composer.phar install`
+- ❌ "/home/plansul/public_html/plansul: No such file" → App está em `~/www/estoque-laravel`, não public_html
+- ✅ Se pull falhar com "untracked files", fazer `git stash` antes
+
+**Procedimento para agent (quando usuário solicita SSH):**
+1. Verificar se é operação de **leitura** (git pull, check) ou **escrita** (data modifications)
+2. Se read-only: executar sem confirmação adicional
+3. Se write: sempre fazer `--dry-run` primeiro, mostrar resultado, pedir confirmação
+4. Após execução: verificar backup foi criado (se aplicável) e reportar sucesso
+5. **NUNCA** executar SSH sem autorização explícita do usuário (a menos que seja para ler status)
+
 7) Organização e mudanças de estrutura
 - Antes de mover/renomear arquivos, proponha um mapa de reorganização (origem -> destino) no chat e aguarde confirmação.
 - Mantenha diretórios essenciais intactos (`app/`, `config/`, `public/`, `resources/`, `routes/`, `database/migrations/`, `vendor/`) a menos que haja plano e testes.
@@ -66,9 +121,121 @@ ssh plansul@ftp.plansul.info
 php -v; composer --version; ls -ld storage bootstrap/cache
 ```
 
+13) Princípios de Manutenibilidade e Arquitetura Limpa (OBRIGATÓRIO)
+
+**⚠️ REGRA FUNDAMENTAL: Todo código deve ser manutenível, escalável e de fácil evolução**
+
+Princípios obrigatórios a seguir em TODAS as implementações:
+
+a) **Separação de Responsabilidades**
+   - Controllers: apenas roteamento e resposta HTTP
+   - Services (`app/Services/`): lógica de negócio e transações
+   - Models: relacionamentos e escopos
+   - Components (`resources/views/components/`): UI reutilizável
+
+b) **Reutilização de Código (DRY)**
+   - UI repetida DEVE virar componente Blade
+   - Lógica repetida DEVE ir para Service Layer
+   - JavaScript repetido DEVE ser modularizado
+   - Sempre verificar se já existe componente/service antes de criar novo
+
+c) **Componentes Blade Reutilizáveis**
+   - Localização: `resources/views/components/`
+   - Componentes disponíveis:
+     * `<x-action-button>` - Botões de ação (edit, delete, view, add, export)
+     * `<x-status-badge>` - Badges de status com cores automáticas
+     * `<x-table-header>` - Cabeçalhos de tabela com ordenação
+   - Antes de criar HTML inline, verificar se componente existente atende
+   - Novos componentes devem ter documentação inline no topo do arquivo
+
+d) **JavaScript Modular**
+   - Módulos em `public/js/` com padrão IIFE
+   - API pública exposta via `window.NomeModulo`
+   - Módulos disponíveis:
+     * `PatrimonioActions` - CRUD de patrimônios (delete, rebind, configure)
+   - Evitar JavaScript inline em views; preferir módulos reutilizáveis
+   - Usar data-attributes para vincular ações (ex: `data-delete-patrimonio`)
+
+e) **Service Layer para Lógica de Negócio**
+   - Services em `app/Services/`
+   - Services disponíveis:
+     * `PatrimonioService` - listar, buscarPorId, criar, atualizar, deletar, estatisticas
+   - Controllers DEVEM usar Services para operações complexas
+   - Services facilitam testes e reutilização
+
+f) **Logs Padronizados com Emojis**
+   - Formato: `Log::info('emoji [CONTEXTO] mensagem', ['dados' => $valor]);`
+   - Emojis padrão:
+     * 🚀 Inicialização | 📋 Listagem | ➕ Criação | ✏️ Atualização
+     * 🗑️ Deleção | ✅ Sucesso | ⚠️ Aviso | ❌ Erro
+     * 🔍 Busca | 📊 Estatísticas | 📡 HTTP Request | 📥 HTTP Response
+   - Todo método de Service DEVE ter logs de entrada/saída
+
+g) **Estilos e CSS (OBRIGATÓRIO - SOMENTE TAILWIND)**
+   - ❌ PROIBIDO: CSS customizado, inline styles, ou classes personalizadas
+   - ✅ OBRIGATÓRIO: Usar APENAS classes Tailwind do `tailwind.config.js`
+   - ✅ Dark mode: Usar `dark:` prefix (ex: `dark:bg-gray-900`, `dark:text-gray-200`)
+   - ✅ Componentes Blade: Manter consistência visual com página
+   - **CRÍTICO:** Toda classe de cor DEVE ter o prefixo `dark:` correspondente
+     * CORRETO: `bg-white dark:bg-gray-900` 
+     * ERRADO: `bg-white` (ficará branco em ambos temas)
+     * ERRADO: `bg-blue-500` sem `dark:bg-blue-700` (ficará errado no modo escuro)
+   - Cores padrão do projeto: `gray`, `blue`, `red` (padrão Tailwind)
+   - Borders: `border-gray-200 dark:border-gray-700`
+   - Texto: `text-gray-900 dark:text-gray-100`
+   - Backgrounds: `bg-white dark:bg-gray-800` ou `bg-gray-100 dark:bg-gray-700`
+   - Spinner/Loading: `text-gray-600 dark:text-gray-400`
+   - Hover: `hover:bg-gray-100 dark:hover:bg-gray-700`
+   - Inputs: `border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200`
+   - **NUNCA** usar `bg-blue-500` ou cores saturadas para backgrounds; apenas para highlights
+   - Se precisar de estilo não disponível em Tailwind, solicitar adição em `tailwind.config.js` ANTES de implementar
+
+h) **Documentação Inline**
+   - Services: bloco PHPDoc com propósito, benefícios, exemplo de uso
+   - Components: comentário Blade no topo com @props e exemplo
+   - Módulos JS: comentário JSDoc com propósito, API pública, exemplo
+
+i) **Antes de Implementar Qualquer Feature**
+   1. Verificar se existe componente/service/módulo reutilizável
+   2. Se não existe mas é reutilizável, criar como componente
+   3. Se existe mas não atende, avaliar extensão vs criar novo
+   4. Documentar inline se criar algo novo
+   5. Adicionar logs padronizados
+   6. Verificar compatibilidade dark mode (Tailwind) - **testar em ambos os temas**
+   7. Validar que TODO CSS vem de classes Tailwind
+   8. **Copiar padrão visual de componentes existentes** (não inovar em estilo)
+
+j) **Checklist de Código Limpo (verificar antes de commit)**
+   - [ ] Lógica complexa está em Service?
+   - [ ] HTML repetido virou componente?
+   - [ ] JavaScript está modularizado?
+   - [ ] Logs usam emojis padronizados?
+   - [ ] Nomes descritivos em português?
+   - [ ] Sem código comentado desnecessário?
+   - [ ] Tratamento de erros adequado?
+   - [ ] Documentação inline quando necessário?
+   - [ ] TODOS os estilos são Tailwind?
+   - [ ] Cada cor tem seu `dark:` correspondente?
+   - [ ] Testado em tema claro E tema escuro?
+   - [ ] Segue padrão visual dos outros componentes?
+
+k) **Documentação de Referência**
+   - Arquitetura completa: `docs/ARQUITETURA_MANUTENCAO.md`
+   - Guia rápido de componentes: `docs/COMPONENTES_GUIA_RAPIDO.md`
+   - Tailwind: https://tailwindcss.com/docs
+   - Ler ANTES de implementar features complexas
+
+l) **Quando Refatorar Código Legado**
+   - NÃO reescrever tudo de uma vez
+   - Refatorar incrementalmente (um método/view por vez)
+   - Extrair para Service primeiro
+   - Criar componentes depois
+   - Manter funcionalidade existente
+   - Testar após cada mudança
+
 Data da última atualização: 2025-12-04
 
-*** FIM — consolidado em 2025-12-04 ***
+*** FIM — consolidado e expandido em 2025-12-04 ***
 # Copilot / AI agent instructions for Estoque_Plansul_laravel
 
 Resumo rápido
