@@ -158,10 +158,10 @@
                 @endif
               </td>
             @elseif($col === 'modelo')
-              <td class="{{ $headerPadding }} truncate" title="{{ $item->MODELO }}">{{ $item->MODELO ? Str::limit($item->MODELO, 25, '...') : '—' }}</td>
+              <td class="{{ $headerPadding }} truncate max-w-[120px]" title="{{ $item->MODELO }}">{{ $item->MODELO ? Str::limit($item->MODELO, 18, '...') : '—' }}</td>
             
             @elseif($col === 'marca')
-              <td class="{{ $headerPadding }} truncate" title="{{ $item->MARCA }}">{{ $item->MARCA ? Str::limit($item->MARCA, 25, '...') : '—' }}</td>
+              <td class="{{ $headerPadding }} truncate max-w-[120px]" title="{{ $item->MARCA }}">{{ $item->MARCA ? Str::limit($item->MARCA, 18, '...') : '—' }}</td>
             
             @elseif($col === 'descricao')
               @php 
