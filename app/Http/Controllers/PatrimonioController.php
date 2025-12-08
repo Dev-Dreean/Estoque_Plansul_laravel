@@ -20,6 +20,8 @@ use App\Models\TermoCodigo;
 use App\Services\CodigoService;
 use App\Services\PatrimonioService;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Cache;
+use Carbon\Carbon;
 
 class PatrimonioController extends Controller
 {
@@ -191,12 +193,26 @@ class PatrimonioController extends Controller
 
         /** @var User $currentUser */
         $currentUser = Auth::user();
+        $brunoSkipDefaultActive = false;
 
         // Filtro padrÇœo para o usuÇ­rio BRUNO: limitar aos cadastradores Bea e Tiago
         if ($currentUser && strcasecmp((string) ($currentUser->NMLOGIN ?? ''), 'bruno') === 0) {
+            $cacheKey = 'bruno_skip_default_until_' . ($currentUser->NMLOGIN ?? 'bruno');
+            $skipUntil = \Illuminate\Support\Facades\Cache::get($cacheKey);
+            $now = \Carbon\Carbon::now();
+            $skipActive = $skipUntil ? $now->lt(\Carbon\Carbon::parse($skipUntil)) : false;
+
+            if ($request->boolean('bruno_skip_default')) {
+                $next8am = $now->copy()->addDay()->setTime(8, 0, 0);
+                \Illuminate\Support\Facades\Cache::put($cacheKey, $next8am, $next8am);
+                $skipActive = true;
+            }
+
+            $brunoSkipDefaultActive = $skipActive;
+
             $hasMulti = $request->filled('cadastrados_por');
             $hasSingle = $request->filled('cadastrado_por');
-            if (!$hasMulti && !$hasSingle) {
+            if (!$skipActive && !$hasMulti && !$hasSingle) {
                 $request->merge([
                     'cadastrados_por' => ['bea.sc', 'tiagop'],
                 ]);
@@ -244,6 +260,29 @@ class PatrimonioController extends Controller
             'visibleColumns' => $visibleColumns ?? [],
             'hiddenColumns' => $hiddenColumns ?? [],
             'showEmptyColumns' => $showEmpty,
+            'currentUser' => $currentUser,
+            'brunoSkipDefault' => $brunoSkipDefaultActive,
+        ]);
+    }
+
+    /**
+     * Navigator beta com layout lateral novo e listagem de patrimônios.
+     */
+    public function navigatorBeta(Request $request): View
+    {
+        $currentUser = Auth::user();
+        if (!($currentUser && ($currentUser->isGod() || $currentUser->PERFIL === 'ADM'))) {
+            abort(403, 'Acesso restrito ao beta.');
+        }
+
+        $perPage = (int) $request->input('per_page', 10);
+        $lista = $this->patrimonioService->listarParaIndex($request, $currentUser, $perPage);
+
+        return view('menu.navigator-beta', [
+            'patrimonios' => $lista['patrimonios'],
+            'visibleColumns' => $lista['visibleColumns'] ?? [],
+            'hiddenColumns' => $lista['hiddenColumns'] ?? [],
+            'showEmptyColumns' => $lista['showEmptyColumns'] ?? false,
         ]);
     }
 

@@ -281,7 +281,5 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     });
 
     // Navegador lateral beta (projeto paralelo)
-    Route::get('/navigator-beta', function () {
-        return view('menu.navigator-beta');
-    })->name('navigator.beta')->middleware('auth');
+    Route::get('/navigator-beta', [PatrimonioController::class, 'navigatorBeta'])->name('navigator.beta')->middleware('auth');
 });

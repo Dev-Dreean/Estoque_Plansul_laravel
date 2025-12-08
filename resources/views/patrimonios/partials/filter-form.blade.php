@@ -1,5 +1,6 @@
 ﻿@php
-  $filterKeys = ['nupatrimonio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','matr_responsavel','cadastrado_por'];
+  use Carbon\Carbon;
+  $filterKeys = ['nupatrimonio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','matr_responsavel','cadastrado_por','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate'];
   $badgeColors = [
     'nupatrimonio' => 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700',
     'cdprojeto' => 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-blue-200 dark:border-blue-700',
@@ -10,6 +11,10 @@
     'situacao' => 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700',
     'matr_responsavel' => 'bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-700',
     'cadastrado_por' => 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700',
+    'dtaquisicao_de' => 'bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-200 border-rose-200 dark:border-rose-700',
+    'dtaquisicao_ate' => 'bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-200 border-rose-200 dark:border-rose-700',
+    'dtcadastro_de' => 'bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-200 border-sky-200 dark:border-sky-700',
+    'dtcadastro_ate' => 'bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-200 border-sky-200 dark:border-sky-700',
   ];
 
   $todosCadastradores = $cadastradores->sortBy('NOMEUSER')->values()->map(function($u){
@@ -37,10 +42,15 @@
     $match = $todosCadastradores->first(fn($c) => strcasecmp($c['login'], $login) === 0);
     return $match ?: ['login' => $login, 'nome' => $login];
   })->values();
+  $isBruno = isset($currentUser) ? strcasecmp((string) ($currentUser->NMLOGIN ?? ''), 'bruno') === 0 : (strcasecmp((string) (auth()->user()->NMLOGIN ?? ''), 'bruno') === 0);
+  $brunoSkipDefault = (int) ($brunoSkipDefault ?? request('bruno_skip_default', 0));
 
   $baseParams = collect(request()->except(['cadastrados_por', 'cadastrado_por']))
     ->filter(function($v) { return !(is_null($v) || $v === ''); })
     ->all();
+  if ($isBruno && $brunoSkipDefault) {
+    $baseParams['bruno_skip_default'] = $brunoSkipDefault;
+  }
 @endphp
 
 <div x-data="{ open: false }" @click.outside="open = false" class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg mb-3" x-id="['filtro-patrimonios']" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimonios')">
@@ -61,14 +71,21 @@
                 'situacao' => 'Situacao',
                 'matr_responsavel' => 'Responsavel',
                 'cadastrado_por' => 'Cadastrador',
+                'dtaquisicao_de' => 'Aquisicao de',
+                'dtaquisicao_ate' => 'Aquisicao ate',
+                'dtcadastro_de' => 'Cadastro de',
+                'dtcadastro_ate' => 'Cadastro ate',
               ];
               $label = $labelsMap[$k] ?? str_replace('_',' ',ucfirst($k));
               $value = request($k);
               if ($k === 'situacao' && $value === 'A DISPOSICAO') {
                 $value = 'Disponivel';
               }
+              if (in_array($k, ['dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate'], true) && $value) {
+                try { $value = Carbon::parse($value)->format('d/m/Y'); } catch (\Throwable $e) {}
+              }
             @endphp
-            <a href="{{ route('patrimonios.index', request()->except($k)) }}" class="inline-flex items-center text-xs px-2 py-1 rounded-full border hover:opacity-90 {{ $badgeColors[$k] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700' }}">
+            <a href="{{ route('patrimonios.index', array_merge(request()->except($k), $isBruno ? ['bruno_skip_default' => $brunoSkipDefault ?: 1] : [])) }}" class="inline-flex items-center text-xs px-2 py-1 rounded-full border hover:opacity-90 {{ $badgeColors[$k] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700' }}">
               <span class="truncate max-w-[120px]">{{ $label }}: {{ Str::limit((string)$value, 24) }}</span>
               <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6.293 7.293a1 1 0 011.414 0L10 9.586l2.293-2.293a1 1 0 111.414 1.414L11.414 11l2.293 2.293a1 1 0 01-1.414 1.414L10 12.414l-2.293 2.293a1 1 0 01-1.414-1.414L8.586 11 6.293 8.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
             </a>
@@ -76,7 +93,7 @@
         @endforeach
         <template x-for="user in tags" :key="user.login">
           <a
-            :href="(() => { const params = new URLSearchParams(@js($baseParams)); tags.filter(t => t.login !== user.login).forEach(t => params.append('cadastrados_por[]', t.login)); return '{{ route('patrimonios.index') }}' + (params.toString() ? '?' + params.toString() : ''); })()"
+            :href="(() => { const params = new URLSearchParams(@js($baseParams)); tags.filter(t => t.login !== user.login).forEach(t => params.append('cadastrados_por[]', t.login)); @if($isBruno) params.set('bruno_skip_default', '1'); @endif return '{{ route('patrimonios.index') }}' + (params.toString() ? '?' + params.toString() : ''); })()"
             data-ajax-tag-remove
             data-tags-count="{{ count($selecionados) }}"
             x-bind:data-tags-count="tags.length"
@@ -97,6 +114,9 @@
   </div>
   <div x-cloak x-show="open" x-transition class="mt-4" :id="$id('filtro-patrimonios')">
     <form id="patrimonio-filter-form" method="GET" action="{{ route('patrimonios.index') }}" @submit="open=false">
+      @if($isBruno)
+        <input type="hidden" name="bruno_skip_default" value="{{ $brunoSkipDefault }}">
+      @endif
       <div class="flex flex-wrap gap-3 lg:gap-4 overflow-visible pb-2 w-full">
         <div class="flex-1 min-w-[100px] max-w-[140px] basis-[110px]">
           <input type="text" name="nupatrimonio" placeholder="N. Patr." value="{{ request('nupatrimonio') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
@@ -388,13 +408,57 @@
         </div>
       </div>
 
+      <div class="flex flex-wrap gap-3 lg:gap-4 overflow-visible pb-2 w-full">
+        <div
+          class="flex flex-col gap-2 flex-[1.3_1_260px] min-w-[240px] bg-white/70 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 shadow-sm"
+          x-data="{
+            range: {{ request()->filled('dtaquisicao_ate') ? 'true' : 'false' }},
+          }"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-sm font-semibold text-gray-800 dark:text-gray-100">Aquisição</span>
+            <label class="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+              <input type="checkbox" name="filtrar_aquisicao" value="1" x-model="range" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+              <span>Intervalo</span>
+            </label>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="date" name="dtaquisicao_de" value="{{ request('dtaquisicao_de') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de aquisicao" />
+            <template x-if="range">
+              <span class="text-xs text-gray-500 dark:text-gray-300">até</span>
+            </template>
+            <input x-show="range" x-cloak type="date" name="dtaquisicao_ate" value="{{ request('dtaquisicao_ate') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de aquisicao ate" />
+          </div>
+        </div>
+        <div
+          class="flex flex-col gap-2 flex-[1.3_1_260px] min-w-[240px] bg-white/70 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 shadow-sm"
+          x-data="{
+            range: {{ request()->filled('dtcadastro_ate') ? 'true' : 'false' }},
+          }"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-sm font-semibold text-gray-800 dark:text-gray-100">Cadastro</span>
+            <label class="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+              <input type="checkbox" name="filtrar_cadastro" value="1" x-model="range" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+              <span>Intervalo</span>
+            </label>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="date" name="dtcadastro_de" value="{{ request('dtcadastro_de') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de cadastro" />
+            <template x-if="range">
+              <span class="text-xs text-gray-500 dark:text-gray-300">até</span>
+            </template>
+            <input x-show="range" x-cloak type="date" name="dtcadastro_ate" value="{{ request('dtcadastro_ate') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de cadastro ate" />
+          </div>
+        </div>
+      </div>
       <div class="flex flex-wrap items-center justify-between mt-4 gap-4">
         <div class="flex items-center gap-3">
           <x-primary-button class="h-10 px-4">
             {{ __('Filtrar') }}
           </x-primary-button>
 
-          <a href="{{ route('patrimonios.index') }}" data-ajax-clean class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">
+          <a href="{{ route('patrimonios.index', $isBruno ? ['bruno_skip_default' => 1] : []) }}" data-ajax-clean class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">
             Limpar
           </a>
         </div>
@@ -411,3 +475,4 @@
     </form>
   </div>
 </div>
+

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Patrimonio;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
@@ -503,6 +504,9 @@ class PatrimonioService
                 }
             }
         }
+
+        $this->aplicarFiltroDataRange($query, $request, 'dtaquisicao_de', 'dtaquisicao_ate', 'DTAQUISICAO', 'filtrar_aquisicao');
+        $this->aplicarFiltroDataRange($query, $request, 'dtcadastro_de', 'dtcadastro_ate', 'DTOPERACAO', 'filtrar_cadastro');
     }
 
     protected function aplicarOrdenacao(Builder $query, Request $request, User $user): void
@@ -581,5 +585,44 @@ class PatrimonioService
         }
 
         return [$visibleColumns, $hiddenColumns];
+    }
+
+    /**
+     * Aplica filtro de intervalo de datas usando campos do request.
+     */
+    protected function aplicarFiltroDataRange(Builder $query, Request $request, string $startKey, string $endKey, string $column, ?string $toggleKey = null): void
+    {
+        if ($toggleKey && !$request->boolean($toggleKey) && !$request->filled($startKey) && !$request->filled($endKey)) {
+            return;
+        }
+        $inicio = $request->input($startKey);
+        $fim = $request->input($endKey);
+
+        $inicioDate = null;
+        $fimDate = null;
+
+        try {
+            if (!blank($inicio)) {
+                $inicioDate = Carbon::parse($inicio)->startOfDay();
+            }
+        } catch (\Throwable $e) {
+            Log::warning("Data inicial invalida para filtro {$column}", ['valor' => $inicio, 'erro' => $e->getMessage()]);
+        }
+
+        try {
+            if (!blank($fim)) {
+                $fimDate = Carbon::parse($fim)->endOfDay();
+            }
+        } catch (\Throwable $e) {
+            Log::warning("Data final invalida para filtro {$column}", ['valor' => $fim, 'erro' => $e->getMessage()]);
+        }
+
+        if ($inicioDate) {
+            $query->whereDate($column, '>=', $inicioDate->toDateString());
+        }
+
+        if ($fimDate) {
+            $query->whereDate($column, '<=', $fimDate->toDateString());
+        }
     }
 }
