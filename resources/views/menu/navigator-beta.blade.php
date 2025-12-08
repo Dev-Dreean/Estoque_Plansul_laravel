@@ -34,7 +34,7 @@
   $totalRegistros = $patrimonios->total() ?? 0;
 @endphp
 
-<div x-data="{ expanded: true, open: { controle: true } }" class="min-h-[calc(100vh-64px)] bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900 text-slate-100">
+<div x-data="navigatorShell()" class="min-h-[calc(100vh-64px)] bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900 text-slate-100">
   <div class="flex">
     <aside :class="expanded ? 'w-68' : 'w-20'" class="relative flex-shrink-0 transition-all duration-300 bg-slate-950/95 border-r border-slate-900 min-h-[calc(100vh-64px)] shadow-2xl/30">
       <div class="flex items-center justify-between h-14 px-3 border-b border-slate-900">
@@ -45,10 +45,22 @@
             <span class="text-sm font-semibold text-slate-100 whitespace-nowrap">Navigator</span>
           </div>
         </div>
-        <button @click="expanded = !expanded" class="p-2 rounded-md text-slate-400 hover:bg-slate-900">
-          <span x-show="expanded" class="block">{!! $icons['chevron-left'] !!}</span>
-          <span x-show="!expanded" class="block">{!! $icons['chevron-right'] !!}</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            @click="toggleTheme"
+            :aria-pressed="isDark.toString()"
+            class="h-8 w-8 rounded-full border border-slate-800 bg-slate-900 text-xs font-semibold text-slate-200 hover:border-indigo-500 hover:text-indigo-200 transition"
+          >
+            <span x-show="!isDark" aria-hidden="true">☾</span>
+            <span x-show="isDark" aria-hidden="true">☀</span>
+            <span class="sr-only">Alternar tema</span>
+          </button>
+          <button @click="expanded = !expanded" class="p-2 rounded-md text-slate-400 hover:bg-slate-900">
+            <span x-show="expanded" class="block">{!! $icons['chevron-left'] !!}</span>
+            <span x-show="!expanded" class="block">{!! $icons['chevron-right'] !!}</span>
+          </button>
+        </div>
       </div>
 
       <nav class="p-3 space-y-5">
@@ -86,15 +98,38 @@
         </div>
       </nav>
 
-      <div class="mt-auto p-3 border-t border-slate-900">
+      <div class="mt-auto p-3 border-t border-slate-900 space-y-3">
         <div class="flex items-center gap-3">
           <div class="h-10 w-10 rounded-full bg-slate-900 flex items-center justify-center text-sm font-semibold text-slate-100">
             {{ strtoupper(substr(Auth::user()->NOMEUSER ?? 'U', 0, 1)) }}
           </div>
           <div class="min-w-0" x-show="expanded">
-            <p class="text-sm font-semibold text-slate-100 truncate">{{ Auth::user()->NOMEUSER ?? 'Usuário' }}</p>
+            <p class="text-sm font-semibold text-slate-100 truncate">{{ Auth::user()->NOMEUSER ?? 'Usuario' }}</p>
             <p class="text-xs text-slate-400 truncate">{{ Auth::user()->NMLOGIN ?? 'login' }}</p>
           </div>
+        </div>
+        <div x-show="expanded">
+          <label class="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-slate-900/70 border border-slate-800 text-sm text-slate-200 shadow-inner">
+            <div class="flex items-center gap-2">
+              <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-800 text-amber-300">&#9790;</span>
+              <div class="leading-tight">
+                <p class="font-semibold">Tema</p>
+                <p class="text-xs text-slate-400">Dark / White</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              @click="toggleTheme"
+              :aria-pressed="isDark.toString()"
+              class="relative inline-flex h-7 w-12 items-center rounded-full border border-slate-700 bg-slate-800 transition"
+              :class="isDark ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-300 border-slate-400'"
+            >
+              <span
+                class="inline-block h-5 w-5 rounded-full bg-white shadow transform transition"
+                :class="isDark ? 'translate-x-5' : 'translate-x-1'"
+              ></span>
+            </button>
+          </label>
         </div>
       </div>
     </aside>
@@ -227,3 +262,32 @@
   </div>
 </div>
 </x-app-layout>
+
+@push('scripts')
+<script>
+  function navigatorShell() {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const stored = localStorage.getItem('app_theme');
+    const initialDark = stored ? stored === 'dark' : prefersDark;
+    const applyTheme = (isDark) => {
+      const root = document.documentElement;
+      root.classList.toggle('dark', isDark);
+      localStorage.setItem('app_theme', isDark ? 'dark' : 'light');
+    };
+    applyTheme(initialDark);
+
+    return {
+      expanded: true,
+      open: { controle: true },
+      isDark: initialDark,
+      toggleTheme() {
+        this.isDark = !this.isDark;
+        applyTheme(this.isDark);
+      },
+    };
+  }
+</script>
+@endpush
+
+
+

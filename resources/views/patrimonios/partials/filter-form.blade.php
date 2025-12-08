@@ -1,6 +1,6 @@
 ﻿@php
   use Carbon\Carbon;
-  $filterKeys = ['nupatrimonio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','matr_responsavel','cadastrado_por','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate'];
+  $filterKeys = ['nupatrimonio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','matr_responsavel','cadastrado_por','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate','uf'];
   $badgeColors = [
     'nupatrimonio' => 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700',
     'cdprojeto' => 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-blue-200 dark:border-blue-700',
@@ -15,6 +15,7 @@
     'dtaquisicao_ate' => 'bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-200 border-rose-200 dark:border-rose-700',
     'dtcadastro_de' => 'bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-200 border-sky-200 dark:border-sky-700',
     'dtcadastro_ate' => 'bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-200 border-sky-200 dark:border-sky-700',
+    'uf' => 'bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-200 border-teal-200 dark:border-teal-700',
   ];
 
   $todosCadastradores = $cadastradores->sortBy('NOMEUSER')->values()->map(function($u){
@@ -59,37 +60,54 @@
       <h3 class="font-semibold text-lg">Filtros de Busca</h3>
       <div x-cloak id="patrimonios-tags" class="flex items-center gap-2 ml-3" x-data="{ tags: @js($selecionados) }" @cadastradores-changed.window="tags = $event.detail">
         @foreach($filterKeys as $k)
-          @if(request()->filled($k))
+          @php
+            $labelsMap = [
+              'nupatrimonio' => 'N. Patr.',
+              'cdprojeto' => 'Projeto',
+              'cdlocal' => 'Local',
+              'modelo' => 'Modelo',
+              'marca' => 'Marca',
+              'descricao' => 'Descricao',
+              'situacao' => 'Situacao',
+              'matr_responsavel' => 'Responsavel',
+              'cadastrado_por' => 'Cadastrador',
+              'dtaquisicao_de' => 'Aquisicao de',
+              'dtaquisicao_ate' => 'Aquisicao ate',
+              'dtcadastro_de' => 'Cadastro de',
+              'dtcadastro_ate' => 'Cadastro ate',
+              'uf' => 'UF',
+            ];
+            $raw = request($k);
+            $values = collect(is_array($raw) ? $raw : ($raw !== null ? [$raw] : []))
+              ->filter(fn($v) => $v !== '' && !is_null($v))
+              ->values();
+          @endphp
+          @foreach($values as $val)
             @php
-              $labelsMap = [
-                'nupatrimonio' => 'N. Patr.',
-                'cdprojeto' => 'Projeto',
-                'cdlocal' => 'Local',
-                'modelo' => 'Modelo',
-                'marca' => 'Marca',
-                'descricao' => 'Descricao',
-                'situacao' => 'Situacao',
-                'matr_responsavel' => 'Responsavel',
-                'cadastrado_por' => 'Cadastrador',
-                'dtaquisicao_de' => 'Aquisicao de',
-                'dtaquisicao_ate' => 'Aquisicao ate',
-                'dtcadastro_de' => 'Cadastro de',
-                'dtcadastro_ate' => 'Cadastro ate',
-              ];
               $label = $labelsMap[$k] ?? str_replace('_',' ',ucfirst($k));
-              $value = request($k);
-              if ($k === 'situacao' && $value === 'A DISPOSICAO') {
-                $value = 'Disponivel';
+              $display = $val;
+              if ($k === 'situacao' && $display === 'A DISPOSICAO') {
+                $display = 'Disponivel';
               }
-              if (in_array($k, ['dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate'], true) && $value) {
-                try { $value = Carbon::parse($value)->format('d/m/Y'); } catch (\Throwable $e) {}
+              if (in_array($k, ['dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate'], true) && $display) {
+                try { $display = Carbon::parse($display)->format('d/m/Y'); } catch (\Throwable $e) {}
               }
+              $params = request()->except($k);
+              if ($values->count() > 1) {
+                $remaining = $values->values();
+                $remaining->forget($loop->index);
+                $params[$k] = $remaining->all();
+              }
+              if ($isBruno && $brunoSkipDefault) {
+                $params['bruno_skip_default'] = $brunoSkipDefault ?: 1;
+              }
+              $tagUrl = route('patrimonios.index', $params);
             @endphp
-            <a href="{{ route('patrimonios.index', array_merge(request()->except($k), $isBruno ? ['bruno_skip_default' => $brunoSkipDefault ?: 1] : [])) }}" class="inline-flex items-center text-xs px-2 py-1 rounded-full border hover:opacity-90 {{ $badgeColors[$k] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700' }}">
-              <span class="truncate max-w-[120px]">{{ $label }}: {{ Str::limit((string)$value, 24) }}</span>
+            <a href="{{ $tagUrl }}" class="inline-flex items-center text-xs px-2 py-1 rounded-full border hover:opacity-90 {{ $badgeColors[$k] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700' }}">
+              <span class="truncate max-w-[120px]">{{ Str::limit((string)$display, 24) }}</span>
               <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6.293 7.293a1 1 0 011.414 0L10 9.586l2.293-2.293a1 1 0 111.414 1.414L11.414 11l2.293 2.293a1 1 0 01-1.414 1.414L10 12.414l-2.293 2.293a1 1 0 01-1.414-1.414L8.586 11 6.293 8.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
             </a>
-          @endif
+          @endforeach
         @endforeach
         <template x-for="user in tags" :key="user.login">
           <a
@@ -117,7 +135,7 @@
       @if($isBruno)
         <input type="hidden" name="bruno_skip_default" value="{{ $brunoSkipDefault }}">
       @endif
-      <div class="flex flex-wrap gap-3 lg:gap-4 overflow-visible pb-2 w-full">
+      <div class="flex flex-wrap gap-3 lg:gap-4 overflow-visible pb-2 w-full mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
         <div class="flex-1 min-w-[100px] max-w-[140px] basis-[110px]">
           <input type="text" name="nupatrimonio" placeholder="N. Patr." value="{{ request('nupatrimonio') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
         </div>
@@ -329,13 +347,38 @@
           <input type="text" name="descricao" placeholder="Descricao" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
         </div>
         <div class="flex-1 min-w-[130px] max-w-[170px] basis-[140px]">
-          <select name="situacao" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
-            <option value="">Situacao</option>
-            <option value="EM USO" @selected(request('situacao') === 'EM USO')>EM USO</option>
-            <option value="BAIXA" @selected(request('situacao') === 'BAIXA')>BAIXA</option>
-            <option value="CONSERTO" @selected(request('situacao') === 'CONSERTO')>CONSERTO</option>
-            <option value="A DISPOSICAO" @selected(request('situacao') === 'A DISPOSICAO')>DISPONIVEL</option>
-          </select>
+          <div
+            x-data="{
+              open: false,
+              options: ['EM USO','BAIXA','CONSERTO','A DISPOSICAO'],
+              selected: @js(collect((array)request('situacao'))->filter()->values()->all()),
+              toggle(opt) {
+                if (this.selected.includes(opt)) {
+                  this.selected = this.selected.filter(v => v !== opt);
+                } else {
+                  this.selected.push(opt);
+                }
+              }
+            }"
+            class="relative"
+            @click.outside="open=false"
+          >
+            <button type="button" @click="open=!open" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md flex items-center justify-between">
+              <span x-text="selected.length ? selected.join(', ') : 'Situacao'"></span>
+              <svg class="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+            </button>
+            <div x-show="open" x-transition class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg">
+              <template x-for="opt in options" :key="opt">
+                <label class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                  <input type="checkbox" :value="opt" x-model="selected" class="rounded text-indigo-600 border-gray-300">
+                  <span x-text="opt === 'A DISPOSICAO' ? 'DISPONIVEL' : opt"></span>
+                </label>
+              </template>
+            </div>
+            <template x-for="opt in selected" :key="opt">
+              <input type="hidden" name="situacao[]" :value="opt">
+            </template>
+          </div>
         </div>
         <div class="flex-1 min-w-[150px] max-w-[210px] basis-[170px]">
           <x-employee-autocomplete 
@@ -344,6 +387,33 @@
             placeholder="Responsavel (matricula ou nome)"
             value="{{ request('matr_responsavel') }}"
           />
+        </div>
+        <div class="flex-1 min-w-[140px] max-w-[170px] basis-[150px]">
+          <div
+            x-data="{
+              open:false,
+              options: ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'],
+              selected: @js(collect((array)request('uf'))->filter()->values()->all()),
+            }"
+            class="relative"
+            @click.outside="open=false"
+          >
+            <button type="button" @click="open=!open" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md flex items-center justify-between">
+              <span x-text="selected.length ? selected.join(', ') : 'UF'"></span>
+              <svg class="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+            </button>
+            <div x-show="open" x-transition class="absolute z-40 mt-1 w-full max-h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg">
+              <template x-for="opt in options" :key="opt">
+                <label class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                  <input type="checkbox" :value="opt" x-model="selected" class="rounded text-indigo-600 border-gray-300">
+                  <span x-text="opt"></span>
+                </label>
+              </template>
+            </div>
+            <template x-for="opt in selected" :key="opt">
+              <input type="hidden" name="uf[]" :value="opt">
+            </template>
+          </div>
         </div>
         <div
           x-data="{

@@ -327,7 +327,7 @@ class PatrimonioController extends Controller
             'NUSEQOBJ' => 'required|integer',
             'DEOBJETO' => 'nullable|string|max:350', // obrigatÃ³ria apenas quando cÃ³digo for novo
             'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,Ã DISPOSIÃÃO',
-            'CDMATRFUNCIONARIO' => 'required|integer|exists:funcionarios,CDMATRFUNCIONARIO',
+            'CDMATRFUNCIONARIO' => 'nullable|integer|exists:funcionarios,CDMATRFUNCIONARIO',
             'NUMOF' => 'nullable|integer',
             'DEHISTORICO' => 'nullable|string|max:300',
             'CDPROJETO' => 'nullable|integer',
@@ -337,7 +337,7 @@ class PatrimonioController extends Controller
             'MARCA' => 'nullable|string|max:30',
             'MODELO' => 'nullable|string|max:30',
             'DTAQUISICAO' => 'nullable|date',
-            'DTBAIXA' => 'required_if:SITUACAO,BAIXA|nullable|date',
+            'DTBAIXA' => 'nullable|date',
         ]);
 
         // â VERIFICAR DUPLICATAS: Impedir criar patrimÃ´nio com nÂº que jÃ¡ existe
@@ -2296,9 +2296,9 @@ class PatrimonioController extends Controller
             'MODELO' => 'nullable|string|max:30',
             'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,Ã DISPOSIÃÃO',
             'DTAQUISICAO' => 'nullable|date',
-            'DTBAIXA' => 'required_if:SITUACAO,BAIXA|nullable|date',
+            'DTBAIXA' => 'nullable|date',
             // Matricula precisa existir na tabela funcionarios
-            'CDMATRFUNCIONARIO' => 'required|integer|exists:funcionarios,CDMATRFUNCIONARIO',
+            'CDMATRFUNCIONARIO' => 'nullable|integer|exists:funcionarios,CDMATRFUNCIONARIO',
         ]);
 
         Log::info('ð [VALIDATE] Dados apÃ³s validaÃ§Ã£o inicial', [

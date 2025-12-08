@@ -443,12 +443,8 @@ class PatrimonioService
             }
         }
 
-        if ($request->filled('situacao')) {
-            $val = trim((string) $request->input('situacao'));
-            if ($val !== '') {
-                $query->where('SITUACAO', $val);
-            }
-        }
+        $this->aplicarFiltroSituacao($query, $request);
+        $this->aplicarFiltroUf($query, $request);
 
         if ($request->filled('modelo')) {
             $val = trim((string) $request->input('modelo'));
@@ -624,5 +620,57 @@ class PatrimonioService
         if ($fimDate) {
             $query->whereDate($column, '<=', $fimDate->toDateString());
         }
+    }
+
+    protected function aplicarFiltroSituacao(Builder $query, Request $request): void
+    {
+        $raw = $request->input('situacao');
+        if (is_null($raw)) {
+            return;
+        }
+
+        $values = collect(is_array($raw) ? $raw : [$raw])
+            ->map(fn($v) => strtoupper(trim((string) $v)))
+            ->filter()
+            ->unique()
+            ->map(function ($v) {
+                return $v === 'DISPONIVEL' ? 'A DISPOSICAO' : $v;
+            })
+            ->values();
+
+        if ($values->isEmpty()) {
+            return;
+        }
+
+        $query->whereIn('SITUACAO', $values->all());
+    }
+
+    protected function aplicarFiltroUf(Builder $query, Request $request): void
+    {
+        $raw = $request->input('uf');
+        if (is_null($raw)) {
+            return;
+        }
+
+        $values = collect(is_array($raw) ? $raw : [$raw])
+            ->map(fn($v) => strtoupper(trim((string) $v)))
+            ->filter(fn($v) => strlen($v) === 2)
+            ->unique()
+            ->values();
+
+        if ($values->isEmpty()) {
+            return;
+        }
+
+        $query->where(function ($q) use ($values) {
+            $q->whereHas('creator', function ($qc) use ($values) {
+                $qc->whereIn(DB::raw('UPPER(UF)'), $values->all());
+            });
+
+            // fallback: usar sufixo do login (ex.: .SC)
+            foreach ($values as $uf) {
+                $q->orWhereRaw('LOWER(USUARIO) LIKE ?', ['%.' . strtolower($uf)]);
+            }
+        });
     }
 }

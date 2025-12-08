@@ -76,7 +76,19 @@
             </div>
 
             {{-- botão mobile --}}
-            <div class="-me-2 flex items-center sm:hidden ml-auto">
+            <div class="-me-2 flex items-center sm:hidden ml-auto gap-2">
+                <button
+                    type="button"
+                    @click="toggleTheme"
+                    :aria-pressed="isDark.toString()"
+                    class="inline-flex items-center justify-center p-2 rounded-md text-soft hover:text-base-color hover:bg-surface-alt focus:outline-none focus:bg-surface-alt transition duration-150 ease-in-out border border-base/70"
+                    :class="isDark ? 'bg-primary/10 border-primary' : ''"
+                    title="Alternar tema"
+                >
+                    <span x-show="!isDark" aria-hidden="true">☾</span>
+                    <span x-show="isDark" aria-hidden="true">☀</span>
+                    <span class="sr-only">Alternar tema</span>
+                </button>
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-soft hover:text-base-color hover:bg-surface-alt focus:outline-none focus:bg-surface-alt transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -119,3 +131,6 @@
         </div>
     </div>
 </nav>
+
+
+
