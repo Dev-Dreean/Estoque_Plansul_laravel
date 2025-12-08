@@ -185,10 +185,22 @@ class Patrimonio extends Model
             }
         }
 
-        $base = $firstName ?: ($login ?? 'SISTEMA');
-        $base = mb_strtoupper($base);
+        $baseRaw = $firstName ?: ($login ?? 'SISTEMA');
+        $baseRaw = mb_strtoupper($baseRaw);
 
-        return $uf ? $base . '.' . $uf : $base;
+        // Se tiver UF, sempre mostra "NOME.UF" usando apenas a parte antes do primeiro ponto para evitar ".SC.SC"
+        if ($uf) {
+            $parts = explode('.', $baseRaw);
+            $base = $parts[0] ?: $baseRaw;
+            return $base . '.' . $uf;
+        }
+
+        // Sem UF: mostrar apenas a parte antes do ponto, se existir
+        if (str_contains($baseRaw, '.')) {
+            $baseRaw = explode('.', $baseRaw)[0] ?: $baseRaw;
+        }
+
+        return $baseRaw;
     }
 
     public function getDtaquisicaoPtBrAttribute(): ?string

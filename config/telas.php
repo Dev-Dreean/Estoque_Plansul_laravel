@@ -18,7 +18,7 @@ return [
         'ordem' => 2,
     ],
     '1002' => [
-        'nome' => 'Cadastro de Locais',
+        'nome' => 'Locais',
         'descricao' => 'Cadastro de plantas, locais e vinculos',
         'route' => 'projetos.index',
         'icone' => 'fa-location-dot',
@@ -26,7 +26,7 @@ return [
         'ordem' => 3,
     ],
     '1003' => [
-        'nome' => 'Cadastro de Usuarios',
+        'nome' => 'Usuarios',
         'descricao' => 'Gestao de contas, perfis e permissoes',
         'route' => 'usuarios.index',
         'icone' => 'fa-users-cog',
@@ -34,7 +34,7 @@ return [
         'ordem' => 4,
     ],
     '1004' => [
-        'nome' => 'Cadastro de Telas',
+        'nome' => 'Telas',
         'descricao' => 'Liberacao e registro de novas telas',
         'route' => 'cadastro-tela.index',
         'icone' => 'fa-window-restore',
@@ -66,7 +66,7 @@ return [
         'ordem' => 8,
     ],
     '1008' => [
-        'nome' => 'Configuracoes de Tema',
+        'nome' => 'Tema',
         'descricao' => 'Preferencias visuais e aparencia',
         'route' => 'settings.theme',
         'icone' => 'fa-palette',
