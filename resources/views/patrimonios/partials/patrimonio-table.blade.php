@@ -17,6 +17,7 @@
   $columns = array_merge(
     ['nupatrimonio'],
     array_values($mapBeforeDescricao),
+    ['modelo', 'marca'],
     ['descricao', 'situacao'],
     array_values($mapAfterDescricao)
   );

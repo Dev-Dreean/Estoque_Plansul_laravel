@@ -148,33 +148,47 @@ class Patrimonio extends Model
 
     public function getCadastradoPorNomeAttribute(): string
     {
-        $fullName = null;
+        $user = null;
+        $login = $this->USUARIO;
 
-        if ($this->relationLoaded('creator') && $this->creator && $this->creator->NOMEUSER) {
-            $fullName = $this->creator->NOMEUSER;
-        } elseif (!empty($this->USUARIO)) {
-            $cacheKey = 'login_nome_' . $this->USUARIO;
-            $fullName = Cache::remember($cacheKey, 300, function () {
-                return optional(User::where('NMLOGIN', $this->USUARIO)->first())->NOMEUSER ?? $this->USUARIO;
-            });
-        } else {
+        if ($this->relationLoaded('creator') && $this->creator) {
+            $user = $this->creator;
+        } elseif (!empty($login)) {
+            $cacheKey = 'login_user_' . $login;
+            $user = Cache::remember($cacheKey, 300, fn () => User::where('NMLOGIN', $login)->first());
+        }
+
+        if (!$user && empty($login)) {
             return 'SISTEMA';
         }
 
-        // Formatação: apenas primeiro e último nome
+        $fullName = $user->NOMEUSER ?? null;
+        $uf = $user->UF ?? null;
+        $uf = $uf ? mb_strtoupper(trim((string) $uf)) : null;
+
+        // fallback: extrai UF do login (ex.: beatriz.sc => sc)
+        if (!$uf && $login && preg_match('/\\.([a-z]{2})$/i', $login, $m)) {
+            $uf = mb_strtoupper($m[1]);
+        }
+
+        $firstName = null;
         if ($fullName && is_string($fullName)) {
-            $parts = preg_split('/\s+/', trim($fullName));
-            $parts = array_values(array_filter($parts));
-            if (count($parts) === 0) {
-                return $fullName;
-            } elseif (count($parts) === 1) {
-                return $parts[0];
+            $parts = array_values(array_filter(preg_split('/\s+/', trim($fullName)) ?: []));
+            $firstName = $parts[0] ?? null;
+        }
+
+        if (!$firstName && $login) {
+            if (preg_match('/^([^.]+)/', (string) $login, $m)) {
+                $firstName = $m[1];
             } else {
-                return $parts[0] . ' ' . $parts[count($parts) - 1];
+                $firstName = $login;
             }
         }
 
-        return $fullName ?? 'SISTEMA';
+        $base = $firstName ?: ($login ?? 'SISTEMA');
+        $base = mb_strtoupper($base);
+
+        return $uf ? $base . '.' . $uf : $base;
     }
 
     public function getDtaquisicaoPtBrAttribute(): ?string

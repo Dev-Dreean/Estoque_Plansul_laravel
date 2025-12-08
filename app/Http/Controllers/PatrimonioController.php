@@ -192,6 +192,17 @@ class PatrimonioController extends Controller
         /** @var User $currentUser */
         $currentUser = Auth::user();
 
+        // Filtro padrÇœo para o usuÇ­rio BRUNO: limitar aos cadastradores Bea e Tiago
+        if ($currentUser && strcasecmp((string) ($currentUser->NMLOGIN ?? ''), 'bruno') === 0) {
+            $hasMulti = $request->filled('cadastrados_por');
+            $hasSingle = $request->filled('cadastrado_por');
+            if (!$hasMulti && !$hasSingle) {
+                $request->merge([
+                    'cadastrados_por' => ['bea.sc', 'tiagop'],
+                ]);
+            }
+        }
+
         $perPage = (int) $request->input('per_page', 30);
         $lista = $this->patrimonioService->listarParaIndex($request, $currentUser, $perPage);
 
