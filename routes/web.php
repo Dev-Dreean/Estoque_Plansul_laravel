@@ -279,4 +279,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         Route::post('/cadastro-tela/gerar-vincular/{nome}', [\App\Http\Controllers\CadastroTelaController::class, 'gerarVincular'])->name('cadastro-tela.gerarVincular');
         Route::post('/cadastro-tela/vincular-todas', [\App\Http\Controllers\CadastroTelaController::class, 'vincularTodas'])->name('cadastro-tela.vincularTodas');
     });
+
+    // Navegador lateral beta (projeto paralelo)
+    Route::get('/navigator-beta', function () {
+        return view('menu.navigator-beta');
+    })->name('navigator.beta')->middleware('auth');
 });
