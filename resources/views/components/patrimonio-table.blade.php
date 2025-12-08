@@ -73,7 +73,7 @@
 @endphp
 
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0 min-w-0">
-  <table class="w-full table-fixed {{ $tableText }} text-left rtl:text-right text-gray-500 dark:text-gray-400">
+  <table class="w-full {{ $tableText }} text-left rtl:text-right text-gray-500 dark:text-gray-400">
     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 shadow-sm">
       <tr class="divide-x divide-gray-200 dark:divide-gray-700">
         @if($showCheckbox)
@@ -158,10 +158,10 @@
                 @endif
               </td>
             @elseif($col === 'modelo')
-              <td class="{{ $headerPadding }} truncate max-w-[120px] sm:max-w-[150px]" title="{{ $item->MODELO }}">{{ $item->MODELO ? Str::limit($item->MODELO,18,'...') : '—' }}</td>
+              <td class="{{ $headerPadding }} truncate" title="{{ $item->MODELO }}">{{ $item->MODELO ? Str::limit($item->MODELO, 25, '...') : '—' }}</td>
             
             @elseif($col === 'marca')
-              <td class="{{ $headerPadding }} truncate max-w-[110px] sm:max-w-[140px]" title="{{ $item->MARCA }}">{{ $item->MARCA ? Str::limit($item->MARCA,18,'...') : '—' }}</td>
+              <td class="{{ $headerPadding }} truncate" title="{{ $item->MARCA }}">{{ $item->MARCA ? Str::limit($item->MARCA, 25, '...') : '—' }}</td>
             
             @elseif($col === 'descricao')
               @php 
