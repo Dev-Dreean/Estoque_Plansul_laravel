@@ -21,7 +21,9 @@
 </div>
 @endif
 
-<div x-data="patrimonioForm($el)" @keydown.enter.prevent="handleEnter($event)" class="space-y-4 text-sm"
+<div x-data="patrimonioForm($el)" 
+  x-init="if (patSearch) { $nextTick(() => buscarPatrimonio()); }"
+  @keydown.enter.prevent="handleEnter($event)" class="space-y-4 text-sm"
   data-patrimonio='{!! json_encode($patrimonio) !!}'
   data-old='{!! json_encode(old()) !!}'>
 
