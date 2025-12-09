@@ -1,0 +1,142 @@
+<?php
+// one-off: script para extrair patrimonios cadastrados ate 2011
+
+require __DIR__ . '/../vendor/autoload.php';
+$app = require_once __DIR__ . '/../bootstrap/app.php';
+$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
+
+use App\Models\Patrimonio;
+use Illuminate\Support\Facades\Log;
+
+echo "\n=== EXTRAINDO PATRIMÔNIOS CADASTRADOS ATÉ 2011 ===\n\n";
+
+try {
+    echo "🔍 Buscando patrimônios ANTIGOS (sem data de aquisição ou com NUPATRIMONIO baixo)...\n";
+    
+    // Patrimônios ANTIGOS são aqueles que:
+    // 1. Têm DTAQUISICAO NULL ou vazia
+    // 2. Ou têm NUPATRIMONIO baixo (antes de 2011, geralmente < ~500)
+    // Vamos usar uma combinação de critérios
+    
+    $patrimonios = Patrimonio::where(function($query) {
+        $query->whereNull('DTAQUISICAO')
+              ->orWhere('DTAQUISICAO', '')
+              ->orWhereRaw('YEAR(DTAQUISICAO) < 2012');
+    })
+    ->orWhereRaw('NUPATRIMONIO < 5000') // Assumindo que números baixos = antigos
+    ->orderBy('NUPATRIMONIO', 'asc')
+    ->get([
+        'NUSEQPATR',
+        'NUPATRIMONIO',
+        'CODOBJETO',
+        'DEPATRIMONIO',
+        'MARCA',
+        'MODELO',
+        'SITUACAO',
+        'CDLOCAL',
+        'CDPROJETO',
+        'CDMATRFUNCIONARIO',
+        'DTAQUISICAO',
+        'DTOPERACAO',
+    ]);
+
+    $total = $patrimonios->count();
+    echo "✅ Total de patrimônios antigos encontrados: $total\n\n";
+
+    if ($total == 0) {
+        echo "⚠️ Nenhum patrimônio antigo encontrado\n";
+        exit(1);
+    }
+
+    // Agrupar por ano
+    $porAno = $patrimonios->groupBy(function($item) {
+        return date('Y', strtotime($item->DTOPERACAO));
+    });
+
+    echo "📊 DISTRIBUIÇÃO POR ANO:\n";
+    foreach ($porAno as $ano => $registros) {
+        echo "  • $ano: " . count($registros) . " patrimônios\n";
+    }
+
+    // Análise de campos vazios
+    echo "❌ ANÁLISE DE CAMPOS VAZIOS:\n";
+    $semMarca = $patrimonios->where('MARCA', null)->count();
+    $semModelo = $patrimonios->where('MODELO', null)->count();
+    $semDescricao = $patrimonios->where('DEPATRIMONIO', null)->count();
+    $semSituacao = $patrimonios->where('SITUACAO', null)->count();
+    $semLocal = $patrimonios->where('CDLOCAL', null)->count();
+
+    if ($total > 0) {
+        echo "  • Sem MARCA: $semMarca (" . round(($semMarca/$total)*100, 2) . "%)\n";
+        echo "  • Sem MODELO: $semModelo (" . round(($semModelo/$total)*100, 2) . "%)\n";
+        echo "  • Sem DESCRIÇÃO: $semDescricao (" . round(($semDescricao/$total)*100, 2) . "%)\n";
+        echo "  • Sem SITUAÇÃO: $semSituacao (" . round(($semSituacao/$total)*100, 2) . "%)\n";
+        echo "  • Sem LOCAL: $semLocal (" . round(($semLocal/$total)*100, 2) . "%)\n";
+    }
+
+    // Exportar para arquivo CSV
+    $csvPath = storage_path('app/patrimonios_ate_2011.csv');
+    $handle = fopen($csvPath, 'w');
+
+    // Cabeçalho
+    fputcsv($handle, [
+        'NUSEQPATR',
+        'NUPATRIMONIO',
+        'CODOBJETO',
+        'DEPATRIMONIO',
+        'MARCA',
+        'MODELO',
+        'SITUACAO',
+        'CDLOCAL',
+        'CDPROJETO',
+        'CDMATRFUNCIONARIO',
+        'DTAQUISICAO',
+        'DTOPERACAO',
+    ]);
+
+    // Dados
+    foreach ($patrimonios as $p) {
+        fputcsv($handle, [
+            $p->NUSEQPATR,
+            $p->NUPATRIMONIO,
+            $p->CODOBJETO,
+            $p->DEPATRIMONIO,
+            $p->MARCA,
+            $p->MODELO,
+            $p->SITUACAO,
+            $p->CDLOCAL,
+            $p->CDPROJETO,
+            $p->CDMATRFUNCIONARIO,
+            $p->DTAQUISICAO,
+            $p->DTOPERACAO,
+        ]);
+    }
+    fclose($handle);
+
+    echo "\n📁 Arquivo exportado: storage/app/patrimonios_ate_2011.csv\n";
+
+    // Exportar também em JSON para facilitar processamento
+    $jsonPath = storage_path('app/patrimonios_ate_2011.json');
+    file_put_contents($jsonPath, json_encode($patrimonios, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    echo "📁 Arquivo exportado: storage/app/patrimonios_ate_2011.json\n";
+
+    // Log da operação
+    Log::info('Patrimonios ate 2011 extraidos com sucesso', [
+        'total' => $total,
+        'sem_marca' => $semMarca,
+        'sem_modelo' => $semModelo,
+        'sem_descricao' => $semDescricao,
+        'sem_situacao' => $semSituacao,
+        'sem_local' => $semLocal,
+    ]);
+
+    echo "\n✅ Extração concluída com sucesso!\n\n";
+
+} catch (\Exception $e) {
+    echo "❌ Erro: " . $e->getMessage() . "\n";
+    Log::error('Erro ao extrair patrimonios ate 2011', [
+        'message' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+    ]);
+}
+?>

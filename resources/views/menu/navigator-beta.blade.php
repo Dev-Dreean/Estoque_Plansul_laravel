@@ -266,23 +266,13 @@
 @push('scripts')
 <script>
   function navigatorShell() {
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const stored = localStorage.getItem('app_theme');
-    const initialDark = stored ? stored === 'dark' : prefersDark;
-    const applyTheme = (isDark) => {
-      const root = document.documentElement;
-      root.classList.toggle('dark', isDark);
-      localStorage.setItem('app_theme', isDark ? 'dark' : 'light');
-    };
-    applyTheme(initialDark);
-
     return {
       expanded: true,
       open: { controle: true },
-      isDark: initialDark,
+      isDark: window.themeManager.isDark,
       toggleTheme() {
-        this.isDark = !this.isDark;
-        applyTheme(this.isDark);
+        window.themeManager.toggleTheme();
+        this.isDark = window.themeManager.isDark;
       },
     };
   }

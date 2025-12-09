@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-surface border-b border-base">
+<nav x-data="{ open: false, ...themeToggle() }" class="bg-surface border-b border-base">
     @php
         use App\Helpers\MenuHelper;
         

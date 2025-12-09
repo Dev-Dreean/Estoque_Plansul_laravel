@@ -6,7 +6,7 @@
     class="py-4"
   >
     <div class="py-3">
-      <div class="w-full sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
+      <div class="w-full px-2 sm:px-4 lg:px-6">
         <div class="bg-white dark:bg-gray-900 shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-700">
           <div class="p-4 sm:p-5 space-y-3">
             @include('patrimonios.partials.flash-messages')
@@ -18,7 +18,8 @@
               </div>
               <div
                 id="patrimonios-loading"
-                class="hidden absolute inset-0 z-30 pointer-events-none flex flex-col"
+                class="absolute inset-0 z-30 pointer-events-none flex flex-col"
+                x-show="false"
               >
                 <div class="absolute inset-0 rounded-lg bg-white/85 dark:bg-slate-900/85 backdrop-blur-md"></div>
                 <div class="relative h-full w-full flex flex-col gap-4 px-4 py-5 justify-center">
@@ -39,7 +40,8 @@
               </div>
               <div
                 id="patrimonios-loading-top"
-                class="hidden fixed top-3 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-md bg-white/95 dark:bg-slate-900/95 shadow-lg border border-indigo-200/60 dark:border-indigo-700/50 text-sm text-slate-800 dark:text-white flex items-center gap-3 pointer-events-none"
+                class="fixed top-3 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-md bg-white/95 dark:bg-slate-900/95 shadow-lg border border-indigo-200/60 dark:border-indigo-700/50 text-sm text-slate-800 dark:text-white flex items-center gap-3 pointer-events-none"
+                x-show="false"
               >
                 <svg class="animate-spin h-4 w-4 text-indigo-600" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -163,6 +165,17 @@
         });
 
         document.addEventListener('click', (e) => {
+          const sortLink = e.target.closest('[data-ajax-sort]');
+          if (sortLink) {
+            e.preventDefault();
+            const href = sortLink.getAttribute('href');
+            if (href) {
+              ajaxFetch(href);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            return;
+          }
+
           const pagLink = e.target.closest('[data-ajax-page], #patrimonios-pagination a');
           if (pagLink) {
             e.preventDefault();

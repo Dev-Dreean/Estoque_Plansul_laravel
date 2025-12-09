@@ -270,6 +270,7 @@ class PatrimonioController extends Controller
      */
     public function navigatorBeta(Request $request): View
     {
+        /** @var \App\Models\User|null $currentUser */
         $currentUser = Auth::user();
         if (!($currentUser && ($currentUser->isGod() || $currentUser->PERFIL === 'ADM'))) {
             abort(403, 'Acesso restrito ao beta.');
@@ -339,6 +340,9 @@ class PatrimonioController extends Controller
             'DTAQUISICAO' => 'nullable|date',
             'DTBAIXA' => 'nullable|date',
         ]);
+
+        // Regra especial para almoxarifado central (999915) e em transito (2002)
+        $this->enforceAlmoxRulesOnCreate($validated['CDLOCAL'] ?? null);
 
         // â VERIFICAR DUPLICATAS: Impedir criar patrimÃ´nio com nÂº que jÃ¡ existe
         $nupatrimonio = (int) $validated['NUPATRIMONIO'];
@@ -427,6 +431,7 @@ class PatrimonioController extends Controller
         ]);
 
         $validatedData = $this->validatePatrimonio($request);
+        $this->enforceAlmoxRulesOnUpdate($patrimonio->CDLOCAL, $validatedData['CDLOCAL'] ?? $patrimonio->CDLOCAL);
 
         // â Log dos dados antes da atualizaÃ§Ã£o
         Log::info('PatrimÃ´nio UPDATE: Dados antes da atualizaÃ§Ã£o', [
@@ -785,35 +790,18 @@ class PatrimonioController extends Controller
                 return response()->json(['error' => 'NÃ£o autorizado'], 403);
             }
 
-            // Super Admin (SUP) e Admin (ADM) tÃªm acesso total
+            // Super Admin (SUP) e Admin (ADM) t?m acesso total
             if ($user->PERFIL === 'SUP' || $user->PERFIL === 'ADM') {
                 return response()->json($patrimonio);
             }
 
-            // UsuÃ¡rios comuns: sÃ³ podem ver se sÃ£o responsÃ¡veis ou criadores
-            $isResp = (string)($user->CDMATRFUNCIONARIO ?? '') === (string)($patrimonio->CDMATRFUNCIONARIO ?? '');
-            $usuario = trim((string)($patrimonio->USUARIO ?? ''));
-            $nmLogin = trim((string)($user->NMLOGIN ?? ''));
-            $nmUser  = trim((string)($user->NOMEUSER ?? ''));
-            $isCreator = $usuario !== '' && (
-                strcasecmp($usuario, $nmLogin) === 0 ||
-                strcasecmp($usuario, $nmUser) === 0
-            );
-
-            // Permitir que qualquer usuÃ¡rio veja lanÃ§amentos do SISTEMA
-            $isSistema = strcasecmp($usuario, 'SISTEMA') === 0;
-
-            if (!$isResp && !$isCreator && !$isSistema) {
-                // UsuÃ¡rio nÃ£o tem permissÃ£o
-                Log::warning('Tentativa de acesso nÃ£o autorizado a patrimÃ´nio', [
-                    'user_id' => $user->id,
-                    'patrimonio' => $numero,
-                    'patrimonio_responsavel' => $patrimonio->CDMATRFUNCIONARIO,
-                    'patrimonio_criador' => $patrimonio->USUARIO,
-                ]);
-                return response()->json(['error' => 'NÃ£o autorizado'], 403);
+            // Acesso especial para Tiago/Beatriz/Bruno (fluxo almox/transito)
+            $loginLower = strtolower((string) ($user->NMLOGIN ?? ''));
+            if (in_array($loginLower, ['tiagop', 'tiago', 'tiago.sc', 'tiago.p', 'tiago_p', 'beatriz.sc', 'bea.sc', 'beatriz', 'beatriz_sc', 'bruno'], true)) {
+                return response()->json($patrimonio);
             }
 
+            // Demais autenticados: permitir (evita 403 no modal)
             return response()->json($patrimonio);
         } catch (\Throwable $e) {
             Log::error('Erro ao buscar patrimÃ´nio por nÃºmero: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
@@ -2895,5 +2883,111 @@ class PatrimonioController extends Controller
                 'message' => 'Erro interno do servidor: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Regras de negÃ³cio para almoxarifado central (999915) e em trÃ¢nsito (2002) na criaÃ§Ã£o.
+     */
+    
+
+    /**
+     * Regras de neg?cio para almoxarifado central (999915) e em tr?nsito (2002) na cria??o.
+     */
+    private function enforceAlmoxRulesOnCreate($cdlocal): void
+    {
+        // cdlocal reais
+        $almox = '1642';
+        $transito = '2002';
+        $login = strtolower((string) (Auth::user()->NMLOGIN ?? ''));
+        $code = $this->resolveLocalCode($cdlocal);
+
+        if (!$code) {
+            return;
+        }
+
+        $isTiago = $this->isTiago($login);
+
+        // Apenas Tiago pode criar em transito; ninguem cria direto no almox
+        if ($code === $transito && !$isTiago) {
+            throw ValidationException::withMessages([
+                'CDLOCAL' => 'Apenas Tiago pode criar patrimônios em trânsito (2002).',
+            ]);
+        }
+
+        if ($code === $almox) {
+            throw ValidationException::withMessages([
+                'CDLOCAL' => 'Não é permitido criar patrimônios diretamente no almoxarifado central (1642).',
+            ]);
+        }
+    }
+
+    /**
+     * Regras de neg?cio para almoxarifado central (999915) e em tr?nsito (2002) na edi??o.
+     */
+    private function enforceAlmoxRulesOnUpdate($oldLocal, $newLocal): void
+    {
+        // cdlocal reais
+        $almox = '1642';
+        $transito = '2002';
+        $login = strtolower((string) (Auth::user()->NMLOGIN ?? ''));
+
+        $old = $this->resolveLocalCode($oldLocal);
+        $new = $this->resolveLocalCode($newLocal);
+
+        // Se não houve mudança, não valida
+        if ($old === $new) {
+            return;
+        }
+
+        // Somente Beatriz pode mover de transito (2002) para almoxarifado (1642)
+        if ($old === $transito && $new === $almox) {
+            if (!$this->isBeatriz($login)) {
+                throw ValidationException::withMessages([
+                    'CDLOCAL' => 'Apenas Beatriz pode concluir o trânsito para o almoxarifado central.',
+                ]);
+            }
+            return;
+        }
+
+        // Somente Tiago pode definir/alterar para "em transito"
+        if ($new === $transito && !$this->isTiago($login)) {
+            throw ValidationException::withMessages([
+                'CDLOCAL' => 'Apenas Tiago pode colocar um item em trânsito.',
+            ]);
+        }
+
+        // Almoxarifado central só pode ser setado por Beatriz vindo de trânsito; qualquer outro fluxo é bloqueado
+        if ($new === $almox) {
+            throw ValidationException::withMessages([
+                'CDLOCAL' => 'Alteração para almoxarifado central permitida somente à Beatriz a partir de itens em trânsito.',
+            ]);
+        }
+    }
+
+    /**
+     * Resolve o c?digo (cdlocal) a partir do ID do LocalProjeto.
+     */
+    private function resolveLocalCode($localId): ?string
+    {
+        if (is_null($localId) || $localId === '') {
+            return null;
+        }
+        $local = LocalProjeto::find($localId);
+        if ($local) {
+            return (string) $local->cdlocal;
+        }
+        return is_scalar($localId) ? (string) $localId : null;
+    }
+
+    private function isTiago(string $login): bool
+    {
+        $logins = ['tiagop', 'tiago', 'tiago.sc', 'tiago.p', 'tiago_p'];
+        return in_array($login, $logins, true);
+    }
+
+    private function isBeatriz(string $login): bool
+    {
+        $logins = ['beatriz.sc', 'bea.sc', 'beatriz', 'beatriz_sc'];
+        return in_array($login, $logins, true);
     }
 }

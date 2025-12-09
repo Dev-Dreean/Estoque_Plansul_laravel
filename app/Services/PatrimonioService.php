@@ -507,24 +507,56 @@ class PatrimonioService
 
     protected function aplicarOrdenacao(Builder $query, Request $request, User $user): void
     {
-        try {
-            $nmLogin = (string) ($user->NMLOGIN ?? '');
-            $cdMatr = $user->CDMATRFUNCIONARIO ?? null;
-            $query->orderByRaw("CASE WHEN LOWER(USUARIO) = LOWER(?) OR CDMATRFUNCIONARIO = ? THEN 0 ELSE 1 END", [$nmLogin, $cdMatr]);
-            $query->orderBy('DTOPERACAO', 'desc');
-        } catch (\Throwable $e) {
-            Log::warning('Falha ao aplicar ordenacao por usuario/DTOPERACAO: ' . $e->getMessage());
+        $filtroCadastroAtivo = $request->boolean('filtrar_cadastro')
+            || $request->filled('dtcadastro_de')
+            || $request->filled('dtcadastro_ate');
+
+        $sortableMap = [
+            'nupatrimonio' => 'NUPATRIMONIO',
+            'numof' => 'NUMOF',
+            'codobjeto' => 'CODOBJETO',
+            'nmplanta' => 'NMPLANTA',
+            'nuserie' => 'NUSERIE',
+            'projeto' => 'CDPROJETO',
+            'local' => 'CDLOCAL',
+            'modelo' => 'MODELO',
+            'marca' => 'MARCA',
+            'descricao' => 'DEPATRIMONIO',
+            'situacao' => 'SITUACAO',
+            'dtaquisicao' => 'DTAQUISICAO',
+            'dtoperacao' => 'DTOPERACAO',
+            'responsavel' => 'CDMATRFUNCIONARIO',
+            'cadastrador' => 'USUARIO',
+        ];
+
+        $sortKey = $request->input('sort');
+        $sortDirection = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $hasSort = !is_null($sortKey) && $sortKey !== '' && isset($sortableMap[$sortKey]);
+
+        if ($hasSort) {
+            // Ordenação explícita escolhida no grid
+            $query->reorder();
+            $query->orderBy($sortableMap[$sortKey], $sortDirection);
+            return;
         }
 
-        $sortableColumns = ['NUPATRIMONIO', 'MODELO', 'DEPATRIMONIO', 'SITUACAO', 'DTAQUISICAO'];
-        $sortColumn = $request->input('sort', 'DTAQUISICAO');
-        $sortDirection = $request->input('direction', 'asc');
-
-        if (in_array($sortColumn, $sortableColumns)) {
-            $query->orderBy($sortColumn, $sortDirection);
+        if ($filtroCadastroAtivo) {
+            // Quando houver filtro de data de cadastro, ordenar cronologicamente pelo cadastro (mais antigo primeiro)
+            $query->reorder();
+            $query->orderBy('DTOPERACAO', 'asc');
         } else {
-            $query->orderBy('DTAQUISICAO', 'asc');
+            try {
+                $nmLogin = (string) ($user->NMLOGIN ?? '');
+                $cdMatr = $user->CDMATRFUNCIONARIO ?? null;
+                $query->orderByRaw("CASE WHEN LOWER(USUARIO) = LOWER(?) OR CDMATRFUNCIONARIO = ? THEN 0 ELSE 1 END", [$nmLogin, $cdMatr]);
+                $query->orderBy('DTOPERACAO', 'desc');
+            } catch (\Throwable $e) {
+                Log::warning('Falha ao aplicar ordenacao por usuario/DTOPERACAO: ' . $e->getMessage());
+            }
         }
+
+        // Ordem padrÃ£o secundÃ¡ria para consistÃªncia
+        $query->orderBy('DTAQUISICAO', 'asc');
     }
 
     protected function detectarColunasVisiveis(array $items, bool $showEmpty): array

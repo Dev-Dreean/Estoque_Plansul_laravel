@@ -36,6 +36,7 @@
     'customColumns' => [],
     'actionsView' => null,
     'density' => 'normal',
+    'sortable' => true,
 ])
 
 @php
@@ -70,6 +71,9 @@
   
   // Se não especificou colunas, mostra todas
   $displayColumns = empty($columns) ? array_keys($availableColumns) : $columns;
+  $currentSort = request('sort');
+  $currentDirection = strtolower(request('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+  $baseQuery = request()->except(['page']);
 @endphp
 
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0 min-w-0">
@@ -87,7 +91,28 @@
         
         @foreach($displayColumns as $col)
           @if(isset($allColumns[$col]))
-            <th class="{{ $headerPadding }} {{ $col === 'situacao' ? 'text-xs' : '' }}">{{ $allColumns[$col] }}</th>
+            @php
+              $isCurrent = $sortable && $currentSort === $col;
+              $nextDir = ($isCurrent && $currentDirection === 'asc') ? 'desc' : 'asc';
+              $sortUrl = $sortable
+                ? request()->fullUrlWithQuery(array_merge($baseQuery, ['sort' => $col, 'direction' => $nextDir]))
+                : null;
+            @endphp
+            <th class="{{ $headerPadding }} {{ $col === 'situacao' ? 'text-xs' : '' }}">
+              @if($sortable)
+                <a href="{{ $sortUrl }}"
+                  data-ajax-sort
+                  class="inline-flex items-center gap-1 font-semibold hover:text-indigo-600 dark:hover:text-indigo-300"
+                >
+                  <span>{{ $allColumns[$col] }}</span>
+                  @if($isCurrent)
+                    <span class="text-[10px]">{{ $currentDirection === 'asc' ? '▲' : '▼' }}</span>
+                  @endif
+                </a>
+              @else
+                {{ $allColumns[$col] }}
+              @endif
+            </th>
           @endif
         @endforeach
         
