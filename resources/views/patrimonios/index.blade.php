@@ -15,49 +15,55 @@
 
             <div
               id="bulk-status-bar"
-              class="hidden mb-2 transition-all duration-150 opacity-0 -translate-y-1"
+              class="hidden mb-3 transition-all duration-200 opacity-0 -translate-y-3 scale-90"
             >
-              <div class="bg-slate-900/90 border border-slate-700 shadow-sm rounded-md px-2.5 py-1 flex flex-wrap items-center gap-2 text-slate-100 text-sm">
-                <div class="font-semibold flex items-center gap-1 text-white">
-                  <span id="bulk-count">0</span> selecionados
+              <div class="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 shadow-md rounded-lg px-3 py-2.5 flex flex-wrap items-center gap-2.5 text-sm ring-1 ring-blue-100 dark:ring-blue-900/50">
+                <div class="font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1H3zm0 2h14v9a2 2 0 01-2 2H5a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                  </svg>
+                  <span id="bulk-count">0</span>
+                  <span>selecionado<span id="bulk-plural">s</span></span>
                 </div>
-                <select id="bulk-situacao" class="h-8 px-2 text-sm border border-slate-700 rounded-md bg-gray-50 text-slate-900 dark:bg-gray-900 dark:text-slate-100 focus:ring-indigo-500 focus:border-indigo-500">
-                  <option value="" disabled selected style="color:#94a3b8;">Situação</option>
+                <div class="h-5 w-px bg-gray-300 dark:bg-gray-600"></div>
+                <select id="bulk-situacao" class="h-9 px-3 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 transition">
+                  <option value="" disabled selected class="text-gray-500 dark:text-gray-400">Situação</option>
                   <option value="EM USO">EM USO</option>
                   <option value="CONSERTO">CONSERTO</option>
                   <option value="BAIXA">BAIXA</option>
                   <option value="A DISPOSICAO">A DISPOSIÇÃO</option>
                 </select>
-                <button id="bulk-apply" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-3 py-1 rounded-md">
+                <button id="bulk-apply" class="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out shadow-sm">
                   Aplicar
                 </button>
-                <button id="bulk-clear" class="text-sm text-slate-300 hover:text-white">
-                  Limpar seleção
+                <button id="bulk-clear" class="h-9 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition duration-150">
+                  Limpar
                 </button>
               </div>
             </div>
 
             <div
               id="bulk-confirm-modal"
-              class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur px-4"
+              class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 backdrop-blur-sm px-4"
             >
-              <div class="w-full max-w-lg bg-slate-900 text-slate-100 border border-slate-700 rounded-xl shadow-2xl p-5 space-y-4">
-                <div class="flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
+              <div class="w-full max-w-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-5 space-y-4">
+                <div class="flex items-start justify-between gap-3 border-b border-gray-200 dark:border-gray-700 pb-3">
                   <div class="space-y-1">
-                    <h3 class="text-xl font-semibold">Confirmar alteração em massa</h3>
-                    <p class="text-sm text-slate-300">Revise os patrimônios antes de aplicar a nova situação.</p>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar alteração em massa</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Revise os patrimônios selecionados</p>
                   </div>
-                  <button id="bulk-confirm-close" class="text-sm text-slate-300 hover:text-white">×</button>
+                  <button id="bulk-confirm-close" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition text-lg leading-none">×</button>
                 </div>
-                <div class="text-sm">
-                  Nova situação: <span id="bulk-confirm-new" class="font-semibold text-indigo-300"></span>
+                <div class="text-sm space-y-1">
+                  <span class="text-gray-600 dark:text-gray-400">Nova situação:</span>
+                  <p id="bulk-confirm-new" class="font-semibold text-indigo-600 dark:text-indigo-400 text-base"></p>
                 </div>
-                <div id="bulk-confirm-list" class="max-h-52 overflow-y-auto space-y-2 text-sm bg-slate-800/60 border border-slate-700 rounded-md p-3">
+                <div id="bulk-confirm-list" class="max-h-52 overflow-y-auto space-y-1 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-md p-3 text-gray-700 dark:text-gray-300">
                   <!-- itens gerados via JS -->
                 </div>
-                <div class="flex justify-end gap-2">
-                  <button id="bulk-confirm-cancel" class="px-3 py-2 rounded-md bg-slate-800 text-slate-200 hover:bg-slate-700">Cancelar</button>
-                  <button id="bulk-confirm-yes" class="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Confirmar</button>
+                <div class="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <button id="bulk-confirm-cancel" class="px-4 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition">Cancelar</button>
+                  <button id="bulk-confirm-yes" class="px-4 py-2 rounded-md bg-indigo-600 dark:bg-indigo-600 text-white hover:bg-indigo-700 dark:hover:bg-indigo-700 font-medium transition">Confirmar</button>
                 </div>
               </div>
             </div>
@@ -139,6 +145,7 @@
         const cleanLinks = document.querySelectorAll('[data-ajax-clean]');
         const bulkBar = document.querySelector('#bulk-status-bar');
         const bulkCount = document.querySelector('#bulk-count');
+        const bulkPlural = document.querySelector('#bulk-plural');
         const bulkSelect = document.querySelector('#bulk-situacao');
         const bulkApply = document.querySelector('#bulk-apply');
         const bulkClear = document.querySelector('#bulk-clear');
@@ -163,12 +170,23 @@
           const size = selectedIds.size;
           const active = size > 0;
           bulkCount.textContent = size;
-          bulkBar.style.display = active ? 'block' : 'none';
-          bulkBar.classList.toggle('hidden', !active);
-          bulkBar.classList.toggle('opacity-0', !active);
-          bulkBar.classList.toggle('-translate-y-1', !active);
-          bulkBar.classList.toggle('opacity-100', active);
-          bulkBar.classList.toggle('translate-y-0', active);
+          bulkPlural.textContent = size === 1 ? '' : 's';
+          
+          if (active) {
+            bulkBar.classList.remove('hidden');
+            // Forçar reflow para que a transição funcione corretamente
+            void bulkBar.offsetWidth;
+            bulkBar.classList.remove('opacity-0', '-translate-y-3', 'scale-90');
+            bulkBar.classList.add('opacity-100', 'translate-y-0', 'scale-100');
+          } else {
+            bulkBar.classList.remove('opacity-100', 'translate-y-0', 'scale-100');
+            bulkBar.classList.add('opacity-0', '-translate-y-3', 'scale-90');
+            setTimeout(() => {
+              if (size === 0) {
+                bulkBar.classList.add('hidden');
+              }
+            }, 200);
+          }
           console.log('[PATRI] bulk-bar update', {
             size,
             active,
@@ -256,12 +274,12 @@
             const prev = row?.dataset?.situacao || '---';
             const patr = row?.dataset?.patrimonio || id;
             const item = document.createElement('div');
-            item.className = 'flex justify-between gap-2 border-b border-slate-700/60 pb-1 last:border-0';
+            item.className = 'flex justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-1 last:border-0';
             const left = document.createElement('div');
-            left.className = 'font-semibold text-slate-100';
+            left.className = 'font-semibold text-gray-900 dark:text-white';
             left.textContent = `Nº Patrimônio ${patr}`;
             const right = document.createElement('div');
-            right.className = 'text-xs text-slate-300';
+            right.className = 'text-xs text-gray-800 dark:text-gray-200';
             right.textContent = `De: ${prev} -> Para: ${situacao}`;
             item.appendChild(left);
             item.appendChild(right);

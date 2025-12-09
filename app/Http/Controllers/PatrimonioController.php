@@ -831,6 +831,10 @@ class PatrimonioController extends Controller
         $situacao = strtoupper($request->input('situacao'));
         $user = Auth::user();
         $isAdmin = $user && in_array(($user->PERFIL ?? ''), ['ADM', 'SUP'], true);
+        
+        // Usuários com permissão total para alteração em massa
+        $superUsers = ['BEATRIZ.SC', 'TIAGOP', 'BRUNO'];
+        $isSuperUser = $user && in_array(strtoupper($user->NMLOGIN ?? ''), $superUsers, true);
 
         $patrimonios = Patrimonio::whereIn('NUSEQPATR', $ids)->get();
         if ($patrimonios->isEmpty()) {
@@ -838,7 +842,7 @@ class PatrimonioController extends Controller
         }
 
         $unauthorized = [];
-        if (!$isAdmin) {
+        if (!$isAdmin && !$isSuperUser) {
             foreach ($patrimonios as $p) {
                 $isResp = (string)($user->CDMATRFUNCIONARIO ?? '') === (string)($p->CDMATRFUNCIONARIO ?? '');
                 $usuario = trim((string)($p->USUARIO ?? ''));
@@ -866,10 +870,10 @@ class PatrimonioController extends Controller
             'DTOPERACAO' => now(),
         ]);
 
-        Log::info('Bulk atualiza??o de situa??o', [
+        Log::info('✏️ Bulk atualização de situação', [
             'user' => $user->NMLOGIN ?? null,
             'situacao' => $situacao,
-            'ids' => $ids,
+            'ids_count' => $ids->count(),
             'atualizados' => $updated,
         ]);
 

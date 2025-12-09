@@ -90,6 +90,18 @@ class PatrimonioPolicy
     }
 
     /**
+     * Quem pode fazer atualização em massa (bulk)?
+     * Super users (BEATRIZ.SC, TIAGOP, BRUNO) têm acesso total
+     * God/Admin tem acesso total (já verificado no 'before')
+     * Outros usuários precisam ser criadores ou responsáveis dos itens
+     */
+    public function bulkUpdate(User $user): bool
+    {
+        $superUsers = ['BEATRIZ.SC', 'TIAGOP', 'BRUNO'];
+        return in_array(strtoupper($user->NMLOGIN ?? ''), $superUsers, true);
+    }
+
+    /**
      * Quem pode deletar?
      * God/Admin pode deletar TUDO (verificado no 'before').
      * Supervisores podem deletar patrimônios dos seus supervisionados.
