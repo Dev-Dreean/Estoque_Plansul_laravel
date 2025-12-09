@@ -37,6 +37,7 @@
     'actionsView' => null,
     'density' => 'normal',
     'sortable' => true,
+    'showCheckboxHeader' => true,
 ])
 
 @php
@@ -82,10 +83,12 @@
       <tr class="divide-x divide-gray-200 dark:divide-gray-700">
         @if($showCheckbox)
           <th class="{{ $headerPadding }} w-12">
-            <input type="checkbox" 
-              class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600" 
-              @if($onSelectAllChange) @change="{{ $onSelectAllChange }}" @endif
-            >
+            @if($showCheckboxHeader)
+              <input type="checkbox" 
+                class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600" 
+                @if($onSelectAllChange) @change="{{ $onSelectAllChange }}" @endif
+              >
+            @endif
           </th>
         @endif
         
@@ -124,7 +127,11 @@
     
     <tbody>
       @forelse ($data as $item)
-        <tr data-row-id="{{ $item->NUSEQPATR ?? $item->id }}" class="tr-hover text-sm {{ $clickable ? 'cursor-pointer' : '' }}"
+        @php
+          $rowSituacao = trim(preg_replace('/[\r\n]+/', ' ', (string)($item->SITUACAO ?? '')));
+          $rowPatrimonio = $item->NUPATRIMONIO ?? $item->NUSEQPATR ?? $item->id;
+        @endphp
+        <tr data-row-id="{{ $item->NUSEQPATR ?? $item->id }}" data-situacao="{{ $rowSituacao }}" data-patrimonio="{{ $rowPatrimonio }}" class="tr-hover text-sm {{ $clickable ? 'cursor-pointer' : '' }}"
           @if($clickable && $onRowClick)
             @click="window.location.href='{{ str_replace(':id', $item->NUSEQPATR ?? $item->id, $onRowClick) }}'"
           @elseif($clickable)

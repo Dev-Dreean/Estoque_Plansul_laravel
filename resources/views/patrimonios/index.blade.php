@@ -12,6 +12,56 @@
             @include('patrimonios.partials.flash-messages')
             @include('patrimonios.partials.filter-form')
             @include('patrimonios.partials.action-buttons')
+
+            <div
+              id="bulk-status-bar"
+              class="hidden mb-2 transition-all duration-150 opacity-0 -translate-y-1"
+            >
+              <div class="bg-slate-900/90 border border-slate-700 shadow-sm rounded-md px-2.5 py-1 flex flex-wrap items-center gap-2 text-slate-100 text-sm">
+                <div class="font-semibold flex items-center gap-1 text-white">
+                  <span id="bulk-count">0</span> selecionados
+                </div>
+                <select id="bulk-situacao" class="h-8 px-2 text-sm border border-slate-700 rounded-md bg-gray-50 text-slate-900 dark:bg-gray-900 dark:text-slate-100 focus:ring-indigo-500 focus:border-indigo-500">
+                  <option value="" disabled selected style="color:#94a3b8;">Situação</option>
+                  <option value="EM USO">EM USO</option>
+                  <option value="CONSERTO">CONSERTO</option>
+                  <option value="BAIXA">BAIXA</option>
+                  <option value="A DISPOSICAO">A DISPOSIÇÃO</option>
+                </select>
+                <button id="bulk-apply" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-3 py-1 rounded-md">
+                  Aplicar
+                </button>
+                <button id="bulk-clear" class="text-sm text-slate-300 hover:text-white">
+                  Limpar seleção
+                </button>
+              </div>
+            </div>
+
+            <div
+              id="bulk-confirm-modal"
+              class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur px-4"
+            >
+              <div class="w-full max-w-lg bg-slate-900 text-slate-100 border border-slate-700 rounded-xl shadow-2xl p-5 space-y-4">
+                <div class="flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
+                  <div class="space-y-1">
+                    <h3 class="text-xl font-semibold">Confirmar alteração em massa</h3>
+                    <p class="text-sm text-slate-300">Revise os patrimônios antes de aplicar a nova situação.</p>
+                  </div>
+                  <button id="bulk-confirm-close" class="text-sm text-slate-300 hover:text-white">×</button>
+                </div>
+                <div class="text-sm">
+                  Nova situação: <span id="bulk-confirm-new" class="font-semibold text-indigo-300"></span>
+                </div>
+                <div id="bulk-confirm-list" class="max-h-52 overflow-y-auto space-y-2 text-sm bg-slate-800/60 border border-slate-700 rounded-md p-3">
+                  <!-- itens gerados via JS -->
+                </div>
+                <div class="flex justify-end gap-2">
+                  <button id="bulk-confirm-cancel" class="px-3 py-2 rounded-md bg-slate-800 text-slate-200 hover:bg-slate-700">Cancelar</button>
+                  <button id="bulk-confirm-yes" class="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Confirmar</button>
+                </div>
+              </div>
+            </div>
+
             <div id="patrimonios-table-container" class="relative">
               <div id="patrimonios-table-content">
                 @include('patrimonios.partials.patrimonio-table')
@@ -26,7 +76,7 @@
                   <div class="flex items-center gap-3 text-sm text-slate-800 dark:text-white drop-shadow">
                     <svg class="animate-spin h-6 w-6 text-indigo-500" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a 8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                     </svg>
                     <span class="text-base font-semibold">Atualizando grid...</span>
                   </div>
@@ -45,7 +95,7 @@
               >
                 <svg class="animate-spin h-4 w-4 text-indigo-600" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a 8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                 </svg>
                 <span class="font-medium">Carregando grid...</span>
               </div>
@@ -87,9 +137,151 @@
         const loading = document.querySelector('#patrimonios-loading');
         const loadingTop = document.querySelector('#patrimonios-loading-top');
         const cleanLinks = document.querySelectorAll('[data-ajax-clean]');
+        const bulkBar = document.querySelector('#bulk-status-bar');
+        const bulkCount = document.querySelector('#bulk-count');
+        const bulkSelect = document.querySelector('#bulk-situacao');
+        const bulkApply = document.querySelector('#bulk-apply');
+        const bulkClear = document.querySelector('#bulk-clear');
+        const bulkConfirmModal = document.querySelector('#bulk-confirm-modal');
+        const bulkConfirmList = document.querySelector('#bulk-confirm-list');
+        const bulkConfirmNew = document.querySelector('#bulk-confirm-new');
+        const bulkConfirmYes = document.querySelector('#bulk-confirm-yes');
+        const bulkConfirmCancel = document.querySelector('#bulk-confirm-cancel');
+        const bulkConfirmClose = document.querySelector('#bulk-confirm-close');
+        const bulkEndpoint = "{{ route('patrimonios.bulk-situacao') }}";
+        const csrf = document.querySelector('meta[name=\"csrf-token\"]')?.content || '';
+        const selectedIds = new Set();
+        let pendingSituacao = null;
         const logTags = (label = 'tags') => {
           const tags = Array.from(document.querySelectorAll('#patrimonios-tags [data-ajax-tag-remove]')).map(t => t.textContent.trim());
           console.log('[PATRI] ' + label, tags);
+        };
+        console.log('[PATRI] bulk-js init');
+
+        const updateBulkBar = () => {
+          if (!bulkBar) return;
+          const size = selectedIds.size;
+          const active = size > 0;
+          bulkCount.textContent = size;
+          bulkBar.style.display = active ? 'block' : 'none';
+          bulkBar.classList.toggle('hidden', !active);
+          bulkBar.classList.toggle('opacity-0', !active);
+          bulkBar.classList.toggle('-translate-y-1', !active);
+          bulkBar.classList.toggle('opacity-100', active);
+          bulkBar.classList.toggle('translate-y-0', active);
+          console.log('[PATRI] bulk-bar update', {
+            size,
+            active,
+            display: bulkBar.style.display,
+            classes: bulkBar.className,
+          });
+        };
+
+        const toggleId = (id, checked) => {
+          if (!id) return;
+          if (checked) {
+            selectedIds.add(id);
+          } else {
+            selectedIds.delete(id);
+          }
+          console.log('[PATRI] toggle', id, checked, 'total', selectedIds.size);
+          updateBulkBar();
+        };
+
+        const bindCheckboxes = () => {
+          if (!tableContent) return;
+          const boxes = tableContent.querySelectorAll('.patrimonio-checkbox');
+          boxes.forEach((box) => {
+            const id = box.value;
+            box.checked = selectedIds.has(id);
+          });
+          updateBulkBar();
+        };
+
+        const refreshHeaderCheckbox = () => {};
+
+        const clearSelection = () => {
+          selectedIds.clear();
+          const boxes = tableContent?.querySelectorAll('.patrimonio-checkbox') || [];
+          boxes.forEach(b => { b.checked = false; });
+          refreshHeaderCheckbox();
+          updateBulkBar();
+        };
+
+        const runBulkUpdate = (situacao) => {
+          fetch(bulkEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-CSRF-TOKEN': csrf,
+            },
+            body: JSON.stringify({
+              ids: Array.from(selectedIds),
+              situacao,
+            }),
+          }).then(async (resp) => {
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok) {
+              throw new Error(data.error || `Falha ao aplicar: ${resp.status}`);
+            }
+            clearSelection();
+            if (window.location.href) {
+              ajaxFetch(window.location.href);
+            }
+          }).catch((err) => {
+            console.error(err);
+            alert(err.message || 'Falha ao aplicar situação.');
+          });
+        };
+
+        const closeConfirmModal = () => {
+          pendingSituacao = null;
+          if (bulkConfirmModal) {
+            bulkConfirmModal.classList.add('hidden');
+            bulkConfirmModal.style.display = 'none';
+          }
+        };
+
+        const openConfirmModal = (situacao) => {
+          pendingSituacao = situacao;
+          if (!bulkConfirmModal || !bulkConfirmList || !bulkConfirmNew) {
+            runBulkUpdate(situacao);
+            return;
+          }
+          bulkConfirmNew.textContent = situacao;
+          bulkConfirmList.innerHTML = '';
+          selectedIds.forEach((id) => {
+            const row = document.querySelector(`[data-row-id=\"${id}\"]`);
+            const prev = row?.dataset?.situacao || '---';
+            const patr = row?.dataset?.patrimonio || id;
+            const item = document.createElement('div');
+            item.className = 'flex justify-between gap-2 border-b border-slate-700/60 pb-1 last:border-0';
+            const left = document.createElement('div');
+            left.className = 'font-semibold text-slate-100';
+            left.textContent = `Nº Patrimônio ${patr}`;
+            const right = document.createElement('div');
+            right.className = 'text-xs text-slate-300';
+            right.textContent = `De: ${prev} -> Para: ${situacao}`;
+            item.appendChild(left);
+            item.appendChild(right);
+            bulkConfirmList.appendChild(item);
+          });
+          bulkConfirmModal.classList.remove('hidden');
+          bulkConfirmModal.style.display = 'flex';
+        };
+
+        const applyBulkSituacao = () => {
+          const situacao = bulkSelect?.value || '';
+          if (selectedIds.size === 0) {
+            alert('Selecione ao menos um patrimônio.');
+            return;
+          }
+          if (!situacao) {
+            alert('Escolha a situação para aplicar.');
+            return;
+          }
+          openConfirmModal(situacao);
         };
 
         const swapTable = (html) => {
@@ -108,6 +300,7 @@
             }
           }
           logTags('after-swap');
+          bindCheckboxes();
         };
 
         const buildUrlFromForm = () => {
@@ -187,6 +380,28 @@
             return;
           }
         });
+
+        const checkboxChangeHandler = (e) => {
+          const target = e.target;
+          if (target && target.classList && target.classList.contains('patrimonio-checkbox')) {
+            toggleId(target.value, target.checked);
+          }
+        };
+        if (tableContent) tableContent.addEventListener('change', checkboxChangeHandler);
+        document.addEventListener('change', checkboxChangeHandler);
+
+        bindCheckboxes();
+        bulkApply?.addEventListener('click', applyBulkSituacao);
+        bulkClear?.addEventListener('click', clearSelection);
+        bulkConfirmYes?.addEventListener('click', () => {
+          if (pendingSituacao) {
+            const situacao = pendingSituacao;
+            closeConfirmModal();
+            runBulkUpdate(situacao);
+          }
+        });
+        bulkConfirmCancel?.addEventListener('click', closeConfirmModal);
+        bulkConfirmClose?.addEventListener('click', closeConfirmModal);
         logTags('initial');
       });
       function patrimoniosIndex() {
@@ -385,3 +600,4 @@
     </script>
   @endpush
 </x-app-layout>
+

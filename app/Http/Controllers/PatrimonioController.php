@@ -272,7 +272,7 @@ class PatrimonioController extends Controller
     {
         /** @var \App\Models\User|null $currentUser */
         $currentUser = Auth::user();
-        if (!($currentUser && ($currentUser->isGod() || $currentUser->PERFIL === 'ADM'))) {
+        if (!($currentUser && (in_array(($currentUser->PERFIL ?? ''), ['SUP', 'ADM'], true)))) {
             abort(403, 'Acesso restrito ao beta.');
         }
 
@@ -807,6 +807,76 @@ class PatrimonioController extends Controller
             Log::error('Erro ao buscar patrimÃ´nio por nÃºmero: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json(['error' => 'Erro ao buscar patrimÃ´nio'], 500);
         }
+    }
+
+
+    public function bulkSituacao(Request $request): JsonResponse
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer',
+            'situacao' => 'required|string|in:EM USO,CONSERTO,BAIXA,A DISPOSICAO'
+        ]);
+
+        $ids = collect($request->input('ids', []))
+            ->map(fn($v) => (int) $v)
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return response()->json(['error' => 'Nenhum patrim?nio selecionado.'], 422);
+        }
+
+        $situacao = strtoupper($request->input('situacao'));
+        $user = Auth::user();
+        $isAdmin = $user && in_array(($user->PERFIL ?? ''), ['ADM', 'SUP'], true);
+
+        $patrimonios = Patrimonio::whereIn('NUSEQPATR', $ids)->get();
+        if ($patrimonios->isEmpty()) {
+            return response()->json(['error' => 'Patrim?nios n?o encontrados.'], 404);
+        }
+
+        $unauthorized = [];
+        if (!$isAdmin) {
+            foreach ($patrimonios as $p) {
+                $isResp = (string)($user->CDMATRFUNCIONARIO ?? '') === (string)($p->CDMATRFUNCIONARIO ?? '');
+                $usuario = trim((string)($p->USUARIO ?? ''));
+                $nmLogin = trim((string)($user->NMLOGIN ?? ''));
+                $nmUser  = trim((string)($user->NOMEUSER ?? ''));
+                $isCreator = $usuario !== '' && (
+                    strcasecmp($usuario, $nmLogin) === 0 ||
+                    strcasecmp($usuario, $nmUser) === 0
+                );
+                if (!($isResp || $isCreator)) {
+                    $unauthorized[] = $p->NUSEQPATR;
+                }
+            }
+        }
+
+        if (!empty($unauthorized)) {
+            return response()->json([
+                'error' => 'Voc? n?o tem permiss?o para alterar todos os itens selecionados.',
+                'ids_negados' => $unauthorized,
+            ], 403);
+        }
+
+        $updated = Patrimonio::whereIn('NUSEQPATR', $ids)->update([
+            'SITUACAO' => $situacao,
+            'DTOPERACAO' => now(),
+        ]);
+
+        Log::info('Bulk atualiza??o de situa??o', [
+            'user' => $user->NMLOGIN ?? null,
+            'situacao' => $situacao,
+            'ids' => $ids,
+            'atualizados' => $updated,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'atualizados' => $updated,
+        ]);
     }
 
     public function pesquisar(Request $request): JsonResponse
@@ -1812,7 +1882,7 @@ class PatrimonioController extends Controller
             $user = Auth::user();
             
             $isSupervisor = !empty($user->getSupervisionados() ?? []);
-            $isAdmin = $user->isGod() || $user->PERFIL === 'ADM';
+            $isAdmin = in_array(($user->PERFIL ?? ''), ['SUP', 'ADM'], true);
 
             $cadastradores = [];
 
@@ -1891,7 +1961,7 @@ class PatrimonioController extends Controller
         $query = Patrimonio::with(['funcionario', 'local.projeto', 'creator']);
 
         // Filtra patrimÃ´nios por usuÃ¡rio (exceto Admin e Super Admin)
-        if (!$user->isGod() && $user->PERFIL !== 'ADM') {
+        if (!in_array(($user->PERFIL ?? ''), ['SUP', 'ADM'], true)) {
             $nmLogin = (string) ($user->NMLOGIN ?? '');
             $nmUser  = (string) ($user->NOMEUSER ?? '');
             
@@ -1929,7 +1999,7 @@ class PatrimonioController extends Controller
             // Para admins: permitir qualquer usuÃ¡rio
             $supervisionados = $user->getSupervisionados() ?? [];
             $isSupervisor = !empty($supervisionados);
-            $isAdmin = $user->isGod() || $user->PERFIL === 'ADM';
+            $isAdmin = in_array(($user->PERFIL ?? ''), ['SUP', 'ADM'], true);
 
             // Construir lista de logins/matrÃ­culas permitidas
             $permitidos = [];
