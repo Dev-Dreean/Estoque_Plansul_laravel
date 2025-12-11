@@ -138,8 +138,11 @@ class PatrimonioController extends Controller
         try {
             $termo = trim((string) $request->input('q', ''));
 
-            // Buscar todos os cÃ³digos
-            $codigos = ObjetoPatr::select(['NUSEQOBJ as CODOBJETO', 'DEOBJETO as DESCRICAO'])
+            // Detectar nome da coluna PK (NUSEQOBJ local vs NUSEQOBJETO servidor)
+            $pkColumn = $this->detectarPKObjetoPatr();
+
+            // Buscar todos os códigos
+            $codigos = ObjetoPatr::select([$pkColumn . ' as CODOBJETO', 'DEOBJETO as DESCRICAO'])
                 ->get()
                 ->toArray();
 
@@ -148,7 +151,7 @@ class PatrimonioController extends Controller
                 $codigos,
                 $termo,
                 ['CODOBJETO', 'DESCRICAO'],  // campos de busca
-                ['CODOBJETO' => 'nÃºmero', 'DESCRICAO' => 'texto'],  // tipos de campo
+                ['CODOBJETO' => 'número', 'DESCRICAO' => 'texto'],  // tipos de campo
                 10  // limite
             );
 
@@ -156,6 +159,24 @@ class PatrimonioController extends Controller
         } catch (\Throwable $e) {
             Log::error('Erro pesquisarCodigos: ' . $e->getMessage());
             return response()->json([], 200);
+        }
+    }
+
+    /**
+     * Detectar nome da coluna PK de ObjetoPatr (compatível com case-sensitive)
+     */
+    private function detectarPKObjetoPatr(): string
+    {
+        try {
+            // Primeiro tenta maiúsculo, depois minúsculo (compatibilidade Linux/Windows)
+            $tableName = \Schema::hasTable('OBJETOPATR') ? 'OBJETOPATR' : 'objetopatr';
+            
+            $result = \DB::selectOne("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_KEY = 'PRI'",
+                [\DB::getDatabaseName(), $tableName]);
+            return $result ? $result->COLUMN_NAME : 'NUSEQOBJETO';
+        } catch (\Exception $e) {
+            return 'NUSEQOBJETO';
         }
     }
 
@@ -321,6 +342,11 @@ class PatrimonioController extends Controller
      */
     public function store(Request $request)
     {
+        // DEBUG: Ver o que foi recebido
+        \Log::info("SITUACAO recebido", [
+            "raw" => $request->input("SITUACAO"),
+            "length" => strlen($request->input("SITUACAO") ?? ""),
+        ]);
         // 1) Validar os campos conforme o formulÃ¡rio (nomes em MAIÃSCULO)
         $validated = $request->validate([
             // O NÂº PatrimÃ´nio pode se repetir entre tipos; removido UNIQUE

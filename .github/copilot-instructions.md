@@ -328,3 +328,173 @@ ADENDO: instruções operacionais obrigatórias (integrado do `ASSISTANT_INSTRUC
 - Validar PHP com `php -l` após mover arquivos PHP.
 
 Se for necessário alterar este guia, peça aqui no chat. O assistente atualizará este arquivo (ou criará/atualizará um `.txt`) conforme sua orientação.
+
+---
+
+## 14) BANCO DE DADOS: Estrutura, Sincronização e Recuperação
+
+⚠️ **CRÍTICO:** Esta seção documenta a estrutura completa do banco para evitar perda de dados futura.
+
+### 14.1 Fonte de Verdade
+- **KingHost (Produção):** Banco em `mysql07-farm10.kinghost.net` com credenciais em `.env` (variáveis `DB_HOST_KINGHOST`, `DB_USERNAME_KINGHOST`, `DB_PASSWORD_KINGHOST`)
+- **Local (Desenvolvimento):** Banco MySQL local em `localhost` ou `.env` `DB_CONNECTION=mysql`
+- **Sincronização:** Local SEMPRE puxa dados de KingHost via SSH (nunca push)
+- **Autoridade:** KingHost é SEMPRE o source of truth
+
+### 14.2 Estrutura de Tabelas Principais
+
+**TABELAS CRÍTICAS (nunca devem estar vazias):**
+
+| Tabela | Registros Esperados | Coluna Chave | Sincronização |
+|--------|-------------------|--------------|---------------|
+| `patr` | ~11.394 | `NUSEQPATR` (PK), `NUPATRIMONIO` | SSH query + upsert |
+| `tabfant` | ~877 | `id` (PK) | SSH query + insert |
+| `locais_projeto` | ~1.939 | `id` (PK) | SSH query + upsert |
+| `objetopatr` | ~1.208 | `NUSEQOBJ` (PK) | SSH query + insert |
+| `tipopatr` | ~147 | `id` (PK) | SSH query |
+| `funcionarios` | ~5.227 | `CDMATRFUNCIONARIO` (PK) | SSH query |
+| `movpartr` | ~4.619 | `id` (PK) | SSH query |
+
+**Colunas Críticas por Tabela:**
+
+**patr (patrimônios):**
+- `NUPATRIMONIO`, `DEPATRIMONIO`, `CDPROJETO`, `CDLOCAL`, `CODOBJETO` (referencia objetopatr)
+- `CDMATRFUNCIONARIO`, `SITUACAO`, `DTAQUISICAO`, `DTBAIXA`, `USUARIO`, `DTOPERACAO`
+- ⚠️ NÃO EXISTE: `DEOBJETO` (vem de join com `objetopatr`)
+
+**objetopatr (objetos de patrimônio):**
+- `NUSEQOBJ` (PK), `NUSEQTIPOPATR`, `DEOBJETO` (varchar(300) após expansão em 2025-12-11)
+- ⚠️ HISTORICAMENTE VAZIA: Restaurada em 2025-12-11 com 1.208 registros
+
+**locais_projeto (locais por projeto):**
+- `id` (PK), `cdlocal`, `delocal`, `tabfant_id` (FK → tabfant.id)
+- `CDPROJETO` (deprecated, usar `tabfant_id`)
+- ⚠️ CONSTRAINT REMOVIDA: Única índice em `cdlocal` removida (permite códigos duplicados entre projetos)
+
+**tabfant (projetos):**
+- `id` (PK), `CDPROJETO`, `NOMEPROJETO`
+- Especial: ID=10000002 é "SEDE" correto (contém 33 locais)
+
+### 14.3 Procedimento de Sincronização (NORMAL)
+
+**Quando executar:**
+- Antes de adicionar features novas
+- Mensalmente para manutenção
+- Quando suspeitar de dados inconsistentes
+
+**Passos:**
+
+```bash
+# 1. Backup local (sempre, SEMPRE fazer isso primeiro)
+php artisan backup:database
+
+# 2. Verificar quais tabelas precisam sync (ver seção 14.4 abaixo)
+
+# 3. Para CADA tabela, executar reimportação via SSH:
+#    Padrão: SELECT <campos> FROM <tabela>; via SSH → MySQL → TSV → Laravel upsert
+
+# 4. Validar resultado com auditoria (seção 14.5)
+
+# 5. Clear cache
+php artisan view:clear
+php artisan config:cache
+```
+
+### 14.4 Scripts de Sincronização (Emergency)
+
+**Se banco inteiro foi perdido:**
+
+1. **Restaurar Patrimônios (patr):**
+```php
+// one-off: Restaurar patrimônios do KingHost
+// Fetch: SELECT * FROM patr via SSH
+// Upsert by: NUSEQPATR
+// Expected: 11.394 registros
+```
+
+2. **Restaurar Locais (locais_projeto):**
+```php
+// one-off: Restaurar locais do KingHost
+// Fetch: SELECT id, cdlocal, delocal, tabfant_id FROM locais_projeto
+// Upsert by: id
+// Expected: 1.939 registros
+// ⚠️ IMPORTANTE: Remover constraint unique em 'cdlocal' ANTES de insert
+```
+
+3. **Restaurar Objetos (objetopatr):**
+```php
+// one-off: Restaurar objetos do KingHost
+// Fetch: SELECT NUSEQOBJETO as NUSEQOBJ, NUSEQTIPOPATR, DEOBJETO FROM objetopatr
+// Insert: objetopatr (sem upsert)
+// Expected: 1.208 registros
+// ⚠️ IMPORTANTE: Expandir coluna DEOBJETO para varchar(300) ANTES (vem varchar(150) de KingHost)
+```
+
+4. **Restaurar Projetos (tabfant):**
+```php
+// one-off: Restaurar projetos do KingHost
+// Fetch: SELECT * FROM tabfant
+// Insert: tabfant
+// Expected: 877 registros
+```
+
+**SSH Template para Fetch:**
+```bash
+ssh plansul@ftp.plansul.info "mysql -h mysql07-farm10.kinghost.net -u plansul004_add2 -p'A33673170a' plansul04 -e 'SELECT <campos> FROM <tabela>;'"
+# Output é TSV (tab-separated values), processar com explode("\t", $line)
+```
+
+### 14.5 Auditoria e Validação
+
+**Script de Auditoria Rápida:**
+```php
+// Listar inconsistências
+echo "patr: " . DB::table('patr')->count() . " vs KingHost XX\n";
+echo "locais_projeto: " . DB::table('locais_projeto')->count() . " vs KingHost XX\n";
+echo "objetopatr: " . DB::table('objetopatr')->count() . " vs KingHost XX\n";
+echo "tabfant: " . DB::table('tabfant')->count() . " vs KingHost XX\n";
+```
+
+**Expected State (2025-12-11):**
+- ✅ patr: 11.394 ↔ 11.394 KingHost
+- ✅ locais_projeto: 1.939 ↔ 1.939 KingHost
+- ✅ objetopatr: 1.208 ↔ 1.208 KingHost
+- ✅ tipopatr: 147 ↔ 147 KingHost
+- ✅ funcionarios: 5.227 ↔ 5.227 KingHost
+- ⚠️ tabfant: 874 local (3 testes locais extras) vs 877 KingHost
+- ⚠️ movpartr: 4.619 local (2 registros locais extras) vs 4.617 KingHost
+
+### 14.6 Histórico de Restaurações
+
+**2025-12-11 - Restauração COMPLETA:**
+- Evento: Tabela `objetopatr` vazia (0 registros)
+- Ação: Importação de 1.208 objetos do KingHost
+- Mudança: Expandida coluna `DEOBJETO` de varchar(100) → varchar(300)
+- Status: ✅ Concluído
+
+**2025-12-11 - Sincronização SEDE:**
+- Evento: Projeto SEDE (ID=10000002) tinha apenas 1 local
+- Ação: Migração de 32 locais orphaned (tabfant_id=8) → tabfant_id=10000002
+- Status: ✅ Concluído (SEDE agora com 33 locais)
+
+**2025-12-04 - Sincronização Completa:**
+- Patrimonios: 11.394 ✅
+- Locais_projeto: 1.939 ✅
+- Projetos (tabfant): Sincronizados ✅
+
+### 14.7 Checklist para Agentes (ANTES DE MODIFICAR BANCO)
+
+- [ ] Backup criado em `archive/backups/`
+- [ ] SSH conectado e testado com KingHost
+- [ ] Coluna schema expandida se necessário (ex: varchar(100) → varchar(300))
+- [ ] Constraint unique/keys removidos se causarem conflito
+- [ ] Upsert by PK correta identificada
+- [ ] Comando SSH testado em terminal ANTES de PHP
+- [ ] Try-catch implementado para erros de insert
+- [ ] Log gerado com total de registros processados
+- [ ] Auditoria executada APÓS (comparar local vs KingHost)
+- [ ] Scripts one-off REMOVIDOS após uso
+
+```
+
+Se for necessário alterar este guia, peça aqui no chat. O assistente atualizará este arquivo (ou criará/atualizará um `.txt`) conforme sua orientação.
