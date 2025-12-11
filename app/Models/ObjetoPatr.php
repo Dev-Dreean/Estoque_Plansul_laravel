@@ -20,12 +20,12 @@ class ObjetoPatr extends Model
         }
         $this->setTable($resolved);
     }
-    protected $primaryKey = 'NUSEQOBJETO';
+    protected $primaryKey = 'NUSEQOBJ';
     public $incrementing = false;
     protected $keyType = 'int';
     public $timestamps = false;
 
-    protected $fillable = ['NUSEQOBJETO', 'NUSEQTIPOPATR', 'DEOBJETO'];
+    protected $fillable = ['NUSEQOBJ', 'NUSEQTIPOPATR', 'DEOBJETO'];
 
     /**
      * Mutator para converter DEOBJETO em UPPERCASE ao salvar

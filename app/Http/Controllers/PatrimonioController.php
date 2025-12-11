@@ -37,7 +37,7 @@ class PatrimonioController extends Controller
         try {
             $codigo = trim($codigo);
             // Usa a tabela principal de cÃ³digos (objetopatr)
-            $registro = ObjetoPatr::where('NUSEQOBJETO', $codigo)->first();
+            $registro = ObjetoPatr::where('NUSEQOBJ', $codigo)->first();
             if (!$registro) {
                 return response()->json(['found' => false, 'message' => 'CÃ³digo nÃ£o encontrado.'], 404);
             }
@@ -139,7 +139,7 @@ class PatrimonioController extends Controller
             $termo = trim((string) $request->input('q', ''));
 
             // Buscar todos os cÃ³digos
-            $codigos = ObjetoPatr::select(['NUSEQOBJETO as CODOBJETO', 'DEOBJETO as DESCRICAO'])
+            $codigos = ObjetoPatr::select(['NUSEQOBJ as CODOBJETO', 'DEOBJETO as DESCRICAO'])
                 ->get()
                 ->toArray();
 
@@ -327,7 +327,7 @@ class PatrimonioController extends Controller
             'NUPATRIMONIO' => 'required|integer',
             'NUSEQOBJ' => 'required|integer',
             'DEOBJETO' => 'nullable|string|max:350', // obrigatÃ³ria apenas quando cÃ³digo for novo
-            'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,Ã DISPOSIÃÃO',
+            'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,À DISPOSIÇÃO',
             'CDMATRFUNCIONARIO' => 'nullable|integer|exists:funcionarios,CDMATRFUNCIONARIO',
             'NUMOF' => 'nullable|integer',
             'DEHISTORICO' => 'nullable|string|max:300',
@@ -354,7 +354,7 @@ class PatrimonioController extends Controller
         }
 
         // 2) Garantir existÃªncia do ObjetoPatr (tabela objetopatr)
-        //    O Model ObjetoPatr usa PK 'NUSEQOBJETO'.
+        //    O Model ObjetoPatr usa PK 'NUSEQOBJ'.
         $codigo = (int) $validated['NUSEQOBJ'];
         $objeto = ObjetoPatr::find($codigo);
 
@@ -367,7 +367,7 @@ class PatrimonioController extends Controller
             ]);
 
             $objeto = ObjetoPatr::create([
-                'NUSEQOBJETO' => $codigo,
+                'NUSEQOBJ' => $codigo,
                 // NUSEQTIPOPATR pode ser opcional aqui; ajustar se sua regra exigir
                 'DEOBJETO' => $request->input('DEOBJETO'),
             ]);
@@ -1539,8 +1539,8 @@ class PatrimonioController extends Controller
         // Preencher descriÃ§Ãµes ausentes usando a tabela de objetos (consulta em lote)
         $codes = $patrimonios->pluck('CODOBJETO')->filter()->unique()->values()->all();
         if (!empty($codes)) {
-            $descMap = \App\Models\ObjetoPatr::whereIn('NUSEQOBJETO', $codes)
-                ->pluck('DEOBJETO', 'NUSEQOBJETO')
+            $descMap = \App\Models\ObjetoPatr::whereIn('NUSEQOBJ', $codes)
+                ->pluck('DEOBJETO', 'NUSEQOBJ')
                 ->toArray();
         } else {
             $descMap = [];
@@ -1617,8 +1617,8 @@ class PatrimonioController extends Controller
         // Preencher descriÃ§Ãµes ausentes usando a tabela de objetos (consulta em lote)
         $codes = $patrimonios->pluck('CODOBJETO')->filter()->unique()->values()->all();
         if (!empty($codes)) {
-            $descMap = \App\Models\ObjetoPatr::whereIn('NUSEQOBJETO', $codes)
-                ->pluck('DEOBJETO', 'NUSEQOBJETO')
+            $descMap = \App\Models\ObjetoPatr::whereIn('NUSEQOBJ', $codes)
+                ->pluck('DEOBJETO', 'NUSEQOBJ')
                 ->toArray();
         } else {
             $descMap = [];
@@ -2292,7 +2292,7 @@ class PatrimonioController extends Controller
                             $displayText = $p->MARCA;
                             $displaySource = 'MARCA';
                         } elseif (!empty($p->CODOBJETO)) {
-                            $obj = \App\Models\ObjetoPatr::where('NUSEQOBJETO', $p->CODOBJETO)->first();
+                            $obj = \App\Models\ObjetoPatr::where('NUSEQOBJ', $p->CODOBJETO)->first();
                             if ($obj && !empty($obj->DEOBJETO)) {
                                 $displayText = $obj->DEOBJETO;
                                 $displaySource = 'OBJETO';
@@ -2356,7 +2356,7 @@ class PatrimonioController extends Controller
             'NMPLANTA' => 'nullable|integer',
             'MARCA' => 'nullable|string|max:30',
             'MODELO' => 'nullable|string|max:30',
-            'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,Ã DISPOSIÃÃO',
+            'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,À DISPOSIÇÃO',
             'DTAQUISICAO' => 'nullable|date',
             'DTBAIXA' => 'nullable|date',
             // Matricula precisa existir na tabela funcionarios
@@ -2391,7 +2391,7 @@ class PatrimonioController extends Controller
                 ]);
             }
             $objeto = ObjetoPatr::create([
-                'NUSEQOBJETO' => $codigo,
+                'NUSEQOBJ' => $codigo,
                 'DEOBJETO' => $descricao,
             ]);
         }
