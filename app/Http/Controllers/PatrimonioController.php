@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use App\Models\Patrimonio;
 use App\Models\User;
 use App\Models\ObjetoPatr;
@@ -36,8 +37,10 @@ class PatrimonioController extends Controller
     {
         try {
             $codigo = trim($codigo);
+            // Detectar nome da coluna PK
+            $pkColumn = $this->detectarPKObjetoPatr();
             // Usa a tabela principal de cÃ³digos (objetopatr)
-            $registro = ObjetoPatr::where('NUSEQOBJ', $codigo)->first();
+            $registro = ObjetoPatr::where($pkColumn, $codigo)->first();
             if (!$registro) {
                 return response()->json(['found' => false, 'message' => 'CÃ³digo nÃ£o encontrado.'], 404);
             }
@@ -169,11 +172,11 @@ class PatrimonioController extends Controller
     {
         try {
             // Primeiro tenta maiúsculo, depois minúsculo (compatibilidade Linux/Windows)
-            $tableName = \Schema::hasTable('OBJETOPATR') ? 'OBJETOPATR' : 'objetopatr';
+            $tableName = Schema::hasTable('OBJETOPATR') ? 'OBJETOPATR' : 'objetopatr';
             
-            $result = \DB::selectOne("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+            $result = DB::selectOne("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
                 WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_KEY = 'PRI'",
-                [\DB::getDatabaseName(), $tableName]);
+                [DB::getDatabaseName(), $tableName]);
             return $result ? $result->COLUMN_NAME : 'NUSEQOBJETO';
         } catch (\Exception $e) {
             return 'NUSEQOBJETO';
@@ -343,7 +346,7 @@ class PatrimonioController extends Controller
     public function store(Request $request)
     {
         // DEBUG: Ver o que foi recebido
-        \Log::info("SITUACAO recebido", [
+        Log::info("SITUACAO recebido", [
             "raw" => $request->input("SITUACAO"),
             "length" => strlen($request->input("SITUACAO") ?? ""),
         ]);
@@ -1565,8 +1568,9 @@ class PatrimonioController extends Controller
         // Preencher descriÃ§Ãµes ausentes usando a tabela de objetos (consulta em lote)
         $codes = $patrimonios->pluck('CODOBJETO')->filter()->unique()->values()->all();
         if (!empty($codes)) {
-            $descMap = \App\Models\ObjetoPatr::whereIn('NUSEQOBJ', $codes)
-                ->pluck('DEOBJETO', 'NUSEQOBJ')
+            $pkColumn = $this->detectarPKObjetoPatr();
+            $descMap = \App\Models\ObjetoPatr::whereIn($pkColumn, $codes)
+                ->pluck('DEOBJETO', $pkColumn)
                 ->toArray();
         } else {
             $descMap = [];
@@ -2318,7 +2322,8 @@ class PatrimonioController extends Controller
                             $displayText = $p->MARCA;
                             $displaySource = 'MARCA';
                         } elseif (!empty($p->CODOBJETO)) {
-                            $obj = \App\Models\ObjetoPatr::where('NUSEQOBJ', $p->CODOBJETO)->first();
+                            $pkColumn = $this->detectarPKObjetoPatr();
+                            $obj = \App\Models\ObjetoPatr::where($pkColumn, $p->CODOBJETO)->first();
                             if ($obj && !empty($obj->DEOBJETO)) {
                                 $displayText = $obj->DEOBJETO;
                                 $displaySource = 'OBJETO';
