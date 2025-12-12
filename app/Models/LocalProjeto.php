@@ -53,4 +53,35 @@ class LocalProjeto extends Model
     {
         return $this->projeto ? $this->projeto->NOMEPROJETO : null;
     }
+
+    /**
+     * Accessor para retornar a UF (Estado) do local
+     * 1️⃣  Usa UF armazenada no local
+     * 2️⃣  Usa UF do projeto vinculado
+     * 
+     * Permite usar: $local->uf_estado ou $local->uf
+     */
+    public function getUfEstadoAttribute(): ?string
+    {
+        // 1. Se tem UF armazenada no local, usar
+        if (!empty($this->UF)) {
+            return $this->UF;
+        }
+
+        // 2. Tentar obter do projeto vinculado
+        if ($this->projeto && !empty($this->projeto->UF)) {
+            return $this->projeto->UF;
+        }
+
+        return null;
+    }
+
+    /**
+     * Alias para getUfEstadoAttribute
+     */
+    public function getUfAttribute(): ?string
+    {
+        return $this->uf_estado;
+    }
 }
+

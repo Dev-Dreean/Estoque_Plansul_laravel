@@ -1498,11 +1498,18 @@
       async buscarCodigosLocaisFiltrados() {
         const termo = String(this.codigoLocalDigitado || '').trim();
 
+        // Regra: projeto define locais. Sem projeto, não lista nada.
+        if (!this.formData.CDPROJETO) {
+          this.codigosLocaisFiltrados = [];
+          this.locaisEncontrados = [];
+          this.loadingCodigosLocais = false;
+          return;
+        }
+
         // Sempre buscar quando field tem foco (mesmo se vazio)
         this.loadingCodigosLocais = true;
         try {
           let url = `/api/locais/buscar?termo=${encodeURIComponent(termo)}`;
-          // Se tem projeto selecionado, filtrar por ele
           if (this.formData.CDPROJETO) {
             url += `&cdprojeto=${encodeURIComponent(this.formData.CDPROJETO)}`;
           }
@@ -1941,11 +1948,21 @@
       // ========================================
       async mostrarTodosLocais() {
         console.log('🔍 [MOSTRAR TODOS] Abrindo lista completa');
+        if (!this.formData.CDPROJETO) {
+          console.warn('Selecione um projeto antes de listar locais');
+          this.locaisFiltrados = [];
+          this.showLocalDropdown = true;
+          return;
+        }
         this.localSearch = '';
         await this.buscarLocaisPorCodigo();
         // Buscar todos sem filtro
         try {
-          const resp = await fetch(`/api/locais/buscar?termo=`);
+          let url = `/api/locais/buscar?termo=`;
+          if (this.formData.CDPROJETO) {
+            url += `&cdprojeto=${encodeURIComponent(this.formData.CDPROJETO)}`;
+          }
+          const resp = await fetch(url);
           if (resp.ok) {
             const todosLocais = await resp.json();
             this.locaisFiltrados = todosLocais.slice(0, 50); // Limitar a 50
@@ -2217,8 +2234,18 @@
           return;
         }
 
+        // Sem projeto definido, não buscar locais (regra: projeto define os locais)
+        if (!this.formData.CDPROJETO) {
+          this.locaisEncontrados = [];
+          return;
+        }
+
         try {
-          const resp = await fetch(`/api/locais/buscar?termo=${encodeURIComponent(codigo)}`);
+          let url = `/api/locais/buscar?termo=${encodeURIComponent(codigo)}`;
+          if (this.formData.CDPROJETO) {
+            url += `&cdprojeto=${encodeURIComponent(this.formData.CDPROJETO)}`;
+          }
+          const resp = await fetch(url);
           if (!resp.ok) {
             this.locaisEncontrados = [];
             // NÃO limpar nomeLocalBusca aqui - já foi preenchido em selecionarCodigoLocal

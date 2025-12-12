@@ -264,4 +264,128 @@ class Patrimonio extends Model
         // Senão, retornar o CDPROJETO armazenado diretamente
         return $this->CDPROJETO;
     }
+
+    /**
+     * Retorna a UF (Estado) do patrimonio
+     * 1️⃣  Usa UF do projeto (via CDPROJETO)
+     * 2️⃣  Usa UF do local (via CDLOCAL)
+     * 3️⃣  Usa UF armazenada diretamente (fallback)
+     * 
+     * Esse accessor permite usar: $patrimonio->uf_estado ou $patrimonio->uf
+     */
+    public function getUfEstadoAttribute(): ?string
+    {
+        // 1. Tentar obter de UF já armazenada
+        if (!empty($this->UF)) {
+            return $this->UF;
+        }
+
+        // 2. Tentar obter do Projeto (CDPROJETO)
+        if (!empty($this->CDPROJETO)) {
+            $projeto = $this->projeto;
+            if ($projeto && !empty($projeto->UF)) {
+                return $projeto->UF;
+            }
+        }
+
+        // 3. Tentar obter do Local (CDLOCAL)
+        if (!empty($this->CDLOCAL)) {
+            $local = $this->local;
+            if ($local && !empty($local->UF)) {
+                return $local->UF;
+            }
+            // Se local está carregado, tentar via projeto do local
+            if ($local && $local->relationLoaded('projeto')) {
+                $projLocal = $local->projeto;
+                if ($projLocal && !empty($projLocal->UF)) {
+                    return $projLocal->UF;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Alias para getUfEstadoAttribute
+     */
+    public function getUfAttribute(): ?string
+    {
+        return $this->getUfEstadoAttribute();
+    }
+
+    /**
+     * Retorna informações de UF para debug/auditoria
+     * Mostra de onde a UF foi obtida
+     */
+    public function getUfSourceAttribute(): array
+    {
+        $source = [];
+
+        // Verificar cada fonte
+        if (!empty($this->UF)) {
+            $source['stored'] = $this->UF;
+        }
+
+        if (!empty($this->CDPROJETO)) {
+            try {
+                $proj = $this->projeto;
+                if ($proj && !empty($proj->UF)) {
+                    $source['projeto'] = $proj->UF;
+                }
+            } catch (\Exception $e) {
+                // Ignorar erros de carregamento
+            }
+        }
+
+        if (!empty($this->CDLOCAL)) {
+            try {
+                $loc = $this->local;
+                if ($loc && !empty($loc->UF)) {
+                    $source['local'] = $loc->UF;
+                } elseif ($loc && $loc->relationLoaded('projeto')) {
+                    $pLocal = $loc->projeto;
+                    if ($pLocal && !empty($pLocal->UF)) {
+                        $source['local_projeto'] = $pLocal->UF;
+                    }
+                }
+            } catch (\Exception $e) {
+                // Ignorar erros de carregamento
+            }
+        }
+
+        return $source;
+    }
+
+    /**
+     * Scope: Filtrar patrimonios por UF (Estado)
+     * 
+     * Uso:
+     * - Patrimonio::byUf('SP')->get()
+     * - Patrimonio::byUf(['SP', 'MG'])->get()
+     */
+    public function scopeByUf($query, $ufs)
+    {
+        if (empty($ufs)) {
+            return $query;
+        }
+
+        // Garantir que é um array
+        if (!is_array($ufs)) {
+            $ufs = [$ufs];
+        }
+
+        return $query->whereIn('UF', $ufs)
+                     ->orWhereIn('CDPROJETO', function ($subquery) use ($ufs) {
+                         $subquery->select('id')
+                                  ->from('tabfant')
+                                  ->whereIn('UF', $ufs);
+                     })
+                     ->orWhereIn('CDLOCAL', function ($subquery) use ($ufs) {
+                         $subquery->select('id')
+                                  ->from('locais_projeto')
+                                  ->whereIn('UF', $ufs);
+                     });
+    }
 }
+

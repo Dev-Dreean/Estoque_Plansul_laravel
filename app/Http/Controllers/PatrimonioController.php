@@ -1355,11 +1355,18 @@ class PatrimonioController extends Controller
         // BUSCAR NA TABELA LOCAIS_PROJETO (tem o cdlocal)
         $query = LocalProjeto::query();
 
-        // Se tiver cdprojeto, filtrar apenas por esse projeto
-        if ($cdprojeto !== '') {
-            $query->whereHas('projeto', function ($q) use ($cdprojeto) {
-                $q->where('CDPROJETO', $cdprojeto);
-            });
+        // Regra: projeto define locais. Sem projeto, só permite fallback quando o termo é um cdlocal específico.
+        if ($cdprojeto === '') {
+            if ($termo === '' || !is_numeric($termo)) {
+                return response()->json([]);
+            }
+            $query->where('cdlocal', $termo);
+        } else {
+            $proj = Tabfant::where('CDPROJETO', $cdprojeto)->first(['id', 'CDPROJETO']);
+            if (!$proj) {
+                return response()->json([]);
+            }
+            $query->where('tabfant_id', $proj->id);
         }
 
         $locaisProjeto = $query->get();
