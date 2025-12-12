@@ -663,8 +663,8 @@ class PatrimonioService
 
     protected function aplicarFiltroUf(Builder $query, Request $request): void
     {
-        $raw = $request->input('uf');
-        if (is_null($raw)) {
+        $raw = $request->input('uf_filter') ?? $request->input('uf');
+        if (is_null($raw) || (is_array($raw) && empty($raw))) {
             return;
         }
 
@@ -678,15 +678,10 @@ class PatrimonioService
             return;
         }
 
-        $query->where(function ($q) use ($values) {
-            $q->whereHas('creator', function ($qc) use ($values) {
-                $qc->whereIn(DB::raw('UPPER(UF)'), $values->all());
-            });
-
-            // fallback: usar sufixo do login (ex.: .SC)
-            foreach ($values as $uf) {
-                $q->orWhereRaw('LOWER(USUARIO) LIKE ?', ['%.' . strtolower($uf)]);
-            }
-        });
+        // ✅ CORRIGIDO: Usar o scope byUf que filtra por:
+        // 1. UF armazenada em patr.UF
+        // 2. UF do local (CDLOCAL → locais_projeto.UF)
+        // 3. UF do projeto (CDPROJETO → tabfant.UF)
+        $query->byUf($values->all());
     }
 }

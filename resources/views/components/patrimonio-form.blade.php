@@ -3374,6 +3374,16 @@
         // Se é modo EDIÇÃO e há patrimônio carregado
         if (this.isEditMode()) {
           await this.carregarDadosEdicao();
+
+          // Após carregar o patrimônio, garantir que a lista de locais do projeto seja carregada em segundo plano
+          if (this.formData.CDPROJETO) {
+            try {
+              await this.buscarProjetoELocais();
+              console.log('✅ [INIT] Locais do projeto carregados para edição');
+            } catch (e) {
+              console.warn('⚠️ [INIT] Falha ao carregar locais do projeto na edição', e);
+            }
+          }
         }
 
         // Carregar lista de projetos existentes para os modais
@@ -3466,7 +3476,7 @@
             console.log(`🔍 [CARREGA EDIÇÃO] Carregando local ${this.formData.CDLOCAL}...`);
             try {
               // 🆕 Usar endpoint específico que busca por ID (mais eficiente)
-              const localResp = await fetch(`/api/locais/${this.formData.CDLOCAL}`);
+              const localResp = await fetch(`/api/locais/${this.formData.CDLOCAL}?cdprojeto=${encodeURIComponent(this.formData.CDPROJETO || '')}`);
               if (localResp.ok) {
                 const local = await localResp.json();
                 console.log(`✅ [CARREGA EDIÇÃO] Local encontrado:`, local);
@@ -3499,7 +3509,7 @@
                 console.log(`🔄 [CARREGA EDIÇÃO] Tentando buscar todos os locais (compatibilidade)...`);
 
                 // Fallback: buscar todos os locais
-                const locaisResp = await fetch(`/api/locais/buscar?termo=`);
+                const locaisResp = await fetch(`/api/locais/buscar?termo=&cdprojeto=${encodeURIComponent(this.formData.CDPROJETO || '')}`);
                 if (locaisResp.ok) {
                   const todosLocais = await locaisResp.json();
                   console.log(`📦 [CARREGA EDIÇÃO] Total de locais: ${todosLocais.length}`);

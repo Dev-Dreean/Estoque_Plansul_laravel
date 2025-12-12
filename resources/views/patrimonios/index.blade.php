@@ -39,7 +39,10 @@
                   <option value="A DISPOSICAO">A DISPOSIÇÃO</option>
                 </select>
                 <button id="bulk-apply" class="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out shadow-sm">
-                  Aplicar
+                  Aplicar Situação
+                </button>
+                <button id="bulk-delete" class="h-9 px-4 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out shadow-sm">
+                  Deletar
                 </button>
                 <button id="bulk-clear" class="h-9 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition duration-150">
                   Limpar
@@ -56,12 +59,12 @@
               <div class="w-full max-w-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-5 space-y-4">
                 <div class="flex items-start justify-between gap-3 border-b border-gray-200 dark:border-gray-700 pb-3">
                   <div class="space-y-1">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar alteração em massa</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Revise os patrimônios selecionados</p>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="bulk-confirm-title">Confirmar alteração em massa</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400" id="bulk-confirm-desc">Revise os patrimônios selecionados</p>
                   </div>
                   <button id="bulk-confirm-close" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition text-lg leading-none">×</button>
                 </div>
-                <div class="text-sm space-y-1">
+                <div class="text-sm space-y-1" id="bulk-confirm-situacao-wrapper" style="display:none;">
                   <span class="text-gray-600 dark:text-gray-400">Nova situação:</span>
                   <p id="bulk-confirm-new" class="font-semibold text-indigo-600 dark:text-indigo-400 text-base"></p>
                 </div>
@@ -418,6 +421,89 @@
 
         bindCheckboxes();
         bulkApply?.addEventListener('click', applyBulkSituacao);
+        
+        // ✅ Novo: Listener para deletar em massa
+        const bulkDelete = document.querySelector('#bulk-delete');
+        let pendingDeleteIds = new Set();
+        const bulkDeleteEndpoint = "{{ route('patrimonios.bulk-delete') }}";
+        
+        const applyBulkDelete = () => {
+          if (selectedIds.size === 0) {
+            alert('Selecione ao menos um patrimônio.');
+            return;
+          }
+          pendingDeleteIds = new Set(selectedIds);
+          openConfirmDeleteModal();
+        };
+        
+        const openConfirmDeleteModal = () => {
+          const title = document.querySelector('#bulk-confirm-title');
+          const desc = document.querySelector('#bulk-confirm-desc');
+          const situacaoWrapper = document.querySelector('#bulk-confirm-situacao-wrapper');
+          
+          if (title) title.textContent = '⚠️ Confirmar exclusão em massa';
+          if (desc) desc.textContent = 'Esta ação é irreversível! Os patrimônios serão deletados permanentemente.';
+          if (situacaoWrapper) situacaoWrapper.style.display = 'none';
+          
+          if (!bulkConfirmModal || !bulkConfirmList) return;
+          bulkConfirmList.innerHTML = '';
+          pendingDeleteIds.forEach((id) => {
+            const row = document.querySelector(`[data-row-id="${id}"]`);
+            const patr = row?.dataset?.patrimonio || id;
+            const item = document.createElement('div');
+            item.className = 'flex justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-1 last:border-0';
+            const left = document.createElement('div');
+            left.className = 'font-semibold text-gray-900 dark:text-white';
+            left.textContent = `Nº Patrimônio ${patr}`;
+            item.appendChild(left);
+            bulkConfirmList.appendChild(item);
+          });
+          bulkConfirmModal.classList.remove('hidden');
+          bulkConfirmModal.style.display = 'flex';
+        };
+        
+        const runBulkDelete = () => {
+          fetch(bulkDeleteEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-CSRF-TOKEN': csrf,
+            },
+            body: JSON.stringify({
+              ids: Array.from(pendingDeleteIds),
+            }),
+          }).then(async (resp) => {
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok) {
+              throw new Error(data.error || `Falha ao deletar: ${resp.status}`);
+            }
+            clearSelection();
+            pendingDeleteIds.clear();
+            if (window.location.href) {
+              ajaxFetch(window.location.href);
+            }
+          }).catch((err) => {
+            console.error(err);
+            alert(err.message || 'Falha ao deletar patrimônios.');
+          });
+        };
+        
+        bulkDelete?.addEventListener('click', applyBulkDelete);
+        
+        // ✅ Modificar o listener do botão YES para detectar operação
+        const originalConfirmYes = bulkConfirmYes?.onclick;
+        bulkConfirmYes?.addEventListener('click', () => {
+          if (pendingDeleteIds.size > 0) {
+            closeConfirmModal();
+            runBulkDelete();
+          } else if (pendingSituacao) {
+            const situacao = pendingSituacao;
+            closeConfirmModal();
+            runBulkUpdate(situacao);
+          }
+        });
+        
         bulkClear?.addEventListener('click', clearSelection);
         bulkConfirmYes?.addEventListener('click', () => {
           if (pendingSituacao) {

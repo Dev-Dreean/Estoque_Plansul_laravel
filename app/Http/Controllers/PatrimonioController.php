@@ -250,10 +250,18 @@ class PatrimonioController extends Controller
 
         $cadastradores = $this->patrimonioService->listarCadastradoresParaFiltro($currentUser);
 
-        $locais = \App\Models\LocalProjeto::select('cdlocal as codigo', 'delocal as descricao')
-            ->orderBy('codigo')
-            ->orderBy('descricao')
-            ->get();
+        // Locais: filtrar pelo projeto selecionado (se houver) para não trazer lista inteira
+        $locais = collect();
+        if ($request->filled('cdprojeto')) {
+            $proj = Tabfant::where('CDPROJETO', trim((string) $request->input('cdprojeto')))->first(['id']);
+            if ($proj) {
+                $locais = \App\Models\LocalProjeto::where('tabfant_id', $proj->id)
+                    ->select('cdlocal as codigo', 'delocal as descricao')
+                    ->orderBy('codigo')
+                    ->orderBy('descricao')
+                    ->get();
+            }
+        }
 
         $projetos = Tabfant::select('CDPROJETO as codigo', 'NOMEPROJETO as descricao')
             ->distinct()
@@ -952,6 +960,75 @@ class PatrimonioController extends Controller
         ]);
     }
 
+    /**
+     * ✅ Deletar patrimonios em massa
+     * 
+     * Apenas usuários com permissão podem deletar patrimonios que criaram ou são responsáveis
+     */
+    public function bulkDelete(Request $request): JsonResponse
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer',
+        ]);
+
+        $ids = collect($request->input('ids', []))
+            ->map(fn($v) => (int) $v)
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return response()->json(['error' => 'Nenhum patrimônio selecionado.'], 422);
+        }
+
+        $user = Auth::user();
+        $isAdmin = $user && in_array(($user->PERFIL ?? ''), ['ADM', 'SUP'], true);
+        
+        // Apenas ADM, SUP e super-users podem deletar
+        $superUsers = ['BEATRIZ.SC', 'TIAGOP', 'BRUNO'];
+        $isSuperUser = $user && in_array(strtoupper($user->NMLOGIN ?? ''), $superUsers, true);
+
+        if (!$isAdmin && !$isSuperUser) {
+            return response()->json([
+                'error' => 'Você não tem permissão para deletar patrimônios.',
+            ], 403);
+        }
+
+        $patrimonios = Patrimonio::whereIn('NUSEQPATR', $ids)->get();
+        if ($patrimonios->isEmpty()) {
+            return response()->json(['error' => 'Patrimônios não encontrados.'], 404);
+        }
+
+        // Criar backup antes de deletar
+        $backup = [];
+        foreach ($patrimonios as $p) {
+            $backup[] = [
+                'NUSEQPATR' => $p->NUSEQPATR,
+                'NUPATRIMONIO' => $p->NUPATRIMONIO,
+                'DEPATRIMONIO' => $p->DEPATRIMONIO,
+                'CDPROJETO' => $p->CDPROJETO,
+                'CDLOCAL' => $p->CDLOCAL,
+                'SITUACAO' => $p->SITUACAO,
+            ];
+        }
+
+        // Deletar
+        $deleted = Patrimonio::whereIn('NUSEQPATR', $ids)->delete();
+
+        Log::info('🗑️ Bulk deleção de patrimônios', [
+            'user' => $user->NMLOGIN ?? null,
+            'ids_count' => $ids->count(),
+            'deletados' => $deleted,
+            'backup' => $backup,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'deletados' => $deleted,
+        ]);
+    }
+
     public function pesquisar(Request $request): JsonResponse
     {
         try {
@@ -1406,13 +1483,33 @@ class PatrimonioController extends Controller
      * Busca um local especÃ­fico por ID e retorna informaÃ§Ãµes completas
      * Inclui qual projeto ele realmente pertence (para sincronizaÃ§Ã£o de dados desincronizados)
      */
+
     public function buscarLocalPorId($id): JsonResponse
     {
         try {
+            $cdprojeto = request()->query('cdprojeto');
+
+            // Primeiro tenta pelo ID (chave prim?ria)
             $local = LocalProjeto::with('projeto')->find($id);
 
+            // Fallback: algumas telas ainda enviam o c?digo (cdlocal) em vez do ID
             if (!$local) {
-                return response()->json(['error' => 'Local nÃ£o encontrado'], 404);
+                $query = LocalProjeto::with('projeto')->where('cdlocal', $id);
+
+                if ($cdprojeto) {
+                    $tabfant = Tabfant::where('CDPROJETO', $cdprojeto)->first();
+                    if ($tabfant) {
+                        $query->where('tabfant_id', $tabfant->id);
+                    } else {
+                        return response()->json(['error' => 'Local n?o encontrado'], 404);
+                    }
+                }
+
+                $local = $query->first();
+            }
+
+            if (!$local) {
+                return response()->json(['error' => 'Local n?o encontrado'], 404);
             }
 
             return response()->json([

@@ -360,6 +360,11 @@ class Patrimonio extends Model
     /**
      * Scope: Filtrar patrimonios por UF (Estado)
      * 
+     * Prioridade de resolução:
+     * 1. UF armazenada diretamente em patr.UF
+     * 2. UF do local (CDLOCAL) - tem prioridade
+     * 3. UF do projeto (CDPROJETO) - fallback
+     * 
      * Uso:
      * - Patrimonio::byUf('SP')->get()
      * - Patrimonio::byUf(['SP', 'MG'])->get()
@@ -375,17 +380,29 @@ class Patrimonio extends Model
             $ufs = [$ufs];
         }
 
-        return $query->whereIn('UF', $ufs)
-                     ->orWhereIn('CDPROJETO', function ($subquery) use ($ufs) {
-                         $subquery->select('id')
-                                  ->from('tabfant')
-                                  ->whereIn('UF', $ufs);
-                     })
-                     ->orWhereIn('CDLOCAL', function ($subquery) use ($ufs) {
-                         $subquery->select('id')
-                                  ->from('locais_projeto')
-                                  ->whereIn('UF', $ufs);
-                     });
+        // ✅ CORRIGIDO: Usar whereHas ou whereIn com lógica correta
+        // Prioridade 1: UF armazenada diretamente
+        // Prioridade 2: UF do local (tem prioridade sobre projeto)
+        // Prioridade 3: UF do projeto (fallback)
+        
+        return $query->where(function ($q) use ($ufs) {
+            // 1. Verificar UF diretamente armazenada
+            $q->whereIn('UF', $ufs);
+            
+            // 2. OU verificar UF do local (tem prioridade)
+            $q->orWhereIn('CDLOCAL', function ($subquery) use ($ufs) {
+                $subquery->select('id')
+                         ->from('locais_projeto')
+                         ->whereIn('UF', $ufs);
+            });
+            
+            // 3. OU verificar UF do projeto (apenas se não tem local com UF definida)
+            $q->orWhereIn('CDPROJETO', function ($subquery) use ($ufs) {
+                $subquery->select('id')
+                         ->from('tabfant')
+                         ->whereIn('UF', $ufs);
+            });
+        });
     }
 }
 

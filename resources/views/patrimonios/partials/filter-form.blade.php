@@ -176,14 +176,21 @@
                 this.value = opt.code;
                 this.search = opt.label;
                 this.open = false;
+                // Avisar o filtro de local para recarregar
+                window.dispatchEvent(new CustomEvent('patrimonio-projeto-selecionado', { detail: this.value }));
               },
               handleManual() {
                 this.syncValue();
                 this.open = false;
+                window.dispatchEvent(new CustomEvent('patrimonio-projeto-selecionado', { detail: this.value }));
               },
               init() {
                 const current = this.options.find(o => o.code === this.value);
                 if (current) this.search = current.label;
+                // Se já vier com projeto selecionado, notificar locais
+                if (this.value) {
+                  window.dispatchEvent(new CustomEvent('patrimonio-projeto-selecionado', { detail: this.value }));
+                }
               }
             }"
             class="relative"
@@ -222,6 +229,43 @@
               value: '{{ request('cdlocal') }}',
               open: false,
               options: @js($locaisOptions),
+              loading: false,
+              async fetchLocais(projCode, preserveValue = false) {
+                const code = (projCode || '').toString().trim();
+                this.options = [];
+                if (!code) {
+                  this.value = preserveValue ? this.value : '';
+                  this.search = preserveValue ? this.search : '';
+                  return;
+                }
+                this.loading = true;
+                try {
+                  const resp = await fetch(`/api/locais/buscar?cdprojeto=${encodeURIComponent(code)}`);
+                  if (resp.ok) {
+                    const data = await resp.json();
+                    this.options = (data || []).map(l => ({
+                      code: String(l.cdlocal),
+                      label: `${l.cdlocal} - ${(l.LOCAL || l.delocal || '').trim()}`.trim(),
+                    }));
+                    if (preserveValue && this.value) {
+                      const current = this.options.find(o => o.code === this.value);
+                      if (current) {
+                        this.search = current.label;
+                      } else {
+                        this.value = '';
+                        this.search = '';
+                      }
+                    }
+                  } else {
+                    this.options = [];
+                  }
+                } catch (e) {
+                  console.error('Erro ao buscar locais do projeto', e);
+                  this.options = [];
+                } finally {
+                  this.loading = false;
+                }
+              },
               filtered() {
                 const term = (this.search || '').toLowerCase();
                 if (!term.length) return [];
@@ -245,6 +289,20 @@
                 this.open = false;
               },
               init() {
+                // Carregar os locais do projeto selecionado (se houver)
+                const initialProj = '{{ request('cdprojeto') }}';
+                if (initialProj) {
+                  this.fetchLocais(initialProj, true);
+                }
+                // Ouvir mudanças no projeto
+                window.addEventListener('patrimonio-projeto-selecionado', (e) => {
+                  const proj = (e.detail || '').toString();
+                  this.value = '';
+                  this.search = '';
+                  this.fetchLocais(proj, false);
+                });
+
+                // Se já veio com local preenchido e opções carregadas via servidor, sincronizar o nome
                 const current = this.options.find(o => o.code === this.value);
                 if (current) this.search = current.label;
               }
