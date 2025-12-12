@@ -1,6 +1,10 @@
 <x-app-layout>
   <x-patrimonio-nav-tabs />
 
+  @php
+    $isConsultor = auth()->user()?->PERFIL === \App\Models\User::PERFIL_CONSULTOR;
+  @endphp
+
   <div
     x-data="patrimoniosIndex()"
     class="py-4"
@@ -13,10 +17,11 @@
             @include('patrimonios.partials.filter-form')
             @include('patrimonios.partials.action-buttons')
 
-            <div
-              id="bulk-status-bar"
-              class="hidden mb-3 transition-all duration-200 opacity-0 -translate-y-3 scale-90"
-            >
+            @unless($isConsultor)
+              <div
+                id="bulk-status-bar"
+                class="hidden mb-3 transition-all duration-200 opacity-0 -translate-y-3 scale-90"
+              >
               <div class="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 shadow-md rounded-lg px-3 py-2.5 flex flex-wrap items-center gap-2.5 text-sm ring-1 ring-blue-100 dark:ring-blue-900/50">
                 <div class="font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100 whitespace-nowrap">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
@@ -41,11 +46,13 @@
                 </button>
               </div>
             </div>
+            @endunless
 
-            <div
-              id="bulk-confirm-modal"
-              class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 backdrop-blur-sm px-4"
-            >
+            @unless($isConsultor)
+              <div
+                id="bulk-confirm-modal"
+                class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+              >
               <div class="w-full max-w-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-5 space-y-4">
                 <div class="flex items-start justify-between gap-3 border-b border-gray-200 dark:border-gray-700 pb-3">
                   <div class="space-y-1">
@@ -67,6 +74,7 @@
                 </div>
               </div>
             </div>
+            @endunless
 
             <div id="patrimonios-table-container" class="relative">
               <div id="patrimonios-table-content">

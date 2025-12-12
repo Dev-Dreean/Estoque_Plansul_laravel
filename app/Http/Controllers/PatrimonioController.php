@@ -371,11 +371,19 @@ class PatrimonioController extends Controller
         $this->enforceAlmoxRulesOnCreate($validated['CDLOCAL'] ?? null);
 
         //  VALIDAÇÃO CRÍTICA: Local deve pertencer ao projeto selecionado
-        $this->validateLocalBelongsToProjeto(
+        $localSelecionado = $this->validateLocalBelongsToProjeto(
             $validated['CDPROJETO'] ?? null,
             $validated['CDLOCAL'] ?? null,
             'criação de patrimônio'
         );
+
+        // Garantir que vamos persistir sempre o código do local (cdlocal) e o projeto correto do local escolhido
+        if ($localSelecionado) {
+            $validated['CDLOCAL'] = (int) $localSelecionado->cdlocal;
+            if ($localSelecionado->projeto) {
+                $validated['CDPROJETO'] = (int) $localSelecionado->projeto->CDPROJETO;
+            }
+        }
 
         // â VERIFICAR DUPLICATAS: Impedir criar patrimÃ´nio com nÂº que jÃ¡ existe
         $nupatrimonio = (int) $validated['NUPATRIMONIO'];
@@ -414,16 +422,16 @@ class PatrimonioController extends Controller
             // Usaremos a descriÃ§Ã£o do objeto como DEPATRIMONIO para manter compatibilidade atual do front
             'DEPATRIMONIO' => $objeto->DEOBJETO ?? $request->input('DEOBJETO'),
             'SITUACAO' => $validated['SITUACAO'],
-            'CDMATRFUNCIONARIO' => (int) $validated['CDMATRFUNCIONARIO'],
-            'NUMOF' => $request->input('NUMOF'),
-            'DEHISTORICO' => $request->input('DEHISTORICO'),
-            'CDPROJETO' => $request->input('CDPROJETO'),
-            'CDLOCAL' => $request->input('CDLOCAL'),
-            'NMPLANTA' => $request->input('NMPLANTA'),
-            'MARCA' => $request->input('MARCA'),
-            'MODELO' => $request->input('MODELO'),
-            'DTAQUISICAO' => $request->input('DTAQUISICAO'),
-            'DTBAIXA' => $request->input('DTBAIXA'),
+            'CDMATRFUNCIONARIO' => isset($validated['CDMATRFUNCIONARIO']) ? (int) $validated['CDMATRFUNCIONARIO'] : null,
+            'NUMOF' => $validated['NUMOF'] ?? null,
+            'DEHISTORICO' => $validated['DEHISTORICO'] ?? null,
+            'CDPROJETO' => $validated['CDPROJETO'] ?? null,
+            'CDLOCAL' => $validated['CDLOCAL'] ?? null,
+            'NMPLANTA' => $validated['NMPLANTA'] ?? null,
+            'MARCA' => $validated['MARCA'] ?? null,
+            'MODELO' => $validated['MODELO'] ?? null,
+            'DTAQUISICAO' => $validated['DTAQUISICAO'] ?? null,
+            'DTBAIXA' => $validated['DTBAIXA'] ?? null,
             'USUARIO' => $usuarioCriador,
             'DTOPERACAO' => now(),
         ];
@@ -467,11 +475,18 @@ class PatrimonioController extends Controller
         $this->enforceAlmoxRulesOnUpdate($patrimonio->CDLOCAL, $validatedData['CDLOCAL'] ?? $patrimonio->CDLOCAL);
 
         //  VALIDAÇÃO CRÍTICA: Local deve pertencer ao projeto selecionado
-        $this->validateLocalBelongsToProjeto(
+        $localSelecionado = $this->validateLocalBelongsToProjeto(
             $validatedData['CDPROJETO'] ?? $patrimonio->CDPROJETO,
             $validatedData['CDLOCAL'] ?? $patrimonio->CDLOCAL,
             'atualização de patrimônio'
         );
+
+        if ($localSelecionado) {
+            $validatedData['CDLOCAL'] = (int) $localSelecionado->cdlocal;
+            if ($localSelecionado->projeto) {
+                $validatedData['CDPROJETO'] = (int) $localSelecionado->projeto->CDPROJETO;
+            }
+        }
 
         // â Log dos dados antes da atualizaÃ§Ã£o
         Log::info('PatrimÃ´nio UPDATE: Dados antes da atualizaÃ§Ã£o', [
@@ -2462,39 +2477,23 @@ class PatrimonioController extends Controller
             'DEPATRIMONIO' => $data['DEPATRIMONIO'],
         ]);
 
-        // 5) â¨ SINCRONIZAÃÃO PROJETO-LOCAL: Se CDLOCAL foi informado, sincronizar CDPROJETO
+        // 5) Sincroniza??o projeto-local: sempre alinhar projeto e gravar o cdlocal (n?mero do local)
         if (!empty($data['CDLOCAL'])) {
-            $localProjeto = LocalProjeto::find($data['CDLOCAL']);
+            $localProjeto = $this->validateLocalBelongsToProjeto(
+                $data['CDPROJETO'] ?? null,
+                $data['CDLOCAL'],
+                'atualiza??o de patrim?nio'
+            );
+
             if ($localProjeto) {
-                if ($localProjeto->tabfant_id) {
-                    $projeto = Tabfant::find($localProjeto->tabfant_id);
-                    if ($projeto) {
-                        // Sincronizar o CDPROJETO com o projeto do local
-                        $data['CDPROJETO'] = $projeto->CDPROJETO;
-                        Log::info('PatrimÃ´nio: Sincronizando projeto com local', [
-                            'CDLOCAL' => $data['CDLOCAL'],
-                            'CDPROJETO_novo' => $projeto->CDPROJETO,
-                            'local_nome' => $localProjeto->delocal
-                        ]);
-                    }
-                } else {
-                    // Local sem projeto associado - permitir, mas deixar CDPROJETO vazio se necessÃ¡rio
-                    if (empty($data['CDPROJETO'])) {
-                        Log::warning('PatrimÃ´nio: Local sem projeto associado', [
-                            'CDLOCAL' => $data['CDLOCAL'],
-                            'local_nome' => $localProjeto->delocal
-                        ]);
-                    }
+                $data['CDLOCAL'] = (int) $localProjeto->cdlocal;
+                if ($localProjeto->projeto) {
+                    $data['CDPROJETO'] = (int) $localProjeto->projeto->CDPROJETO;
                 }
-            } else {
-                // Local nÃ£o encontrado
-                throw ValidationException::withMessages([
-                    'CDLOCAL' => 'Local nÃ£o encontrado ou invÃ¡lido.'
-                ]);
             }
         }
 
-        Log::info('ð [VALIDATE] Dados finais que serÃ£o retornados', [
+        Log::info('[VALIDATE] Dados finais que ser?o retornados', [
             'final_data' => $data,
         ]);
 
@@ -3071,49 +3070,85 @@ class PatrimonioController extends Controller
      * ⚠️ VALIDAÇÃO CRÍTICA: Garante que o local pertence ao projeto selecionado
      * REGRA DE NEGÓCIO: O projeto define os locais disponíveis!
      */
-    private function validateLocalBelongsToProjeto(?int $cdprojeto, ?int $cdlocal, string $operacao = 'operação'): void
+    private function validateLocalBelongsToProjeto(?int $cdprojeto, ?int $cdlocal, string $operacao = 'operação'): ?LocalProjeto
     {
-        // Se não tem projeto ou local, não valida (pode ser opcional em alguns casos)
-        if (!$cdprojeto || !$cdlocal) {
-            return;
+        // Precisa ao menos do local para validar/regra
+        if (!$cdlocal) {
+            return null;
         }
 
-        // Buscar o projeto (Tabfant) pelo CDPROJETO
-        $projeto = Tabfant::where('CDPROJETO', $cdprojeto)->first();
-        
-        if (!$projeto) {
-            throw ValidationException::withMessages([
-                'CDPROJETO' => "Projeto com código {$cdprojeto} não encontrado no sistema.",
-            ]);
+        // Buscar o projeto (Tabfant) pelo CDPROJETO quando informado
+        $projeto = null;
+        if ($cdprojeto) {
+            $projeto = Tabfant::where('CDPROJETO', $cdprojeto)->first();
+
+            if (!$projeto) {
+                throw ValidationException::withMessages([
+                    'CDPROJETO' => "Projeto com c?digo {$cdprojeto} n?o encontrado no sistema.",
+                ]);
+            }
         }
 
-        // Buscar o local pelo ID (CDLOCAL na interface é o ID na tabela locais_projeto)
-        $local = LocalProjeto::find($cdlocal);
+        // Tentar resolver primeiro como ID (PK) e depois como c?digo (cdlocal)
+        $local = LocalProjeto::with('projeto')->find($cdlocal);
 
         if (!$local) {
+            $query = LocalProjeto::with('projeto')->where('cdlocal', $cdlocal);
+            if ($projeto) {
+                $query->where('tabfant_id', $projeto->id);
+            }
+            $local = $query->first();
+        }
+
+        if (!$local) {
+            // Existe esse c?digo em outro projeto? Mostrar mensagem clara
+            $localOutroProjeto = LocalProjeto::with('projeto')->where('cdlocal', $cdlocal)->first();
+            if ($localOutroProjeto) {
+                $nomeProjetoOutro = $localOutroProjeto->projeto?->NOMEPROJETO ?? 'desconhecido';
+                throw ValidationException::withMessages([
+                    'CDLOCAL' => "ERRO: O c?digo de local '{$cdlocal}' existe, mas pertence ao projeto '{$nomeProjetoOutro}'. Selecione um local associado ao projeto escolhido.",
+                ]);
+            }
+
             throw ValidationException::withMessages([
-                'CDLOCAL' => "Local com ID {$cdlocal} não encontrado no sistema.",
+                'CDLOCAL' => "Local com c?digo/ID {$cdlocal} n?o encontrado no sistema.",
             ]);
         }
 
-        // ⚠️ VERIFICAÇÃO CRÍTICA: O local deve pertencer ao projeto selecionado
-        // tabfant_id do local deve ser igual ao id do projeto
-        if ($local->tabfant_id !== $projeto->id) {
-            $nomeProjetoSelecionado = $projeto->NOMEPROJETO ?? "Projeto {$cdprojeto}";
-            $nomeProjetoDoLocal = $local->projeto ? $local->projeto->NOMEPROJETO : 'desconhecido';
-            $codigoLocal = $local->cdlocal ?? $cdlocal;
-            $nomeLocal = $local->delocal ?? 'Local sem nome';
-
-            throw ValidationException::withMessages([
-                'CDLOCAL' => "❌ ERRO CRÍTICO: O local '{$codigoLocal} - {$nomeLocal}' NÃO pertence ao projeto '{$nomeProjetoSelecionado}'! " .
-                             "Este local pertence ao projeto '{$nomeProjetoDoLocal}'. " .
-                             "REGRA: O projeto define os locais disponíveis. Selecione um local que pertença ao projeto escolhido.",
-            ]);
+        // Se o local tem projeto vinculado, mas nenhum projeto foi informado, usar o projeto do local
+        if (!$projeto && $local->projeto) {
+            $projeto = $local->projeto;
         }
 
-        // ✅ Validação passou: local pertence ao projeto
-        Log::info("✅ Validação OK [{$operacao}]: Local {$cdlocal} ({$local->delocal}) pertence ao projeto {$cdprojeto} ({$projeto->NOMEPROJETO})");
+        // Verifica??o cr?tica: o local precisa estar ligado ao projeto informado
+        if ($projeto) {
+            if (!$local->tabfant_id) {
+                throw ValidationException::withMessages([
+                    'CDLOCAL' => "ERRO: O local '{$local->cdlocal} - {$local->delocal}' n?o est? vinculado a nenhum projeto.",
+                ]);
+            }
+
+            if ($local->tabfant_id !== $projeto->id) {
+                $nomeProjetoSelecionado = $projeto->NOMEPROJETO ?? "Projeto {$cdprojeto}";
+                $nomeProjetoDoLocal = $local->projeto ? $local->projeto->NOMEPROJETO : 'desconhecido';
+                $codigoLocal = $local->cdlocal ?? $cdlocal;
+                $nomeLocal = $local->delocal ?? 'Local sem nome';
+
+                throw ValidationException::withMessages([
+                    'CDLOCAL' => "ERRO CR?TICO: O local '{$codigoLocal} - {$nomeLocal}' N?O pertence ao projeto '{$nomeProjetoSelecionado}'. " .
+                                 "Este local pertence ao projeto '{$nomeProjetoDoLocal}'. " .
+                                 "Regra: o projeto define os locais dispon?veis. Selecione um local que perten?a ao projeto escolhido.",
+                ]);
+            }
+        }
+
+        $codigoProjeto = $projeto ? $projeto->CDPROJETO : 'N/A';
+
+        Log::info("Validação OK [{$operacao}]: Local {$local->cdlocal} ({$local->delocal}) pertence ao projeto {$codigoProjeto}");
+
+        return $local;
     }
+
 }
 
 

@@ -4,6 +4,9 @@
 --}}
 
 @php
+  $userPerfil = auth()->user()?->PERFIL ?? null;
+  $isConsultor = $userPerfil === \App\Models\User::PERFIL_CONSULTOR;
+
   // Define os itens de navegação
   $patrimonioTabs = [
     [
@@ -14,7 +17,6 @@
     [
       'label' => 'Atribuir Cód. Termo',
       'route' => 'patrimonios.atribuir',
-      // Marca ativo quando estiver na rota principal ou em qualquer sub-rota (ex: patrimonios.atribuir.codigos)
       'active' => request()->routeIs('patrimonios.atribuir') || request()->routeIs('patrimonios.atribuir.*'),
     ],
     [
@@ -28,6 +30,12 @@
       'active' => request()->routeIs('relatorios.bens.*'),
     ],
   ];
+
+  if ($isConsultor) {
+    $patrimonioTabs = array_values(array_filter($patrimonioTabs, function ($tab) {
+      return $tab['route'] === 'patrimonios.index';
+    }));
+  }
 @endphp
 
 <div class="bg-gray-100 dark:bg-gray-800/30 border-b border-gray-300 dark:border-gray-600">
@@ -46,19 +54,21 @@
               {{ $tab['label'] }}
             </a>
 
-            {{-- Caixa flutuante (nuvem) fixa na viewport; visível quando open=true --}}
-            <div x-show="open" x-cloak x-transition.opacity x-transition.duration.150 class="fixed z-50" :style="`left: ${x}px; top: ${y}px;`">
-                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl px-1 py-1 w-36">
-                  <div class="flex flex-col gap-1 px-2 py-1">
-                    <a href="{{ route('patrimonios.create') }}" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                      <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                      </svg>
-                      <span>Cadastrar</span>
-                    </a>
-                  </div>
+            @if(!$isConsultor)
+              {{-- Caixa flutuante (nuvem) fixa na viewport; visível quando open=true --}}
+              <div x-show="open" x-cloak x-transition.opacity x-transition.duration.150 class="fixed z-50" :style="`left: ${x}px; top: ${y}px;`">
+                  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl px-1 py-1 w-36">
+                    <div class="flex flex-col gap-1 px-2 py-1">
+                      <a href="{{ route('patrimonios.create') }}" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        <span>Cadastrar</span>
+                      </a>
+                    </div>
+                </div>
               </div>
-            </div>
+            @endif
           </div>
         @elseif($tab['route'] === 'patrimonios.atribuir')
           {{-- Aba especial: submenu com posicionamento dinâmico (fixed na index, relativo em outras páginas) --}}

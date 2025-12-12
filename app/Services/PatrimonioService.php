@@ -382,11 +382,27 @@ class PatrimonioService
         if ($request->filled('cdprojeto')) {
             $val = trim((string) $request->input('cdprojeto'));
             if ($val !== '') {
-                $query->where(function ($q) use ($val) {
-                    $q->where('CDPROJETO', $val)
-                        ->orWhereHas('local.projeto', function ($q2) use ($val) {
-                            $q2->where('CDPROJETO', $val);
-                        });
+                // Otimização: buscar locais do projeto uma única vez e evitar subqueries pesadas por linha
+                $locaisProjeto = collect();
+                try {
+                    $projeto = \App\Models\Tabfant::where('CDPROJETO', $val)->first(['id']);
+                    if ($projeto) {
+                        $locaisProjeto = \App\Models\LocalProjeto::where('tabfant_id', $projeto->id)
+                            ->pluck('cdlocal');
+                    }
+                } catch (\Throwable $e) {
+                    // Loga mas não quebra a busca; cai no fallback apenas por CDPROJETO
+                    Log::warning('Falha ao buscar locais do projeto para filtro', [
+                        'cdprojeto' => $val,
+                        'erro' => $e->getMessage(),
+                    ]);
+                }
+
+                $query->where(function ($q) use ($val, $locaisProjeto) {
+                    $q->where('CDPROJETO', $val);
+                    if ($locaisProjeto->isNotEmpty()) {
+                        $q->orWhereIn('CDLOCAL', $locaisProjeto->all());
+                    }
                 });
             }
         }

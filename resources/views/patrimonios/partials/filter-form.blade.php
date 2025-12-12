@@ -146,6 +146,15 @@
               value: '{{ request('cdprojeto') }}',
               open: false,
               options: @js($projetosOptions),
+              syncValue() {
+                const term = (this.search || '').trim();
+                if (!term) {
+                  this.value = '';
+                  return;
+                }
+                const match = term.match(/^(\d+)/);
+                this.value = match ? match[1] : term;
+              },
               filtered() {
                 const term = (this.search || '').toLowerCase();
                 if (!term.length) return [];
@@ -168,6 +177,10 @@
                 this.search = opt.label;
                 this.open = false;
               },
+              handleManual() {
+                this.syncValue();
+                this.open = false;
+              },
               init() {
                 const current = this.options.find(o => o.code === this.value);
                 if (current) this.search = current.label;
@@ -180,7 +193,9 @@
               type="text"
               x-model="search"
               @focus="open=true"
-              @input="open=search.length>0"
+              @input="open=search.length>0; syncValue()"
+              @keydown.enter.prevent="handleManual()"
+              @blur="syncValue()"
               placeholder="Projeto"
               class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md"
             />

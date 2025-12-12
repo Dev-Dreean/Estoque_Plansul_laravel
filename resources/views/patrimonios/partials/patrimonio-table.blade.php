@@ -1,4 +1,6 @@
 @php
+  $isConsultor = auth()->user()?->PERFIL === \App\Models\User::PERFIL_CONSULTOR;
+
   // Mantemos todas as colunas principais, exceto Cód. Termo e Nº Série que foram solicitados para sair
   $mapBeforeDescricao = [
     'NUMOF' => 'numof',
@@ -26,9 +28,9 @@
 <x-patrimonio-table
   :patrimonios="$patrimonios"
   :columns="$columns"
-  :show-checkbox="true"
+  :show-checkbox="!$isConsultor"
   :show-checkbox-header="false"
-  :show-actions="true"
+  :show-actions="!$isConsultor"
   actions-view="patrimonios.partials.table-actions"
   empty-message="Nenhum patrimônio encontrado"
   density="compact"
