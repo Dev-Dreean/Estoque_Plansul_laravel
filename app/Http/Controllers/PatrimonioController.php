@@ -370,6 +370,13 @@ class PatrimonioController extends Controller
         // Regra especial para almoxarifado central (999915) e em transito (2002)
         $this->enforceAlmoxRulesOnCreate($validated['CDLOCAL'] ?? null);
 
+        //  VALIDAÇÃO CRÍTICA: Local deve pertencer ao projeto selecionado
+        $this->validateLocalBelongsToProjeto(
+            $validated['CDPROJETO'] ?? null,
+            $validated['CDLOCAL'] ?? null,
+            'criação de patrimônio'
+        );
+
         // â VERIFICAR DUPLICATAS: Impedir criar patrimÃ´nio com nÂº que jÃ¡ existe
         $nupatrimonio = (int) $validated['NUPATRIMONIO'];
         $jaExiste = Patrimonio::where('NUPATRIMONIO', $nupatrimonio)->exists();
@@ -458,6 +465,13 @@ class PatrimonioController extends Controller
 
         $validatedData = $this->validatePatrimonio($request);
         $this->enforceAlmoxRulesOnUpdate($patrimonio->CDLOCAL, $validatedData['CDLOCAL'] ?? $patrimonio->CDLOCAL);
+
+        //  VALIDAÇÃO CRÍTICA: Local deve pertencer ao projeto selecionado
+        $this->validateLocalBelongsToProjeto(
+            $validatedData['CDPROJETO'] ?? $patrimonio->CDPROJETO,
+            $validatedData['CDLOCAL'] ?? $patrimonio->CDLOCAL,
+            'atualização de patrimônio'
+        );
 
         // â Log dos dados antes da atualizaÃ§Ã£o
         Log::info('PatrimÃ´nio UPDATE: Dados antes da atualizaÃ§Ã£o', [
@@ -3052,4 +3066,54 @@ class PatrimonioController extends Controller
         $logins = ['beatriz.sc', 'bea.sc', 'beatriz', 'beatriz_sc'];
         return in_array($login, $logins, true);
     }
+
+    /**
+     * ⚠️ VALIDAÇÃO CRÍTICA: Garante que o local pertence ao projeto selecionado
+     * REGRA DE NEGÓCIO: O projeto define os locais disponíveis!
+     */
+    private function validateLocalBelongsToProjeto(?int $cdprojeto, ?int $cdlocal, string $operacao = 'operação'): void
+    {
+        // Se não tem projeto ou local, não valida (pode ser opcional em alguns casos)
+        if (!$cdprojeto || !$cdlocal) {
+            return;
+        }
+
+        // Buscar o projeto (Tabfant) pelo CDPROJETO
+        $projeto = Tabfant::where('CDPROJETO', $cdprojeto)->first();
+        
+        if (!$projeto) {
+            throw ValidationException::withMessages([
+                'CDPROJETO' => "Projeto com código {$cdprojeto} não encontrado no sistema.",
+            ]);
+        }
+
+        // Buscar o local pelo ID (CDLOCAL na interface é o ID na tabela locais_projeto)
+        $local = LocalProjeto::find($cdlocal);
+
+        if (!$local) {
+            throw ValidationException::withMessages([
+                'CDLOCAL' => "Local com ID {$cdlocal} não encontrado no sistema.",
+            ]);
+        }
+
+        // ⚠️ VERIFICAÇÃO CRÍTICA: O local deve pertencer ao projeto selecionado
+        // tabfant_id do local deve ser igual ao id do projeto
+        if ($local->tabfant_id !== $projeto->id) {
+            $nomeProjetoSelecionado = $projeto->NOMEPROJETO ?? "Projeto {$cdprojeto}";
+            $nomeProjetoDoLocal = $local->projeto ? $local->projeto->NOMEPROJETO : 'desconhecido';
+            $codigoLocal = $local->cdlocal ?? $cdlocal;
+            $nomeLocal = $local->delocal ?? 'Local sem nome';
+
+            throw ValidationException::withMessages([
+                'CDLOCAL' => "❌ ERRO CRÍTICO: O local '{$codigoLocal} - {$nomeLocal}' NÃO pertence ao projeto '{$nomeProjetoSelecionado}'! " .
+                             "Este local pertence ao projeto '{$nomeProjetoDoLocal}'. " .
+                             "REGRA: O projeto define os locais disponíveis. Selecione um local que pertença ao projeto escolhido.",
+            ]);
+        }
+
+        // ✅ Validação passou: local pertence ao projeto
+        Log::info("✅ Validação OK [{$operacao}]: Local {$cdlocal} ({$local->delocal}) pertence ao projeto {$cdprojeto} ({$projeto->NOMEPROJETO})");
+    }
 }
+
+
