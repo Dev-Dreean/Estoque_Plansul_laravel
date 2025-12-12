@@ -241,7 +241,6 @@ class UserController extends Controller
             'NMLOGIN' => ['required', 'string', 'max:30', Rule::unique('usuario', 'NMLOGIN')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
             'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', Rule::unique('usuario', 'CDMATRFUNCIONARIO')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
             'PERFIL' => ['required', Rule::in(['ADM', 'USR'])],
-            'role' => ['nullable', Rule::in(['admin', 'consulta'])],
             'SENHA' => ['nullable', 'string', 'min:8'],
             'supervisor_de' => ['nullable', 'array'],
             'supervisor_de.*' => ['string'],
@@ -251,11 +250,6 @@ class UserController extends Controller
         $usuario->NMLOGIN = $request->NMLOGIN;
         $usuario->CDMATRFUNCIONARIO = $request->CDMATRFUNCIONARIO;
         $usuario->PERFIL = $request->PERFIL;
-        
-        // Atualizar role se fornecido
-        if ($request->filled('role')) {
-            $usuario->role = $request->role;
-        }
 
         if ($request->filled('SENHA')) {
             $usuario->SENHA = $request->SENHA;

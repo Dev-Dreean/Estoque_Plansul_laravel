@@ -19,11 +19,7 @@
 
                         <div class="flex items-center justify-start mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                             <a href="{{ route('patrimonios.index') }}" class="mr-4">Cancelar</a>
-                            @if(auth()->user()->podeEditarPatrimonio())
                             <button type="button" id="btnAtualizar" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Atualizar Patrimônio</button>
-                            @else
-                            <span title="Você não tem permissão para editar" class="px-4 py-2 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed">Visualização (somente leitura)</span>
-                            @endif
                         </div>
                     </form>
                 </div>

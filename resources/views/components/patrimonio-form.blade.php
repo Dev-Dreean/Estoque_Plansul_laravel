@@ -21,7 +21,7 @@
 </div>
 @endif
 
-<div x-data="patrimonioForm($el, {{ auth()->user()->isConsulta() ? 'true' : 'false' }})
+<div x-data="patrimonioForm()"
   x-init="if (patSearch) { $nextTick(() => buscarPatrimonio()); }"
   @keydown.enter.prevent="handleEnter($event)" class="space-y-4 text-sm"
   data-patrimonio='{!! json_encode($patrimonio) !!}'
@@ -661,8 +661,6 @@
       }
     }
     return {
-      // == READONLY MODE ==
-      isReadOnly: isReadOnly,
       // == DADOS DO FORMULÁRIO ==
       formData: {
         NUPATRIMONIO: (config.old?.NUPATRIMONIO ?? config.patrimonio?.NUPATRIMONIO) || '',

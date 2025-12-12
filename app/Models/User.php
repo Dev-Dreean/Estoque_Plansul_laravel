@@ -69,7 +69,6 @@ class User extends Authenticatable
         'password_policy_version',
         'theme',
         'supervisor_de',
-        'role',
     ];
 
     protected $casts = [
@@ -264,29 +263,6 @@ class User extends Authenticatable
         return $this->supervisor_de ?? [];
     }
 
-    /**
-     * Verifica se o usuário é consulta (read-only)
-     */
-    public function isConsulta(): bool
-    {
-        return $this->role === 'consulta';
-    }
-
-    /**
-     * Pode editar patrimônios?
-     */
-    public function podeEditarPatrimonio(): bool
-    {
-        return $this->isAdmin() && !$this->isConsulta();
-    }
-
-    /**
-     * Pode deletar patrimônios?
-     */
-    public function podeDeletarPatrimonio(): bool
-    {
-        return $this->isAdmin() && !$this->isConsulta();
-    }
 
 }
 
