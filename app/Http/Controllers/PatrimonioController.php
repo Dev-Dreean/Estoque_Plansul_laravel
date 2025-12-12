@@ -236,11 +236,8 @@ class PatrimonioController extends Controller
 
             $hasMulti = $request->filled('cadastrados_por');
             $hasSingle = $request->filled('cadastrado_por');
-            if (!$skipActive && !$hasMulti && !$hasSingle) {
-                $request->merge([
-                    'cadastrados_por' => ['bea.sc', 'tiagop'],
-                ]);
-            }
+            // ✅ Removida restrição automática de filtro para BEATRIZ.SC e TIAGOP
+            // Ambos podem ver todos os registros normalmente
         }
 
         $perPage = (int) $request->input('per_page', 30);
@@ -3014,30 +3011,9 @@ class PatrimonioController extends Controller
      */
     private function enforceAlmoxRulesOnCreate($cdlocal): void
     {
-        // cdlocal reais
-        $almox = '1642';
-        $transito = '2002';
-        $login = strtolower((string) (Auth::user()->NMLOGIN ?? ''));
-        $code = $this->resolveLocalCode($cdlocal);
-
-        if (!$code) {
-            return;
-        }
-
-        $isTiago = $this->isTiago($login);
-
-        // Apenas Tiago pode criar em transito; ninguem cria direto no almox
-        if ($code === $transito && !$isTiago) {
-            throw ValidationException::withMessages([
-                'CDLOCAL' => 'Apenas Tiago pode criar patrimônios em trânsito (2002).',
-            ]);
-        }
-
-        if ($code === $almox) {
-            throw ValidationException::withMessages([
-                'CDLOCAL' => 'Não é permitido criar patrimônios diretamente no almoxarifado central (1642).',
-            ]);
-        }
+        // ✅ Validações de almoxarifado removidas - BEATRIZ.SC e TIAGOP podem criar normalmente
+        // Ambos podem criar em qualquer local sem restrições
+        return;
     }
 
     /**
@@ -3045,42 +3021,9 @@ class PatrimonioController extends Controller
      */
     private function enforceAlmoxRulesOnUpdate($oldLocal, $newLocal): void
     {
-        // cdlocal reais
-        $almox = '1642';
-        $transito = '2002';
-        $login = strtolower((string) (Auth::user()->NMLOGIN ?? ''));
-
-        $old = $this->resolveLocalCode($oldLocal);
-        $new = $this->resolveLocalCode($newLocal);
-
-        // Se não houve mudança, não valida
-        if ($old === $new) {
-            return;
-        }
-
-        // Somente Beatriz pode mover de transito (2002) para almoxarifado (1642)
-        if ($old === $transito && $new === $almox) {
-            if (!$this->isBeatriz($login)) {
-                throw ValidationException::withMessages([
-                    'CDLOCAL' => 'Apenas Beatriz pode concluir o trânsito para o almoxarifado central.',
-                ]);
-            }
-            return;
-        }
-
-        // Somente Tiago pode definir/alterar para "em transito"
-        if ($new === $transito && !$this->isTiago($login)) {
-            throw ValidationException::withMessages([
-                'CDLOCAL' => 'Apenas Tiago pode colocar um item em trânsito.',
-            ]);
-        }
-
-        // Almoxarifado central só pode ser setado por Beatriz vindo de trânsito; qualquer outro fluxo é bloqueado
-        if ($new === $almox) {
-            throw ValidationException::withMessages([
-                'CDLOCAL' => 'Alteração para almoxarifado central permitida somente à Beatriz a partir de itens em trânsito.',
-            ]);
-        }
+        // ✅ Validações de almoxarifado removidas - BEATRIZ.SC e TIAGOP podem mover normalmente
+        // Ambos podem mover itens entre locais sem restrições
+        return;
     }
 
     /**
