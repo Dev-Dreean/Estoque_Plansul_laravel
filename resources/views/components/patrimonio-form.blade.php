@@ -977,6 +977,10 @@
                 this.localNome = this.nomeLocalBusca;
                 this.localSelecionadoId = local.id;
                 this.locaisEncontrados = [local];
+                // Normalizar para ID do local (evita confusão com cdlocal legado)
+                this.formData.CDLOCAL = String(local.id);
+                // Opcional: manter dropdown alinhado ao projeto
+                this.codigosLocaisFiltrados = [local];
 
                 // Se o local tem projeto associado e ainda não preenchemos, preencher agora
                 if (!this.formData.CDPROJETO && local.CDPROJETO) {
@@ -988,7 +992,7 @@
               } else {
                 // Se não veio no eager loading, buscar via API
                 try {
-                  const localResp = await fetch(`/api/locais/buscar?termo=`, { credentials: 'same-origin' });
+                  const localResp = await fetch(`/api/locais/buscar?termo=&cdprojeto=${encodeURIComponent(this.formData.CDPROJETO || '')}`, { credentials: 'same-origin' });
                   if (localResp.ok) {
                     const todosLocais = await localResp.json();
                     const local = todosLocais.find(l => String(l.id) === String(data.CDLOCAL));
@@ -998,7 +1002,11 @@
                       this.nomeLocalBusca = local.LOCAL || local.delocal || '';
                       this.localNome = this.nomeLocalBusca;
                       this.localSelecionadoId = local.id;
+                this.formData.CDLOCAL = String(local.id);
+                this.codigosLocaisFiltrados = [local];
                       this.locaisEncontrados = [local];
+                      this.codigosLocaisFiltrados = [local];
+                      this.formData.CDLOCAL = String(local.id);
 
                       if (!this.formData.CDPROJETO && local.CDPROJETO) {
                         this.formData.CDPROJETO = local.CDPROJETO;
@@ -1084,7 +1092,8 @@
           return;
         }
         try {
-          const url = `/api/locais/${this.formData.CDPROJETO}`;
+          // Usar endpoint de busca filtrando pelo projeto para evitar rota ambígua /api/locais/{id}
+          const url = `/api/locais/buscar?cdprojeto=${encodeURIComponent(this.formData.CDPROJETO)}&termo=`;
           const locaisResponse = await fetch(url, {
             credentials: 'same-origin',
             headers: {
@@ -1094,6 +1103,8 @@
 
           if (locaisResponse.ok) {
             this.locais = await locaisResponse.json();
+            // Sempre alinhar o dropdown com a lista do projeto
+            this.codigosLocaisFiltrados = this.locais;
 
             // Se já houver um CDLOCAL selecionado, sincroniza o nome exibido
             if (this.formData.CDLOCAL) {
@@ -1103,6 +1114,24 @@
                 this.nomeLocal = found.LOCAL || found.delocal;
                 if (!this.localSelecionadoId) {
                   this.localSelecionadoId = found.id;
+                }
+              } else {
+                // Tentar casar pelo código (caso CDLOCAL esteja guardado como cdlocal legado)
+                const byCode = this.locais.find(x => String(x.cdlocal) === String(this.formData.CDLOCAL) || String(x.cdlocal) === String(this.codigoLocalDigitado));
+                if (byCode) {
+                  this.formData.CDLOCAL = String(byCode.id);
+                  this.localSelecionadoId = byCode.id;
+                  this.codigoLocalDigitado = byCode.cdlocal;
+                  this.nomeLocalBusca = byCode.LOCAL || byCode.delocal || '';
+                  this.localNome = this.nomeLocalBusca;
+                  this.codigosLocaisFiltrados = [byCode];
+                } else {
+                  // Se não pertence ao projeto, limpar para forçar escolha correta
+                  this.formData.CDLOCAL = '';
+                  this.localSelecionadoId = null;
+                  this.codigoLocalDigitado = '';
+                  this.nomeLocalBusca = '';
+                  this.localNome = '';
                 }
               } else {
                 // Local pode estar em outro projeto
@@ -3485,6 +3514,8 @@
                 this.nomeLocalBusca = local.LOCAL || local.delocal || '';
                 this.localNome = this.nomeLocalBusca;
                 this.localSelecionadoId = local.id;
+                this.formData.CDLOCAL = String(local.id);
+                this.codigosLocaisFiltrados = [local];
                 console.log(`✅ [CARREGA EDIÇÃO] Local: ${this.nomeLocalBusca} (código: ${this.codigoLocalDigitado})`);
 
                 // 🆕 SINCRONIZAR PROJETO: Se o local tem projeto diferente do CDPROJETO atual, sincronizar!
