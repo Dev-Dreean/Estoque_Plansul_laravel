@@ -119,7 +119,7 @@
           @endif
         @endforeach
         
-        @if($showActions)
+        @if($showActions && auth()->user()->PERFIL !== 'C')
           <th class="{{ $headerPadding }}">Ações</th>
         @endif
       </tr>
@@ -130,12 +130,15 @@
         @php
           $rowSituacao = trim(preg_replace('/[\r\n]+/', ' ', (string)($item->SITUACAO ?? '')));
           $rowPatrimonio = $item->NUPATRIMONIO ?? $item->NUSEQPATR ?? $item->id;
+          $isConsultor = auth()->user()->PERFIL === 'C';
         @endphp
         <tr data-row-id="{{ $item->NUSEQPATR ?? $item->id }}" data-situacao="{{ $rowSituacao }}" data-patrimonio="{{ $rowPatrimonio }}" class="tr-hover text-sm {{ $clickable ? 'cursor-pointer' : '' }}"
-          @if($clickable && $onRowClick)
+          @if($clickable && $onRowClick && !$isConsultor)
             @click="window.location.href='{{ str_replace(':id', $item->NUSEQPATR ?? $item->id, $onRowClick) }}'"
-          @elseif($clickable)
+          @elseif($clickable && !$isConsultor)
             @click="window.location.href='{{ route('patrimonios.edit', $item) }}'"
+          @elseif($clickable && $isConsultor)
+            @click="openModalConsulta({{ $item->NUSEQPATR ?? $item->id }})"
           @endif
         >
           @if($showCheckbox)
@@ -289,7 +292,7 @@
             @endif
           @endforeach
           
-          @if($showActions)
+          @if($showActions && auth()->user()->PERFIL !== 'C')
             <td class="{{ $headerPadding }}" @click.stop>
               @if($actionsView)
                 @include($actionsView, ['item' => $item])

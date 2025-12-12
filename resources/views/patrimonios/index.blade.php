@@ -613,9 +613,169 @@
             row.style.transform = 'scale(0.985)';
             setTimeout(() => row.remove(), 320);
           },
+          openModalConsulta(id) {
+            // Fetch dados do patrimônio via API
+            fetch(`/api/patrimonios/id/${id}`)
+              .then(res => {
+                if (!res.ok) {
+                  throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+              })
+              .then(data => {
+                if (data.success && data.patrimonio) {
+                  this.showConsultaModal(data.patrimonio);
+                } else {
+                  console.error('Erro na resposta:', data);
+                  alert(data.error || 'Erro ao carregar dados do patrimônio');
+                }
+              })
+              .catch(err => {
+                console.error('[PATRI] Erro ao buscar patrimônio:', err);
+                alert('Erro ao buscar patrimônio: ' + err.message);
+              });
+          },
+          showConsultaModal(patrimonio) {
+            // Preencher modal com dados
+            const modal = document.querySelector('#modal-consulta');
+            if (!modal) {
+              console.error('[PATRI] Modal não encontrado');
+              return;
+            }
+            
+            console.log('[PATRI] Preenchendo modal com:', patrimonio);
+            
+            // Preencher campos com acesso correto às propriedades
+            const campos = {
+              'consulta-nupatrimonio': patrimonio.NUPATRIMONIO || '-',
+              'consulta-depatrimonio': patrimonio.DEPATRIMONIO || '-',
+              'consulta-codobjeto': patrimonio.CODOBJETO || '-',
+              'consulta-modelo': patrimonio.MODELO || '-',
+              'consulta-marca': patrimonio.MARCA || '-',
+              'consulta-projeto': patrimonio.projeto?.NOMEPROJETO || patrimonio.projeto?.CDPROJETO || '-',
+              'consulta-local': patrimonio.local?.delocal || '-',
+              'consulta-responsavel': patrimonio.funcionario?.NMFUNCIONARIO || patrimonio.CDMATRFUNCIONARIO || '-',
+              'consulta-situacao': patrimonio.SITUACAO || '-',
+              'consulta-usuario': patrimonio.USUARIO || '-',
+              'consulta-dtaquisicao': patrimonio.DTAQUISICAO ? new Date(patrimonio.DTAQUISICAO).toLocaleDateString('pt-BR') : '-',
+              'consulta-dtoperacao': patrimonio.DTOPERACAO ? new Date(patrimonio.DTOPERACAO).toLocaleString('pt-BR') : '-',
+            };
+            
+            // Log detalhado
+            console.log('[PATRI] Projeto:', patrimonio.projeto);
+            console.log('[PATRI] Local:', patrimonio.local);
+            console.log('[PATRI] Funcionário:', patrimonio.funcionario);
+            
+            for (const [id, valor] of Object.entries(campos)) {
+              const el = document.querySelector(`#${id}`);
+              if (el) {
+                el.textContent = String(valor);
+                console.log(`[PATRI] Campo #${id}: ${valor}`);
+              } else {
+                console.warn(`[PATRI] Elemento #${id} não encontrado`);
+              }
+            }
+            
+            // Mostrar modal
+            modal.style.display = 'flex';
+            console.log('[PATRI] Modal aberto com sucesso');
+          },
+          fecharConsultaModal() {
+            const modal = document.querySelector('#modal-consulta');
+            if (modal) modal.style.display = 'none';
+          },
         };
       }
     </script>
+
+    {{-- MODAL DE CONSULTA PARA CONSULTORES --}}
+    <div id="modal-consulta" class="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-2 sm:p-4" style="display: none;">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full h-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+        {{-- Header --}}
+        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4 flex justify-between items-center">
+          <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">📋 Consulta de Patrimônio</h3>
+          <button onclick="patrimoniosIndex().fecharConsultaModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none">×</button>
+        </div>
+
+        {{-- Content --}}
+        <div class="px-4 sm:px-6 py-6 space-y-6">
+          {{-- Identificação --}}
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Nº Patrimônio</p>
+              <p id="consulta-nupatrimonio" class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white min-h-7 break-words">-</p>
+            </div>
+            <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Código Objeto</p>
+              <p id="consulta-codobjeto" class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white min-h-7 break-words">-</p>
+            </div>
+            <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Situação</p>
+              <p id="consulta-situacao" class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white min-h-7 break-words">-</p>
+            </div>
+          </div>
+
+          {{-- Descrição --}}
+          <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+            <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Descrição</p>
+            <p id="consulta-depatrimonio" class="text-base sm:text-lg text-gray-900 dark:text-white break-words min-h-6">-</p>
+          </div>
+
+          {{-- Características --}}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Modelo</p>
+              <p id="consulta-modelo" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
+            </div>
+            <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Marca</p>
+              <p id="consulta-marca" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
+            </div>
+          </div>
+
+          {{-- Localização --}}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Projeto</p>
+              <p id="consulta-projeto" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
+            </div>
+            <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Local</p>
+              <p id="consulta-local" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
+            </div>
+          </div>
+
+          {{-- Responsável --}}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Responsável</p>
+              <p id="consulta-responsavel" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
+            </div>
+            <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Criado por</p>
+              <p id="consulta-usuario" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
+            </div>
+          </div>
+
+          {{-- Datas --}}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Data de Aquisição</p>
+              <p id="consulta-dtaquisicao" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
+            </div>
+            <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Data de Operação</p>
+              <p id="consulta-dtoperacao" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
+            </div>
+          </div>
+        </div>
+
+        {{-- Footer --}}
+        <div class="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4 flex justify-end gap-2">
+          <button onclick="patrimoniosIndex().fecharConsultaModal()" class="px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 transition text-sm sm:text-base">Fechar</button>
+        </div>
+      </div>
+    </div>
   @endpush
 </x-app-layout>
 

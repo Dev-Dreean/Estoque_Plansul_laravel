@@ -45,22 +45,8 @@ class PatrimonioService
 
         $query = Patrimonio::with(['funcionario', 'local.projeto', 'creator']);
 
-        if (!$user->isGod() && $user->PERFIL !== 'ADM') {
-            $nmLogin = (string) ($user->NMLOGIN ?? '');
-            $nmUser = (string) ($user->NOMEUSER ?? '');
-            $supervisionados = $user->getSupervisionados();
-
-            $query->where(function ($q) use ($user, $nmLogin, $nmUser, $supervisionados) {
-                $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser])
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', ['SISTEMA']);
-
-                if (!empty($supervisionados)) {
-                    $q->orWhereIn(DB::raw('LOWER(USUARIO)'), array_map('strtolower', $supervisionados));
-                }
-            });
-        }
+        // TODOS podem ver TODOS os patrimônios (sem restrição de supervisão)
+        // Filtros aplicados apenas via formulário de busca
 
         $this->aplicarFiltroCadastradores($query, $request, $user);
         $this->aplicarFiltrosPrincipais($query, $request);
@@ -76,26 +62,8 @@ class PatrimonioService
 
     public function listarCadastradoresParaFiltro(User $user): Collection
     {
-        $query = Patrimonio::query();
-
-        if (!($user->isGod() || $user->PERFIL === 'ADM')) {
-            $nmLogin = (string) ($user->NMLOGIN ?? '');
-            $nmUser = (string) ($user->NOMEUSER ?? '');
-            $supervisionados = $user->getSupervisionados();
-
-            $query->where(function ($q) use ($user, $nmLogin, $nmUser, $supervisionados) {
-                $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser])
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', ['SISTEMA']);
-
-                if (!empty($supervisionados)) {
-                    $q->orWhereIn(DB::raw('LOWER(USUARIO)'), array_map('strtolower', $supervisionados));
-                }
-            });
-        }
-
-        $logins = $query
+        // TODOS podem ver TODOS os cadastradores (sem restrição de supervisão)
+        $logins = Patrimonio::query()
             ->selectRaw("DISTINCT COALESCE(NULLIF(TRIM(USUARIO), ''), 'SISTEMA') as login")
             ->pluck('login')
             ->filter()

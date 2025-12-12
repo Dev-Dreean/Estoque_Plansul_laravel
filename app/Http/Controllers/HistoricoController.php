@@ -13,8 +13,6 @@ class HistoricoController extends Controller
     public function index(Request $request): View
     {
         $query = HistoricoMovimentacao::query()
-            // Vincula patrimônio para aplicar mesma regra de visibilidade (responsável OU criador)
-            ->leftJoin('patr as p', 'p.NUPATRIMONIO', '=', 'movpartr.NUPATR')
             ->leftJoin('usuario as u1', function ($join) {
                 $join->on(
                     DB::raw("CONVERT(u1.NMLOGIN USING utf8mb4) COLLATE utf8mb4_unicode_ci"),
@@ -37,23 +35,8 @@ class HistoricoController extends Controller
                 'u2.NOMEUSER as NM_CO_AUTOR'
             );
 
-        // Filtra histórico por usuário (exceto Admin e Super Admin)
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-        if ($user && !$user->isGod() && ($user->PERFIL ?? null) !== 'ADM') {
-            $nmLogin = trim((string)($user->NMLOGIN ?? ''));
-            $nmUser  = trim((string)($user->NOMEUSER ?? ''));
-            $mat     = (string)($user->CDMATRFUNCIONARIO ?? '');
-
-            $query->where(function ($q) use ($nmLogin, $nmUser, $mat) {
-                $q->whereRaw('LOWER(movpartr.USUARIO) = LOWER(?)', [$nmLogin])
-                    ->orWhere(function ($q2) use ($nmLogin, $nmUser, $mat) {
-                        $q2->where('p.CDMATRFUNCIONARIO', $mat)
-                            ->orWhereRaw('LOWER(p.USUARIO) = LOWER(?)', [$nmLogin])
-                            ->orWhereRaw('LOWER(p.USUARIO) = LOWER(?)', [$nmUser]);
-                    });
-            });
-        }
+        // TODOS podem ver TODOS os lançamentos (sem restrição de supervisão)
+        // Filtros aplicados apenas via formulário de busca
 
         if ($request->filled('nupatr')) {
             $query->where('NUPATR', $request->nupatr);
@@ -61,8 +44,7 @@ class HistoricoController extends Controller
         if ($request->filled('codproj')) {
             $query->where('CODPROJ', $request->codproj);
         }
-        // Filtro por usuário (apenas Admin e Super Admin)
-        if ($request->filled('usuario') && $user && ($user->isGod() || ($user->PERFIL ?? null) === 'ADM')) {
+        if ($request->filled('usuario')) {
             $query->where('movpartr.USUARIO', 'like', '%' . $request->usuario . '%');
         }
         if ($request->filled('tipo')) {

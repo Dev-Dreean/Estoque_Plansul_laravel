@@ -819,18 +819,7 @@ class PatrimonioController extends Controller
                 return response()->json(['error' => 'NÃ£o autorizado'], 403);
             }
 
-            // Super Admin (SUP) e Admin (ADM) t?m acesso total
-            if ($user->PERFIL === 'SUP' || $user->PERFIL === 'ADM') {
-                return response()->json($patrimonio);
-            }
-
-            // Acesso especial para Tiago/Beatriz/Bruno (fluxo almox/transito)
-            $loginLower = strtolower((string) ($user->NMLOGIN ?? ''));
-            if (in_array($loginLower, ['tiagop', 'tiago', 'tiago.sc', 'tiago.p', 'tiago_p', 'beatriz.sc', 'bea.sc', 'beatriz', 'beatriz_sc', 'bruno'], true)) {
-                return response()->json($patrimonio);
-            }
-
-            // Demais autenticados: permitir (evita 403 no modal)
+            // TODOS os usuários autenticados podem ver patrimônio (sem restrição de supervisão)
             return response()->json($patrimonio);
         } catch (\Throwable $e) {
             Log::error('Erro ao buscar patrimÃ´nio por nÃºmero: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
@@ -838,6 +827,31 @@ class PatrimonioController extends Controller
         }
     }
 
+    /**
+     * Buscar patrimônio por ID (NUSEQPATR) para modal de consultor
+     * Usado no modal de leitura (PERFIL='C')
+     */
+    public function buscarPorId($id): JsonResponse
+    {
+        try {
+            $patrimonio = Patrimonio::with(['local', 'local.projeto', 'funcionario'])->where('NUSEQPATR', $id)->first();
+            
+            if (!$patrimonio) {
+                return response()->json(['success' => false, 'error' => 'Patrimônio não encontrado'], 404);
+            }
+
+            // TODOS os usuários autenticados podem ver patrimônio (sem restrição de supervisão)
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['success' => false, 'error' => 'Não autenticado'], 403);
+            }
+
+            return response()->json(['success' => true, 'patrimonio' => $patrimonio]);
+        } catch (\Throwable $e) {
+            Log::error('🔴 [PATRIMONIOS] Erro buscarPorId: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return response()->json(['success' => false, 'error' => 'Erro ao buscar patrimônio'], 500);
+        }
+    }
 
     public function bulkSituacao(Request $request): JsonResponse
     {
