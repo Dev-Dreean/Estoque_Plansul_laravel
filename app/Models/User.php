@@ -35,6 +35,7 @@ class User extends Authenticatable
     // Constantes de perfis
     public const PERFIL_USUARIO = 'USR';
     public const PERFIL_ADMIN = 'ADM';
+    public const PERFIL_CONSULTOR = 'C';
 
     /**
      * @var string A tabela do banco de dados associada a este Model.
@@ -262,7 +263,6 @@ class User extends Authenticatable
     {
         return $this->supervisor_de ?? [];
     }
-
 
 }
 

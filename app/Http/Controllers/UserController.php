@@ -182,7 +182,7 @@ class UserController extends Controller
             'NOMEUSER' => ['required', 'string', 'max:80'],
             'NMLOGIN' => ['required', 'string', 'max:30', 'unique:usuario,NMLOGIN'],
             'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', 'unique:usuario,CDMATRFUNCIONARIO'],
-            'PERFIL' => ['required', \Illuminate\Validation\Rule::in(['ADM', 'USR'])],
+            'PERFIL' => ['required', \Illuminate\Validation\Rule::in(['ADM', 'USR', 'C'])], 
         ]);
 
         // Senha provisória forte: prefixo 'Plansul@' + 6 números aleatórios
@@ -240,7 +240,7 @@ class UserController extends Controller
             'NOMEUSER' => ['required', 'string', 'max:80'],
             'NMLOGIN' => ['required', 'string', 'max:30', Rule::unique('usuario', 'NMLOGIN')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
             'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', Rule::unique('usuario', 'CDMATRFUNCIONARIO')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
-            'PERFIL' => ['required', Rule::in(['ADM', 'USR'])],
+            'PERFIL' => ['required', Rule::in(['ADM', 'USR', 'C'])],
             'SENHA' => ['nullable', 'string', 'min:8'],
             'supervisor_de' => ['nullable', 'array'],
             'supervisor_de.*' => ['string'],

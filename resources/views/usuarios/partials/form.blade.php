@@ -47,10 +47,12 @@
             class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm"
             required>
             <option value="USR" @selected(old('PERFIL', $usuario->PERFIL ?? '' )=='USR' )>Usuário Padrão</option>
+            <option value="C" @selected(old('PERFIL', $usuario->PERFIL ?? '' )=='C' )>Consultor (Somente Leitura)</option>
             <option value="ADM" @selected(old('PERFIL', $usuario->PERFIL ?? '' )=='ADM' )>Administrador</option>
         </select>
         <p class="text-xs text-gray-500 mt-1">
             <span x-show="perfil === 'USR'">Usuário comum com acesso apenas às telas Controle de Patrimônio e Gráficos.</span>
+            <span x-show="perfil === 'C'">Consultor com acesso apenas para visualizar patrimônios. Não pode editar, deletar ou criar novos registros.</span>
             <span x-show="perfil === 'ADM'">Administrador com acesso a todas as telas.</span>
         </p>
     </div>

@@ -10,6 +10,7 @@ class PatrimonioPolicy
     /**
      * Verifica permissões antes das policies específicas
      * Admin tem acesso total
+     * Consultor (C) pode visualizar mas não editar/deletar
      */
     public function before(User $user, string $ability): bool|null
     {
@@ -19,6 +20,11 @@ class PatrimonioPolicy
 
         if ($user->PERFIL === 'ADM' && $ability !== 'delete') {
             return true;
+        }
+
+        // Consultor: pode apenas visualizar (view, viewAny)
+        if ($user->PERFIL === 'C') {
+            return in_array($ability, ['view', 'viewAny', 'viewDetalhes']) ? true : false;
         }
 
         return null;

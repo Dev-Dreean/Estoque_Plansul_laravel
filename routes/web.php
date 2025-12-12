@@ -160,6 +160,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::post('/patrimonios/bulk-situacao', [PatrimonioController::class, 'bulkSituacao'])->name('patrimonios.bulk-situacao');
     Route::get('/api/patrimonios/disponiveis', [PatrimonioController::class, 'getPatrimoniosDisponiveis'])->name('api.patrimonios.disponiveis');
     Route::get('/api/patrimonios/buscar/{numero}', [PatrimonioController::class, 'buscarPorNumero'])->name('api.patrimonios.buscar');
+    Route::get('/api/patrimonios/id/{id}', [PatrimonioController::class, 'buscarPorId'])->name('api.patrimonios.buscarId');
     Route::get('/api/patrimonios/pesquisar', [PatrimonioController::class, 'pesquisar'])->name('api.patrimonios.pesquisar');
     Route::get('/api/patrimonios/listar-cadastradores', [PatrimonioController::class, 'listarCadradores'])->name('api.patrimonios.listar-cadastradores');
     // Autocomplete Usuários
