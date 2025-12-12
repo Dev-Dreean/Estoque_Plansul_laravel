@@ -55,6 +55,21 @@
         </p>
     </div>
 
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+        <x-input-label for="role" value="Tipo de Acesso" />
+        <select
+            id="role"
+            name="role"
+            class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+            <option value="">-- Sem restrição --</option>
+            <option value="admin" @selected(old('role', $usuario->role ?? '' ) == 'admin')>Admin (editar/deletar)</option>
+            <option value="consulta" @selected(old('role', $usuario->role ?? '' ) == 'consulta')>🔍 Consulta (somente leitura)</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1">
+            <strong>Consulta:</strong> Pode visualizar patrimônios e detalhes, mas NÃO pode editar, deletar ou criar novos registros.
+        </p>
+    </div>
+
     <div>
         @if(isset($usuario))
         <x-input-label for="SENHA" value="Senha" />

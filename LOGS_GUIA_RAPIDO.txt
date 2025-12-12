@@ -1,0 +1,121 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                    GUIA DE LOGS OTIMIZADOS - PATRIMONIO FORM                    ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+📋 EMOJIS E SIGNIFICADOS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ [CONTEXTO] - Operação realizada com SUCESSO
+   Exemplo: ✅ [BUSCA_CODIGO] Encontrado: 287 - AR CONDICIONADO 12000 BTUS TCL
+   Ação: Nada fazer, operação completada normalmente
+
+⚠️ [CONTEXTO] - AVISO: Algo funcionou mas não como esperado (sem erro crítico)
+   Exemplo: ⚠️ [BUSCA_CODIGO] Nenhum código encontrado para: "xyz"
+   Ação: Pode indicar dados ausentes, mas operação continua
+
+ℹ️ [CONTEXTO] - INFORMAÇÃO: Log informativo para rastreamento
+   Exemplo: ℹ️ [LISTA_CODIGOS] Buscando: "ar condicionado"
+   Ação: Apenas rastreamento, ignora a menos que haja erro depois
+
+❌ [CONTEXTO] - ERRO: Falha na operação, requer atenção
+   Exemplo: ❌ [BUSCA_CODIGO] HTTP 404 - Falha ao buscar códigos
+   Ação: VERIFIQUE - pode indicar API problema, servidor down, etc.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 CONTEXTOS PRINCIPAIS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[BUSCA_CODIGO]
+   Busca por um código específico de patrimônio
+   Estados esperados:
+   ✅ Encontrado: Código localizado, preenchido automaticamente
+   ⚠️ Nenhum encontrado: Permite criar novo código manualmente
+   ❌ Erro HTTP: Servidor não respondeu, verifique conexão
+
+[LISTA_CODIGOS]  
+   Busca autocomplete de códigos enquanto digita
+   Estados esperados:
+   ✅ Encontrados N resultados: Dropdown com opções
+   ⚠️ 0 resultados: Nada mostra no dropdown
+   ❌ Erro de conexão: Vermeço abaixo
+
+[CARREGA_EDIÇÃO]
+   Carregamento do formulário ao clicar em patrimônio
+   Estados esperados:
+   ✅ Projeto: X - Y
+   ✅ Local: X - Y
+   ⚠️ Desincronização detectada (raro, sistema corrige automaticamente)
+   ❌ Local NÃO ENCONTRADO: Patrimônio corrompido
+
+[BUSCA_LOCAL]
+   Busca por local no campo de local
+   Estados esperados:
+   ✅ Local encontrado: Preenchido com dados
+   ⚠️ Nenhum encontrado: Permite criar novo
+   ❌ Erro: Problema na API
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🆘 TROUBLESHOOTING - ERROS COMUNS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ERRO: ❌ [BUSCA_CODIGO] Erro de conexão: TypeError: Failed to fetch
+CAUSA: Servidor Laravel desligou ou não está respondendo
+SOLUÇÃO: 
+  1. Verificar se servidor está rodando em http://localhost:8000
+  2. Terminal deve mostrar "Server running on [http://127.0.0.1:8000]"
+  3. Se não está rodando, execute: php artisan serve --port=8000
+
+ERRO: ❌ [LISTA_CODIGOS] HTTP 404 - Falha ao buscar códigos
+CAUSA: Endpoint /api/codigos/pesquisar não respondeu
+SOLUÇÃO:
+  1. Verificar se rota existe em routes/web.php
+  2. Verificar se método pesquisarCodigos existe em PatrimonioController
+  3. Recarregar página (Ctrl+F5 hard refresh)
+
+ERRO: ⚠️ [BUSCA_CODIGO] Nenhum código encontrado para: "xyz"
+CAUSA: Código não existe no banco de dados
+SOLUÇÃO:
+  1. Normal - sistema permite criar novo código
+  2. Se precisar código específico, criá-lo em Termo/Código
+  3. Digitar apenas descrição válida (ex: "AR CONDICIONADO")
+
+ERRO: ⚠️ [CARREGA_EDIÇÃO] Local não tem projeto
+CAUSA: Local no banco sem projeto associado
+SOLUÇÃO:
+  1. Raro - pode indicar corrupção de dados
+  2. Contactar admin para verificar banco
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 COMO ATIVAR OS LOGS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Abrir Developer Tools (F12)
+2. Ir para aba "Console"
+3. Executar qualquer ação no formulário
+4. Logs aparecerão com cores e emojis
+5. Erros aparecem em VERMELHO com ❌
+6. Sucessos aparecem em VERDE com ✅
+7. Avisos aparecem em AMARELO com ⚠️
+
+DICA: Use Ctrl+L para limpar console entre testes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ MUDANÇAS IMPLEMENTADAS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Logger centralizado com emojis padronizados
+✅ Contextos claramente identificados [ENTRE_COLCHETES]
+✅ Mensagens descritivas em português
+✅ Erros estruturados: tipo, mensagem, primeira linha do stack
+✅ HTTP errors com status code explícito
+✅ Logs informativos para rastreamento (ℹ️)
+✅ Avisos para situações ⚠️ que não são erros críticos
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Data: 11 de dezembro de 2025
+Versão: 1.0 - Logs Otimizados

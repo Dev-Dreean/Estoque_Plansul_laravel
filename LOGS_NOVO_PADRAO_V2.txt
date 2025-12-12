@@ -1,0 +1,165 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                     LOGS OTIMIZADOS - NOVO PADRÃO VISUAL                    ║
+║                        v2.0 - Compacto e Funcional                          ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+🎯 NOVO FORMATO DOS LOGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Os logs agora são MUITO mais compactos e visuais:
+
+┌─ ANTES (Poluído):
+│  ❌ [BUSCA_CODIGO] ERRO DE CONEXÃO: TypeError: Failed to fetch
+│  {tipo: "TypeError", mensagem: "Failed to fetch", primeira_linha: "..."}
+│
+└─ DEPOIS (Otimizado):
+   ════════════════════════════════════════════════════════════════════
+   📥 CARREGANDO PATRIMÔNIO #14244
+   ════════════════════════════════════════════════════════════════════
+     ✅ Projeto: 197 - PLANSUL - MG
+     ✅ Local: NOVO ESCRITÓRIO (2029)
+     ✅ Código: AR CONDICIONADO 12000 BTUS TCL
+     ✅ Funcionário: 133838 - RODRIGO BEDA GUALDA
+     ✅ ✨ Carregamento concluído!
+   ════════════════════════════════════════════════════════════════════
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 MÉTODOS DISPONÍVEIS NO LOGGER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. logger.startBlock('📥 CARREGANDO PATRIMÔNIO #123')
+   → Abre um bloco com borda visual
+   Uso: No início de uma operação principal
+
+2. logger.success('', 'Projeto: 197 - PLANSUL')
+   → Mostra ✅ em VERDE (sem contexto, uso simples)
+   Uso: Quando algo funciona perfeitamente
+
+3. logger.warn('', 'Código não encontrado')
+   → Mostra ⚠️ em AMARELO (situação esperada)
+   Uso: Quando algo não está disponível mas normal
+
+4. logger.error('', 'Erro ao carregar código', erro)
+   → Mostra ❌ em VERMELHO (crítico)
+   Uso: Quando falha de verdade, passa o objeto erro
+
+5. logger.httpError('', 404, 'Falha ao buscar')
+   → Mostra HTTP status code
+   Uso: Quando API retorna erro
+
+6. logger.prop('CDLOCAL', 2029)
+   → Mostra 📌 CDLOCAL: 2029
+   Uso: Para exibir propriedades (raramente usado)
+
+7. logger.endBlock()
+   → Fecha o bloco com borda
+   Uso: No final de uma operação principal
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎨 CORES E ESTILOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Verde (#22c55e) - Sucesso: Operação realizada com sucesso
+⚠️ Amarelo (#f59e0b) - Aviso: Situação esperada mas não ideal
+❌ Vermelho (#ef4444) - Erro: Falha que requer atenção
+═══ Azul (#3b82f6) - Blocos: Delimita inicio/fim de operação
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 EXEMPLOS DE SAÍDA REAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+QUANDO CLICA EM PATRIMÔNIO PARA EDITAR:
+─────────────────────────────────────
+
+════════════════════════════════════════════════════════════════════
+📥 CARREGANDO PATRIMÔNIO #14244
+════════════════════════════════════════════════════════════════════
+  ✅ Projeto: 197 - PLANSUL - MG
+  ✅ Local: NOVO ESCRITÓRIO (2029)
+  ✅ Código: AR CONDICIONADO 12000 BTUS TCL
+  ✅ Funcionário: 133838 - RODRIGO BEDA GUALDA
+  ✅ ✨ Carregamento concluído!
+════════════════════════════════════════════════════════════════════
+
+
+QUANDO DIGITA DESCRIÇÃO E SISTEMA BUSCA CÓDIGO:
+────────────────────────────────────────────────
+
+  ✅ 5 código(s) encontrado(s)
+
+ou
+
+  ⚠️ Código não encontrado: "xyz"
+
+
+QUANDO ERRO CRÍTICO:
+──────────────────
+
+  ❌ Erro ao buscar código
+  {tipo: "TypeError", mensagem: "Failed to fetch"}
+
+
+ERRO HTTP:
+──────────
+
+  ❌ HTTP 404: Falha ao buscar codigos
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ BENEFÍCIOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ LIMPEZA: Sem console poluído com informações desnecessárias
+✅ CLAREZA: Cada linha tem propósito claro (sucesso, aviso, erro)
+✅ VISUALIZAÇÃO: Blocos delimitados tornam fácil acompanhar o fluxo
+✅ CORES: Código de cores ajuda identificar status rapidamente
+✅ COMPACTO: Menos logs = menos para ler e entender
+✅ FUNCIONAL: Mantém informações essenciais e tira o resto
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 COMO USAR NO SEU CÓDIGO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Exemplo em uma função:
+
+    async minhaFuncao() {
+      this.logger.startBlock('🔍 BUSCANDO DADOS');
+      
+      try {
+        // seu código aqui
+        
+        if (resultado) {
+          this.logger.success('', 'Dados carregados com sucesso');
+        } else {
+          this.logger.warn('', 'Nenhum resultado encontrado');
+        }
+        
+        this.logger.endBlock();
+      } catch (e) {
+        this.logger.error('', 'Falha na operação', e);
+        this.logger.endBlock();
+      }
+    }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 MUDANÇAS IMPLEMENTADAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Logger totalmente reescrito com métodos compactos
+✅ Blocos visuais delimitados com ════════════════════
+✅ Cores CSS para diferenciação visual rápida
+✅ Sem logs informativos (ℹ️ esses eram poluição)
+✅ Função carregarDadosEdicao() completamente otimizada
+✅ Buscas de código com feedback conciso
+✅ Estrutura pronta para reutilização em outras funções
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Data: 11 de dezembro de 2025
+Versão: 2.0 - Otimizado
+Status: ✅ Pronto para uso

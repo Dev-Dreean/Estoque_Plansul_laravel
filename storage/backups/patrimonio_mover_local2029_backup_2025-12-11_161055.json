@@ -1,0 +1,4615 @@
+{
+    "92": {
+        "NUSEQPATR": 2068,
+        "NUPATRIMONIO": 2547,
+        "DEPATRIMONIO": "MONITOR 17 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "391": {
+        "NUSEQPATR": 5705,
+        "NUPATRIMONIO": 5620,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "1": {
+        "NUSEQPATR": 1441,
+        "NUPATRIMONIO": 5641,
+        "DEPATRIMONIO": "MUNITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "2": {
+        "NUSEQPATR": 1442,
+        "NUPATRIMONIO": 5643,
+        "DEPATRIMONIO": "MUNITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "518": {
+        "NUSEQPATR": 8237,
+        "NUPATRIMONIO": 5652,
+        "DEPATRIMONIO": "MINI DELL",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "4": {
+        "NUSEQPATR": 1453,
+        "NUPATRIMONIO": 5726,
+        "DEPATRIMONIO": "MINI DELL",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "6": {
+        "NUSEQPATR": 1465,
+        "NUPATRIMONIO": 5728,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "217": {
+        "NUSEQPATR": 3062,
+        "NUPATRIMONIO": 6802,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "517": {
+        "NUSEQPATR": 8169,
+        "NUPATRIMONIO": 6886,
+        "DEPATRIMONIO": "MICROCOMPUTADOR INTEL FULL OFICCE E7500",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "0": {
+        "NUSEQPATR": 1440,
+        "NUPATRIMONIO": 6969,
+        "DEPATRIMONIO": "MUNITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "151": {
+        "NUSEQPATR": 2249,
+        "NUPATRIMONIO": 7521,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "526": {
+        "NUSEQPATR": 8872,
+        "NUPATRIMONIO": 7522,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "25": {
+        "NUSEQPATR": 2000,
+        "NUPATRIMONIO": 7526,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "392": {
+        "NUSEQPATR": 5706,
+        "NUPATRIMONIO": 7569,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "82": {
+        "NUSEQPATR": 2058,
+        "NUPATRIMONIO": 7573,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "534": {
+        "NUSEQPATR": 8880,
+        "NUPATRIMONIO": 7596,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "83": {
+        "NUSEQPATR": 2059,
+        "NUPATRIMONIO": 7598,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "26": {
+        "NUSEQPATR": 2001,
+        "NUPATRIMONIO": 7659,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "65": {
+        "NUSEQPATR": 2040,
+        "NUPATRIMONIO": 7661,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "27": {
+        "NUSEQPATR": 2002,
+        "NUPATRIMONIO": 7662,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "11": {
+        "NUSEQPATR": 1894,
+        "NUPATRIMONIO": 7728,
+        "DEPATRIMONIO": "SWITCH BACKUP",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "8": {
+        "NUSEQPATR": 1799,
+        "NUPATRIMONIO": 7749,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "257": {
+        "NUSEQPATR": 5005,
+        "NUPATRIMONIO": 8489,
+        "DEPATRIMONIO": "MONITOR DELL",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "576": {
+        "NUSEQPATR": 10722,
+        "NUPATRIMONIO": 8506,
+        "DEPATRIMONIO": "MONITOR 19,5 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "3": {
+        "NUSEQPATR": 1447,
+        "NUPATRIMONIO": 8534,
+        "DEPATRIMONIO": "SWITCH FAST ETHERNET",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "5": {
+        "NUSEQPATR": 1458,
+        "NUPATRIMONIO": 8539,
+        "DEPATRIMONIO": "CPU LENOVO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "220": {
+        "NUSEQPATR": 3163,
+        "NUPATRIMONIO": 8540,
+        "DEPATRIMONIO": "CPU PEGASUS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "219": {
+        "NUSEQPATR": 3162,
+        "NUPATRIMONIO": 8541,
+        "DEPATRIMONIO": "CPU PEGASUS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "124": {
+        "NUSEQPATR": 2100,
+        "NUPATRIMONIO": 8542,
+        "DEPATRIMONIO": "LED 19,5 HD",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "272": {
+        "NUSEQPATR": 5559,
+        "NUPATRIMONIO": 8543,
+        "DEPATRIMONIO": "MONITOR 17 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "535": {
+        "NUSEQPATR": 8881,
+        "NUPATRIMONIO": 8545,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "67": {
+        "NUSEQPATR": 2042,
+        "NUPATRIMONIO": 8546,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "561": {
+        "NUSEQPATR": 8979,
+        "NUPATRIMONIO": 8550,
+        "DEPATRIMONIO": "MONITOR 16 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "546": {
+        "NUSEQPATR": 8892,
+        "NUPATRIMONIO": 8551,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "36": {
+        "NUSEQPATR": 2011,
+        "NUPATRIMONIO": 8552,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "148": {
+        "NUSEQPATR": 2246,
+        "NUPATRIMONIO": 8556,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "37": {
+        "NUSEQPATR": 2012,
+        "NUPATRIMONIO": 8558,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "366": {
+        "NUSEQPATR": 5675,
+        "NUPATRIMONIO": 8559,
+        "DEPATRIMONIO": "MONITOR 17 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "38": {
+        "NUSEQPATR": 2013,
+        "NUPATRIMONIO": 8560,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "93": {
+        "NUSEQPATR": 2069,
+        "NUPATRIMONIO": 8562,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "218": {
+        "NUSEQPATR": 3129,
+        "NUPATRIMONIO": 8746,
+        "DEPATRIMONIO": "MONITOR DELL",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "66": {
+        "NUSEQPATR": 2041,
+        "NUPATRIMONIO": 8909,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "577": {
+        "NUSEQPATR": 10787,
+        "NUPATRIMONIO": 8980,
+        "DEPATRIMONIO": "ENCERADEIRA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "226": {
+        "NUSEQPATR": 3620,
+        "NUPATRIMONIO": 9378,
+        "DEPATRIMONIO": "ENCERADEIRA DC 350 ECO COMPLETA - BIVOLT",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "169": {
+        "NUSEQPATR": 2414,
+        "NUPATRIMONIO": 11798,
+        "DEPATRIMONIO": "MICROONDAS ELECTROLUX 23L",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "502": {
+        "NUSEQPATR": 7991,
+        "NUPATRIMONIO": 14216,
+        "DEPATRIMONIO": "CADEIRA SECRETARIA FIXA PALITO PRETA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "210": {
+        "NUSEQPATR": 2964,
+        "NUPATRIMONIO": 14218,
+        "DEPATRIMONIO": "CADEIRA SECRETARIA FIXA PALITO PRETA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "503": {
+        "NUSEQPATR": 7992,
+        "NUPATRIMONIO": 14219,
+        "DEPATRIMONIO": "CADEIRA SECRETARIA FIXA PALITO PRETA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "508": {
+        "NUSEQPATR": 7997,
+        "NUPATRIMONIO": 14220,
+        "DEPATRIMONIO": "CADEIRA SECRETARIA FIXA PALITO PRETA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "504": {
+        "NUSEQPATR": 7993,
+        "NUPATRIMONIO": 14221,
+        "DEPATRIMONIO": "CADEIRA SECRETARIA FIXA PALITO PRETA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "505": {
+        "NUSEQPATR": 7994,
+        "NUPATRIMONIO": 14222,
+        "DEPATRIMONIO": "CADEIRA SECRETARIA FIXA PALITO PRETA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "506": {
+        "NUSEQPATR": 7995,
+        "NUPATRIMONIO": 14223,
+        "DEPATRIMONIO": "CADEIRA SECRETARIA FIXA PALITO PRETA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "507": {
+        "NUSEQPATR": 7996,
+        "NUPATRIMONIO": 14224,
+        "DEPATRIMONIO": "CADEIRA SECRETARIA FIXA PALITO PRETA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "513": {
+        "NUSEQPATR": 8051,
+        "NUPATRIMONIO": 14226,
+        "DEPATRIMONIO": "AR CONDICIONADO 9000 BTUS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "514": {
+        "NUSEQPATR": 8052,
+        "NUPATRIMONIO": 14227,
+        "DEPATRIMONIO": "AR CONDICIONADO 9000 BTUS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "211": {
+        "NUSEQPATR": 2966,
+        "NUPATRIMONIO": 14228,
+        "DEPATRIMONIO": "AR CONDICIONADO 9000 BTUS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "500": {
+        "NUSEQPATR": 7988,
+        "NUPATRIMONIO": 14229,
+        "DEPATRIMONIO": "GELADEIRA ESMALTEC",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "212": {
+        "NUSEQPATR": 2967,
+        "NUPATRIMONIO": 14230,
+        "DEPATRIMONIO": "AR CONDICIONADO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "515": {
+        "NUSEQPATR": 8053,
+        "NUPATRIMONIO": 14231,
+        "DEPATRIMONIO": "PURIFICADOR DE ÁGUA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "501": {
+        "NUSEQPATR": 7989,
+        "NUPATRIMONIO": 14232,
+        "DEPATRIMONIO": "MICROONDAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "593": {
+        "NUSEQPATR": 11257,
+        "NUPATRIMONIO": 14244,
+        "DEPATRIMONIO": "AR CONDICIONADO 12000 BTUS TCL",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "654": {
+        "NUSEQPATR": 95470,
+        "NUPATRIMONIO": 14246,
+        "DEPATRIMONIO": "GELADEIRA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "653": {
+        "NUSEQPATR": 95469,
+        "NUPATRIMONIO": 14247,
+        "DEPATRIMONIO": "FRIGOBAR CONSUL",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "655": {
+        "NUSEQPATR": 95471,
+        "NUPATRIMONIO": 14248,
+        "DEPATRIMONIO": "GELADEIRA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "656": {
+        "NUSEQPATR": 95472,
+        "NUPATRIMONIO": 14249,
+        "DEPATRIMONIO": "GELADEIRA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "657": {
+        "NUSEQPATR": 95473,
+        "NUPATRIMONIO": 14250,
+        "DEPATRIMONIO": "GELADEIRA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "516": {
+        "NUSEQPATR": 8143,
+        "NUPATRIMONIO": 14254,
+        "DEPATRIMONIO": "SCANNER",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "587": {
+        "NUSEQPATR": 11251,
+        "NUPATRIMONIO": 14255,
+        "DEPATRIMONIO": "BANCO REFEITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "509": {
+        "NUSEQPATR": 7998,
+        "NUPATRIMONIO": 14257,
+        "DEPATRIMONIO": "ESPELHO VITRAL",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "588": {
+        "NUSEQPATR": 11252,
+        "NUPATRIMONIO": 14258,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "592": {
+        "NUSEQPATR": 11256,
+        "NUPATRIMONIO": 14259,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "589": {
+        "NUSEQPATR": 11253,
+        "NUPATRIMONIO": 14260,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "591": {
+        "NUSEQPATR": 11255,
+        "NUPATRIMONIO": 14262,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "510": {
+        "NUSEQPATR": 7999,
+        "NUPATRIMONIO": 14263,
+        "DEPATRIMONIO": "ESPELHO VITRAL",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "582": {
+        "NUSEQPATR": 11246,
+        "NUPATRIMONIO": 14265,
+        "DEPATRIMONIO": "MESA REFEITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "583": {
+        "NUSEQPATR": 11247,
+        "NUPATRIMONIO": 14266,
+        "DEPATRIMONIO": "MESA REFEITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "584": {
+        "NUSEQPATR": 11248,
+        "NUPATRIMONIO": 14267,
+        "DEPATRIMONIO": "BANCO REFEITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "585": {
+        "NUSEQPATR": 11249,
+        "NUPATRIMONIO": 14268,
+        "DEPATRIMONIO": "BANCO REFEITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "581": {
+        "NUSEQPATR": 11245,
+        "NUPATRIMONIO": 14269,
+        "DEPATRIMONIO": "BALCÃO PARA PIA 120CM",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "580": {
+        "NUSEQPATR": 11244,
+        "NUPATRIMONIO": 14270,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "578": {
+        "NUSEQPATR": 11242,
+        "NUPATRIMONIO": 14271,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "586": {
+        "NUSEQPATR": 11250,
+        "NUPATRIMONIO": 14272,
+        "DEPATRIMONIO": "BANCO REFEITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "579": {
+        "NUSEQPATR": 11243,
+        "NUPATRIMONIO": 14273,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "590": {
+        "NUSEQPATR": 11254,
+        "NUPATRIMONIO": 14274,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "595": {
+        "NUSEQPATR": 11319,
+        "NUPATRIMONIO": 14275,
+        "DEPATRIMONIO": "NOBREAK",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "594": {
+        "NUSEQPATR": 11296,
+        "NUPATRIMONIO": 14278,
+        "DEPATRIMONIO": "CADEIRA DIGITADOR COM BRAÇOS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "601": {
+        "NUSEQPATR": 11326,
+        "NUPATRIMONIO": 14279,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "596": {
+        "NUSEQPATR": 11321,
+        "NUPATRIMONIO": 14280,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "617": {
+        "NUSEQPATR": 11345,
+        "NUPATRIMONIO": 14281,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "598": {
+        "NUSEQPATR": 11323,
+        "NUPATRIMONIO": 14282,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "597": {
+        "NUSEQPATR": 11322,
+        "NUPATRIMONIO": 14283,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "619": {
+        "NUSEQPATR": 11347,
+        "NUPATRIMONIO": 14284,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "618": {
+        "NUSEQPATR": 11346,
+        "NUPATRIMONIO": 14285,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "615": {
+        "NUSEQPATR": 11343,
+        "NUPATRIMONIO": 14286,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "602": {
+        "NUSEQPATR": 11328,
+        "NUPATRIMONIO": 14287,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "622": {
+        "NUSEQPATR": 11350,
+        "NUPATRIMONIO": 14288,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "600": {
+        "NUSEQPATR": 11325,
+        "NUPATRIMONIO": 14289,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "620": {
+        "NUSEQPATR": 11348,
+        "NUPATRIMONIO": 14290,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "614": {
+        "NUSEQPATR": 11342,
+        "NUPATRIMONIO": 14291,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "613": {
+        "NUSEQPATR": 11341,
+        "NUPATRIMONIO": 14292,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "621": {
+        "NUSEQPATR": 11349,
+        "NUPATRIMONIO": 14293,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "623": {
+        "NUSEQPATR": 11351,
+        "NUPATRIMONIO": 14294,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "616": {
+        "NUSEQPATR": 11344,
+        "NUPATRIMONIO": 14295,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "604": {
+        "NUSEQPATR": 11330,
+        "NUPATRIMONIO": 14296,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "625": {
+        "NUSEQPATR": 11353,
+        "NUPATRIMONIO": 14297,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "626": {
+        "NUSEQPATR": 11354,
+        "NUPATRIMONIO": 14298,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "605": {
+        "NUSEQPATR": 11333,
+        "NUPATRIMONIO": 14299,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "627": {
+        "NUSEQPATR": 11355,
+        "NUPATRIMONIO": 14300,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "606": {
+        "NUSEQPATR": 11334,
+        "NUPATRIMONIO": 14301,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "599": {
+        "NUSEQPATR": 11324,
+        "NUPATRIMONIO": 14302,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "603": {
+        "NUSEQPATR": 11329,
+        "NUPATRIMONIO": 14303,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "628": {
+        "NUSEQPATR": 11356,
+        "NUPATRIMONIO": 14304,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "629": {
+        "NUSEQPATR": 11357,
+        "NUPATRIMONIO": 14305,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "630": {
+        "NUSEQPATR": 11358,
+        "NUPATRIMONIO": 14306,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "631": {
+        "NUSEQPATR": 11359,
+        "NUPATRIMONIO": 14307,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "607": {
+        "NUSEQPATR": 11335,
+        "NUPATRIMONIO": 14308,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "632": {
+        "NUSEQPATR": 11360,
+        "NUPATRIMONIO": 14309,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "633": {
+        "NUSEQPATR": 11361,
+        "NUPATRIMONIO": 14310,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "634": {
+        "NUSEQPATR": 11362,
+        "NUPATRIMONIO": 14311,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "635": {
+        "NUSEQPATR": 11363,
+        "NUPATRIMONIO": 14312,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "608": {
+        "NUSEQPATR": 11336,
+        "NUPATRIMONIO": 14313,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "636": {
+        "NUSEQPATR": 11364,
+        "NUPATRIMONIO": 14314,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "637": {
+        "NUSEQPATR": 11365,
+        "NUPATRIMONIO": 14315,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "624": {
+        "NUSEQPATR": 11352,
+        "NUPATRIMONIO": 14316,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "638": {
+        "NUSEQPATR": 11366,
+        "NUPATRIMONIO": 14317,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "639": {
+        "NUSEQPATR": 11367,
+        "NUPATRIMONIO": 14318,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "640": {
+        "NUSEQPATR": 11368,
+        "NUPATRIMONIO": 14319,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "641": {
+        "NUSEQPATR": 11369,
+        "NUPATRIMONIO": 14320,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "642": {
+        "NUSEQPATR": 11370,
+        "NUPATRIMONIO": 14321,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "643": {
+        "NUSEQPATR": 11371,
+        "NUPATRIMONIO": 14322,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "644": {
+        "NUSEQPATR": 11372,
+        "NUPATRIMONIO": 14323,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "645": {
+        "NUSEQPATR": 11373,
+        "NUPATRIMONIO": 14324,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "646": {
+        "NUSEQPATR": 11374,
+        "NUPATRIMONIO": 14325,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "648": {
+        "NUSEQPATR": 11376,
+        "NUPATRIMONIO": 14326,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "647": {
+        "NUSEQPATR": 11375,
+        "NUPATRIMONIO": 14327,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "649": {
+        "NUSEQPATR": 11377,
+        "NUPATRIMONIO": 14328,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "609": {
+        "NUSEQPATR": 11337,
+        "NUPATRIMONIO": 14329,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "610": {
+        "NUSEQPATR": 11338,
+        "NUPATRIMONIO": 14330,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "650": {
+        "NUSEQPATR": 11378,
+        "NUPATRIMONIO": 14331,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "651": {
+        "NUSEQPATR": 11379,
+        "NUPATRIMONIO": 14332,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "611": {
+        "NUSEQPATR": 11339,
+        "NUPATRIMONIO": 14333,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "612": {
+        "NUSEQPATR": 11340,
+        "NUPATRIMONIO": 14334,
+        "DEPATRIMONIO": "TELEFONE FIXO INTELBRAS PLENO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "209": {
+        "NUSEQPATR": 2963,
+        "NUPATRIMONIO": 14647,
+        "DEPATRIMONIO": "AR CONDICIONADO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "243": {
+        "NUSEQPATR": 3896,
+        "NUPATRIMONIO": 17199,
+        "DEPATRIMONIO": "MONITOR DELL",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "28": {
+        "NUSEQPATR": 2003,
+        "NUPATRIMONIO": 17200,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "532": {
+        "NUSEQPATR": 8878,
+        "NUPATRIMONIO": 17217,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "29": {
+        "NUSEQPATR": 2004,
+        "NUPATRIMONIO": 17218,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "396": {
+        "NUSEQPATR": 5809,
+        "NUPATRIMONIO": 17245,
+        "DEPATRIMONIO": "MINI DELL",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "221": {
+        "NUSEQPATR": 3338,
+        "NUPATRIMONIO": 17804,
+        "DEPATRIMONIO": "VEICULO UNO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "222": {
+        "NUSEQPATR": 3339,
+        "NUPATRIMONIO": 17805,
+        "DEPATRIMONIO": "VEICULO UNO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "488": {
+        "NUSEQPATR": 7504,
+        "NUPATRIMONIO": 22406,
+        "DEPATRIMONIO": "SMARTPHONE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "489": {
+        "NUSEQPATR": 7518,
+        "NUPATRIMONIO": 22409,
+        "DEPATRIMONIO": "SMARTPHONE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "490": {
+        "NUSEQPATR": 7758,
+        "NUPATRIMONIO": 22411,
+        "DEPATRIMONIO": "SWITCH",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "491": {
+        "NUSEQPATR": 7765,
+        "NUPATRIMONIO": 22413,
+        "DEPATRIMONIO": "SMARTPHONE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "208": {
+        "NUSEQPATR": 2930,
+        "NUPATRIMONIO": 22433,
+        "DEPATRIMONIO": "SMARTPHONE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "493": {
+        "NUSEQPATR": 7896,
+        "NUPATRIMONIO": 22442,
+        "DEPATRIMONIO": "SMARTPHONE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "494": {
+        "NUSEQPATR": 7898,
+        "NUPATRIMONIO": 22447,
+        "DEPATRIMONIO": "SMARTPHONE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "495": {
+        "NUSEQPATR": 7899,
+        "NUPATRIMONIO": 22448,
+        "DEPATRIMONIO": "SMARTPHONE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "511": {
+        "NUSEQPATR": 8027,
+        "NUPATRIMONIO": 22550,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "512": {
+        "NUSEQPATR": 8029,
+        "NUPATRIMONIO": 22564,
+        "DEPATRIMONIO": "SMARTPHONE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "498": {
+        "NUSEQPATR": 7944,
+        "NUPATRIMONIO": 22595,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "499": {
+        "NUSEQPATR": 7945,
+        "NUPATRIMONIO": 22596,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "497": {
+        "NUSEQPATR": 7943,
+        "NUPATRIMONIO": 22597,
+        "DEPATRIMONIO": "MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "496": {
+        "NUSEQPATR": 7942,
+        "NUPATRIMONIO": 22598,
+        "DEPATRIMONIO": "MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "521": {
+        "NUSEQPATR": 8692,
+        "NUPATRIMONIO": 25888,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A14",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "239": {
+        "NUSEQPATR": 3786,
+        "NUPATRIMONIO": 25931,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "417": {
+        "NUSEQPATR": 6788,
+        "NUPATRIMONIO": 25932,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A14 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "228": {
+        "NUSEQPATR": 3637,
+        "NUPATRIMONIO": 28052,
+        "DEPATRIMONIO": "SCANNER DETECTOR DE METAIS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "335": {
+        "NUSEQPATR": 5644,
+        "NUPATRIMONIO": 28053,
+        "DEPATRIMONIO": "AR CONDICIONADO SPLIT HI WALL INVERTER PHILCO ECO 9000BTUS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "225": {
+        "NUSEQPATR": 3619,
+        "NUPATRIMONIO": 28054,
+        "DEPATRIMONIO": "PARAFUSADEIRA BRITÂNIA 4,8V COM 11 BITS E PROLONGADOR BPF01",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "520": {
+        "NUSEQPATR": 8546,
+        "NUPATRIMONIO": 28057,
+        "DEPATRIMONIO": "MONITOR 19.5 LED, WIDESCREEN, 75HZ",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "383": {
+        "NUSEQPATR": 5694,
+        "NUPATRIMONIO": 28060,
+        "DEPATRIMONIO": "MICROONDAS NN-ST25LWRU 700W BRANCO PANASONIC 127V",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "129": {
+        "NUSEQPATR": 2106,
+        "NUPATRIMONIO": 28063,
+        "DEPATRIMONIO": "AR CONDICIONADO 9000 BTUS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "224": {
+        "NUSEQPATR": 3618,
+        "NUPATRIMONIO": 28064,
+        "DEPATRIMONIO": "AR CONDICIONADO ELGIN QUENTE E FRIO 24000 BTUS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "522": {
+        "NUSEQPATR": 8868,
+        "NUPATRIMONIO": 28097,
+        "DEPATRIMONIO": "AR CONDICIONADO SPLIT HI WALL BRITÂNIA 9000 BTU\/H FRIO 220 VOLTS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "227": {
+        "NUSEQPATR": 3621,
+        "NUPATRIMONIO": 28099,
+        "DEPATRIMONIO": "MARTELETE ROMPEDOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "120": {
+        "NUSEQPATR": 2096,
+        "NUPATRIMONIO": 28145,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "130": {
+        "NUSEQPATR": 2107,
+        "NUPATRIMONIO": 28147,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "71": {
+        "NUSEQPATR": 2047,
+        "NUPATRIMONIO": 28148,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "553": {
+        "NUSEQPATR": 8900,
+        "NUPATRIMONIO": 28156,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "555": {
+        "NUSEQPATR": 8902,
+        "NUPATRIMONIO": 28167,
+        "DEPATRIMONIO": "ARMARIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "385": {
+        "NUSEQPATR": 5698,
+        "NUPATRIMONIO": 28168,
+        "DEPATRIMONIO": "MESA QUADRADA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "390": {
+        "NUSEQPATR": 5703,
+        "NUPATRIMONIO": 28169,
+        "DEPATRIMONIO": "CADEIRA COURINO MAIOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "389": {
+        "NUSEQPATR": 5702,
+        "NUPATRIMONIO": 28170,
+        "DEPATRIMONIO": "CADEIRA COURINO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "552": {
+        "NUSEQPATR": 8899,
+        "NUPATRIMONIO": 28171,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "556": {
+        "NUSEQPATR": 8903,
+        "NUPATRIMONIO": 28175,
+        "DEPATRIMONIO": "GAVETEIRO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "547": {
+        "NUSEQPATR": 8893,
+        "NUPATRIMONIO": 28176,
+        "DEPATRIMONIO": "MONITOR 16 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "548": {
+        "NUSEQPATR": 8894,
+        "NUPATRIMONIO": 28177,
+        "DEPATRIMONIO": "MONITOR 16 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "242": {
+        "NUSEQPATR": 3808,
+        "NUPATRIMONIO": 28178,
+        "DEPATRIMONIO": "MONITOR 19.5 LED, WIDESCREEN, 75HZ",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "554": {
+        "NUSEQPATR": 8901,
+        "NUPATRIMONIO": 28198,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "527": {
+        "NUSEQPATR": 8873,
+        "NUPATRIMONIO": 28223,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "523": {
+        "NUSEQPATR": 8869,
+        "NUPATRIMONIO": 28224,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "388": {
+        "NUSEQPATR": 5701,
+        "NUPATRIMONIO": 28244,
+        "DEPATRIMONIO": "CADEIRA DIGITADOR COM BRAÇOS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "155": {
+        "NUSEQPATR": 2336,
+        "NUPATRIMONIO": 28254,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "265": {
+        "NUSEQPATR": 5426,
+        "NUPATRIMONIO": 28255,
+        "DEPATRIMONIO": "MONITOR 19 5 LED 3GREEN 75HZ HD GAMER",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "557": {
+        "NUSEQPATR": 8904,
+        "NUPATRIMONIO": 28256,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "263": {
+        "NUSEQPATR": 5424,
+        "NUPATRIMONIO": 28257,
+        "DEPATRIMONIO": "MONITOR 19 5 LED 3GREEN 75HZ HD GAMER",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "277": {
+        "NUSEQPATR": 5564,
+        "NUPATRIMONIO": 28258,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "291": {
+        "NUSEQPATR": 5578,
+        "NUPATRIMONIO": 28259,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "332": {
+        "NUSEQPATR": 5641,
+        "NUPATRIMONIO": 28263,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "524": {
+        "NUSEQPATR": 8870,
+        "NUPATRIMONIO": 28264,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "395": {
+        "NUSEQPATR": 5709,
+        "NUPATRIMONIO": 28265,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "278": {
+        "NUSEQPATR": 5565,
+        "NUPATRIMONIO": 28268,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "255": {
+        "NUSEQPATR": 4325,
+        "NUPATRIMONIO": 28270,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "266": {
+        "NUSEQPATR": 5427,
+        "NUPATRIMONIO": 28272,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "254": {
+        "NUSEQPATR": 4324,
+        "NUPATRIMONIO": 28273,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "264": {
+        "NUSEQPATR": 5425,
+        "NUPATRIMONIO": 28274,
+        "DEPATRIMONIO": "MONITOR 19 5 LED 3GREEN 75HZ HD GAMER",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "16": {
+        "NUSEQPATR": 1927,
+        "NUPATRIMONIO": 28276,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO EM L 2 GAVETAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "13": {
+        "NUSEQPATR": 1924,
+        "NUPATRIMONIO": 28277,
+        "DEPATRIMONIO": "CADEIRA DIGITADOR COM BRAÇOS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "142": {
+        "NUSEQPATR": 2119,
+        "NUPATRIMONIO": 28279,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "528": {
+        "NUSEQPATR": 8874,
+        "NUPATRIMONIO": 28280,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "525": {
+        "NUSEQPATR": 8871,
+        "NUPATRIMONIO": 28281,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "18": {
+        "NUSEQPATR": 1929,
+        "NUPATRIMONIO": 28282,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO EM L 2 GAVETAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "253": {
+        "NUSEQPATR": 3983,
+        "NUPATRIMONIO": 28284,
+        "DEPATRIMONIO": "RELÓGIO PONTO BIOMÉTRICO CONTROL ID CLASS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "17": {
+        "NUSEQPATR": 1928,
+        "NUPATRIMONIO": 28285,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO EM L 2 GAVETAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "292": {
+        "NUSEQPATR": 5579,
+        "NUPATRIMONIO": 28288,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "293": {
+        "NUSEQPATR": 5580,
+        "NUPATRIMONIO": 28289,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "294": {
+        "NUSEQPATR": 5581,
+        "NUPATRIMONIO": 28292,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "14": {
+        "NUSEQPATR": 1925,
+        "NUPATRIMONIO": 28295,
+        "DEPATRIMONIO": "CADEIRA DIGITADOR COM BRAÇOS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "24": {
+        "NUSEQPATR": 1999,
+        "NUPATRIMONIO": 28296,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "19": {
+        "NUSEQPATR": 1930,
+        "NUPATRIMONIO": 28297,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO EM L 2 GAVETAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "279": {
+        "NUSEQPATR": 5566,
+        "NUPATRIMONIO": 28298,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "393": {
+        "NUSEQPATR": 5707,
+        "NUPATRIMONIO": 28300,
+        "DEPATRIMONIO": "MONITOR 22 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "74": {
+        "NUSEQPATR": 2050,
+        "NUPATRIMONIO": 28356,
+        "DEPATRIMONIO": "MONITOR 22 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "75": {
+        "NUSEQPATR": 2051,
+        "NUPATRIMONIO": 28357,
+        "DEPATRIMONIO": "MONITOR 19,5 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "76": {
+        "NUSEQPATR": 2052,
+        "NUPATRIMONIO": 28358,
+        "DEPATRIMONIO": "MONITOR 22 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "45": {
+        "NUSEQPATR": 2020,
+        "NUPATRIMONIO": 28359,
+        "DEPATRIMONIO": "LED 19,5 HD",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "39": {
+        "NUSEQPATR": 2014,
+        "NUPATRIMONIO": 28360,
+        "DEPATRIMONIO": "MONITOR 19,5 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "42": {
+        "NUSEQPATR": 2017,
+        "NUPATRIMONIO": 28361,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "94": {
+        "NUSEQPATR": 2070,
+        "NUPATRIMONIO": 28362,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "95": {
+        "NUSEQPATR": 2071,
+        "NUPATRIMONIO": 28363,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "84": {
+        "NUSEQPATR": 2060,
+        "NUPATRIMONIO": 28364,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "96": {
+        "NUSEQPATR": 2072,
+        "NUPATRIMONIO": 28365,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "256": {
+        "NUSEQPATR": 4329,
+        "NUPATRIMONIO": 28366,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "68": {
+        "NUSEQPATR": 2043,
+        "NUPATRIMONIO": 28367,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "310": {
+        "NUSEQPATR": 5619,
+        "NUPATRIMONIO": 28368,
+        "DEPATRIMONIO": "MONITOR 16 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "12": {
+        "NUSEQPATR": 1923,
+        "NUPATRIMONIO": 28369,
+        "DEPATRIMONIO": "CADEIRA DIGITADOR COM BRAÇOS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "21": {
+        "NUSEQPATR": 1996,
+        "NUPATRIMONIO": 28370,
+        "DEPATRIMONIO": "LED 19,5 HD",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "559": {
+        "NUSEQPATR": 8906,
+        "NUPATRIMONIO": 28371,
+        "DEPATRIMONIO": "MONITOR 16 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "97": {
+        "NUSEQPATR": 2073,
+        "NUPATRIMONIO": 28372,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "15": {
+        "NUSEQPATR": 1926,
+        "NUPATRIMONIO": 28373,
+        "DEPATRIMONIO": "CADEIRA DIGITADOR COM BRAÇOS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "397": {
+        "NUSEQPATR": 5918,
+        "NUPATRIMONIO": 28374,
+        "DEPATRIMONIO": "IMPRESSORA PARA CARTÃO\/CRACHÁ PVC FARGO DTC 1250E DUAL SIDE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "135": {
+        "NUSEQPATR": 2112,
+        "NUPATRIMONIO": 28376,
+        "DEPATRIMONIO": "LED 19,5 HD",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "381": {
+        "NUSEQPATR": 5691,
+        "NUPATRIMONIO": 28377,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "394": {
+        "NUSEQPATR": 5708,
+        "NUPATRIMONIO": 28378,
+        "DEPATRIMONIO": "MONITOR 22 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "134": {
+        "NUSEQPATR": 2111,
+        "NUPATRIMONIO": 28379,
+        "DEPATRIMONIO": "MONITOR 19,5 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "136": {
+        "NUSEQPATR": 2113,
+        "NUPATRIMONIO": 28380,
+        "DEPATRIMONIO": "LED 19,5 HD",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "311": {
+        "NUSEQPATR": 5620,
+        "NUPATRIMONIO": 28381,
+        "DEPATRIMONIO": "MONITOR 16 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "312": {
+        "NUSEQPATR": 5621,
+        "NUPATRIMONIO": 28382,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "150": {
+        "NUSEQPATR": 2248,
+        "NUPATRIMONIO": 28383,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "123": {
+        "NUSEQPATR": 2099,
+        "NUPATRIMONIO": 28384,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "98": {
+        "NUSEQPATR": 2074,
+        "NUPATRIMONIO": 28385,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "125": {
+        "NUSEQPATR": 2102,
+        "NUPATRIMONIO": 28386,
+        "DEPATRIMONIO": "LED 19,5 HD",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "99": {
+        "NUSEQPATR": 2075,
+        "NUPATRIMONIO": 28387,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "100": {
+        "NUSEQPATR": 2076,
+        "NUPATRIMONIO": 28388,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "101": {
+        "NUSEQPATR": 2077,
+        "NUPATRIMONIO": 28389,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "102": {
+        "NUSEQPATR": 2078,
+        "NUPATRIMONIO": 28390,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "103": {
+        "NUSEQPATR": 2079,
+        "NUPATRIMONIO": 28391,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "558": {
+        "NUSEQPATR": 8905,
+        "NUPATRIMONIO": 28392,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "149": {
+        "NUSEQPATR": 2247,
+        "NUPATRIMONIO": 28393,
+        "DEPATRIMONIO": "MONITOR 19,5 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "23": {
+        "NUSEQPATR": 1998,
+        "NUPATRIMONIO": 28394,
+        "DEPATRIMONIO": "LED 19,5 HD",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "40": {
+        "NUSEQPATR": 2015,
+        "NUPATRIMONIO": 28395,
+        "DEPATRIMONIO": "MONITOR 22 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "43": {
+        "NUSEQPATR": 2018,
+        "NUPATRIMONIO": 28396,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "44": {
+        "NUSEQPATR": 2019,
+        "NUPATRIMONIO": 28397,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "328": {
+        "NUSEQPATR": 5637,
+        "NUPATRIMONIO": 28398,
+        "DEPATRIMONIO": "MONITOR 17 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "550": {
+        "NUSEQPATR": 8896,
+        "NUPATRIMONIO": 28399,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "81": {
+        "NUSEQPATR": 2057,
+        "NUPATRIMONIO": 28400,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "387": {
+        "NUSEQPATR": 5700,
+        "NUPATRIMONIO": 28435,
+        "DEPATRIMONIO": "CADEIRA DIGITADOR COM BRAÇOS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "386": {
+        "NUSEQPATR": 5699,
+        "NUPATRIMONIO": 28436,
+        "DEPATRIMONIO": "CADEIRA DIGITADOR COM BRAÇOS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "280": {
+        "NUSEQPATR": 5567,
+        "NUPATRIMONIO": 28453,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "331": {
+        "NUSEQPATR": 5640,
+        "NUPATRIMONIO": 28456,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "529": {
+        "NUSEQPATR": 8875,
+        "NUPATRIMONIO": 28458,
+        "DEPATRIMONIO": "LONGARINA 5 LUGARES",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "323": {
+        "NUSEQPATR": 5632,
+        "NUPATRIMONIO": 28459,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "319": {
+        "NUSEQPATR": 5628,
+        "NUPATRIMONIO": 28460,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "320": {
+        "NUSEQPATR": 5629,
+        "NUPATRIMONIO": 28461,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "326": {
+        "NUSEQPATR": 5635,
+        "NUPATRIMONIO": 28462,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "324": {
+        "NUSEQPATR": 5633,
+        "NUPATRIMONIO": 28463,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "530": {
+        "NUSEQPATR": 8876,
+        "NUPATRIMONIO": 28464,
+        "DEPATRIMONIO": "LONGARINA 3 LUGARES",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "537": {
+        "NUSEQPATR": 8883,
+        "NUPATRIMONIO": 28465,
+        "DEPATRIMONIO": "LONGARINA 2 LUGARES",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "321": {
+        "NUSEQPATR": 5630,
+        "NUPATRIMONIO": 28467,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "531": {
+        "NUSEQPATR": 8877,
+        "NUPATRIMONIO": 28468,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "295": {
+        "NUSEQPATR": 5582,
+        "NUPATRIMONIO": 28469,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "536": {
+        "NUSEQPATR": 8882,
+        "NUPATRIMONIO": 28470,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "538": {
+        "NUSEQPATR": 8884,
+        "NUPATRIMONIO": 28472,
+        "DEPATRIMONIO": "LONGARINA 2 LUGARES",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "333": {
+        "NUSEQPATR": 5642,
+        "NUPATRIMONIO": 28473,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "296": {
+        "NUSEQPATR": 5583,
+        "NUPATRIMONIO": 28474,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "290": {
+        "NUSEQPATR": 5577,
+        "NUPATRIMONIO": 28475,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "281": {
+        "NUSEQPATR": 5568,
+        "NUPATRIMONIO": 28476,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "334": {
+        "NUSEQPATR": 5643,
+        "NUPATRIMONIO": 28478,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "297": {
+        "NUSEQPATR": 5584,
+        "NUPATRIMONIO": 28479,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "298": {
+        "NUSEQPATR": 5585,
+        "NUPATRIMONIO": 28480,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "322": {
+        "NUSEQPATR": 5631,
+        "NUPATRIMONIO": 28481,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "268": {
+        "NUSEQPATR": 5489,
+        "NUPATRIMONIO": 28482,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITÓRIO SECRETARIA COM BRAÇO REGULÁVEL",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "282": {
+        "NUSEQPATR": 5569,
+        "NUPATRIMONIO": 28486,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "283": {
+        "NUSEQPATR": 5570,
+        "NUPATRIMONIO": 28488,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "325": {
+        "NUSEQPATR": 5634,
+        "NUPATRIMONIO": 28489,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "284": {
+        "NUSEQPATR": 5571,
+        "NUPATRIMONIO": 28490,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "285": {
+        "NUSEQPATR": 5572,
+        "NUPATRIMONIO": 28492,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "327": {
+        "NUSEQPATR": 5636,
+        "NUPATRIMONIO": 28493,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "299": {
+        "NUSEQPATR": 5586,
+        "NUPATRIMONIO": 28494,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "286": {
+        "NUSEQPATR": 5573,
+        "NUPATRIMONIO": 28495,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "329": {
+        "NUSEQPATR": 5638,
+        "NUPATRIMONIO": 28496,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "287": {
+        "NUSEQPATR": 5574,
+        "NUPATRIMONIO": 28497,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "288": {
+        "NUSEQPATR": 5575,
+        "NUPATRIMONIO": 28498,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "289": {
+        "NUSEQPATR": 5576,
+        "NUPATRIMONIO": 28499,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "466": {
+        "NUSEQPATR": 7118,
+        "NUPATRIMONIO": 28500,
+        "DEPATRIMONIO": "VENTILADOR DE PAREDE VENTIDELTA 60CM PREMIUM PRETO BIV 170W COR DAS PAS NATURAL 110V\/220V",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "350": {
+        "NUSEQPATR": 5659,
+        "NUPATRIMONIO": 28501,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "336": {
+        "NUSEQPATR": 5645,
+        "NUPATRIMONIO": 28502,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "351": {
+        "NUSEQPATR": 5660,
+        "NUPATRIMONIO": 28503,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "300": {
+        "NUSEQPATR": 5609,
+        "NUPATRIMONIO": 28504,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "301": {
+        "NUSEQPATR": 5610,
+        "NUPATRIMONIO": 28505,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "302": {
+        "NUSEQPATR": 5611,
+        "NUPATRIMONIO": 28506,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "303": {
+        "NUSEQPATR": 5612,
+        "NUPATRIMONIO": 28507,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "352": {
+        "NUSEQPATR": 5661,
+        "NUPATRIMONIO": 28508,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "304": {
+        "NUSEQPATR": 5613,
+        "NUPATRIMONIO": 28509,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "367": {
+        "NUSEQPATR": 5677,
+        "NUPATRIMONIO": 28510,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "368": {
+        "NUSEQPATR": 5678,
+        "NUPATRIMONIO": 28511,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "353": {
+        "NUSEQPATR": 5662,
+        "NUPATRIMONIO": 28512,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "337": {
+        "NUSEQPATR": 5646,
+        "NUPATRIMONIO": 28513,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "354": {
+        "NUSEQPATR": 5663,
+        "NUPATRIMONIO": 28514,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "355": {
+        "NUSEQPATR": 5664,
+        "NUPATRIMONIO": 28515,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "356": {
+        "NUSEQPATR": 5665,
+        "NUPATRIMONIO": 28516,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "338": {
+        "NUSEQPATR": 5647,
+        "NUPATRIMONIO": 28517,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "339": {
+        "NUSEQPATR": 5648,
+        "NUPATRIMONIO": 28518,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "340": {
+        "NUSEQPATR": 5649,
+        "NUPATRIMONIO": 28519,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "357": {
+        "NUSEQPATR": 5666,
+        "NUPATRIMONIO": 28520,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "341": {
+        "NUSEQPATR": 5650,
+        "NUPATRIMONIO": 28521,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "358": {
+        "NUSEQPATR": 5667,
+        "NUPATRIMONIO": 28522,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "359": {
+        "NUSEQPATR": 5668,
+        "NUPATRIMONIO": 28523,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "360": {
+        "NUSEQPATR": 5669,
+        "NUPATRIMONIO": 28524,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "275": {
+        "NUSEQPATR": 5562,
+        "NUPATRIMONIO": 28525,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "342": {
+        "NUSEQPATR": 5651,
+        "NUPATRIMONIO": 28526,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "343": {
+        "NUSEQPATR": 5652,
+        "NUPATRIMONIO": 28527,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "361": {
+        "NUSEQPATR": 5670,
+        "NUPATRIMONIO": 28528,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "362": {
+        "NUSEQPATR": 5671,
+        "NUPATRIMONIO": 28529,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "363": {
+        "NUSEQPATR": 5672,
+        "NUPATRIMONIO": 28530,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "344": {
+        "NUSEQPATR": 5653,
+        "NUPATRIMONIO": 28531,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "345": {
+        "NUSEQPATR": 5654,
+        "NUPATRIMONIO": 28532,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "364": {
+        "NUSEQPATR": 5673,
+        "NUPATRIMONIO": 28533,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "365": {
+        "NUSEQPATR": 5674,
+        "NUPATRIMONIO": 28534,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "346": {
+        "NUSEQPATR": 5655,
+        "NUPATRIMONIO": 28535,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "305": {
+        "NUSEQPATR": 5614,
+        "NUPATRIMONIO": 28536,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "306": {
+        "NUSEQPATR": 5615,
+        "NUPATRIMONIO": 28537,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "273": {
+        "NUSEQPATR": 5560,
+        "NUPATRIMONIO": 28538,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "274": {
+        "NUSEQPATR": 5561,
+        "NUPATRIMONIO": 28539,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO AZUL",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "369": {
+        "NUSEQPATR": 5679,
+        "NUPATRIMONIO": 28540,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "370": {
+        "NUSEQPATR": 5680,
+        "NUPATRIMONIO": 28541,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "371": {
+        "NUSEQPATR": 5681,
+        "NUPATRIMONIO": 28542,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "372": {
+        "NUSEQPATR": 5682,
+        "NUPATRIMONIO": 28543,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "402": {
+        "NUSEQPATR": 6046,
+        "NUPATRIMONIO": 28544,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "347": {
+        "NUSEQPATR": 5656,
+        "NUPATRIMONIO": 28545,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "373": {
+        "NUSEQPATR": 5683,
+        "NUPATRIMONIO": 28547,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "308": {
+        "NUSEQPATR": 5617,
+        "NUPATRIMONIO": 28548,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "276": {
+        "NUSEQPATR": 5563,
+        "NUPATRIMONIO": 28549,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "348": {
+        "NUSEQPATR": 5657,
+        "NUPATRIMONIO": 28550,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "309": {
+        "NUSEQPATR": 5618,
+        "NUPATRIMONIO": 28602,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "307": {
+        "NUSEQPATR": 5616,
+        "NUPATRIMONIO": 28604,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "374": {
+        "NUSEQPATR": 5684,
+        "NUPATRIMONIO": 28605,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "539": {
+        "NUSEQPATR": 8885,
+        "NUPATRIMONIO": 28606,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "540": {
+        "NUSEQPATR": 8886,
+        "NUPATRIMONIO": 28607,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "137": {
+        "NUSEQPATR": 2114,
+        "NUPATRIMONIO": 28609,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "138": {
+        "NUSEQPATR": 2115,
+        "NUPATRIMONIO": 28612,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "139": {
+        "NUSEQPATR": 2116,
+        "NUPATRIMONIO": 28613,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "270": {
+        "NUSEQPATR": 5491,
+        "NUPATRIMONIO": 28614,
+        "DEPATRIMONIO": "SUPORTE 2 GAVETAS PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "382": {
+        "NUSEQPATR": 5692,
+        "NUPATRIMONIO": 28615,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "314": {
+        "NUSEQPATR": 5623,
+        "NUPATRIMONIO": 28616,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "317": {
+        "NUSEQPATR": 5626,
+        "NUPATRIMONIO": 28619,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "156": {
+        "NUSEQPATR": 2343,
+        "NUPATRIMONIO": 28622,
+        "DEPATRIMONIO": "SUPORTE 3 GAVETAS PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "318": {
+        "NUSEQPATR": 5627,
+        "NUPATRIMONIO": 28632,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "315": {
+        "NUSEQPATR": 5624,
+        "NUPATRIMONIO": 28642,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "316": {
+        "NUSEQPATR": 5625,
+        "NUPATRIMONIO": 28643,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "541": {
+        "NUSEQPATR": 8887,
+        "NUPATRIMONIO": 28644,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "375": {
+        "NUSEQPATR": 5685,
+        "NUPATRIMONIO": 28645,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "376": {
+        "NUSEQPATR": 5686,
+        "NUPATRIMONIO": 28646,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "377": {
+        "NUSEQPATR": 5687,
+        "NUPATRIMONIO": 28647,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "379": {
+        "NUSEQPATR": 5689,
+        "NUPATRIMONIO": 28648,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "378": {
+        "NUSEQPATR": 5688,
+        "NUPATRIMONIO": 28649,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "380": {
+        "NUSEQPATR": 5690,
+        "NUPATRIMONIO": 28650,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "205": {
+        "NUSEQPATR": 2598,
+        "NUPATRIMONIO": 28669,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A03 CORE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "384": {
+        "NUSEQPATR": 5697,
+        "NUPATRIMONIO": 28731,
+        "DEPATRIMONIO": "MESA REDONDA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "152": {
+        "NUSEQPATR": 2285,
+        "NUPATRIMONIO": 28757,
+        "DEPATRIMONIO": "CADEIRA SECRETARIA COM REGULAGEM DE ALTURA A GÁS COM BRAÇO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "153": {
+        "NUSEQPATR": 2286,
+        "NUPATRIMONIO": 28765,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO 2 GAVETAS COM CHAVE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "159": {
+        "NUSEQPATR": 2385,
+        "NUPATRIMONIO": 28766,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO 2 GAVETAS COM CHAVE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "167": {
+        "NUSEQPATR": 2399,
+        "NUPATRIMONIO": 28776,
+        "DEPATRIMONIO": "MONITOR LED BRAZIL PC 20WR 75HZ 20 BIVOLT PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "563": {
+        "NUSEQPATR": 9045,
+        "NUPATRIMONIO": 28777,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITÓRIO QUALIFLEX EXECUTIVA ERGONÔMICA COM BRAÇOS N17 ABNT",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "405": {
+        "NUSEQPATR": 6212,
+        "NUPATRIMONIO": 28778,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITÓRIO QUALIFLEX EXECUTIVA ERGONÔMICA COM BRAÇOS N17 ABNT",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "404": {
+        "NUSEQPATR": 6211,
+        "NUPATRIMONIO": 28779,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITÓRIO QUALIFLEX EXECUTIVA ERGONÔMICA COM BRAÇOS N17 ABNT",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "564": {
+        "NUSEQPATR": 9046,
+        "NUPATRIMONIO": 28780,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITÓRIO QUALIFLEX EXECUTIVA ERGONÔMICA COM BRAÇOS N17 ABNT",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "406": {
+        "NUSEQPATR": 6213,
+        "NUPATRIMONIO": 28790,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITÓRIO QUALIFLEX EXECUTIVA ERGONÔMICA COM BRAÇOS N17 ABNT",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "407": {
+        "NUSEQPATR": 6214,
+        "NUPATRIMONIO": 28791,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITÓRIO QUALIFLEX EXECUTIVA ERGONÔMICA COM BRAÇOS N17 ABNT",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "567": {
+        "NUSEQPATR": 9049,
+        "NUPATRIMONIO": 28792,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITÓRIO QUALIFLEX EXECUTIVA ERGONÔMICA COM BRAÇOS N17 ABNT",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "565": {
+        "NUSEQPATR": 9047,
+        "NUPATRIMONIO": 28793,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITÓRIO QUALIFLEX EXECUTIVA ERGONÔMICA COM BRAÇOS N17 ABNT",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "566": {
+        "NUSEQPATR": 9048,
+        "NUPATRIMONIO": 28794,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITÓRIO QUALIFLEX EXECUTIVA ERGONÔMICA COM BRAÇOS N17 ABNT",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "467": {
+        "NUSEQPATR": 7119,
+        "NUPATRIMONIO": 28800,
+        "DEPATRIMONIO": "VENTILADOR DE PAREDE VENTIDELTA 60CM PREMIUM PRETO BIV 170W COR DAS PAS NATURAL 110V\/220V",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "267": {
+        "NUSEQPATR": 5488,
+        "NUPATRIMONIO": 28851,
+        "DEPATRIMONIO": "ESCRIVANINHA EM L 2 GAVETAS COR BRANCA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "160": {
+        "NUSEQPATR": 2386,
+        "NUPATRIMONIO": 28856,
+        "DEPATRIMONIO": "BALCÃO COM UMA GAVETA E UMA PORTA",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "408": {
+        "NUSEQPATR": 6220,
+        "NUPATRIMONIO": 28865,
+        "DEPATRIMONIO": "SUPORTE 2 GAVETAS PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "166": {
+        "NUSEQPATR": 2398,
+        "NUPATRIMONIO": 28882,
+        "DEPATRIMONIO": "MONITOR LED BRAZIL PC 20WR 75HZ 20 BIVOLT PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "165": {
+        "NUSEQPATR": 2397,
+        "NUPATRIMONIO": 28888,
+        "DEPATRIMONIO": "MONITOR LED BRAZIL PC 20WR 75HZ 20 BIVOLT PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "410": {
+        "NUSEQPATR": 6361,
+        "NUPATRIMONIO": 28889,
+        "DEPATRIMONIO": "SUPORTE 2 GAVETAS PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "571": {
+        "NUSEQPATR": 9054,
+        "NUPATRIMONIO": 28890,
+        "DEPATRIMONIO": "MONITOR LED BRAZIL PC 20WR 75HZ 20 BIVOLT PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "570": {
+        "NUSEQPATR": 9053,
+        "NUPATRIMONIO": 28891,
+        "DEPATRIMONIO": "MONITOR LED BRAZIL PC 20WR 75HZ 20 BIVOLT PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "562": {
+        "NUSEQPATR": 9044,
+        "NUPATRIMONIO": 28892,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITÓRIO QUALIFLEX EXECUTIVA ERGONÔMICA COM BRAÇOS N17 ABNT",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "154": {
+        "NUSEQPATR": 2306,
+        "NUPATRIMONIO": 28898,
+        "DEPATRIMONIO": "SUPORTE 2 GAVETAS PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "77": {
+        "NUSEQPATR": 2053,
+        "NUPATRIMONIO": 28901,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "473": {
+        "NUSEQPATR": 7156,
+        "NUPATRIMONIO": 28902,
+        "DEPATRIMONIO": "SUPORTE 2 GAVETAS PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "78": {
+        "NUSEQPATR": 2054,
+        "NUPATRIMONIO": 28903,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "79": {
+        "NUSEQPATR": 2055,
+        "NUPATRIMONIO": 28904,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "330": {
+        "NUSEQPATR": 5639,
+        "NUPATRIMONIO": 28905,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "46": {
+        "NUSEQPATR": 2021,
+        "NUPATRIMONIO": 28906,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "47": {
+        "NUSEQPATR": 2022,
+        "NUPATRIMONIO": 28907,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "48": {
+        "NUSEQPATR": 2023,
+        "NUPATRIMONIO": 28908,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "49": {
+        "NUSEQPATR": 2024,
+        "NUPATRIMONIO": 28909,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "50": {
+        "NUSEQPATR": 2025,
+        "NUPATRIMONIO": 28910,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "51": {
+        "NUSEQPATR": 2026,
+        "NUPATRIMONIO": 28911,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "52": {
+        "NUSEQPATR": 2027,
+        "NUPATRIMONIO": 28912,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "269": {
+        "NUSEQPATR": 5490,
+        "NUPATRIMONIO": 28913,
+        "DEPATRIMONIO": "SUPORTE 2 GAVETAS PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "104": {
+        "NUSEQPATR": 2080,
+        "NUPATRIMONIO": 28914,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "105": {
+        "NUSEQPATR": 2081,
+        "NUPATRIMONIO": 28915,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "106": {
+        "NUSEQPATR": 2082,
+        "NUPATRIMONIO": 28916,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "107": {
+        "NUSEQPATR": 2083,
+        "NUPATRIMONIO": 28917,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "108": {
+        "NUSEQPATR": 2084,
+        "NUPATRIMONIO": 28918,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "109": {
+        "NUSEQPATR": 2085,
+        "NUPATRIMONIO": 28919,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "110": {
+        "NUSEQPATR": 2086,
+        "NUPATRIMONIO": 28920,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "111": {
+        "NUSEQPATR": 2087,
+        "NUPATRIMONIO": 28921,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "69": {
+        "NUSEQPATR": 2044,
+        "NUPATRIMONIO": 28922,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "126": {
+        "NUSEQPATR": 2103,
+        "NUPATRIMONIO": 28923,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "118": {
+        "NUSEQPATR": 2094,
+        "NUPATRIMONIO": 28924,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "62": {
+        "NUSEQPATR": 2037,
+        "NUPATRIMONIO": 28925,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "112": {
+        "NUSEQPATR": 2088,
+        "NUPATRIMONIO": 28926,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "143": {
+        "NUSEQPATR": 2120,
+        "NUPATRIMONIO": 28927,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "401": {
+        "NUSEQPATR": 5989,
+        "NUPATRIMONIO": 28928,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "127": {
+        "NUSEQPATR": 2104,
+        "NUPATRIMONIO": 28929,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "119": {
+        "NUSEQPATR": 2095,
+        "NUPATRIMONIO": 28930,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "128": {
+        "NUSEQPATR": 2105,
+        "NUPATRIMONIO": 28931,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "22": {
+        "NUSEQPATR": 1997,
+        "NUPATRIMONIO": 28932,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "70": {
+        "NUSEQPATR": 2045,
+        "NUPATRIMONIO": 28933,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "313": {
+        "NUSEQPATR": 5622,
+        "NUPATRIMONIO": 28934,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "63": {
+        "NUSEQPATR": 2038,
+        "NUPATRIMONIO": 28935,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "64": {
+        "NUSEQPATR": 2039,
+        "NUPATRIMONIO": 28936,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "168": {
+        "NUSEQPATR": 2403,
+        "NUPATRIMONIO": 28937,
+        "DEPATRIMONIO": "SUPORTE 2 GAVETAS PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "164": {
+        "NUSEQPATR": 2396,
+        "NUPATRIMONIO": 28938,
+        "DEPATRIMONIO": "MONITOR LED BRAZIL PC 20WR 75HZ 20 BIVOLT PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "140": {
+        "NUSEQPATR": 2117,
+        "NUPATRIMONIO": 28939,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "113": {
+        "NUSEQPATR": 2089,
+        "NUPATRIMONIO": 28940,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "114": {
+        "NUSEQPATR": 2090,
+        "NUPATRIMONIO": 28941,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "115": {
+        "NUSEQPATR": 2091,
+        "NUPATRIMONIO": 28942,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "116": {
+        "NUSEQPATR": 2092,
+        "NUPATRIMONIO": 28943,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "53": {
+        "NUSEQPATR": 2028,
+        "NUPATRIMONIO": 28944,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "54": {
+        "NUSEQPATR": 2029,
+        "NUPATRIMONIO": 28945,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "55": {
+        "NUSEQPATR": 2030,
+        "NUPATRIMONIO": 28946,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "56": {
+        "NUSEQPATR": 2031,
+        "NUPATRIMONIO": 28947,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "80": {
+        "NUSEQPATR": 2056,
+        "NUPATRIMONIO": 28948,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "551": {
+        "NUSEQPATR": 8897,
+        "NUPATRIMONIO": 28949,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "533": {
+        "NUSEQPATR": 8879,
+        "NUPATRIMONIO": 28950,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "178": {
+        "NUSEQPATR": 2477,
+        "NUPATRIMONIO": 28997,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "176": {
+        "NUSEQPATR": 2475,
+        "NUPATRIMONIO": 28998,
+        "DEPATRIMONIO": "MONITOR 19 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "519": {
+        "NUSEQPATR": 8365,
+        "NUPATRIMONIO": 29062,
+        "DEPATRIMONIO": "MONITOR LED WIDESCREEN 15.4\" BRAZILPC 15BPC-KAN HDMI - BRAZIL PC",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "41": {
+        "NUSEQPATR": 2016,
+        "NUPATRIMONIO": 29098,
+        "DEPATRIMONIO": "MONITOR 20 POLEGADAS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "418": {
+        "NUSEQPATR": 6789,
+        "NUPATRIMONIO": 29112,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A01",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "180": {
+        "NUSEQPATR": 2481,
+        "NUPATRIMONIO": 29113,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG A02S",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "419": {
+        "NUSEQPATR": 6790,
+        "NUPATRIMONIO": 29114,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A13",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "420": {
+        "NUSEQPATR": 6791,
+        "NUPATRIMONIO": 29115,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A14 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "181": {
+        "NUSEQPATR": 2482,
+        "NUPATRIMONIO": 29116,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A22 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "182": {
+        "NUSEQPATR": 2483,
+        "NUPATRIMONIO": 29117,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A03 CORE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "421": {
+        "NUSEQPATR": 6792,
+        "NUPATRIMONIO": 29118,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A13",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "183": {
+        "NUSEQPATR": 2484,
+        "NUPATRIMONIO": 29119,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A22 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "422": {
+        "NUSEQPATR": 6793,
+        "NUPATRIMONIO": 29120,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A02",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "184": {
+        "NUSEQPATR": 2485,
+        "NUPATRIMONIO": 29121,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A22 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "423": {
+        "NUSEQPATR": 6794,
+        "NUPATRIMONIO": 29122,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A14",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "437": {
+        "NUSEQPATR": 6812,
+        "NUPATRIMONIO": 29123,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A03 CORE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "424": {
+        "NUSEQPATR": 6795,
+        "NUPATRIMONIO": 29124,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A13",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "438": {
+        "NUSEQPATR": 6813,
+        "NUPATRIMONIO": 29125,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG A22",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "425": {
+        "NUSEQPATR": 6796,
+        "NUPATRIMONIO": 29127,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A03 CORE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "179": {
+        "NUSEQPATR": 2480,
+        "NUPATRIMONIO": 29129,
+        "DEPATRIMONIO": "MONITOR GAMER KOZZ 19 5MS 60HZ HDMI VGA GAMING AJUSTÁVEL",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "439": {
+        "NUSEQPATR": 6814,
+        "NUPATRIMONIO": 29130,
+        "DEPATRIMONIO": "SMARTPHONE MOTOROLA MOTO G22",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "416": {
+        "NUSEQPATR": 6782,
+        "NUPATRIMONIO": 29131,
+        "DEPATRIMONIO": "MONITOR LED 20 PCTOP HDMI MLP200HDMI PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "426": {
+        "NUSEQPATR": 6797,
+        "NUPATRIMONIO": 29132,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A13",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "440": {
+        "NUSEQPATR": 6815,
+        "NUPATRIMONIO": 29133,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A05",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "427": {
+        "NUSEQPATR": 6802,
+        "NUPATRIMONIO": 29134,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG A02S",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "186": {
+        "NUSEQPATR": 2487,
+        "NUPATRIMONIO": 29135,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A22 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "428": {
+        "NUSEQPATR": 6803,
+        "NUPATRIMONIO": 29138,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A13",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "187": {
+        "NUSEQPATR": 2488,
+        "NUPATRIMONIO": 29139,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A02",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "429": {
+        "NUSEQPATR": 6804,
+        "NUPATRIMONIO": 29140,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A14 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "430": {
+        "NUSEQPATR": 6805,
+        "NUPATRIMONIO": 29141,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A14",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "431": {
+        "NUSEQPATR": 6806,
+        "NUPATRIMONIO": 29142,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A14",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "432": {
+        "NUSEQPATR": 6807,
+        "NUPATRIMONIO": 29143,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A03 CORE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "188": {
+        "NUSEQPATR": 2489,
+        "NUPATRIMONIO": 29144,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG A02S",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "433": {
+        "NUSEQPATR": 6808,
+        "NUPATRIMONIO": 29145,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG A02S",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "434": {
+        "NUSEQPATR": 6809,
+        "NUPATRIMONIO": 29146,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A03 CORE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "572": {
+        "NUSEQPATR": 10602,
+        "NUPATRIMONIO": 29147,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A14",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "435": {
+        "NUSEQPATR": 6810,
+        "NUPATRIMONIO": 29148,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A03 CORE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "189": {
+        "NUSEQPATR": 2490,
+        "NUPATRIMONIO": 29149,
+        "DEPATRIMONIO": "SMARTPHONE MOTOROLA MOTO E7 POWER",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "147": {
+        "NUSEQPATR": 2245,
+        "NUPATRIMONIO": 29151,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "542": {
+        "NUSEQPATR": 8888,
+        "NUPATRIMONIO": 29152,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "231": {
+        "NUSEQPATR": 3734,
+        "NUPATRIMONIO": 29153,
+        "DEPATRIMONIO": "GABINETE DE METAL (C\/ E SEM PEÇAS OBSOLETAS)",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "20": {
+        "NUSEQPATR": 1995,
+        "NUPATRIMONIO": 29154,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "232": {
+        "NUSEQPATR": 3735,
+        "NUPATRIMONIO": 29155,
+        "DEPATRIMONIO": "GABINETE DE METAL (C\/ E SEM PEÇAS OBSOLETAS)",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "85": {
+        "NUSEQPATR": 2061,
+        "NUPATRIMONIO": 29156,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "57": {
+        "NUSEQPATR": 2032,
+        "NUPATRIMONIO": 29157,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "58": {
+        "NUSEQPATR": 2033,
+        "NUPATRIMONIO": 29158,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "30": {
+        "NUSEQPATR": 2005,
+        "NUPATRIMONIO": 29159,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "72": {
+        "NUSEQPATR": 2048,
+        "NUPATRIMONIO": 29160,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "549": {
+        "NUSEQPATR": 8895,
+        "NUPATRIMONIO": 29161,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "492": {
+        "NUSEQPATR": 7871,
+        "NUPATRIMONIO": 29178,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "237": {
+        "NUSEQPATR": 3779,
+        "NUPATRIMONIO": 29185,
+        "DEPATRIMONIO": "MESA DE ESCRITÓRIO INDIVIDUAL EM L",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "238": {
+        "NUSEQPATR": 3780,
+        "NUPATRIMONIO": 29186,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "144": {
+        "NUSEQPATR": 2121,
+        "NUPATRIMONIO": 29189,
+        "DEPATRIMONIO": "MONITOR 19,5 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "241": {
+        "NUSEQPATR": 3788,
+        "NUPATRIMONIO": 29191,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "240": {
+        "NUSEQPATR": 3787,
+        "NUPATRIMONIO": 29193,
+        "DEPATRIMONIO": "MESA DE ESCRITÓRIO INDIVIDUAL EM L",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "223": {
+        "NUSEQPATR": 3422,
+        "NUPATRIMONIO": 29197,
+        "DEPATRIMONIO": "MICROONDAS NN-ST25LWRU 700W BRANCO PANASONIC 127V",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "414": {
+        "NUSEQPATR": 6722,
+        "NUPATRIMONIO": 29219,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO INDIVIDUAL 2 GAVETAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "415": {
+        "NUSEQPATR": 6723,
+        "NUPATRIMONIO": 29228,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO GIRATORIA N17",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "229": {
+        "NUSEQPATR": 3732,
+        "NUPATRIMONIO": 29252,
+        "DEPATRIMONIO": "GABINETE DE METAL (C\/ E SEM PEÇAS OBSOLETAS)",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "234": {
+        "NUSEQPATR": 3737,
+        "NUPATRIMONIO": 29253,
+        "DEPATRIMONIO": "GABINETE DE METAL (C\/ E SEM PEÇAS OBSOLETAS)",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "131": {
+        "NUSEQPATR": 2108,
+        "NUPATRIMONIO": 29257,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "31": {
+        "NUSEQPATR": 2006,
+        "NUPATRIMONIO": 29258,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "543": {
+        "NUSEQPATR": 8889,
+        "NUPATRIMONIO": 29267,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "271": {
+        "NUSEQPATR": 5558,
+        "NUPATRIMONIO": 29269,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "59": {
+        "NUSEQPATR": 2034,
+        "NUPATRIMONIO": 29272,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "86": {
+        "NUSEQPATR": 2062,
+        "NUPATRIMONIO": 29273,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "235": {
+        "NUSEQPATR": 3738,
+        "NUPATRIMONIO": 29274,
+        "DEPATRIMONIO": "GABINETE DE METAL (C\/ E SEM PEÇAS OBSOLETAS)",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "121": {
+        "NUSEQPATR": 2097,
+        "NUPATRIMONIO": 29275,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "230": {
+        "NUSEQPATR": 3733,
+        "NUPATRIMONIO": 29276,
+        "DEPATRIMONIO": "GABINETE DE METAL (C\/ E SEM PEÇAS OBSOLETAS)",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "32": {
+        "NUSEQPATR": 2007,
+        "NUPATRIMONIO": 29277,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "122": {
+        "NUSEQPATR": 2098,
+        "NUPATRIMONIO": 29278,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "33": {
+        "NUSEQPATR": 2008,
+        "NUPATRIMONIO": 29279,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "60": {
+        "NUSEQPATR": 2035,
+        "NUPATRIMONIO": 29280,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "544": {
+        "NUSEQPATR": 8890,
+        "NUPATRIMONIO": 29281,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "61": {
+        "NUSEQPATR": 2036,
+        "NUPATRIMONIO": 29282,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "132": {
+        "NUSEQPATR": 2109,
+        "NUPATRIMONIO": 29283,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "87": {
+        "NUSEQPATR": 2063,
+        "NUPATRIMONIO": 29284,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "145": {
+        "NUSEQPATR": 2122,
+        "NUPATRIMONIO": 29285,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "34": {
+        "NUSEQPATR": 2009,
+        "NUPATRIMONIO": 29286,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "146": {
+        "NUSEQPATR": 2123,
+        "NUPATRIMONIO": 29287,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "88": {
+        "NUSEQPATR": 2064,
+        "NUPATRIMONIO": 29288,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "73": {
+        "NUSEQPATR": 2049,
+        "NUPATRIMONIO": 29289,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "545": {
+        "NUSEQPATR": 8891,
+        "NUPATRIMONIO": 29290,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "141": {
+        "NUSEQPATR": 2118,
+        "NUPATRIMONIO": 29291,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "89": {
+        "NUSEQPATR": 2065,
+        "NUPATRIMONIO": 29292,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "35": {
+        "NUSEQPATR": 2010,
+        "NUPATRIMONIO": 29293,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "349": {
+        "NUSEQPATR": 5658,
+        "NUPATRIMONIO": 29295,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "233": {
+        "NUSEQPATR": 3736,
+        "NUPATRIMONIO": 29296,
+        "DEPATRIMONIO": "GABINETE DE METAL (C\/ E SEM PEÇAS OBSOLETAS)",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "117": {
+        "NUSEQPATR": 2093,
+        "NUPATRIMONIO": 29298,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "90": {
+        "NUSEQPATR": 2066,
+        "NUPATRIMONIO": 29299,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "91": {
+        "NUSEQPATR": 2067,
+        "NUPATRIMONIO": 29300,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "444": {
+        "NUSEQPATR": 6864,
+        "NUPATRIMONIO": 29375,
+        "DEPATRIMONIO": "MONITOR HAYOM LED WIDESCREEN HD 19,5 HDMI E VGA 60HZ",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "454": {
+        "NUSEQPATR": 6948,
+        "NUPATRIMONIO": 29376,
+        "DEPATRIMONIO": "MONITOR MYMAX 19'' POLEGADAS HD LED 60HZ HDMI VGA 3.6MS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "453": {
+        "NUSEQPATR": 6947,
+        "NUPATRIMONIO": 29377,
+        "DEPATRIMONIO": "MONITOR MYMAX 19'' POLEGADAS HD LED 60HZ HDMI VGA 3.6MS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "573": {
+        "NUSEQPATR": 10687,
+        "NUPATRIMONIO": 29378,
+        "DEPATRIMONIO": "MONITOR FMAXX 19'' MQ19V LED COM HDMI VGA VESA COR PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "463": {
+        "NUSEQPATR": 7115,
+        "NUPATRIMONIO": 29379,
+        "DEPATRIMONIO": "MONITOR MYMAX 19'' POLEGADAS HD LED 60HZ HDMI VGA 3.6MS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "442": {
+        "NUSEQPATR": 6858,
+        "NUPATRIMONIO": 29381,
+        "DEPATRIMONIO": "SWITCH GIGABIT TP-LINK 8 PORTAS LS1008G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "464": {
+        "NUSEQPATR": 7116,
+        "NUPATRIMONIO": 29382,
+        "DEPATRIMONIO": "MONITOR MYMAX 19'' POLEGADAS HD LED 60HZ HDMI VGA 3.6MS PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "480": {
+        "NUSEQPATR": 7359,
+        "NUPATRIMONIO": 29383,
+        "DEPATRIMONIO": "MONITOR BLUECASE 19'' BM19K4HVW LED PRETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "204": {
+        "NUSEQPATR": 2597,
+        "NUPATRIMONIO": 29384,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A03 CORE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "206": {
+        "NUSEQPATR": 2600,
+        "NUPATRIMONIO": 29385,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A02",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "399": {
+        "NUSEQPATR": 5933,
+        "NUPATRIMONIO": 29386,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A14",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "236": {
+        "NUSEQPATR": 3739,
+        "NUPATRIMONIO": 29387,
+        "DEPATRIMONIO": "100V\/240V",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "486": {
+        "NUSEQPATR": 7435,
+        "NUPATRIMONIO": 29389,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "487": {
+        "NUSEQPATR": 7436,
+        "NUPATRIMONIO": 29390,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "468": {
+        "NUSEQPATR": 7124,
+        "NUPATRIMONIO": 29391,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO 2 GAVETAS COM CHAVE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "398": {
+        "NUSEQPATR": 5932,
+        "NUPATRIMONIO": 29392,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A14",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "400": {
+        "NUSEQPATR": 5934,
+        "NUPATRIMONIO": 29393,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A14",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "484": {
+        "NUSEQPATR": 7404,
+        "NUPATRIMONIO": 29394,
+        "DEPATRIMONIO": "MESA SECRETARIA MAXXI 120X60 CINZA 2 GAVETAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "202": {
+        "NUSEQPATR": 2595,
+        "NUPATRIMONIO": 29397,
+        "DEPATRIMONIO": "MONITOR 19,5 POLEGADAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "198": {
+        "NUSEQPATR": 2514,
+        "NUPATRIMONIO": 29398,
+        "DEPATRIMONIO": "SCANNER DE MESA BROTHER ADS-3100 COR BRANCO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "452": {
+        "NUSEQPATR": 6910,
+        "NUPATRIMONIO": 29399,
+        "DEPATRIMONIO": "SCANNER DE MESA BROTHER ADS-3100 COR BRANCO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "443": {
+        "NUSEQPATR": 6860,
+        "NUPATRIMONIO": 29400,
+        "DEPATRIMONIO": "SUPORTE 2 GAVETAS PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "133": {
+        "NUSEQPATR": 2110,
+        "NUPATRIMONIO": 30022,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "7": {
+        "NUSEQPATR": 1798,
+        "NUPATRIMONIO": 30023,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "9": {
+        "NUSEQPATR": 1801,
+        "NUPATRIMONIO": 30047,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "10": {
+        "NUSEQPATR": 1817,
+        "NUPATRIMONIO": 30048,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "436": {
+        "NUSEQPATR": 6811,
+        "NUPATRIMONIO": 30103,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "244": {
+        "NUSEQPATR": 3965,
+        "NUPATRIMONIO": 30104,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "249": {
+        "NUSEQPATR": 3971,
+        "NUPATRIMONIO": 30142,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "250": {
+        "NUSEQPATR": 3972,
+        "NUPATRIMONIO": 30143,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "251": {
+        "NUSEQPATR": 3973,
+        "NUPATRIMONIO": 30144,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "252": {
+        "NUSEQPATR": 3974,
+        "NUPATRIMONIO": 30145,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "245": {
+        "NUSEQPATR": 3966,
+        "NUPATRIMONIO": 30205,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "246": {
+        "NUSEQPATR": 3967,
+        "NUPATRIMONIO": 30206,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "247": {
+        "NUSEQPATR": 3968,
+        "NUPATRIMONIO": 30207,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "248": {
+        "NUSEQPATR": 3969,
+        "NUPATRIMONIO": 30208,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "258": {
+        "NUSEQPATR": 5175,
+        "NUPATRIMONIO": 30229,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "259": {
+        "NUSEQPATR": 5176,
+        "NUPATRIMONIO": 30230,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "260": {
+        "NUSEQPATR": 5177,
+        "NUPATRIMONIO": 30231,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "207": {
+        "NUSEQPATR": 2601,
+        "NUPATRIMONIO": 30232,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A22 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "262": {
+        "NUSEQPATR": 5395,
+        "NUPATRIMONIO": 30240,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "261": {
+        "NUSEQPATR": 5185,
+        "NUPATRIMONIO": 30332,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG A22",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "190": {
+        "NUSEQPATR": 2491,
+        "NUPATRIMONIO": 31495,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A14 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "560": {
+        "NUSEQPATR": 8963,
+        "NUPATRIMONIO": 31666,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "411": {
+        "NUSEQPATR": 6368,
+        "NUPATRIMONIO": 31694,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "409": {
+        "NUSEQPATR": 6338,
+        "NUPATRIMONIO": 31695,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "172": {
+        "NUSEQPATR": 2451,
+        "NUPATRIMONIO": 31696,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY S20 FE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "403": {
+        "NUSEQPATR": 6186,
+        "NUPATRIMONIO": 31699,
+        "DEPATRIMONIO": "ROTEADOR MIKROTIK",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "412": {
+        "NUSEQPATR": 6408,
+        "NUPATRIMONIO": 31700,
+        "DEPATRIMONIO": "ROTEADOR MIKROTIK",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "157": {
+        "NUSEQPATR": 2345,
+        "NUPATRIMONIO": 31899,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "158": {
+        "NUSEQPATR": 2355,
+        "NUPATRIMONIO": 31939,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "161": {
+        "NUSEQPATR": 2388,
+        "NUPATRIMONIO": 31982,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "568": {
+        "NUSEQPATR": 9050,
+        "NUPATRIMONIO": 31983,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "569": {
+        "NUSEQPATR": 9051,
+        "NUPATRIMONIO": 31984,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "162": {
+        "NUSEQPATR": 2389,
+        "NUPATRIMONIO": 31985,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "163": {
+        "NUSEQPATR": 2390,
+        "NUPATRIMONIO": 31986,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "170": {
+        "NUSEQPATR": 2420,
+        "NUPATRIMONIO": 32020,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "171": {
+        "NUSEQPATR": 2421,
+        "NUPATRIMONIO": 32021,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "413": {
+        "NUSEQPATR": 6512,
+        "NUPATRIMONIO": 32025,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A03 CORE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "173": {
+        "NUSEQPATR": 2452,
+        "NUPATRIMONIO": 32101,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "174": {
+        "NUSEQPATR": 2464,
+        "NUPATRIMONIO": 32224,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "175": {
+        "NUSEQPATR": 2472,
+        "NUPATRIMONIO": 32225,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "177": {
+        "NUSEQPATR": 2476,
+        "NUPATRIMONIO": 32229,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "658": {
+        "NUSEQPATR": 95474,
+        "NUPATRIMONIO": 32242,
+        "DEPATRIMONIO": "SMARTPHONE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "185": {
+        "NUSEQPATR": 2486,
+        "NUPATRIMONIO": 32251,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "191": {
+        "NUSEQPATR": 2493,
+        "NUPATRIMONIO": 32253,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "441": {
+        "NUSEQPATR": 6816,
+        "NUPATRIMONIO": 32254,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "445": {
+        "NUSEQPATR": 6879,
+        "NUPATRIMONIO": 32291,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "446": {
+        "NUSEQPATR": 6900,
+        "NUPATRIMONIO": 32295,
+        "DEPATRIMONIO": "SWITCH TPLINK 8 PORTAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "447": {
+        "NUSEQPATR": 6901,
+        "NUPATRIMONIO": 32296,
+        "DEPATRIMONIO": "SWITCH TPLINK 8 PORTAS",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "192": {
+        "NUSEQPATR": 2502,
+        "NUPATRIMONIO": 32297,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "193": {
+        "NUSEQPATR": 2503,
+        "NUPATRIMONIO": 32298,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "194": {
+        "NUSEQPATR": 2504,
+        "NUPATRIMONIO": 32299,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "195": {
+        "NUSEQPATR": 2505,
+        "NUPATRIMONIO": 32354,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "455": {
+        "NUSEQPATR": 7028,
+        "NUPATRIMONIO": 32355,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "456": {
+        "NUSEQPATR": 7029,
+        "NUPATRIMONIO": 32356,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "457": {
+        "NUSEQPATR": 7030,
+        "NUPATRIMONIO": 32357,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "458": {
+        "NUSEQPATR": 7031,
+        "NUPATRIMONIO": 32358,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "196": {
+        "NUSEQPATR": 2511,
+        "NUPATRIMONIO": 32361,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "197": {
+        "NUSEQPATR": 2512,
+        "NUPATRIMONIO": 32362,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG GALAXY A15 5G",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "199": {
+        "NUSEQPATR": 2531,
+        "NUPATRIMONIO": 32389,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "574": {
+        "NUSEQPATR": 10688,
+        "NUPATRIMONIO": 32390,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "477": {
+        "NUSEQPATR": 7311,
+        "NUPATRIMONIO": 32399,
+        "DEPATRIMONIO": "ACCESS POINT TP-LINK EAP650, WI-FI 6, 2.976 MBPS, DUAL BAND, AX3000, TETO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "215": {
+        "NUSEQPATR": 3022,
+        "NUPATRIMONIO": 32400,
+        "DEPATRIMONIO": "ACCESS POINT TP LINK AX 3000",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "203": {
+        "NUSEQPATR": 2596,
+        "NUPATRIMONIO": 32433,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "451": {
+        "NUSEQPATR": 6906,
+        "NUPATRIMONIO": 32447,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO GIRATORIA N17",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "474": {
+        "NUSEQPATR": 7157,
+        "NUPATRIMONIO": 32448,
+        "DEPATRIMONIO": "SUPORTE 2 GAVETAS PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "450": {
+        "NUSEQPATR": 6905,
+        "NUPATRIMONIO": 32456,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO GIRATORIA N17",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "472": {
+        "NUSEQPATR": 7137,
+        "NUPATRIMONIO": 32481,
+        "DEPATRIMONIO": "GAVETEIRO 4 GAVETAS COM CHAVE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "201": {
+        "NUSEQPATR": 2594,
+        "NUPATRIMONIO": 32487,
+        "DEPATRIMONIO": "SUPORTE PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "470": {
+        "NUSEQPATR": 7135,
+        "NUPATRIMONIO": 32492,
+        "DEPATRIMONIO": "GAVETEIRO 4 GAVETAS COM CHAVE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "448": {
+        "NUSEQPATR": 6903,
+        "NUPATRIMONIO": 32497,
+        "DEPATRIMONIO": "MICROONDAS CONSUL CMA20BB 20 LITROS COR BRANCO 110V",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "449": {
+        "NUSEQPATR": 6904,
+        "NUPATRIMONIO": 32498,
+        "DEPATRIMONIO": "MICROONDAS CONSUL CMA20BB 20 LITROS COR BRANCO 110V",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "471": {
+        "NUSEQPATR": 7136,
+        "NUPATRIMONIO": 32507,
+        "DEPATRIMONIO": "GAVETEIRO 4 GAVETAS COM CHAVE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "465": {
+        "NUSEQPATR": 7117,
+        "NUPATRIMONIO": 32536,
+        "DEPATRIMONIO": "VENTILADOR DE PAREDE VENTIDELTA 60CM PREMIUM PRETO BIV 170W COR DAS PAS NATURAL 110V\/220V",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "469": {
+        "NUSEQPATR": 7125,
+        "NUPATRIMONIO": 32558,
+        "DEPATRIMONIO": "MESA DE ESCRITORIO 2 GAVETAS COM CHAVE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "475": {
+        "NUSEQPATR": 7158,
+        "NUPATRIMONIO": 32570,
+        "DEPATRIMONIO": "SUPORTE 2 GAVETAS PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "476": {
+        "NUSEQPATR": 7159,
+        "NUPATRIMONIO": 32571,
+        "DEPATRIMONIO": "SUPORTE 2 GAVETAS PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "460": {
+        "NUSEQPATR": 7112,
+        "NUPATRIMONIO": 32596,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO ECOFLEX 467 ERGONOMICA PRETA COM ESTOFADO DE TECIDO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "462": {
+        "NUSEQPATR": 7114,
+        "NUPATRIMONIO": 32597,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO ECOFLEX 467 ERGONOMICA PRETA COM ESTOFADO DE TECIDO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "459": {
+        "NUSEQPATR": 7111,
+        "NUPATRIMONIO": 32598,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO ECOFLEX 467 ERGONOMICA PRETA COM ESTOFADO DE TECIDO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "478": {
+        "NUSEQPATR": 7321,
+        "NUPATRIMONIO": 32957,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "479": {
+        "NUSEQPATR": 7322,
+        "NUPATRIMONIO": 32958,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "483": {
+        "NUSEQPATR": 7382,
+        "NUPATRIMONIO": 33137,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO GIRATORIA N17",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "482": {
+        "NUSEQPATR": 7381,
+        "NUPATRIMONIO": 33138,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO GIRATORIA N17",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "575": {
+        "NUSEQPATR": 10718,
+        "NUPATRIMONIO": 33143,
+        "DEPATRIMONIO": "SUPORTE 2 GAVETAS PARA MONITOR",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "213": {
+        "NUSEQPATR": 2968,
+        "NUPATRIMONIO": 35805,
+        "DEPATRIMONIO": "AR CONDICIONADO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "461": {
+        "NUSEQPATR": 7113,
+        "NUPATRIMONIO": 35901,
+        "DEPATRIMONIO": "CADEIRA DE ESCRITORIO ECOFLEX 467 ERGONOMICA PRETA COM ESTOFADO DE TECIDO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "481": {
+        "NUSEQPATR": 7367,
+        "NUPATRIMONIO": 36134,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "200": {
+        "NUSEQPATR": 2589,
+        "NUPATRIMONIO": 36141,
+        "DEPATRIMONIO": "CPU",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "485": {
+        "NUSEQPATR": 7433,
+        "NUPATRIMONIO": 36171,
+        "DEPATRIMONIO": "SMARTPHONE",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "216": {
+        "NUSEQPATR": 3023,
+        "NUPATRIMONIO": 36897,
+        "DEPATRIMONIO": "RACK",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "214": {
+        "NUSEQPATR": 2969,
+        "NUPATRIMONIO": 36994,
+        "DEPATRIMONIO": "AR CONDICIONADO",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    },
+    "652": {
+        "NUSEQPATR": 11381,
+        "NUPATRIMONIO": 37221,
+        "DEPATRIMONIO": "SMARTPHONE SAMSUNG",
+        "CDLOCAL": 1895,
+        "CDPROJETO": 888
+    }
+}

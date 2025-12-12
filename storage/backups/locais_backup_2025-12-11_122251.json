@@ -1,0 +1,3874 @@
+[
+    {
+        "id": 70,
+        "cdlocal": 70,
+        "codigo_projeto": 8,
+        "delocal": "ESCRITORIO SC",
+        "flativo": 1,
+        "tabfant_id": 8
+    },
+    {
+        "id": 71,
+        "cdlocal": 71,
+        "codigo_projeto": 197,
+        "delocal": "MF CHAPEC\u00d3",
+        "flativo": 0,
+        "tabfant_id": 463
+    },
+    {
+        "id": 72,
+        "cdlocal": 72,
+        "codigo_projeto": 195,
+        "delocal": "FILIAL",
+        "flativo": 1,
+        "tabfant_id": 195
+    },
+    {
+        "id": 73,
+        "cdlocal": 73,
+        "codigo_projeto": 198,
+        "delocal": "FILIAL",
+        "flativo": 1,
+        "tabfant_id": 198
+    },
+    {
+        "id": 74,
+        "cdlocal": 74,
+        "codigo_projeto": 407,
+        "delocal": "FILIAL",
+        "flativo": 1,
+        "tabfant_id": 407
+    },
+    {
+        "id": 75,
+        "cdlocal": 75,
+        "codigo_projeto": 199,
+        "delocal": "FILIAL",
+        "flativo": 1,
+        "tabfant_id": 199
+    },
+    {
+        "id": 76,
+        "cdlocal": 76,
+        "codigo_projeto": 530,
+        "delocal": "FILIAL",
+        "flativo": 1,
+        "tabfant_id": 530
+    },
+    {
+        "id": 77,
+        "cdlocal": 77,
+        "codigo_projeto": 196,
+        "delocal": "FILIAL",
+        "flativo": 1,
+        "tabfant_id": 196
+    },
+    {
+        "id": 78,
+        "cdlocal": 78,
+        "codigo_projeto": 545,
+        "delocal": "FILIAL",
+        "flativo": 1,
+        "tabfant_id": 545
+    },
+    {
+        "id": 79,
+        "cdlocal": 79,
+        "codigo_projeto": 194,
+        "delocal": "FILIAL",
+        "flativo": 1,
+        "tabfant_id": 194
+    },
+    {
+        "id": 80,
+        "cdlocal": 81,
+        "codigo_projeto": 552,
+        "delocal": "FILIAL",
+        "flativo": 1,
+        "tabfant_id": 552
+    },
+    {
+        "id": 81,
+        "cdlocal": 82,
+        "codigo_projeto": 137,
+        "delocal": "ESCRITORIO SC",
+        "flativo": 1,
+        "tabfant_id": 137
+    },
+    {
+        "id": 82,
+        "cdlocal": 83,
+        "codigo_projeto": 413,
+        "delocal": "ESCRITORIO",
+        "flativo": 1,
+        "tabfant_id": 413
+    },
+    {
+        "id": 83,
+        "cdlocal": 84,
+        "codigo_projeto": 487,
+        "delocal": "VALE DO ITAJAI",
+        "flativo": 1,
+        "tabfant_id": 487
+    },
+    {
+        "id": 84,
+        "cdlocal": 85,
+        "codigo_projeto": 577,
+        "delocal": "VALE ITAJAI",
+        "flativo": 1,
+        "tabfant_id": 577
+    },
+    {
+        "id": 85,
+        "cdlocal": 88,
+        "codigo_projeto": 577,
+        "delocal": "OESTE",
+        "flativo": 1,
+        "tabfant_id": 577
+    },
+    {
+        "id": 86,
+        "cdlocal": 89,
+        "codigo_projeto": 577,
+        "delocal": "NORTE",
+        "flativo": 1,
+        "tabfant_id": 577
+    },
+    {
+        "id": 87,
+        "cdlocal": 90,
+        "codigo_projeto": 487,
+        "delocal": "JARAGUA DO SUL - EQUIPE M\u00d3VEL",
+        "flativo": 1,
+        "tabfant_id": 487
+    },
+    {
+        "id": 88,
+        "cdlocal": 91,
+        "codigo_projeto": 501,
+        "delocal": "PR - SC - S\u00c3O MIGUEL D OESTE",
+        "flativo": 1,
+        "tabfant_id": 501
+    },
+    {
+        "id": 89,
+        "cdlocal": 92,
+        "codigo_projeto": 487,
+        "delocal": "CORUP\u00c1",
+        "flativo": 1,
+        "tabfant_id": 487
+    },
+    {
+        "id": 90,
+        "cdlocal": 93,
+        "codigo_projeto": 487,
+        "delocal": "MOVEL OESTE",
+        "flativo": 1,
+        "tabfant_id": 487
+    },
+    {
+        "id": 91,
+        "cdlocal": 94,
+        "codigo_projeto": 463,
+        "delocal": "JOINVILLE",
+        "flativo": 1,
+        "tabfant_id": 463
+    },
+    {
+        "id": 92,
+        "cdlocal": 95,
+        "codigo_projeto": 487,
+        "delocal": "LESTE",
+        "flativo": 1,
+        "tabfant_id": 487
+    },
+    {
+        "id": 93,
+        "cdlocal": 96,
+        "codigo_projeto": 487,
+        "delocal": "VALE DO ITAJAI",
+        "flativo": 1,
+        "tabfant_id": 487
+    },
+    {
+        "id": 94,
+        "cdlocal": 97,
+        "codigo_projeto": 487,
+        "delocal": "NORTE",
+        "flativo": 1,
+        "tabfant_id": 487
+    },
+    {
+        "id": 95,
+        "cdlocal": 98,
+        "codigo_projeto": 487,
+        "delocal": "OESTE",
+        "flativo": 1,
+        "tabfant_id": 487
+    },
+    {
+        "id": 96,
+        "cdlocal": 99,
+        "codigo_projeto": 487,
+        "delocal": "SUL",
+        "flativo": 1,
+        "tabfant_id": 487
+    },
+    {
+        "id": 97,
+        "cdlocal": 100,
+        "codigo_projeto": 463,
+        "delocal": "JOACABA",
+        "flativo": 1,
+        "tabfant_id": 463
+    },
+    {
+        "id": 98,
+        "cdlocal": 101,
+        "codigo_projeto": 463,
+        "delocal": "SESAI 2 - CHAPEC\u00d3",
+        "flativo": 0,
+        "tabfant_id": 457
+    },
+    {
+        "id": 99,
+        "cdlocal": 102,
+        "codigo_projeto": 613,
+        "delocal": "SANTA ROSA DO SUL",
+        "flativo": 0,
+        "tabfant_id": 492
+    },
+    {
+        "id": 100,
+        "cdlocal": 103,
+        "codigo_projeto": 632,
+        "delocal": "BIGUA\u00c7U",
+        "flativo": 0,
+        "tabfant_id": 487
+    },
+    {
+        "id": 101,
+        "cdlocal": 104,
+        "codigo_projeto": 632,
+        "delocal": "FLORIANOPOLIS SC 401 SACO GRANDE",
+        "flativo": 1,
+        "tabfant_id": 632
+    },
+    {
+        "id": 102,
+        "cdlocal": 105,
+        "codigo_projeto": 613,
+        "delocal": "CEL. AMERICO",
+        "flativo": 0,
+        "tabfant_id": 487
+    },
+    {
+        "id": 103,
+        "cdlocal": 106,
+        "codigo_projeto": 632,
+        "delocal": "FLORIAN\u00d3POLIS RUA DELFINO LONTI, 306 UFSC TRINDADE",
+        "flativo": 1,
+        "tabfant_id": 632
+    },
+    {
+        "id": 104,
+        "cdlocal": 107,
+        "codigo_projeto": 632,
+        "delocal": "FLORIAN\u00d3POLIS RUA BOCAIUVA, 2125 CENTRO",
+        "flativo": 1,
+        "tabfant_id": 632
+    },
+    {
+        "id": 105,
+        "cdlocal": 108,
+        "codigo_projeto": 463,
+        "delocal": "TIMB\u00c9 DO SUL",
+        "flativo": 0,
+        "tabfant_id": 492
+    },
+    {
+        "id": 106,
+        "cdlocal": 109,
+        "codigo_projeto": 463,
+        "delocal": "FLORIAN\u00d3POLIS RUA ARCIPRESTE PAIVA, 107 PFN CENTRO",
+        "flativo": 1,
+        "tabfant_id": 463
+    },
+    {
+        "id": 107,
+        "cdlocal": 110,
+        "codigo_projeto": 463,
+        "delocal": "MIRAMAR",
+        "flativo": 0,
+        "tabfant_id": 487
+    },
+    {
+        "id": 1923,
+        "cdlocal": 131,
+        "codigo_projeto": null,
+        "delocal": "CAMBIRELA",
+        "flativo": 0,
+        "tabfant_id": 487
+    },
+    {
+        "id": 108,
+        "cdlocal": 111,
+        "codigo_projeto": 463,
+        "delocal": "FLORIAN\u00d3POLIS RUA DOS ILH\u00c9US, 336 SPU CENTRO",
+        "flativo": 1,
+        "tabfant_id": 463
+    },
+    {
+        "id": 109,
+        "cdlocal": 112,
+        "codigo_projeto": 100001,
+        "delocal": "DEP\u00d3SITO JARDIM ATLANTICO - FLORIAN\u00d3POLIS",
+        "flativo": 1,
+        "tabfant_id": 100001
+    },
+    {
+        "id": 110,
+        "cdlocal": 113,
+        "codigo_projeto": 632,
+        "delocal": "BRA\u00c7O DO NORTE",
+        "flativo": 0,
+        "tabfant_id": 492
+    },
+    {
+        "id": 111,
+        "cdlocal": 114,
+        "codigo_projeto": 648,
+        "delocal": "BH",
+        "flativo": 1,
+        "tabfant_id": 648
+    },
+    {
+        "id": 112,
+        "cdlocal": 115,
+        "codigo_projeto": 100001,
+        "delocal": "S\u00c3O JO\u00c3O DO SUL",
+        "flativo": 0,
+        "tabfant_id": 492
+    },
+    {
+        "id": 113,
+        "cdlocal": 116,
+        "codigo_projeto": 650,
+        "delocal": "SANTA ROSA DE LIMA",
+        "flativo": 0,
+        "tabfant_id": 492
+    },
+    {
+        "id": 114,
+        "cdlocal": 117,
+        "codigo_projeto": 618,
+        "delocal": "RUA ESTEVES JUNIOR N\u00ba 395 CENTRO FLORIAN\u00d3POLIS",
+        "flativo": 1,
+        "tabfant_id": 618
+    },
+    {
+        "id": 115,
+        "cdlocal": 119,
+        "codigo_projeto": 613,
+        "delocal": "LAGUNA",
+        "flativo": 0,
+        "tabfant_id": 492
+    },
+    {
+        "id": 116,
+        "cdlocal": 120,
+        "codigo_projeto": 530,
+        "delocal": "PEDRAS GRANDES",
+        "flativo": 0,
+        "tabfant_id": 492
+    },
+    {
+        "id": 117,
+        "cdlocal": 121,
+        "codigo_projeto": 571,
+        "delocal": "AGRON\u00d4MICA",
+        "flativo": 0,
+        "tabfant_id": 487
+    },
+    {
+        "id": 118,
+        "cdlocal": 122,
+        "codigo_projeto": 570,
+        "delocal": "FILIAL",
+        "flativo": 1,
+        "tabfant_id": 570
+    },
+    {
+        "id": 119,
+        "cdlocal": 123,
+        "codigo_projeto": 613,
+        "delocal": "M\u00d3VEL",
+        "flativo": 0,
+        "tabfant_id": 487
+    },
+    {
+        "id": 120,
+        "cdlocal": 124,
+        "codigo_projeto": 8,
+        "delocal": "SETOR VEICULO",
+        "flativo": 1,
+        "tabfant_id": 8
+    },
+    {
+        "id": 121,
+        "cdlocal": 125,
+        "codigo_projeto": 664,
+        "delocal": "TIJUCAS",
+        "flativo": 0,
+        "tabfant_id": 487
+    },
+    {
+        "id": 122,
+        "cdlocal": 126,
+        "codigo_projeto": 673,
+        "delocal": "ACADEMIA DA PRF - SC - 401",
+        "flativo": 1,
+        "tabfant_id": 673
+    },
+    {
+        "id": 123,
+        "cdlocal": 127,
+        "codigo_projeto": 667,
+        "delocal": "INCRA RJ",
+        "flativo": 1,
+        "tabfant_id": 667
+    },
+    {
+        "id": 124,
+        "cdlocal": 128,
+        "codigo_projeto": 144,
+        "delocal": "MF RJ",
+        "flativo": 1,
+        "tabfant_id": 144
+    },
+    {
+        "id": 125,
+        "cdlocal": 129,
+        "codigo_projeto": 672,
+        "delocal": "MARCENARIA",
+        "flativo": 1,
+        "tabfant_id": 672
+    },
+    {
+        "id": 126,
+        "cdlocal": 130,
+        "codigo_projeto": 8,
+        "delocal": "RH SC",
+        "flativo": 1,
+        "tabfant_id": 8
+    },
+    {
+        "id": 127,
+        "cdlocal": 132,
+        "codigo_projeto": 8,
+        "delocal": "GUARITA SEDE",
+        "flativo": 1,
+        "tabfant_id": 8
+    },
+    {
+        "id": 128,
+        "cdlocal": 133,
+        "codigo_projeto": 661,
+        "delocal": "S\u00c3O JO\u00c3O BATISTA",
+        "flativo": 0,
+        "tabfant_id": 487
+    },
+    {
+        "id": 129,
+        "cdlocal": 134,
+        "codigo_projeto": 679,
+        "delocal": "CAMPECHE",
+        "flativo": 0,
+        "tabfant_id": 487
+    },
+    {
+        "id": 130,
+        "cdlocal": 135,
+        "codigo_projeto": 632,
+        "delocal": "BB SC 5",
+        "flativo": 1,
+        "tabfant_id": 632
+    },
+    {
+        "id": 131,
+        "cdlocal": 136,
+        "codigo_projeto": 632,
+        "delocal": "BANCO DO BRASIL IRIRIU",
+        "flativo": 1,
+        "tabfant_id": 632
+    },
+    {
+        "id": 132,
+        "cdlocal": 137,
+        "codigo_projeto": 632,
+        "delocal": "AG\u00caNCIA TUPY",
+        "flativo": 1,
+        "tabfant_id": 632
+    },
+    {
+        "id": 133,
+        "cdlocal": 138,
+        "codigo_projeto": 686,
+        "delocal": "SEDE CIDASC",
+        "flativo": 1,
+        "tabfant_id": 686
+    },
+    {
+        "id": 134,
+        "cdlocal": 140,
+        "codigo_projeto": 656,
+        "delocal": "CETEM ES",
+        "flativo": 0,
+        "tabfant_id": 656
+    },
+    {
+        "id": 135,
+        "cdlocal": 141,
+        "codigo_projeto": 610,
+        "delocal": "BONFIM F\u00d3RUM\/JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 136,
+        "cdlocal": 142,
+        "codigo_projeto": 610,
+        "delocal": "CARMO DO CAJURU F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 137,
+        "cdlocal": 143,
+        "codigo_projeto": 610,
+        "delocal": "CONTAGEM NOVO PR\u00c9DIO",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 138,
+        "cdlocal": 144,
+        "codigo_projeto": 610,
+        "delocal": "CONTAGEM ARQUIVO GEARQ(GEARQ\/COPEQ)ARMAZ\u00c9NS 6-7 - CINC\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 139,
+        "cdlocal": 145,
+        "codigo_projeto": 610,
+        "delocal": "CONTAGEM ARQUIVO GEARQ(GEARQ\/COVAD)ARMAZ\u00c9M 1 - CINC\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 140,
+        "cdlocal": 146,
+        "codigo_projeto": 610,
+        "delocal": "CONTAGEM ARQUIVO GEARQ(GEDOC\/COARPE) ARMAZ\u00c9M 8 - CINC\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 141,
+        "cdlocal": 147,
+        "codigo_projeto": 610,
+        "delocal": "ENTRE-RIOS DE MINAS F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 142,
+        "cdlocal": 148,
+        "codigo_projeto": 610,
+        "delocal": "ESMERALDAS F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 143,
+        "cdlocal": 149,
+        "codigo_projeto": 610,
+        "delocal": "IGARAP\u00c9 F\u00d3RUM\/JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 144,
+        "cdlocal": 150,
+        "codigo_projeto": 610,
+        "delocal": "ITA\u00daNA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 145,
+        "cdlocal": 151,
+        "codigo_projeto": 610,
+        "delocal": "ITA\u00daNA JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 146,
+        "cdlocal": 152,
+        "codigo_projeto": 610,
+        "delocal": "JUATUBA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 147,
+        "cdlocal": 153,
+        "codigo_projeto": 610,
+        "delocal": "MATOZINHOS F\u00d3RUM\/JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 148,
+        "cdlocal": 154,
+        "codigo_projeto": 610,
+        "delocal": "SABAR\u00c1 F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 149,
+        "cdlocal": 155,
+        "codigo_projeto": 610,
+        "delocal": "SABAR\u00c1 JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 150,
+        "cdlocal": 156,
+        "codigo_projeto": 610,
+        "delocal": "S\u00c3O DOMINGOS DO PRATA F\u00d3RUM\/JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 151,
+        "cdlocal": 157,
+        "codigo_projeto": 610,
+        "delocal": "PEDRO LEOPOLDO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 152,
+        "cdlocal": 158,
+        "codigo_projeto": 610,
+        "delocal": "CAET\u00c9 F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 153,
+        "cdlocal": 159,
+        "codigo_projeto": 610,
+        "delocal": "CAET\u00c9 JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 154,
+        "cdlocal": 160,
+        "codigo_projeto": 610,
+        "delocal": "CARMO DA MATA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 155,
+        "cdlocal": 161,
+        "codigo_projeto": 610,
+        "delocal": "CARM\u00d3POLIS DE MINAS F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 156,
+        "cdlocal": 162,
+        "codigo_projeto": 610,
+        "delocal": "CL\u00c1UDIO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 157,
+        "cdlocal": 163,
+        "codigo_projeto": 610,
+        "delocal": "CONSELHEIRO LAFAIETE F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 158,
+        "cdlocal": 164,
+        "codigo_projeto": 610,
+        "delocal": "DIVIN\u00d3POLIS NOVO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 159,
+        "cdlocal": 165,
+        "codigo_projeto": 610,
+        "delocal": "FERROS F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 160,
+        "cdlocal": 166,
+        "codigo_projeto": 610,
+        "delocal": "ITABIRA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 161,
+        "cdlocal": 167,
+        "codigo_projeto": 610,
+        "delocal": "ITABIRITO F\u00d3RUM\/JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 162,
+        "cdlocal": 168,
+        "codigo_projeto": 610,
+        "delocal": "ITAPECERICA NOVO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 163,
+        "cdlocal": 169,
+        "codigo_projeto": 610,
+        "delocal": "MARIANA NOVO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 164,
+        "cdlocal": 170,
+        "codigo_projeto": 610,
+        "delocal": "MATEUS LEME F\u00d3RUM\/ARQUIVO",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 165,
+        "cdlocal": 171,
+        "codigo_projeto": 610,
+        "delocal": "MATEUS LEME JUIZADO",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 166,
+        "cdlocal": 172,
+        "codigo_projeto": 610,
+        "delocal": "NOVA LIMA F\u00d3RUM\/ARQUIVO",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 167,
+        "cdlocal": 173,
+        "codigo_projeto": 610,
+        "delocal": "NOVA LIMA F\u00d3RUM ANTIGO",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 168,
+        "cdlocal": 174,
+        "codigo_projeto": 610,
+        "delocal": "NOVA LIMA JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 169,
+        "cdlocal": 175,
+        "codigo_projeto": 610,
+        "delocal": "NOVA LIMA CEJUSC",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 170,
+        "cdlocal": 176,
+        "codigo_projeto": 610,
+        "delocal": "NOVA SERRANA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 171,
+        "cdlocal": 177,
+        "codigo_projeto": 610,
+        "delocal": "OLIVEIRA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 172,
+        "cdlocal": 178,
+        "codigo_projeto": 610,
+        "delocal": "PARAOPEBA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 173,
+        "cdlocal": 179,
+        "codigo_projeto": 610,
+        "delocal": "PASSA-TEMPO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 174,
+        "cdlocal": 180,
+        "codigo_projeto": 610,
+        "delocal": "SANTA B\u00c1RBARA F\u00d3RUM\/ARQUIVO",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 175,
+        "cdlocal": 181,
+        "codigo_projeto": 610,
+        "delocal": "SANTO ANT\u00d4NIO DO MONTE F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 176,
+        "cdlocal": 182,
+        "codigo_projeto": 610,
+        "delocal": "SETE LAGOAS FORUM\/ARQUIVOS",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 177,
+        "cdlocal": 183,
+        "codigo_projeto": 610,
+        "delocal": "SETE LAGOAS JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 178,
+        "cdlocal": 184,
+        "codigo_projeto": 610,
+        "delocal": "VESPASIANO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 179,
+        "cdlocal": 185,
+        "codigo_projeto": 610,
+        "delocal": "VESPASIANO JUIZADO E ARQUIVO",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 180,
+        "cdlocal": 186,
+        "codigo_projeto": 610,
+        "delocal": "BETIM F\u00d3RUM C\u00cdVEL\/CRIMINAL\/ARQUIVO",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 181,
+        "cdlocal": 187,
+        "codigo_projeto": 610,
+        "delocal": "BETIM JUIZADO",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 182,
+        "cdlocal": 188,
+        "codigo_projeto": 610,
+        "delocal": "BELO VALE F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 183,
+        "cdlocal": 189,
+        "codigo_projeto": 610,
+        "delocal": "IBIRIT\u00c9 F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 184,
+        "cdlocal": 190,
+        "codigo_projeto": 610,
+        "delocal": "IBIRIT\u00c9 JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 185,
+        "cdlocal": 191,
+        "codigo_projeto": 610,
+        "delocal": "IBIRIT\u00c9 ANEXO (1\u00aa E 3\u00aa VARAS)",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 186,
+        "cdlocal": 192,
+        "codigo_projeto": 610,
+        "delocal": "JABOTICATUBAS F\u00d3RUM\/JESP\/ARQUIVO",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 187,
+        "cdlocal": 193,
+        "codigo_projeto": 610,
+        "delocal": "PAR\u00c1 DE MINAS F\u00d3RUM\/ARQUIVO",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 188,
+        "cdlocal": 194,
+        "codigo_projeto": 610,
+        "delocal": "PAR\u00c1 DE MINAS JESP\/CEJUSC",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 189,
+        "cdlocal": 195,
+        "codigo_projeto": 610,
+        "delocal": "ALVIN\u00d3POLIS F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 190,
+        "cdlocal": 196,
+        "codigo_projeto": 610,
+        "delocal": "BAR\u00c3O DE COCAIS F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 191,
+        "cdlocal": 197,
+        "codigo_projeto": 610,
+        "delocal": "BAR\u00c3O DE COCAIS F\u00d3RUM ANTIGO",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 192,
+        "cdlocal": 198,
+        "codigo_projeto": 610,
+        "delocal": "BRUMADINHO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 193,
+        "cdlocal": 199,
+        "codigo_projeto": 610,
+        "delocal": "BRUMADINHO CENTRAL DE PER\u00cdCIAS M\u00c9DICAS",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 194,
+        "cdlocal": 200,
+        "codigo_projeto": 610,
+        "delocal": "CONGONHAS F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 195,
+        "cdlocal": 201,
+        "codigo_projeto": 610,
+        "delocal": "CONGONHAS JUIZADO",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 196,
+        "cdlocal": 202,
+        "codigo_projeto": 610,
+        "delocal": "ITAGUARA F\u00d3RUM\/JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 197,
+        "cdlocal": 203,
+        "codigo_projeto": 610,
+        "delocal": "JO\u00c3O MONLEVADE F\u00d3RUM\/JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 198,
+        "cdlocal": 204,
+        "codigo_projeto": 610,
+        "delocal": "LAGOA SANTA F\u00d3RUM\/JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 199,
+        "cdlocal": 205,
+        "codigo_projeto": 610,
+        "delocal": "NOVA ERA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 200,
+        "cdlocal": 206,
+        "codigo_projeto": 610,
+        "delocal": "OURO BRANCO F\u00d3RUM\/JESP\/ARQ",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 201,
+        "cdlocal": 207,
+        "codigo_projeto": 610,
+        "delocal": "OURO PRETO F\u00d3RUM\/JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 202,
+        "cdlocal": 208,
+        "codigo_projeto": 610,
+        "delocal": "RIBEIR\u00c3O DAS NEVES NOVO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 203,
+        "cdlocal": 209,
+        "codigo_projeto": 610,
+        "delocal": "RIO PIRACICABA F\u00d3RUM\/JESP",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 204,
+        "cdlocal": 210,
+        "codigo_projeto": 610,
+        "delocal": "SANTA LUZIA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 610
+    },
+    {
+        "id": 205,
+        "cdlocal": 211,
+        "codigo_projeto": 631,
+        "delocal": "ABRE CAMPO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 206,
+        "cdlocal": 212,
+        "codigo_projeto": 631,
+        "delocal": "AL\u00c9M PARA\u00cdBA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 207,
+        "cdlocal": 213,
+        "codigo_projeto": 631,
+        "delocal": "ALTO RIO DOCE F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 208,
+        "cdlocal": 214,
+        "codigo_projeto": 631,
+        "delocal": "BICAS F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 209,
+        "cdlocal": 215,
+        "codigo_projeto": 631,
+        "delocal": "CARANDA\u00cd F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 210,
+        "cdlocal": 216,
+        "codigo_projeto": 631,
+        "delocal": "LEOPOLDINA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 211,
+        "cdlocal": 217,
+        "codigo_projeto": 631,
+        "delocal": "LIMA DUARTE F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 212,
+        "cdlocal": 218,
+        "codigo_projeto": 631,
+        "delocal": "MANHUMIRIM F\u00d3RUM\/AQUIVO",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 213,
+        "cdlocal": 219,
+        "codigo_projeto": 631,
+        "delocal": "MATIAS BARBOSA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 214,
+        "cdlocal": 220,
+        "codigo_projeto": 631,
+        "delocal": "PIRAPETINGA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 215,
+        "cdlocal": 221,
+        "codigo_projeto": 631,
+        "delocal": "RIO NOVO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 216,
+        "cdlocal": 222,
+        "codigo_projeto": 631,
+        "delocal": "SENADOR FIRMINO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 217,
+        "cdlocal": 223,
+        "codigo_projeto": 631,
+        "delocal": "BARBACENA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 218,
+        "cdlocal": 224,
+        "codigo_projeto": 631,
+        "delocal": "BARBACENA JESP",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 219,
+        "cdlocal": 225,
+        "codigo_projeto": 631,
+        "delocal": "TARUMIRIM F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 220,
+        "cdlocal": 226,
+        "codigo_projeto": 631,
+        "delocal": "CARATINGA  F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 221,
+        "cdlocal": 227,
+        "codigo_projeto": 631,
+        "delocal": "CATAGUASES F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 222,
+        "cdlocal": 228,
+        "codigo_projeto": 631,
+        "delocal": "DIVINO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 223,
+        "cdlocal": 229,
+        "codigo_projeto": 631,
+        "delocal": "ERV\u00c1LIA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 224,
+        "cdlocal": 230,
+        "codigo_projeto": 631,
+        "delocal": "ESPERA FELIZ F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 225,
+        "cdlocal": 231,
+        "codigo_projeto": 631,
+        "delocal": "EUGEN\u00d3POLIS F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 226,
+        "cdlocal": 232,
+        "codigo_projeto": 631,
+        "delocal": "GUARANI F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 227,
+        "cdlocal": 233,
+        "codigo_projeto": 631,
+        "delocal": "IPANEMA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 228,
+        "cdlocal": 234,
+        "codigo_projeto": 631,
+        "delocal": "IPATINGA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 229,
+        "cdlocal": 235,
+        "codigo_projeto": 631,
+        "delocal": "IPATINGA JESP",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 230,
+        "cdlocal": 236,
+        "codigo_projeto": 631,
+        "delocal": "JUIZ DE FORA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 231,
+        "cdlocal": 237,
+        "codigo_projeto": 631,
+        "delocal": "LAJINHA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 232,
+        "cdlocal": 238,
+        "codigo_projeto": 631,
+        "delocal": "MANHUA\u00c7U F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 233,
+        "cdlocal": 239,
+        "codigo_projeto": 631,
+        "delocal": "MAR DA ESPANHA FORUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 234,
+        "cdlocal": 240,
+        "codigo_projeto": 631,
+        "delocal": "MERC\u00caS F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 235,
+        "cdlocal": 241,
+        "codigo_projeto": 631,
+        "delocal": "MESQUITA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 236,
+        "cdlocal": 242,
+        "codigo_projeto": 631,
+        "delocal": "MIRADOURO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 237,
+        "cdlocal": 243,
+        "codigo_projeto": 631,
+        "delocal": "MIRA\u00cd F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 238,
+        "cdlocal": 244,
+        "codigo_projeto": 631,
+        "delocal": "MURIA\u00c9 F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 239,
+        "cdlocal": 245,
+        "codigo_projeto": 631,
+        "delocal": "PALMA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 240,
+        "cdlocal": 246,
+        "codigo_projeto": 631,
+        "delocal": "PIRANGA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 241,
+        "cdlocal": 247,
+        "codigo_projeto": 631,
+        "delocal": "PONTE NOVA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 242,
+        "cdlocal": 248,
+        "codigo_projeto": 631,
+        "delocal": "RAUL SOARES F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 243,
+        "cdlocal": 249,
+        "codigo_projeto": 631,
+        "delocal": "RESENDE COSTA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 244,
+        "cdlocal": 250,
+        "codigo_projeto": 631,
+        "delocal": "RIO POMBA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 245,
+        "cdlocal": 251,
+        "codigo_projeto": 631,
+        "delocal": "SANTOS DUMONT F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 246,
+        "cdlocal": 252,
+        "codigo_projeto": 631,
+        "delocal": "SANTOS DUMONT JESP",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 247,
+        "cdlocal": 253,
+        "codigo_projeto": 631,
+        "delocal": "S\u00c3O JO\u00c3O NEPOMUCENO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 248,
+        "cdlocal": 254,
+        "codigo_projeto": 631,
+        "delocal": "TEIXEIRAS F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 249,
+        "cdlocal": 255,
+        "codigo_projeto": 631,
+        "delocal": "TOMBOS F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 250,
+        "cdlocal": 256,
+        "codigo_projeto": 631,
+        "delocal": "UB\u00c1 F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 251,
+        "cdlocal": 257,
+        "codigo_projeto": 631,
+        "delocal": "VI\u00c7OSA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 252,
+        "cdlocal": 258,
+        "codigo_projeto": 631,
+        "delocal": "VISCONDE DO RIO BRANCO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 253,
+        "cdlocal": 259,
+        "codigo_projeto": 631,
+        "delocal": "PRADOS F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 254,
+        "cdlocal": 260,
+        "codigo_projeto": 631,
+        "delocal": "RIO PRETO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 255,
+        "cdlocal": 261,
+        "codigo_projeto": 631,
+        "delocal": "A\u00c7UCENA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 256,
+        "cdlocal": 262,
+        "codigo_projeto": 631,
+        "delocal": "BARROSO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 257,
+        "cdlocal": 263,
+        "codigo_projeto": 631,
+        "delocal": "ITANHOMI F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 258,
+        "cdlocal": 264,
+        "codigo_projeto": 631,
+        "delocal": "CARANGOLA F\u00d3RUM\/ARQUIVO",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 259,
+        "cdlocal": 265,
+        "codigo_projeto": 631,
+        "delocal": "CORONEL FABRICIANO  F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 260,
+        "cdlocal": 266,
+        "codigo_projeto": 631,
+        "delocal": "INHAPIM F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 261,
+        "cdlocal": 267,
+        "codigo_projeto": 631,
+        "delocal": "JEQUERI F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 262,
+        "cdlocal": 268,
+        "codigo_projeto": 631,
+        "delocal": "MUTUM F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 263,
+        "cdlocal": 269,
+        "codigo_projeto": 631,
+        "delocal": "RIO CASCA F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 264,
+        "cdlocal": 270,
+        "codigo_projeto": 631,
+        "delocal": "S\u00c3O JO\u00c3O DEL-REI F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 265,
+        "cdlocal": 271,
+        "codigo_projeto": 631,
+        "delocal": "TIM\u00d3TEO F\u00d3RUM",
+        "flativo": 0,
+        "tabfant_id": 631
+    },
+    {
+        "id": 266,
+        "cdlocal": 272,
+        "codigo_projeto": 648,
+        "delocal": "ABAETE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 267,
+        "cdlocal": 273,
+        "codigo_projeto": 648,
+        "delocal": "ABRE CAMPO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 268,
+        "cdlocal": 274,
+        "codigo_projeto": 648,
+        "delocal": "AGUAS FORMOSAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 269,
+        "cdlocal": 275,
+        "codigo_projeto": 648,
+        "delocal": "AIMORES",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 270,
+        "cdlocal": 276,
+        "codigo_projeto": 648,
+        "delocal": "AIURUOCA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 271,
+        "cdlocal": 277,
+        "codigo_projeto": 648,
+        "delocal": "ALEM PARAIBA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 272,
+        "cdlocal": 278,
+        "codigo_projeto": 648,
+        "delocal": "ALFENAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 273,
+        "cdlocal": 279,
+        "codigo_projeto": 648,
+        "delocal": "ALMENARA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 274,
+        "cdlocal": 280,
+        "codigo_projeto": 648,
+        "delocal": "ALPINOPOLIS - SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 275,
+        "cdlocal": 281,
+        "codigo_projeto": 648,
+        "delocal": "ALVINOPOLIS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 276,
+        "cdlocal": 282,
+        "codigo_projeto": 648,
+        "delocal": "ANDRADAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 277,
+        "cdlocal": 283,
+        "codigo_projeto": 648,
+        "delocal": "ANDRELANDIA  - SUSPENSO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 278,
+        "cdlocal": 284,
+        "codigo_projeto": 648,
+        "delocal": "ARACUAI",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 279,
+        "cdlocal": 285,
+        "codigo_projeto": 648,
+        "delocal": "ARAGUARI",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 280,
+        "cdlocal": 286,
+        "codigo_projeto": 648,
+        "delocal": "ARAXA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 281,
+        "cdlocal": 287,
+        "codigo_projeto": 648,
+        "delocal": "ARCOS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 282,
+        "cdlocal": 288,
+        "codigo_projeto": 648,
+        "delocal": "ARINOS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 283,
+        "cdlocal": 289,
+        "codigo_projeto": 648,
+        "delocal": "BAEPENDI - SUSPENSO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 284,
+        "cdlocal": 290,
+        "codigo_projeto": 648,
+        "delocal": "BARAO DE COCAIS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 285,
+        "cdlocal": 291,
+        "codigo_projeto": 648,
+        "delocal": "BARBACENA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 286,
+        "cdlocal": 292,
+        "codigo_projeto": 648,
+        "delocal": "BETIM",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 287,
+        "cdlocal": 293,
+        "codigo_projeto": 648,
+        "delocal": "BICAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 288,
+        "cdlocal": 294,
+        "codigo_projeto": 648,
+        "delocal": "BOA ESPERANCA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 289,
+        "cdlocal": 295,
+        "codigo_projeto": 648,
+        "delocal": "BOCAIUVA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 290,
+        "cdlocal": 296,
+        "codigo_projeto": 648,
+        "delocal": "BRASILIA DE MINAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 291,
+        "cdlocal": 297,
+        "codigo_projeto": 648,
+        "delocal": "BRASOPOLIS - N\u00c3O IMPANTADO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 292,
+        "cdlocal": 298,
+        "codigo_projeto": 648,
+        "delocal": "BRUMADINHO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 293,
+        "cdlocal": 299,
+        "codigo_projeto": 648,
+        "delocal": "BUENO BRANDAO (SUSPENSO)",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 294,
+        "cdlocal": 300,
+        "codigo_projeto": 648,
+        "delocal": "BURITIS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 295,
+        "cdlocal": 301,
+        "codigo_projeto": 648,
+        "delocal": "CACHOEIRA DE MINAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 296,
+        "cdlocal": 302,
+        "codigo_projeto": 648,
+        "delocal": "CAETE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 297,
+        "cdlocal": 303,
+        "codigo_projeto": 648,
+        "delocal": "CALDAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 298,
+        "cdlocal": 304,
+        "codigo_projeto": 648,
+        "delocal": "CAMBUI",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 299,
+        "cdlocal": 305,
+        "codigo_projeto": 648,
+        "delocal": "CAMPO BELO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 300,
+        "cdlocal": 306,
+        "codigo_projeto": 648,
+        "delocal": "CAMPOS ALTOS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 301,
+        "cdlocal": 307,
+        "codigo_projeto": 648,
+        "delocal": "CANAPOLIS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 302,
+        "cdlocal": 308,
+        "codigo_projeto": 648,
+        "delocal": "CONCEI\u00c7\u00c3O DO MATO DENTRO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 303,
+        "cdlocal": 309,
+        "codigo_projeto": 648,
+        "delocal": "CANDEIAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 304,
+        "cdlocal": 310,
+        "codigo_projeto": 648,
+        "delocal": "CAPELINHA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 305,
+        "cdlocal": 311,
+        "codigo_projeto": 648,
+        "delocal": "CARANGOLA-SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 306,
+        "cdlocal": 312,
+        "codigo_projeto": 648,
+        "delocal": "CARATINGA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 307,
+        "cdlocal": 313,
+        "codigo_projeto": 648,
+        "delocal": "CARLOS CHAGAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 308,
+        "cdlocal": 314,
+        "codigo_projeto": 648,
+        "delocal": "CARMO DO PARANAIBA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 309,
+        "cdlocal": 315,
+        "codigo_projeto": 648,
+        "delocal": "CARMO DO RIO CLARO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 310,
+        "cdlocal": 316,
+        "codigo_projeto": 648,
+        "delocal": "CARMOPOLIS DE MINAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 311,
+        "cdlocal": 317,
+        "codigo_projeto": 648,
+        "delocal": "CASSIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 312,
+        "cdlocal": 318,
+        "codigo_projeto": 648,
+        "delocal": "CATAGUASES - 1\u00aa PROMOTORIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 313,
+        "cdlocal": 319,
+        "codigo_projeto": 648,
+        "delocal": "CATAGUASES - 2\u00aa PROMOTORIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 314,
+        "cdlocal": 320,
+        "codigo_projeto": 648,
+        "delocal": "CAXAMBU",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 315,
+        "cdlocal": 321,
+        "codigo_projeto": 648,
+        "delocal": "CLAUDIO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 316,
+        "cdlocal": 322,
+        "codigo_projeto": 648,
+        "delocal": "CONCEICAO DAS ALAGOAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 317,
+        "cdlocal": 323,
+        "codigo_projeto": 648,
+        "delocal": "CONGONHAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 318,
+        "cdlocal": 324,
+        "codigo_projeto": 648,
+        "delocal": "CONQUISTA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 319,
+        "cdlocal": 325,
+        "codigo_projeto": 648,
+        "delocal": "CONSELHEIRO LAFAIETE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 320,
+        "cdlocal": 326,
+        "codigo_projeto": 648,
+        "delocal": "CONSELHEIRO PENA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 321,
+        "cdlocal": 327,
+        "codigo_projeto": 648,
+        "delocal": "CONTAGEM",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 322,
+        "cdlocal": 328,
+        "codigo_projeto": 648,
+        "delocal": "CORACAO DE JESUS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 323,
+        "cdlocal": 329,
+        "codigo_projeto": 648,
+        "delocal": "CORINTO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 324,
+        "cdlocal": 330,
+        "codigo_projeto": 648,
+        "delocal": "COROMANDEL",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 325,
+        "cdlocal": 331,
+        "codigo_projeto": 648,
+        "delocal": "CORONEL FABRICIANO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 326,
+        "cdlocal": 332,
+        "codigo_projeto": 648,
+        "delocal": "CRUZILIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 327,
+        "cdlocal": 333,
+        "codigo_projeto": 648,
+        "delocal": "CURVELO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 328,
+        "cdlocal": 334,
+        "codigo_projeto": 648,
+        "delocal": "DIAMANTINA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 329,
+        "cdlocal": 335,
+        "codigo_projeto": 648,
+        "delocal": "DIVINO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 330,
+        "cdlocal": 336,
+        "codigo_projeto": 648,
+        "delocal": "DIVINOPOLIS - 2 UNIDADES",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 331,
+        "cdlocal": 337,
+        "codigo_projeto": 648,
+        "delocal": "DORES DO INDAIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 332,
+        "cdlocal": 338,
+        "codigo_projeto": 648,
+        "delocal": "ELOI MENDES",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 333,
+        "cdlocal": 339,
+        "codigo_projeto": 648,
+        "delocal": "ERVALIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 334,
+        "cdlocal": 340,
+        "codigo_projeto": 648,
+        "delocal": "ESMERALDAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 335,
+        "cdlocal": 341,
+        "codigo_projeto": 648,
+        "delocal": "ESPINOSA - SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 336,
+        "cdlocal": 342,
+        "codigo_projeto": 648,
+        "delocal": "FORMIGA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 337,
+        "cdlocal": 343,
+        "codigo_projeto": 648,
+        "delocal": "FRANCISCO S\u00c1",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 338,
+        "cdlocal": 344,
+        "codigo_projeto": 648,
+        "delocal": "FRUTAL",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 339,
+        "cdlocal": 345,
+        "codigo_projeto": 648,
+        "delocal": "GOVERNADOR VALADARES",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 340,
+        "cdlocal": 346,
+        "codigo_projeto": 648,
+        "delocal": "GRAO MOGOL - N\u00c3O IMPLANTADO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 341,
+        "cdlocal": 347,
+        "codigo_projeto": 648,
+        "delocal": "GUANHAES",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 342,
+        "cdlocal": 348,
+        "codigo_projeto": 648,
+        "delocal": "GUAXUPE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 343,
+        "cdlocal": 349,
+        "codigo_projeto": 648,
+        "delocal": "IBIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 344,
+        "cdlocal": 350,
+        "codigo_projeto": 648,
+        "delocal": "IBIRACI",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 345,
+        "cdlocal": 351,
+        "codigo_projeto": 648,
+        "delocal": "IBIRITE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 346,
+        "cdlocal": 352,
+        "codigo_projeto": 648,
+        "delocal": "IGARAPE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 347,
+        "cdlocal": 353,
+        "codigo_projeto": 648,
+        "delocal": "INHAPIM",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 348,
+        "cdlocal": 354,
+        "codigo_projeto": 648,
+        "delocal": "IPANEMA - SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 349,
+        "cdlocal": 355,
+        "codigo_projeto": 648,
+        "delocal": "IPATINGA - NOVA SEDE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 350,
+        "cdlocal": 356,
+        "codigo_projeto": 648,
+        "delocal": "IPATINGA - CARIRU",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 351,
+        "cdlocal": 357,
+        "codigo_projeto": 648,
+        "delocal": "IPATINGA - S\u00c3O JO\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 352,
+        "cdlocal": 358,
+        "codigo_projeto": 648,
+        "delocal": "ITABIRA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 353,
+        "cdlocal": 359,
+        "codigo_projeto": 648,
+        "delocal": "ITABIRITO- SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 354,
+        "cdlocal": 360,
+        "codigo_projeto": 648,
+        "delocal": "ITAGUARA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 355,
+        "cdlocal": 361,
+        "codigo_projeto": 648,
+        "delocal": "ITAJUBA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 356,
+        "cdlocal": 362,
+        "codigo_projeto": 648,
+        "delocal": "ITAMARANDIBA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 357,
+        "cdlocal": 363,
+        "codigo_projeto": 648,
+        "delocal": "ITAMBACURI",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 358,
+        "cdlocal": 364,
+        "codigo_projeto": 648,
+        "delocal": "ITAMOGI - N\u00c3O IMPLANTADO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 359,
+        "cdlocal": 365,
+        "codigo_projeto": 648,
+        "delocal": "ITAMONTE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 360,
+        "cdlocal": 366,
+        "codigo_projeto": 648,
+        "delocal": "ITAPAGIPE - SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 361,
+        "cdlocal": 367,
+        "codigo_projeto": 648,
+        "delocal": "ITAPECERICA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 362,
+        "cdlocal": 368,
+        "codigo_projeto": 648,
+        "delocal": "ITAUNA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 363,
+        "cdlocal": 369,
+        "codigo_projeto": 648,
+        "delocal": "ITUIUTABA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 364,
+        "cdlocal": 370,
+        "codigo_projeto": 648,
+        "delocal": "ITURAMA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 365,
+        "cdlocal": 371,
+        "codigo_projeto": 648,
+        "delocal": "JABUTICATUBAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 366,
+        "cdlocal": 372,
+        "codigo_projeto": 648,
+        "delocal": "JACINTO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 367,
+        "cdlocal": 373,
+        "codigo_projeto": 648,
+        "delocal": "JAIBA - N\u00c3O IMPLANTADO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 368,
+        "cdlocal": 374,
+        "codigo_projeto": 648,
+        "delocal": "JANAUBA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 369,
+        "cdlocal": 375,
+        "codigo_projeto": 648,
+        "delocal": "JANUARIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 370,
+        "cdlocal": 376,
+        "codigo_projeto": 648,
+        "delocal": "JEQUITINHONHA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 371,
+        "cdlocal": 377,
+        "codigo_projeto": 648,
+        "delocal": "JOAO MONLEVADE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 372,
+        "cdlocal": 378,
+        "codigo_projeto": 648,
+        "delocal": "JOAO PINHEIRO- SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 373,
+        "cdlocal": 379,
+        "codigo_projeto": 648,
+        "delocal": "JUIZ DE FORA - CAO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 374,
+        "cdlocal": 380,
+        "codigo_projeto": 648,
+        "delocal": "JUIZ DE FORA - SECRETARIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 375,
+        "cdlocal": 381,
+        "codigo_projeto": 648,
+        "delocal": "LAGOA DA PRATA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 376,
+        "cdlocal": 382,
+        "codigo_projeto": 648,
+        "delocal": "LAMBARI",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 377,
+        "cdlocal": 383,
+        "codigo_projeto": 648,
+        "delocal": "LAVRAS - BACIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 378,
+        "cdlocal": 384,
+        "codigo_projeto": 648,
+        "delocal": "LAVRAS - SEDE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 379,
+        "cdlocal": 385,
+        "codigo_projeto": 648,
+        "delocal": "LUZ",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 380,
+        "cdlocal": 386,
+        "codigo_projeto": 648,
+        "delocal": "MACHADO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 381,
+        "cdlocal": 387,
+        "codigo_projeto": 648,
+        "delocal": "MALACACHETA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 382,
+        "cdlocal": 388,
+        "codigo_projeto": 648,
+        "delocal": "MANGA- SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 383,
+        "cdlocal": 389,
+        "codigo_projeto": 648,
+        "delocal": "MANHUACU",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 384,
+        "cdlocal": 390,
+        "codigo_projeto": 648,
+        "delocal": "MANHUMIRIM",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 385,
+        "cdlocal": 391,
+        "codigo_projeto": 648,
+        "delocal": "MANTENA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 386,
+        "cdlocal": 392,
+        "codigo_projeto": 648,
+        "delocal": "MARIANA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 387,
+        "cdlocal": 393,
+        "codigo_projeto": 648,
+        "delocal": "MARTINHO CAMPOS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 388,
+        "cdlocal": 394,
+        "codigo_projeto": 648,
+        "delocal": "MATEUS LEME",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 389,
+        "cdlocal": 395,
+        "codigo_projeto": 648,
+        "delocal": "MATIAS BARBOSA- SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 390,
+        "cdlocal": 396,
+        "codigo_projeto": 648,
+        "delocal": "MATOZINHOS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 391,
+        "cdlocal": 397,
+        "codigo_projeto": 648,
+        "delocal": "MINAS NOVAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 392,
+        "cdlocal": 398,
+        "codigo_projeto": 648,
+        "delocal": "MIRADOURO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 393,
+        "cdlocal": 399,
+        "codigo_projeto": 648,
+        "delocal": "MIRAI - SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 394,
+        "cdlocal": 400,
+        "codigo_projeto": 648,
+        "delocal": "MONTE AZUL",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 395,
+        "cdlocal": 401,
+        "codigo_projeto": 648,
+        "delocal": "MONTE CARMELO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 396,
+        "cdlocal": 402,
+        "codigo_projeto": 648,
+        "delocal": "MONTES CLAROS (COORDENADORIA)",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 397,
+        "cdlocal": 403,
+        "codigo_projeto": 648,
+        "delocal": "MONTES CLAROS (MEIO AMBIENTE)",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 398,
+        "cdlocal": 404,
+        "codigo_projeto": 648,
+        "delocal": "MURIAE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 399,
+        "cdlocal": 405,
+        "codigo_projeto": 648,
+        "delocal": "MUZAMBINHO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 400,
+        "cdlocal": 406,
+        "codigo_projeto": 648,
+        "delocal": "NANUQUE - SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 401,
+        "cdlocal": 407,
+        "codigo_projeto": 648,
+        "delocal": "NOVA LIMA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 402,
+        "cdlocal": 408,
+        "codigo_projeto": 648,
+        "delocal": "NOVA PONTE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 403,
+        "cdlocal": 409,
+        "codigo_projeto": 648,
+        "delocal": "NOVA SERRANA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 404,
+        "cdlocal": 410,
+        "codigo_projeto": 648,
+        "delocal": "NOVO CRUZEIRO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 405,
+        "cdlocal": 411,
+        "codigo_projeto": 648,
+        "delocal": "OLIVEIRA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 406,
+        "cdlocal": 412,
+        "codigo_projeto": 648,
+        "delocal": "OURO FINO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 407,
+        "cdlocal": 413,
+        "codigo_projeto": 648,
+        "delocal": "OURO PRETO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 408,
+        "cdlocal": 414,
+        "codigo_projeto": 648,
+        "delocal": "PARA DE MINAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 409,
+        "cdlocal": 415,
+        "codigo_projeto": 648,
+        "delocal": "PARACATU NOVA SEDE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 410,
+        "cdlocal": 416,
+        "codigo_projeto": 648,
+        "delocal": "PARACATU (SEDE C\u00cdVEL)",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 411,
+        "cdlocal": 417,
+        "codigo_projeto": 648,
+        "delocal": "PARACATU (SEDE CRIMINAL)",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 412,
+        "cdlocal": 418,
+        "codigo_projeto": 648,
+        "delocal": "PARAGUA\u00c7U",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 413,
+        "cdlocal": 419,
+        "codigo_projeto": 648,
+        "delocal": "PARAOPEBA- SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 414,
+        "cdlocal": 420,
+        "codigo_projeto": 648,
+        "delocal": "PASSOS - GAECO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 415,
+        "cdlocal": 421,
+        "codigo_projeto": 648,
+        "delocal": "PASSOS - SEDE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 416,
+        "cdlocal": 422,
+        "codigo_projeto": 648,
+        "delocal": "PATOS DE MINAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 417,
+        "cdlocal": 423,
+        "codigo_projeto": 648,
+        "delocal": "PATOS DE MINAS (MEIO AMBIENTE)",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 418,
+        "cdlocal": 424,
+        "codigo_projeto": 648,
+        "delocal": "PEDRA AZUL",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 419,
+        "cdlocal": 425,
+        "codigo_projeto": 648,
+        "delocal": "PEDRO LEOPOLDO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 420,
+        "cdlocal": 426,
+        "codigo_projeto": 648,
+        "delocal": "PERDIZES - N\u00c3O IMPLANTADO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 421,
+        "cdlocal": 427,
+        "codigo_projeto": 648,
+        "delocal": "PIRAPORA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 422,
+        "cdlocal": 428,
+        "codigo_projeto": 648,
+        "delocal": "PITANGUI",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 423,
+        "cdlocal": 429,
+        "codigo_projeto": 648,
+        "delocal": "PIUMHI",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 424,
+        "cdlocal": 430,
+        "codigo_projeto": 648,
+        "delocal": "POCO FUNDO - SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 425,
+        "cdlocal": 431,
+        "codigo_projeto": 648,
+        "delocal": "POCOS DE CALDAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 426,
+        "cdlocal": 432,
+        "codigo_projeto": 648,
+        "delocal": "PONTE NOVA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 427,
+        "cdlocal": 433,
+        "codigo_projeto": 648,
+        "delocal": "PORTEIRINHA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 428,
+        "cdlocal": 434,
+        "codigo_projeto": 648,
+        "delocal": "POUSO ALEGRE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 429,
+        "cdlocal": 435,
+        "codigo_projeto": 648,
+        "delocal": "PRATA - N\u00c3O IMPLANTADO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 430,
+        "cdlocal": 436,
+        "codigo_projeto": 648,
+        "delocal": "RAUL SOARES - SUSPENSO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 431,
+        "cdlocal": 437,
+        "codigo_projeto": 648,
+        "delocal": "RESPLENDOR",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 432,
+        "cdlocal": 438,
+        "codigo_projeto": 648,
+        "delocal": "RIBEIRAO DAS NEVES - PROMOTORIAS C\u00cdVEIS - RIO POMBA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 433,
+        "cdlocal": 439,
+        "codigo_projeto": 648,
+        "delocal": "RIBEIRAO DAS NEVES - PROMOTORIAS CRIMINAIS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 434,
+        "cdlocal": 440,
+        "codigo_projeto": 648,
+        "delocal": "RIO POMBA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 435,
+        "cdlocal": 441,
+        "codigo_projeto": 648,
+        "delocal": "RIO VERMELHO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 436,
+        "cdlocal": 442,
+        "codigo_projeto": 648,
+        "delocal": "SABARA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 437,
+        "cdlocal": 443,
+        "codigo_projeto": 648,
+        "delocal": "SABINOPOLIS - SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 438,
+        "cdlocal": 444,
+        "codigo_projeto": 648,
+        "delocal": "SACRAMENTO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 439,
+        "cdlocal": 445,
+        "codigo_projeto": 648,
+        "delocal": "SALINAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 440,
+        "cdlocal": 446,
+        "codigo_projeto": 648,
+        "delocal": "SANTA BARBARA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 441,
+        "cdlocal": 447,
+        "codigo_projeto": 648,
+        "delocal": "SANTA LUZIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 442,
+        "cdlocal": 448,
+        "codigo_projeto": 648,
+        "delocal": "SANTA MARIA DO SUA\u00c7U\u00cd",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 443,
+        "cdlocal": 449,
+        "codigo_projeto": 648,
+        "delocal": "SANTA RITA DE CALDAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 444,
+        "cdlocal": 450,
+        "codigo_projeto": 648,
+        "delocal": "SANTA RITA DO SAPUCAI",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 445,
+        "cdlocal": 451,
+        "codigo_projeto": 648,
+        "delocal": "SANTA VITORIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 446,
+        "cdlocal": 452,
+        "codigo_projeto": 648,
+        "delocal": "SANTO ANTONIO DO MONTE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 447,
+        "cdlocal": 453,
+        "codigo_projeto": 648,
+        "delocal": "SAO FRANCISCO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 448,
+        "cdlocal": 454,
+        "codigo_projeto": 648,
+        "delocal": "SAO GONCALO DO SAPUCAI",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 449,
+        "cdlocal": 455,
+        "codigo_projeto": 648,
+        "delocal": "SAO GOTARDO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 450,
+        "cdlocal": 456,
+        "codigo_projeto": 648,
+        "delocal": "S\u00c3O JO\u00c3O NEPOMUCENO- SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 451,
+        "cdlocal": 457,
+        "codigo_projeto": 648,
+        "delocal": "SAO JOAO DA PONTE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 452,
+        "cdlocal": 458,
+        "codigo_projeto": 648,
+        "delocal": "SAO JOAO DEL REI",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 453,
+        "cdlocal": 459,
+        "codigo_projeto": 648,
+        "delocal": "SAO LOURENCO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 454,
+        "cdlocal": 460,
+        "codigo_projeto": 648,
+        "delocal": "SAO ROMAO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 455,
+        "cdlocal": 461,
+        "codigo_projeto": 648,
+        "delocal": "SAO SEBASTIAO DO PARAISO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 456,
+        "cdlocal": 462,
+        "codigo_projeto": 648,
+        "delocal": "SERRO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 457,
+        "cdlocal": 463,
+        "codigo_projeto": 648,
+        "delocal": "SETE LAGOAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 458,
+        "cdlocal": 464,
+        "codigo_projeto": 648,
+        "delocal": "SILVIANOPOLIS - N\u00c3O IMPLANTADO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 459,
+        "cdlocal": 465,
+        "codigo_projeto": 648,
+        "delocal": "TEOFILO OTONI (COORDENADORIA)",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 460,
+        "cdlocal": 466,
+        "codigo_projeto": 648,
+        "delocal": "TEOFILO OTONI (INFANCIA E JUVENTUDE)",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 461,
+        "cdlocal": 467,
+        "codigo_projeto": 648,
+        "delocal": "TIMOTEO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 462,
+        "cdlocal": 468,
+        "codigo_projeto": 648,
+        "delocal": "TOMBOS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 463,
+        "cdlocal": 469,
+        "codigo_projeto": 648,
+        "delocal": "TRES CORACOES",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 464,
+        "cdlocal": 470,
+        "codigo_projeto": 648,
+        "delocal": "TRES MARIAS - N\u00c3O IMPLATADO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 465,
+        "cdlocal": 471,
+        "codigo_projeto": 648,
+        "delocal": "TRES PONTAS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 466,
+        "cdlocal": 472,
+        "codigo_projeto": 648,
+        "delocal": "TUPACIGUARA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 467,
+        "cdlocal": 473,
+        "codigo_projeto": 648,
+        "delocal": "UBA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 468,
+        "cdlocal": 474,
+        "codigo_projeto": 648,
+        "delocal": "UBERABA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 469,
+        "cdlocal": 475,
+        "codigo_projeto": 648,
+        "delocal": "UBERLANDIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 470,
+        "cdlocal": 476,
+        "codigo_projeto": 648,
+        "delocal": "UBERLANDIA - GAECO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 471,
+        "cdlocal": 477,
+        "codigo_projeto": 648,
+        "delocal": "UNAI",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 472,
+        "cdlocal": 478,
+        "codigo_projeto": 648,
+        "delocal": "VARGINHA - NOVA SEDE",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 473,
+        "cdlocal": 479,
+        "codigo_projeto": 648,
+        "delocal": "VARGINHA - GAECO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 474,
+        "cdlocal": 480,
+        "codigo_projeto": 648,
+        "delocal": "VARGINHA (CRESCA) SUSPENS\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 475,
+        "cdlocal": 481,
+        "codigo_projeto": 648,
+        "delocal": "VARGINHA (SEDE)",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 476,
+        "cdlocal": 482,
+        "codigo_projeto": 648,
+        "delocal": "VARZEA DA PALMA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 477,
+        "cdlocal": 483,
+        "codigo_projeto": 648,
+        "delocal": "VESPASIANO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 478,
+        "cdlocal": 484,
+        "codigo_projeto": 648,
+        "delocal": "VICOSA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 479,
+        "cdlocal": 485,
+        "codigo_projeto": 648,
+        "delocal": "VISCONDE DO RIO BRANCO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 480,
+        "cdlocal": 486,
+        "codigo_projeto": 648,
+        "delocal": "CIMUS",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 481,
+        "cdlocal": 487,
+        "codigo_projeto": 648,
+        "delocal": "CONDOM\u00cdNIO DO EDIF\u00cdCIO PROCURADOR-GERAL DE JUSTI\u00c7A JOS\u00c9 DIOGO DE ALMEIDA MAGALH\u00c3ES",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 482,
+        "cdlocal": 488,
+        "codigo_projeto": 648,
+        "delocal": "PROMOTORIA ESTADUAL DE DEFESA DO PATRIM\u00d4NIO CULTURAL",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 483,
+        "cdlocal": 489,
+        "codigo_projeto": 648,
+        "delocal": "DIMAT: ALMOXARIFADO CENTRAL DA PROCURADORIA-GERAL DE JUSTI\u00c7A",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 484,
+        "cdlocal": 490,
+        "codigo_projeto": 648,
+        "delocal": "DIRETORIA DE GEST\u00c3O DOCUMENTAL",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 485,
+        "cdlocal": 491,
+        "codigo_projeto": 648,
+        "delocal": "08\u00aa PJ JUIZADO ESPECIAL C\u00cdVEL E CRIMINAL - SECRET\u00c1RIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 486,
+        "cdlocal": 492,
+        "codigo_projeto": 648,
+        "delocal": "10\u00ba PJ JUIZO DE EXECU\u00c7\u00c3O PENAL",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 487,
+        "cdlocal": 493,
+        "codigo_projeto": 648,
+        "delocal": "11\u00b0 PROMOTORIA COMBATE CRIME ORGANIZADO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 488,
+        "cdlocal": 494,
+        "codigo_projeto": 648,
+        "delocal": "12\u00ba PJ CRIMINAL  -  11\u00b0 ANDAR",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 489,
+        "cdlocal": 495,
+        "codigo_projeto": 648,
+        "delocal": "12\u00ba PJ JU\u00cdZO DE FAM\u00cdLIA - SECRETARIA (F\u00d3RUM LAFAYETTE)",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 490,
+        "cdlocal": 496,
+        "codigo_projeto": 648,
+        "delocal": "18\u00aa PJ DEFESA DOS DIREITOS HUMANOS - SECRETARIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 491,
+        "cdlocal": 497,
+        "codigo_projeto": 648,
+        "delocal": "18\u00aa PJ DEFESA DOS DIREITOS HUMANOS, IGUALDADE RACIAL, APOIO COMUNIT\u00c1RIO E FISCALIZA\u00c7\u00c3O DA ATIVIDADE POLICIAL - COMBATE \u00c0 VIOL\u00caNCIA DOM\u00c9STICA E FAMILIAR CONTRA A MULHER - SECRETARIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 492,
+        "cdlocal": 498,
+        "codigo_projeto": 648,
+        "delocal": "19\u00ba PJ DEFESA DA SA\u00daDE RECEP\u00c7\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 493,
+        "cdlocal": 499,
+        "codigo_projeto": 648,
+        "delocal": "23\u00aa PJ CRIAN\u00c7AS E ADOLESCENTES - C\u00cdVEL - RECEP\u00c7\u00c3O",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 494,
+        "cdlocal": 500,
+        "codigo_projeto": 648,
+        "delocal": "2\u00ba PJ JUIZO DE FAMILIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 495,
+        "cdlocal": 501,
+        "codigo_projeto": 648,
+        "delocal": "5\u00ba ANDAR AMMP - PJ OUVIDORIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 496,
+        "cdlocal": 502,
+        "codigo_projeto": 648,
+        "delocal": "NOVA CIA",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 497,
+        "cdlocal": 503,
+        "codigo_projeto": 648,
+        "delocal": "UCC",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 498,
+        "cdlocal": 504,
+        "codigo_projeto": 648,
+        "delocal": "TRES TORRES",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 499,
+        "cdlocal": 505,
+        "codigo_projeto": 648,
+        "delocal": "TORRE QUATRO",
+        "flativo": 0,
+        "tabfant_id": 648
+    },
+    {
+        "id": 500,
+        "cdlocal": 506,
+        "codigo_projeto": 664,
+        "delocal": "ALMG- PAL\u00c1CIO DA INCONFID\u00caNCIA- PAL\u00c1CIO DA INCONFIDENCIA",
+        "flativo": 0,
+        "tabfant_id": 664
+    },
+    {
+        "id": 501,
+        "cdlocal": 507,
+        "codigo_projeto": 736,
+        "delocal": "ABC",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 502,
+        "cdlocal": 508,
+        "codigo_projeto": 736,
+        "delocal": "AG EMPRESARIAL",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 503,
+        "cdlocal": 509,
+        "codigo_projeto": 736,
+        "delocal": "AGD BELO HORIZONTE LESTE - PR\u00c9DIO HORTO",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 504,
+        "cdlocal": 510,
+        "codigo_projeto": 736,
+        "delocal": "AGD BELO HORIZONTE OESTE - PR\u00c9DIO HORTO",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 505,
+        "cdlocal": 511,
+        "codigo_projeto": 736,
+        "delocal": "ALEMG",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 506,
+        "cdlocal": 512,
+        "codigo_projeto": 736,
+        "delocal": "AL\u00cdPIO DE MELO",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 507,
+        "cdlocal": 513,
+        "codigo_projeto": 736,
+        "delocal": "ALTEROSAS",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 508,
+        "cdlocal": 514,
+        "codigo_projeto": 736,
+        "delocal": "ANA LUCIA",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 509,
+        "cdlocal": 515,
+        "codigo_projeto": 736,
+        "delocal": "BAIRRO CEU AZUL",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 510,
+        "cdlocal": 516,
+        "codigo_projeto": 736,
+        "delocal": "BAIRRO SANTA AMELIA, MG",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 511,
+        "cdlocal": 517,
+        "codigo_projeto": 736,
+        "delocal": "BAIRRO SANTA M\u00d4NICA",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 512,
+        "cdlocal": 518,
+        "codigo_projeto": 736,
+        "delocal": "BARONESA",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 513,
+        "cdlocal": 519,
+        "codigo_projeto": 736,
+        "delocal": "BARREIRO",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 514,
+        "cdlocal": 520,
+        "codigo_projeto": 736,
+        "delocal": "BARRO PRETO",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 515,
+        "cdlocal": 521,
+        "codigo_projeto": 736,
+        "delocal": "BELO HORIZONTE",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 516,
+        "cdlocal": 522,
+        "codigo_projeto": 736,
+        "delocal": "BELO HORIZONTE LESTE",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 517,
+        "cdlocal": 523,
+        "codigo_projeto": 736,
+        "delocal": "BELVEDERE",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 518,
+        "cdlocal": 524,
+        "codigo_projeto": 736,
+        "delocal": "BET\u00c2NIA",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 519,
+        "cdlocal": 525,
+        "codigo_projeto": 736,
+        "delocal": "BETIM",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 520,
+        "cdlocal": 526,
+        "codigo_projeto": 736,
+        "delocal": "BRUMADINHO",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 521,
+        "cdlocal": 527,
+        "codigo_projeto": 736,
+        "delocal": "BURITIS",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 522,
+        "cdlocal": 528,
+        "codigo_projeto": 736,
+        "delocal": "CAETE",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 523,
+        "cdlocal": 529,
+        "codigo_projeto": 736,
+        "delocal": "CALAFATE",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 524,
+        "cdlocal": 530,
+        "codigo_projeto": 736,
+        "delocal": "ESCRITORIO SC",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 525,
+        "cdlocal": 531,
+        "codigo_projeto": 736,
+        "delocal": "CAPELA NOVA",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 526,
+        "cdlocal": 532,
+        "codigo_projeto": 736,
+        "delocal": "CARMO - SION",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 527,
+        "cdlocal": 533,
+        "codigo_projeto": 736,
+        "delocal": "CEFET",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 528,
+        "cdlocal": 534,
+        "codigo_projeto": 736,
+        "delocal": "CELSO FURTADO",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 529,
+        "cdlocal": 535,
+        "codigo_projeto": 736,
+        "delocal": "CONGONHAS",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 530,
+        "cdlocal": 536,
+        "codigo_projeto": 736,
+        "delocal": "CONSELHEIRO LAFAIETE",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 531,
+        "cdlocal": 537,
+        "codigo_projeto": 736,
+        "delocal": "CONTAGEM",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 532,
+        "cdlocal": 538,
+        "codigo_projeto": 736,
+        "delocal": "CORA\u00c7\u00c3O EUCAR\u00cdSTICO",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 533,
+        "cdlocal": 539,
+        "codigo_projeto": 736,
+        "delocal": "DEPARTAMENTO DA POLICIA FEDERAL",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 534,
+        "cdlocal": 540,
+        "codigo_projeto": 736,
+        "delocal": "ESMERALDAS",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 535,
+        "cdlocal": 541,
+        "codigo_projeto": 736,
+        "delocal": "FACULDADE DE ENGENHARIA",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 536,
+        "cdlocal": 542,
+        "codigo_projeto": 736,
+        "delocal": "FLORESTA,MG",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 537,
+        "cdlocal": 543,
+        "codigo_projeto": 736,
+        "delocal": "GUAJAJARAS",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 538,
+        "cdlocal": 544,
+        "codigo_projeto": 736,
+        "delocal": "HORTO FLORESTAL , MG",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 539,
+        "cdlocal": 545,
+        "codigo_projeto": 736,
+        "delocal": "IBIRIT\u00c9",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 540,
+        "cdlocal": 546,
+        "codigo_projeto": 736,
+        "delocal": "IGARAP\u00c9",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 541,
+        "cdlocal": 547,
+        "codigo_projeto": 736,
+        "delocal": "IMPERADOR, MG",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 542,
+        "cdlocal": 548,
+        "codigo_projeto": 736,
+        "delocal": "INCONFID\u00caNCIA, MG",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 543,
+        "cdlocal": 549,
+        "codigo_projeto": 736,
+        "delocal": "ITABIRITO",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 544,
+        "cdlocal": 550,
+        "codigo_projeto": 736,
+        "delocal": "ITACOLOMI",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 545,
+        "cdlocal": 551,
+        "codigo_projeto": 736,
+        "delocal": "JARDIM CANAD\u00c1",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 546,
+        "cdlocal": 552,
+        "codigo_projeto": 736,
+        "delocal": "JARDIM INDUSTRIAL",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 547,
+        "cdlocal": 553,
+        "codigo_projeto": 736,
+        "delocal": "JO\u00c3O GUIMAR\u00c3ES ROSA",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 548,
+        "cdlocal": 554,
+        "codigo_projeto": 736,
+        "delocal": "JOAQUIM DE OLIVEIRA",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 549,
+        "cdlocal": 555,
+        "codigo_projeto": 736,
+        "delocal": "JOSE ALENCAR (CORACAO DE JESUS)",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 550,
+        "cdlocal": 556,
+        "codigo_projeto": 736,
+        "delocal": "JUSTI\u00c7A FEDERAL DE BELO HORIZONTE",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 551,
+        "cdlocal": 557,
+        "codigo_projeto": 736,
+        "delocal": "JUSTINOPOLIS",
+        "flativo": 0,
+        "tabfant_id": 736
+    },
+    {
+        "id": 552,
+        "cdlocal": 558,
+        "codigo_projeto": 736,
+        "delocal": "LAGOA DO NADO",
+        "flativo": 0,
+        "tabfant_id": 736
+    }
+]
