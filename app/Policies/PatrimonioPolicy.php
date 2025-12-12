@@ -11,6 +11,7 @@ class PatrimonioPolicy
      * Verifica permissões antes das policies específicas
      * Admin tem acesso total
      * Consultor (C) pode visualizar mas não editar/deletar
+     * USR pode ver e editar tudo (removida restrição de supervisão)
      */
     public function before(User $user, string $ability): bool|null
     {
@@ -18,13 +19,19 @@ class PatrimonioPolicy
             return true;
         }
 
-        if ($user->PERFIL === 'ADM' && $ability !== 'delete') {
+        // Admin: acesso total
+        if ($user->PERFIL === 'ADM') {
             return true;
         }
 
         // Consultor: pode apenas visualizar (view, viewAny)
         if ($user->PERFIL === 'C') {
             return in_array($ability, ['view', 'viewAny', 'viewDetalhes']) ? true : false;
+        }
+
+        // USR: pode ver e editar tudo (sem restrições de supervisão)
+        if ($user->PERFIL === 'USR') {
+            return in_array($ability, ['viewAny', 'view', 'create', 'update', 'viewDetalhes']) ? true : null;
         }
 
         return null;
@@ -73,26 +80,14 @@ class PatrimonioPolicy
 
     /**
      * Quem pode atualizar?
-     * God/Admin já liberado no 'before'. Para não-admins, permitir se responsável OU criador OU supervisor do criador.
+     * God/Admin/USR já liberado no 'before'.
+     * Consultor não pode atualizar (bloqueado no before).
      */
     public function update(User $user, Patrimonio $patrimonio): bool
     {
-        $isResp = (string)($user->CDMATRFUNCIONARIO ?? '') === (string)($patrimonio->CDMATRFUNCIONARIO ?? '');
-        $usuario = trim((string)($patrimonio->USUARIO ?? ''));
-        $nmLogin = trim((string)($user->NMLOGIN ?? ''));
-        $nmUser  = trim((string)($user->NOMEUSER ?? ''));
-        $isCreator = $usuario !== '' && (
-            strcasecmp($usuario, $nmLogin) === 0 ||
-            strcasecmp($usuario, $nmUser) === 0
-        );
-        
-        // Verificar se o usuário é supervisor do criador
-        $isSupervisor = false;
-        if ($user->supervisor_de && is_array($user->supervisor_de) && $usuario !== '') {
-            $isSupervisor = in_array($usuario, $user->supervisor_de, true);
-        }
-        
-        return $isResp || $isCreator || $isSupervisor;
+        // Se chegou aqui, before() não retornou true/false
+        // Permitir para qualquer usuário logado (USR tem permissão via before)
+        return true;
     }
 
     /**
