@@ -485,7 +485,7 @@ class PatrimonioController extends Controller
         //  VALIDAÇÃO CRÍTICA: Local deve pertencer ao projeto selecionado
         $localSelecionado = $this->validateLocalBelongsToProjeto(
             $validatedData['CDPROJETO'] ?? $patrimonio->CDPROJETO,
-            $validatedData['CDLOCAL'] ?? $patrimonio->CDLOCAL,
+            $request->input('CDLOCAL') ?? $validatedData['CDLOCAL'] ?? $patrimonio->CDLOCAL,
             'atualização de patrimônio'
         );
 
@@ -1492,6 +1492,14 @@ class PatrimonioController extends Controller
             // Primeiro tenta pelo ID (chave prim?ria)
             $local = LocalProjeto::with('projeto')->find($id);
 
+            // Se o caller informou cdprojeto, nunca retornar local de outro projeto
+            if ($local && $cdprojeto) {
+                $cdProjetoDoLocal = $local->projeto?->CDPROJETO;
+                if (!$cdProjetoDoLocal || (string) $cdProjetoDoLocal !== (string) $cdprojeto) {
+                    $local = null;
+                }
+            }
+
             // Fallback: algumas telas ainda enviam o c?digo (cdlocal) em vez do ID
             if (!$local) {
                 $query = LocalProjeto::with('projeto')->where('cdlocal', $id);
@@ -2389,6 +2397,55 @@ class PatrimonioController extends Controller
             }
         }
 
+
+        // Filtro de UF (multi-select)
+        // Regra: UF vem primeiro do projeto (tabfant), depois do local (locais_projeto)
+        // Se projeto for SEDE (ID=8 ou cdprojeto='8') e não tiver UF, considera SC
+        if ($request->filled('uf')) {
+            $ufs = $request->input('uf', []);
+            if (is_string($ufs)) {
+                $ufs = array_filter(array_map('trim', explode(',', $ufs)));
+            }
+            $ufs = array_filter($ufs);
+
+            if (!empty($ufs)) {
+                Log::info(' [FILTRO] UF aplicado', ['ufs' => $ufs]);
+                
+                $query->where(function($q) use ($ufs) {
+                    // Sub-query para UF do projeto (via relação local.projeto)
+                    $q->whereHas('local.projeto', function($q2) use ($ufs) {
+                        $q2->whereIn('UF', $ufs);
+                    })
+                    // OU UF do local diretamente (se projeto não tiver UF)
+                    ->orWhereHas('local', function($q2) use ($ufs) {
+                        $q2->whereIn('UF', $ufs)
+                           ->whereDoesntHave('projeto', function($q3) {
+                               $q3->whereNotNull('UF')->where('UF', '!=', '');
+                           });
+                    })
+                    // OU patrimônios onde projeto é SEDE (8) E UF solicitada é SC
+                    ->orWhere(function($q2) use ($ufs) {
+                        if (in_array('SC', $ufs)) {
+                            $q2->where(function($q3) {
+                                $q3->where('CDPROJETO', '8')
+                                   ->orWhereHas('local.projeto', function($q4) {
+                                       $q4->where('id', 8)
+                                          ->orWhere('CDPROJETO', '8');
+                                   });
+                            })
+                            ->whereDoesntHave('local.projeto', function($q3) {
+                                $q3->whereNotNull('UF')->where('UF', '!=', '');
+                            })
+                            ->whereDoesntHave('local', function($q3) {
+                                $q3->whereNotNull('UF')->where('UF', '!=', '');
+                            });
+                        }
+                    });
+                });
+            } else {
+                Log::info('  [FILTRO] UF vazio (não aplicado)');
+            }
+        }
         Log::info('ð [QUERY] SQL gerada', [
             'sql' => $query->toSql(),
             'bindings' => $query->getBindings(),
@@ -3254,5 +3311,3 @@ class PatrimonioController extends Controller
     }
 
 }
-
-
