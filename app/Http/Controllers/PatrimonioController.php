@@ -2409,23 +2409,32 @@ class PatrimonioController extends Controller
             $ufs = array_filter($ufs);
 
             if (!empty($ufs)) {
-                Log::info(' [FILTRO] UF aplicado', ['ufs' => $ufs]);
+                Log::info('🗺️ [FILTRO] UF aplicado', ['ufs' => $ufs]);
                 
                 $query->where(function($q) use ($ufs) {
-                    // Sub-query para UF do projeto (via relação local.projeto)
+                    // Caso 1: UF do projeto (prioridade)
                     $q->whereHas('local.projeto', function($q2) use ($ufs) {
                         $q2->whereIn('UF', $ufs);
                     })
-                    // OU UF do local diretamente (se projeto não tiver UF)
-                    ->orWhereHas('local', function($q2) use ($ufs) {
-                        $q2->whereIn('UF', $ufs)
-                           ->whereDoesntHave('projeto', function($q3) {
-                               $q3->whereNotNull('UF')->where('UF', '!=', '');
-                           });
-                    })
-                    // OU patrimônios onde projeto é SEDE (8) E UF solicitada é SC
+                    // Caso 2: UF do local (quando projeto não tem UF definida)
                     ->orWhere(function($q2) use ($ufs) {
-                        if (in_array('SC', $ufs)) {
+                        $q2->whereHas('local', function($q3) use ($ufs) {
+                            $q3->whereIn('UF', $ufs);
+                        })
+                        ->where(function($q3) {
+                            // Garantir que o projeto não tem UF (null ou vazio)
+                            $q3->whereDoesntHave('local.projeto', function($q4) {
+                                $q4->whereNotNull('UF')->where('UF', '!=', '');
+                            })
+                            // OU o patrimônio não tem local vinculado
+                            ->orWhereNull('CDLOCAL');
+                        });
+                    });
+                    
+                    // Caso 3: Fallback SC para SEDE (SOMENTE se 'SC' está na lista de UFs filtradas)
+                    if (in_array('SC', $ufs)) {
+                        $q->orWhere(function($q2) {
+                            // Patrimônio do projeto SEDE (8)
                             $q2->where(function($q3) {
                                 $q3->where('CDPROJETO', '8')
                                    ->orWhereHas('local.projeto', function($q4) {
@@ -2433,17 +2442,25 @@ class PatrimonioController extends Controller
                                           ->orWhere('CDPROJETO', '8');
                                    });
                             })
-                            ->whereDoesntHave('local.projeto', function($q3) {
-                                $q3->whereNotNull('UF')->where('UF', '!=', '');
+                            // E não tem UF no projeto
+                            ->where(function($q3) {
+                                $q3->whereDoesntHave('local.projeto', function($q4) {
+                                    $q4->whereNotNull('UF')->where('UF', '!=', '');
+                                })
+                                ->orWhereNull('CDLOCAL');
                             })
-                            ->whereDoesntHave('local', function($q3) {
-                                $q3->whereNotNull('UF')->where('UF', '!=', '');
+                            // E não tem UF no local
+                            ->where(function($q3) {
+                                $q3->whereDoesntHave('local', function($q4) {
+                                    $q4->whereNotNull('UF')->where('UF', '!=', '');
+                                })
+                                ->orWhereNull('CDLOCAL');
                             });
-                        }
-                    });
+                        });
+                    }
                 });
             } else {
-                Log::info('  [FILTRO] UF vazio (não aplicado)');
+                Log::info('⚠️  [FILTRO] UF vazio (não aplicado)');
             }
         }
         Log::info('ð [QUERY] SQL gerada', [
