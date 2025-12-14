@@ -2399,8 +2399,9 @@ class PatrimonioController extends Controller
 
 
         // Filtro de UF (multi-select)
-        // Regra: UF vem primeiro do projeto (tabfant), depois do local (locais_projeto)
-        // Se projeto for SEDE (ID=8 ou cdprojeto='8') e não tiver UF, considera SC
+        // REGRA baseada em dados reais:
+        // 1º) Se patr.UF está preenchido → usa direto
+        // 2º) Se patr.UF é NULL → busca projeto.UF → local.UF → fallback 'SC' se SEDE
         if ($request->filled('uf')) {
             $ufs = $request->input('uf', []);
             if (is_string($ufs)) {
@@ -2412,52 +2413,53 @@ class PatrimonioController extends Controller
                 Log::info('🗺️ [FILTRO] UF aplicado', ['ufs' => $ufs]);
                 
                 $query->where(function($q) use ($ufs) {
-                    // Caso 1: UF do projeto (prioridade)
-                    $q->whereHas('local.projeto', function($q2) use ($ufs) {
-                        $q2->whereIn('UF', $ufs);
-                    })
-                    // Caso 2: UF do local (quando projeto não tem UF definida)
+                    // PRIORIDADE 1: UF diretamente na tabela patr
+                    $q->whereIn('UF', $ufs)
+                    
+                    // OU (para patrimônios com patr.UF = NULL):
                     ->orWhere(function($q2) use ($ufs) {
-                        $q2->whereHas('local', function($q3) use ($ufs) {
-                            $q3->whereIn('UF', $ufs);
-                        })
-                        ->where(function($q3) {
-                            // Garantir que o projeto não tem UF (null ou vazio)
-                            $q3->whereDoesntHave('local.projeto', function($q4) {
-                                $q4->whereNotNull('UF')->where('UF', '!=', '');
+                        // Garantir que patr.UF é NULL
+                        $q2->whereNull('UF')
+                        
+                        ->where(function($q3) use ($ufs) {
+                            // PRIORIDADE 2: UF do projeto (via local.projeto)
+                            $q3->whereHas('local.projeto', function($q4) use ($ufs) {
+                                $q4->whereIn('UF', $ufs);
                             })
-                            // OU o patrimônio não tem local vinculado
-                            ->orWhereNull('CDLOCAL');
+                            
+                            // OU PRIORIDADE 3: UF do local (quando projeto não tem UF)
+                            ->orWhere(function($q4) use ($ufs) {
+                                $q4->whereHas('local', function($q5) use ($ufs) {
+                                    $q5->whereIn('UF', $ufs);
+                                })
+                                // E projeto não tem UF
+                                ->whereDoesntHave('local.projeto', function($q5) {
+                                    $q5->whereNotNull('UF')->where('UF', '!=', '');
+                                });
+                            });
+                            
+                            // PRIORIDADE 4: Fallback SC para SEDE (somente se 'SC' está nos filtros)
+                            if (in_array('SC', $ufs)) {
+                                $q3->orWhere(function($q4) {
+                                    // Patrimônio do projeto SEDE (8)
+                                    $q4->where(function($q5) {
+                                        $q5->where('CDPROJETO', '8')
+                                           ->orWhereHas('local.projeto', function($q6) {
+                                               $q6->where('CDPROJETO', '8');
+                                           });
+                                    })
+                                    // E projeto não tem UF
+                                    ->whereDoesntHave('local.projeto', function($q5) {
+                                        $q5->whereNotNull('UF')->where('UF', '!=', '');
+                                    })
+                                    // E local não tem UF
+                                    ->whereDoesntHave('local', function($q5) {
+                                        $q5->whereNotNull('UF')->where('UF', '!=', '');
+                                    });
+                                });
+                            }
                         });
                     });
-                    
-                    // Caso 3: Fallback SC para SEDE (SOMENTE se 'SC' está na lista de UFs filtradas)
-                    if (in_array('SC', $ufs)) {
-                        $q->orWhere(function($q2) {
-                            // Patrimônio do projeto SEDE (8)
-                            $q2->where(function($q3) {
-                                $q3->where('CDPROJETO', '8')
-                                   ->orWhereHas('local.projeto', function($q4) {
-                                       $q4->where('id', 8)
-                                          ->orWhere('CDPROJETO', '8');
-                                   });
-                            })
-                            // E não tem UF no projeto
-                            ->where(function($q3) {
-                                $q3->whereDoesntHave('local.projeto', function($q4) {
-                                    $q4->whereNotNull('UF')->where('UF', '!=', '');
-                                })
-                                ->orWhereNull('CDLOCAL');
-                            })
-                            // E não tem UF no local
-                            ->where(function($q3) {
-                                $q3->whereDoesntHave('local', function($q4) {
-                                    $q4->whereNotNull('UF')->where('UF', '!=', '');
-                                })
-                                ->orWhereNull('CDLOCAL');
-                            });
-                        });
-                    }
                 });
             } else {
                 Log::info('⚠️  [FILTRO] UF vazio (não aplicado)');
