@@ -221,13 +221,23 @@ $jsonDados = json_encode($dadosOriginais, JSON_UNESCAPED_SLASHES);
         async function obterNomeLocal(cdLocal) {
             if (!cdLocal) return '';
 
+            const cdProjetoAtual = (document.querySelector('[name="CDPROJETO"]')?.value || dadosOriginais.CDPROJETO || '').toString().trim();
+            const cacheKey = `${cdProjetoAtual}::${cdLocal}`;
+
             // Verificar cache primeiro
-            if (locaisCache[cdLocal]) {
-                return locaisCache[cdLocal];
+            if (locaisCache[cacheKey]) {
+                return locaisCache[cacheKey];
+            }
+
+            // Sem projeto, não conseguimos garantir o escopo correto
+            if (!cdProjetoAtual) {
+                locaisCache[cacheKey] = '';
+                return '';
             }
 
             try {
-                const response = await fetch('/api/locais/' + encodeURIComponent(cdLocal), {
+                const url = `/api/locais/buscar?cdprojeto=${encodeURIComponent(cdProjetoAtual)}&termo=`;
+                const response = await fetch(url, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -237,19 +247,21 @@ $jsonDados = json_encode($dadosOriginais, JSON_UNESCAPED_SLASHES);
 
                 if (!response.ok) {
                     console.warn('API de locais retornou erro:', response.status);
+                    locaisCache[cacheKey] = '';
                     return '';
                 }
 
-                const data = await response.json();
-                const nome = data && (data.delocal || data.LOCAL) ? (data.delocal || data.LOCAL) : '';
+                const locais = await response.json();
+                const local = (locais || []).find(l => String(l.id) === String(cdLocal)) || (locais || []).find(l => String(l.cdlocal) === String(cdLocal));
+                const nome = local && (local.delocal || local.LOCAL) ? (local.delocal || local.LOCAL) : '';
 
                 // Guardar no cache mesmo que vazio
-                locaisCache[cdLocal] = nome;
-                console.log(`📌 Local ${cdLocal}: "${nome}"`);
+                locaisCache[cacheKey] = nome;
+                console.log(`📌 Local ${cdLocal} (proj ${cdProjetoAtual}): "${nome}"`);
                 return nome;
             } catch (error) {
                 console.error('Erro ao buscar local:', error);
-                locaisCache[cdLocal] = '';
+                locaisCache[cacheKey] = '';
                 return '';
             }
         }

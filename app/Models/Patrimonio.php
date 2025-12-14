@@ -380,27 +380,40 @@ class Patrimonio extends Model
             $ufs = [$ufs];
         }
 
-        // ✅ CORRIGIDO: Usar whereHas ou whereIn com lógica correta
-        // Prioridade 1: UF armazenada diretamente
-        // Prioridade 2: UF do local (tem prioridade sobre projeto)
-        // Prioridade 3: UF do projeto (fallback)
-        
+        // Regras (alinhadas com o filtro de UF na listagem):
+        // 1) Se patr.UF está preenchido, ela é fonte de verdade.
+        // 2) Só faz fallback (local/projeto) quando patr.UF está NULL/vazia.
+        //
+        // ⚠️ IMPORTANTE: CDLOCAL guarda o campo `locais_projeto.cdlocal` (não `locais_projeto.id`).
+        // ⚠️ IMPORTANTE: CDPROJETO guarda o código `tabfant.CDPROJETO` (não `tabfant.id`).
+
         return $query->where(function ($q) use ($ufs) {
-            // 1. Verificar UF diretamente armazenada
-            $q->whereIn('UF', $ufs);
-            
-            // 2. OU verificar UF do local (tem prioridade)
-            $q->orWhereIn('CDLOCAL', function ($subquery) use ($ufs) {
-                $subquery->select('id')
-                         ->from('locais_projeto')
-                         ->whereIn('UF', $ufs);
-            });
-            
-            // 3. OU verificar UF do projeto (apenas se não tem local com UF definida)
-            $q->orWhereIn('CDPROJETO', function ($subquery) use ($ufs) {
-                $subquery->select('id')
-                         ->from('tabfant')
-                         ->whereIn('UF', $ufs);
+            // 1) UF diretamente armazenada na tabela patr
+            $q->whereIn('patr.UF', $ufs);
+
+            // 2) Fallback somente quando patr.UF é NULL ou vazia
+            $q->orWhere(function ($q2) use ($ufs) {
+                $q2->where(function ($q3) {
+                    $q3->whereNull('patr.UF')->orWhere('patr.UF', '');
+                })
+                ->where(function ($q3) use ($ufs) {
+                    // 2a) UF do local (locais_projeto.UF)
+                    $q3->whereIn('patr.CDLOCAL', function ($subquery) use ($ufs) {
+                        $subquery->select('cdlocal')
+                            ->from('locais_projeto')
+                            ->whereNotNull('UF')
+                            ->where('UF', '!=', '')
+                            ->whereIn('UF', $ufs);
+                    })
+                    // 2b) UF do projeto (tabfant.UF)
+                    ->orWhereIn('patr.CDPROJETO', function ($subquery) use ($ufs) {
+                        $subquery->select('CDPROJETO')
+                            ->from('tabfant')
+                            ->whereNotNull('UF')
+                            ->where('UF', '!=', '')
+                            ->whereIn('UF', $ufs);
+                    });
+                });
             });
         });
     }
