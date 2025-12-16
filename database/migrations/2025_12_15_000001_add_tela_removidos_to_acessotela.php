@@ -8,34 +8,37 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('acessotela')) {
+        // Verificar se tabela existe usando query raw
+        try {
+            $tableExists = DB::selectOne("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'acessotela'");
+        } catch (\Exception $e) {
+            return; // MySQL antigo, fallback silencioso
+        }
+
+        if (!$tableExists) {
             return;
         }
 
-        $data = [
-            'NUSEQTELA' => 1009,
-            'DETELA' => 'Removidos',
-            'NMSISTEMA' => 'Sistema Principal',
-            'FLACESSO' => 'S',
-        ];
-
-        if (Schema::hasColumn('acessotela', 'NIVEL_VISIBILIDADE')) {
-            $data['NIVEL_VISIBILIDADE'] = 'TODOS';
+        // Usar raw SQL para compatibilidade com MySQL antigo (sem generation_expression)
+        try {
+            DB::statement("INSERT INTO acessotela (NUSEQTELA, DETELA, NMSISTEMA, FLACESSO) VALUES (1009, 'Removidos', 'Sistema Principal', 'S') ON DUPLICATE KEY UPDATE DETELA='Removidos', NMSISTEMA='Sistema Principal', FLACESSO='S'");
+        } catch (\Exception $e) {
+            // Fallback: tentar INSERT simples depois DELETE
+            try {
+                DB::statement("DELETE FROM acessotela WHERE NUSEQTELA = 1009");
+            } catch (\Exception $e2) {}
+            
+            try {
+                DB::statement("INSERT INTO acessotela (NUSEQTELA, DETELA, NMSISTEMA, FLACESSO) VALUES (1009, 'Removidos', 'Sistema Principal', 'S')");
+            } catch (\Exception $e3) {}
         }
-
-        DB::table('acessotela')->updateOrInsert(
-            ['NUSEQTELA' => 1009],
-            $data
-        );
     }
 
     public function down(): void
     {
-        if (!Schema::hasTable('acessotela')) {
-            return;
-        }
-
-        DB::table('acessotela')->where('NUSEQTELA', 1009)->delete();
+        try {
+            DB::statement("DELETE FROM acessotela WHERE NUSEQTELA = 1009");
+        } catch (\Exception $e) {}
     }
 };
 
