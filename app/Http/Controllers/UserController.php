@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Funcionario;
+use App\Models\AcessoUsuario;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
+    private const TELA_REMOVIDOS = 1009;
+
     public function index(Request $request)
     {
         $query = User::query();
@@ -183,6 +186,7 @@ class UserController extends Controller
             'NMLOGIN' => ['required', 'string', 'max:30', 'unique:usuario,NMLOGIN'],
             'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', 'unique:usuario,CDMATRFUNCIONARIO'],
             'PERFIL' => ['required', \Illuminate\Validation\Rule::in(['ADM', 'USR', 'C'])], 
+            'ACESSO_REMOVIDOS' => ['nullable', 'boolean'],
         ]);
 
         // Senha provisória forte: prefixo 'Plansul@' + 6 números aleatórios
@@ -199,6 +203,13 @@ class UserController extends Controller
             'must_change_password' => true,
         ]);
 
+        /** @var User|null $me */
+        $me = Auth::user();
+        if ($me?->isAdmin()) {
+            $allowRemovidos = $request->boolean('ACESSO_REMOVIDOS');
+            $this->syncTela($user->CDMATRFUNCIONARIO, self::TELA_REMOVIDOS, $allowRemovidos);
+        }
+
         // Retornar tela de confirmação com credenciais para copiar/repasse
         return view('usuarios.confirmacao', [
             'nmLogin' => $user->NMLOGIN,
@@ -208,43 +219,21 @@ class UserController extends Controller
 
     public function edit(User $usuario): View
     {
-        // Carrega usuários USR disponíveis para supervisão
-        $usuariosUsrDisponiveis = User::where('PERFIL', 'USR')
-            ->where('NUSEQUSUARIO', '!=', $usuario->NUSEQUSUARIO)
-            ->orderBy('NOMEUSER')
-            ->get(['NUSEQUSUARIO', 'NOMEUSER', 'NMLOGIN']);
-
-        // Pré-compõe um array simples para uso em JS no template (evita eval complexa no Blade)
-        $usuariosUsrDisponiveisArray = $usuariosUsrDisponiveis->map(function ($u) {
-            return [
-                'NUSEQUSUARIO' => $u->NUSEQUSUARIO,
-                'NOMEUSER' => $u->NOMEUSER,
-                'NMLOGIN' => $u->NMLOGIN,
-            ];
-        })->values()->toArray();
-
-        return view('usuarios.edit', compact('usuario', 'usuariosUsrDisponiveis', 'usuariosUsrDisponiveisArray'));
+        return view('usuarios.edit', compact('usuario'));
     }
 
     public function update(Request $request, User $usuario): RedirectResponse
     {
-        // Normaliza supervisor_de para garantir que cada item seja string
-        if ($request->has('supervisor_de')) {
-            $vals = $request->input('supervisor_de');
-            if (is_array($vals)) {
-                $request->merge(['supervisor_de' => array_map('strval', $vals)]);
-            }
-        }
-
         $request->validate([
             'NOMEUSER' => ['required', 'string', 'max:80'],
             'NMLOGIN' => ['required', 'string', 'max:30', Rule::unique('usuario', 'NMLOGIN')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
             'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', Rule::unique('usuario', 'CDMATRFUNCIONARIO')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
             'PERFIL' => ['required', Rule::in(['ADM', 'USR', 'C'])],
             'SENHA' => ['nullable', 'string', 'min:8'],
-            'supervisor_de' => ['nullable', 'array'],
-            'supervisor_de.*' => ['string'],
+            'ACESSO_REMOVIDOS' => ['nullable', 'boolean'],
         ]);
+
+        $oldMatricula = $usuario->CDMATRFUNCIONARIO;
 
         $usuario->NOMEUSER = $request->NOMEUSER;
         $usuario->NMLOGIN = $request->NMLOGIN;
@@ -255,23 +244,96 @@ class UserController extends Controller
             $usuario->SENHA = $request->SENHA;
         }
 
-        // Salvar supervisão se fornecida
-        if ($request->has('supervisor_de')) {
-            $novosSupervisionados = array_unique(array_filter($request->input('supervisor_de', [])));
-            
-            // Validar que todos os logins existem e são USR
-            $loginsValidos = User::whereIn('NMLOGIN', $novosSupervisionados)
-                ->where('PERFIL', 'USR')
-                ->where('NUSEQUSUARIO', '!=', $usuario->NUSEQUSUARIO)
-                ->pluck('NMLOGIN')
-                ->toArray();
-
-            $usuario->supervisor_de = count($loginsValidos) > 0 ? $loginsValidos : null;
-        }
-
         $usuario->save();
 
+        /** @var User|null $me */
+        $me = Auth::user();
+        if ($me?->isAdmin()) {
+            $newMatricula = $usuario->CDMATRFUNCIONARIO;
+
+            if (!empty($oldMatricula) && !empty($newMatricula) && $oldMatricula !== $newMatricula) {
+                $this->migrateAcessosMatricula($oldMatricula, $newMatricula);
+            }
+
+            $allowRemovidos = $request->boolean('ACESSO_REMOVIDOS');
+            $this->syncTela($usuario->CDMATRFUNCIONARIO, self::TELA_REMOVIDOS, $allowRemovidos);
+        }
+
         return redirect()->route('usuarios.index')->with('success', 'Usuário atualizado com sucesso!');
+    }
+
+    private function grantTela(?string $matricula, int $tela): void
+    {
+        $matricula = trim((string) $matricula);
+        if ($matricula === '') {
+            return;
+        }
+
+        $exists = AcessoUsuario::query()
+            ->where('CDMATRFUNCIONARIO', $matricula)
+            ->where('NUSEQTELA', $tela)
+            ->exists();
+
+        if ($exists) {
+            AcessoUsuario::query()
+                ->where('CDMATRFUNCIONARIO', $matricula)
+                ->where('NUSEQTELA', $tela)
+                ->update(['INACESSO' => 'S']);
+            return;
+        }
+
+        AcessoUsuario::create([
+            'CDMATRFUNCIONARIO' => $matricula,
+            'NUSEQTELA' => $tela,
+            'INACESSO' => 'S',
+        ]);
+    }
+
+    private function syncTela(?string $matricula, int $tela, bool $allow): void
+    {
+        $matricula = trim((string) $matricula);
+        if ($matricula === '') {
+            return;
+        }
+
+        if ($allow) {
+            $this->grantTela($matricula, $tela);
+            return;
+        }
+
+        AcessoUsuario::query()
+            ->where('CDMATRFUNCIONARIO', $matricula)
+            ->where('NUSEQTELA', $tela)
+            ->delete();
+    }
+
+    private function migrateAcessosMatricula(string $from, string $to): void
+    {
+        $from = trim($from);
+        $to = trim($to);
+        if ($from === '' || $to === '' || $from === $to) {
+            return;
+        }
+
+        DB::transaction(function () use ($from, $to) {
+            $rows = AcessoUsuario::query()
+                ->where('CDMATRFUNCIONARIO', $from)
+                ->get(['NUSEQTELA', 'INACESSO']);
+
+            if ($rows->isEmpty()) {
+                return;
+            }
+
+            AcessoUsuario::query()
+                ->where('CDMATRFUNCIONARIO', $from)
+                ->delete();
+
+            foreach ($rows as $row) {
+                $tela = (int) $row->NUSEQTELA;
+                $allow = (bool) $row->INACESSO;
+                $this->syncTela($to, $tela, $allow);
+            }
+        });
     }
 
     public function destroy(User $usuario)
@@ -414,45 +476,5 @@ class UserController extends Controller
     private function isLoginAvailable(string $login): bool
     {
         return !User::where('NMLOGIN', $login)->exists();
-    }
-
-    // === Supervisão de Usuários ===
-    public function gerenciarSupervisao(User $usuario)
-    {
-        // Lista de usuários USR disponíveis para supervisão
-        $usuariosDisponiveis = User::where('PERFIL', 'USR')
-            ->where('NUSEQUSUARIO', '!=', $usuario->NUSEQUSUARIO)
-            ->orderBy('NOMEUSER')
-            ->get(['NUSEQUSUARIO', 'NOMEUSER', 'NMLOGIN']);
-
-        $supervisionados = $usuario->supervisor_de ?? [];
-
-        return view('usuarios.supervisao', compact('usuario', 'usuariosDisponiveis', 'supervisionados'));
-    }
-
-    public function atualizarSupervisao(Request $request, User $usuario): \Illuminate\Http\JsonResponse
-    {
-        $request->validate([
-            'supervisionados' => ['nullable', 'array'],
-            'supervisionados.*' => ['string'],
-        ]);
-
-        $novosSupervisionados = array_unique(array_filter($request->input('supervisionados', [])));
-        
-        // Validar que todos os logins existem e são USR
-        $loginsValidos = User::whereIn('NMLOGIN', $novosSupervisionados)
-            ->where('PERFIL', 'USR')
-            ->where('NUSEQUSUARIO', '!=', $usuario->NUSEQUSUARIO)
-            ->pluck('NMLOGIN')
-            ->toArray();
-
-        $usuario->supervisor_de = count($loginsValidos) > 0 ? $loginsValidos : null;
-        $usuario->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => "Supervisão atualizada! {$usuario->NOMEUSER} agora supervisiona " . count($loginsValidos) . " usuários.",
-            'count' => count($loginsValidos),
-        ]);
     }
 }

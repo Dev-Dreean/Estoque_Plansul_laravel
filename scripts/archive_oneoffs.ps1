@@ -33,7 +33,8 @@ if ($porcelain -ne '') {
     git commit -m "chore: archive one-off UF sync files ($ts)"
     git push origin main
     Write-Output "GIT_COMMIT_DONE"
-} else {
+}
+else {
     Write-Output "NO_GIT_CHANGES"
 }
 

@@ -6,6 +6,7 @@ use App\Models\LocalProjeto;
 use App\Models\Tabfant;
 use App\Services\FilterService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ProjetoController extends Controller
@@ -208,12 +209,21 @@ class ProjetoController extends Controller
         $ids = $request->input('ids');
 
         try {
-            LocalProjeto::whereIn('id', $ids)->delete();
+            $locais = LocalProjeto::whereIn('id', $ids)->get();
+            $deletedCount = 0;
+
+            DB::transaction(function () use ($locais, &$deletedCount) {
+                foreach ($locais as $local) {
+                    if ($local->delete()) {
+                        $deletedCount++;
+                    }
+                }
+            });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Locais removidos com sucesso.',
-                'count' => count($ids)
+                'count' => $deletedCount
             ], 200);
         } catch (\Exception $e) {
             Log::error('Erro ao deletar múltiplos locais', ['ids' => $ids, 'error' => $e->getMessage()]);

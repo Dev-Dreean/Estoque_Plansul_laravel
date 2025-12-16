@@ -48,23 +48,25 @@
   // Compatibilidade com nome antigo
   $data = $items ?? $patrimonios ?? collect([]);
   
-  // Colunas disponíveis para patrimônios
+  // Colunas disponíveis para patrimônios (ordem compacta e rótulos curtos)
   $availableColumns = [
     'nupatrimonio' => 'Nº Pat.',
+    'conferido' => 'Conf.',
     'numof' => 'OF',
     'codobjeto' => 'Obj.',
-    'nmplanta' => 'Termo',
-    'nuserie' => 'Série',
-    'projeto' => 'Projeto',
+    'projeto' => 'Proj.',
     'local' => 'Local',
-    'modelo' => 'Modelo',
+    'modelo' => 'Mod.',
     'marca' => 'Marca',
-    'descricao' => 'Descrição',
+    'descricao' => 'Desc.',
     'situacao' => 'Status',
-    'dtaquisicao' => 'Dt. Aquisição',
-    'dtoperacao' => 'Dt. Cadastro',
-    'responsavel' => 'Responsável',
-    'cadastrador' => 'Cadastrador',
+    'dtaquisicao' => 'Dt. Aquis.',
+    'dtoperacao' => 'Dt. Cad.',
+    'responsavel' => 'Resp.',
+    'cadastrador' => 'Cad. Por',
+    // Colunas auxiliares (mantidas caso sejam usadas)
+    'nuserie' => 'Série',
+    'nmplanta' => 'Termo',
   ];
   
   // Merge com colunas customizadas
@@ -78,8 +80,8 @@
 @endphp
 
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0 min-w-0">
-  <table class="w-full {{ $tableText }} text-left rtl:text-right text-gray-500 dark:text-gray-400">
-    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 shadow-sm">
+  <table class="w-full text-[11px] sm:text-xs md:text-[13px] lg:text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+    <thead class="text-[11px] sm:text-xs md:text-[13px] lg:text-sm uppercase bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-bold shadow-sm">
       <tr class="divide-x divide-gray-200 dark:divide-gray-700">
         @if($showCheckbox)
           <th class="{{ $headerPadding }} w-12">
@@ -101,7 +103,7 @@
                 ? request()->fullUrlWithQuery(array_merge($baseQuery, ['sort' => $col, 'direction' => $nextDir]))
                 : null;
             @endphp
-            <th class="{{ $headerPadding }} {{ $col === 'situacao' ? 'text-xs' : '' }}">
+            <th class="{{ $headerPadding }} {{ $col === 'situacao' ? 'text-[10px] sm:text-[11px] md:text-xs' : '' }} {{ $col === 'conferido' ? 'text-center w-12' : '' }} whitespace-nowrap">
               @if($sortable)
                 <a href="{{ $sortUrl }}"
                   data-ajax-sort
@@ -125,14 +127,14 @@
       </tr>
     </thead>
     
-    <tbody>
+    <tbody class="text-[13px] sm:text-sm md:text-[15px] lg:text-base font-semibold">
       @forelse ($data as $item)
         @php
           $rowSituacao = trim(preg_replace('/[\r\n]+/', ' ', (string)($item->SITUACAO ?? '')));
           $rowPatrimonio = $item->NUPATRIMONIO ?? $item->NUSEQPATR ?? $item->id;
           $isConsultor = auth()->user()->PERFIL === 'C';
         @endphp
-        <tr data-row-id="{{ $item->NUSEQPATR ?? $item->id }}" data-situacao="{{ $rowSituacao }}" data-patrimonio="{{ $rowPatrimonio }}" class="tr-hover text-sm {{ $clickable ? 'cursor-pointer' : '' }}"
+        <tr data-row-id="{{ $item->NUSEQPATR ?? $item->id }}" data-situacao="{{ $rowSituacao }}" data-patrimonio="{{ $rowPatrimonio }}" class="tr-hover {{ $clickable ? 'cursor-pointer' : '' }}"
           @if($clickable && $onRowClick && !$isConsultor)
             @click="window.location.href='{{ str_replace(':id', $item->NUSEQPATR ?? $item->id, $onRowClick) }}'"
           @elseif($clickable && !$isConsultor)
@@ -158,13 +160,36 @@
           @foreach($displayColumns as $col)
             {{-- PATRIMÔNIO COLUMNS --}}
             @if($col === 'nupatrimonio')
-              <td class="{{ $headerPadding }}">{{ $item->NUPATRIMONIO ?? 'N/A' }}</td>
+              <td class="{{ $headerPadding }} whitespace-nowrap truncate font-semibold" title="{{ $item->NUPATRIMONIO ?? 'N/A' }}">{{ $item->NUPATRIMONIO ?? 'N/A' }}</td>
             
+            @elseif($col === 'conferido')
+              @php
+                $flag = $item->FLCONFERIDO ?? null;
+                $flag = is_string($flag) ? strtoupper(trim($flag)) : ($flag !== null ? (string) $flag : '');
+                $isConferido = in_array($flag, ['S', '1', 'T', 'Y'], true);
+              @endphp
+              <td class="{{ $headerPadding }} text-center">
+                @if($isConferido)
+                  <span class="inline-flex items-center justify-center w-5 h-5 text-emerald-500 dark:text-emerald-400" style="color: #059669;" title="Verificado" aria-label="Verificado">
+                    <svg viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 00-1.06 1.06l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                    </svg>
+                  </span>
+                @else
+                  <span class="inline-flex items-center justify-center w-5 h-5 text-rose-500 dark:text-rose-400" style="color: #f43f5e;" title="Não verificado" aria-label="Não verificado">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M8 12h8" />
+                    </svg>
+                  </span>
+                @endif
+              </td>
+
             @elseif($col === 'numof')
-              <td class="{{ $headerPadding }}">{{ $item->NUMOF ?? '—' }}</td>
+              <td class="{{ $headerPadding }} whitespace-nowrap truncate" title="{{ $item->NUMOF ?? '—' }}">{{ $item->NUMOF ?? '—' }}</td>
             
             @elseif($col === 'codobjeto')
-              <td class="{{ $headerPadding }}">{{ $item->CODOBJETO ?? '—' }}</td>
+              <td class="{{ $headerPadding }} whitespace-nowrap truncate font-medium" title="{{ $item->CODOBJETO ?? '—' }}">{{ $item->CODOBJETO ?? '—' }}</td>
             
             @elseif($col === 'projeto')
               <td class="{{ $headerPadding }}">
@@ -173,12 +198,12 @@
                   $projectName = $project->NMPROJETO ?? $project->NOMEPROJETO ?? null;
                 @endphp
                 @if($project)
-                  <div class="leading-tight">
-                    <span class="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400">{{ $project->CDPROJETO }}</span>
-                    <div class="text-[10px] text-gray-600 dark:text-gray-400 truncate max-w-[140px] sm:max-w-[180px]" title="{{ $projectName }}">{{ $projectName }}</div>
+                  <div class="leading-tight max-w-[100px] sm:max-w-[120px]">
+                    <span class="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 truncate block" title="{{ $project->CDPROJETO }}">{{ $project->CDPROJETO }}</span>
+                    <div class="text-[10px] text-gray-600 dark:text-gray-400 truncate" title="{{ $projectName }}">{{ Str::limit($projectName, 12, '...') }}</div>
                   </div>
                 @else
-                  <span class="text-gray-400 text-[10px]">??"</span>
+                  <span class="text-gray-400 text-[10px]">—</span>
                 @endif
               </td>
             @elseif($col === 'local')
@@ -215,7 +240,7 @@
                   $displayText = '—';
                 }
               @endphp
-              <td class="{{ $headerPadding }} font-medium text-gray-900 dark:text-white truncate">
+              <td class="{{ $headerPadding }} font-semibold text-gray-900 dark:text-white truncate max-w-[140px] sm:max-w-[180px]" title="{{ $item->DEPATRIMONIO }}">
                 @if($displayText !== '—')
                   <span title="{{ $displayText }}">
                     {{ Str::limit($displayText, 10, '...') }}
@@ -260,10 +285,10 @@
               </td>
             
             @elseif($col === 'dtaquisicao')
-              <td class="{{ $headerPadding }}">{{ $item->dtaquisicao_pt_br ?? '—' }}</td>
+              <td class="{{ $headerPadding }} whitespace-nowrap">{{ $item->dtaquisicao_pt_br ?? '—' }}</td>
             
             @elseif($col === 'dtoperacao')
-              <td class="{{ $headerPadding }}">{{ $item->dtoperacao_pt_br ?? ($item->DTOPERACAO ? \Carbon\Carbon::parse($item->DTOPERACAO)->timezone(config('app.timezone'))->format('d/m/Y H:i') : '—') }}</td>
+              <td class="{{ $headerPadding }} whitespace-nowrap font-medium">{{ $item->dtoperacao_pt_br ?? ($item->DTOPERACAO ? \Carbon\Carbon::parse($item->DTOPERACAO)->timezone(config('app.timezone'))->format('d/m H:i') : '—') }}</td>
             
             @elseif($col === 'responsavel')
               <td class="{{ $headerPadding }}">

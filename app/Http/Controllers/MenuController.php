@@ -160,11 +160,10 @@ class MenuController extends Controller
     /**
      * Monta a lista de cards de tela com status de acesso conforme o perfil.
      *
-     * Regras:
-     * - USR: precisa ter a tela visivel e permissao ativa (acessousuario) para liberar.
-     * - ADM: ve e acessa qualquer tela visivel (bloqueio de delete fica no middleware/policy).
-     * - SUP: acesso total.
-     */
+      * Regras:
+      * - USR: precisa ter a tela visivel e permissao ativa (acessousuario) para liberar.
+      * - ADM: ve e acessa qualquer tela visivel (bloqueio de delete fica no middleware/policy).
+      */
     private function montarCards(?User $user): array
     {
         $telasConfig = config('telas', []);
@@ -230,6 +229,7 @@ class MenuController extends Controller
         return match ($perfil) {
             User::PERFIL_ADMIN => 'Admin: acesso a todas as telas liberadas, sem deletar.',
             User::PERFIL_USUARIO => 'Usuario: acesso liberado apenas quando possuir o codigo da tela.',
+            User::PERFIL_CONSULTOR => 'Consultor: acesso somente leitura ao Controle de Patrimônio.',
             default => 'Visitante: faca login para solicitar liberacao.',
         };
     }

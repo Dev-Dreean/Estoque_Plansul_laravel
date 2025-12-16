@@ -15,7 +15,7 @@
                         @csrf
                         @method('PUT')
 
-                        <x-patrimonio-form :patrimonio="$patrimonio" />
+                        <x-patrimonio-form :patrimonio="$patrimonio" :ultima-verificacao="$ultimaVerificacao" />
 
                         <div class="flex items-center justify-start mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                             <a href="{{ route('patrimonios.index') }}" class="mr-4">Cancelar</a>
@@ -110,6 +110,7 @@ $dadosOriginais = [
 'CDMATRFUNCIONARIO' => $patrimonio->CDMATRFUNCIONARIO ?? '',
 'NOMEFUNCIONARIOORIGINAL' => $nomeFuncionarioOriginal,
 'SITUACAO' => $patrimonio->SITUACAO ?? '',
+'FLCONFERIDO' => $patrimonio->FLCONFERIDO ?? '',
 'MARCA' => $patrimonio->MARCA ?? '',
 'MODELO' => $patrimonio->MODELO ?? '',
 'DTAQUISICAO' => $patrimonio->DTAQUISICAO ?? '',
@@ -117,6 +118,8 @@ $dadosOriginais = [
 'DEHISTORICO' => $patrimonio->DEHISTORICO ?? '',
 'NUMOF' => $patrimonio->NUMOF ?? '',
 'NMPLANTA' => $patrimonio->NMPLANTA ?? '',
+'PESO' => $patrimonio->PESO ?? '',
+'TAMANHO' => $patrimonio->TAMANHO ?? '',
 ];
 $jsonDados = json_encode($dadosOriginais, JSON_UNESCAPED_SLASHES);
 @endphp
@@ -142,16 +145,19 @@ $jsonDados = json_encode($dadosOriginais, JSON_UNESCAPED_SLASHES);
             'NUSEQOBJ': 'Código do Objeto',
             'DEPATRIMONIO': 'Descrição do Objeto',
             'CDPROJETO': 'Projeto',
-            'CDLOCAL': 'Local',
+            'CDLOCAL': 'Local Físico',
             'CDMATRFUNCIONARIO': 'Matrícula Responsável',
             'SITUACAO': 'Situação',
+            'FLCONFERIDO': 'Conferido',
             'MARCA': 'Marca',
             'MODELO': 'Modelo',
             'DTAQUISICAO': 'Data Aquisição',
             'DTBAIXA': 'Data Baixa',
             'DEHISTORICO': 'Observações',
             'NUMOF': 'Número OC',
-            'NMPLANTA': 'Planta'
+            'NMPLANTA': 'Planta',
+            'PESO': 'Peso',
+            'TAMANHO': 'Dimensões'
         };
 
         // Cache de nomes de projetos, locais e funcionários
@@ -337,6 +343,16 @@ $jsonDados = json_encode($dadosOriginais, JSON_UNESCAPED_SLASHES);
             const camposValidos = Object.keys(labelCampos);
 
             camposValidos.forEach(campo => {
+                // CDLOCAL no Alpine guarda o ID do registro (locais_projeto.id),
+                // mas no banco o Patrimônio guarda o código (locais_projeto.cdlocal).
+                // Para o modal comparar/mostrar corretamente, usar o código visível (cdlocal).
+                if (campo === 'CDLOCAL') {
+                    const cdLocalVisivel = String(alpineData.codigoLocalSelecionado || alpineData.codigoLocalDigitado || '').trim();
+                    if (cdLocalVisivel !== '') {
+                        dados[campo] = cdLocalVisivel;
+                        return;
+                    }
+                }
                 if (campo in alpineData.formData) {
                     dados[campo] = alpineData.formData[campo];
                 }
@@ -424,6 +440,29 @@ $jsonDados = json_encode($dadosOriginais, JSON_UNESCAPED_SLASHES);
                                 <span class="text-gray-700 dark:text-gray-300 flex-1 break-words">${displayAnterior}</span>
                                 <span class="flex-shrink-0 text-blue-500 dark:text-blue-400 font-bold text-lg mt-1">→</span>
                                 <span class="text-gray-800 dark:text-gray-100 font-medium flex-1 break-words">${displayNovo}</span>
+                            </div>
+                        </div>
+                    `;
+                    } else if (campo === 'FLCONFERIDO') {
+                        const toBool = (v) => {
+                            const u = String(v || '').trim().toUpperCase();
+                            return ['S', '1', 'SIM', 'TRUE', 'T', 'Y', 'YES', 'ON'].includes(u);
+                        };
+
+                        const anteriorOk = toBool(valorAnterior);
+                        const novoOk = toBool(valorNovo);
+
+                        const badge = (ok) => ok
+                            ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">Verificado</span>`
+                            : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Não verificado</span>`;
+
+                        html += `
+                        <div class="mb-3 pb-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+                            <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">${labelCampos[campo]}</p>
+                            <div class="flex items-center gap-3 text-sm">
+                                <span class="flex-1">${badge(anteriorOk)}</span>
+                                <span class="flex-shrink-0 text-blue-500 dark:text-blue-400 font-bold text-lg">→</span>
+                                <span class="flex-1">${badge(novoOk)}</span>
                             </div>
                         </div>
                     `;

@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Models\User;
 
 class MenuHelper
 {
@@ -62,6 +63,7 @@ class MenuHelper
 
     /**
      * Obtém as telas que o usuário tem acesso baseado no perfil
+     * - C: acesso apenas a 1000
      * - USR: acesso apenas a 1000 e 1001
      * - ADM: acesso a tudo
      */
@@ -82,8 +84,15 @@ class MenuHelper
         }
 
         // Usuário comum (USR) só tem acesso a Patrimônio e Gráficos
-        if ($user->PERFIL === 'USR') {
-            return ['1000', '1001'];
+        if ($user->PERFIL === User::PERFIL_USUARIO) {
+            $base = ['1000', '1001'];
+            $extra = array_map('strval', $user->telasComAcesso());
+            return array_values(array_unique(array_merge($base, $extra)));
+        }
+
+        // Consultor (C) tem acesso apenas a Patrimônio (somente leitura)
+        if ($user->PERFIL === User::PERFIL_CONSULTOR) {
+            return ['1000'];
         }
 
         return [];

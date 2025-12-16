@@ -429,6 +429,7 @@ class PatrimonioService
 
         $this->aplicarFiltroSituacao($query, $request);
         $this->aplicarFiltroUf($query, $request);
+        $this->aplicarFiltroConferido($query, $request);
 
         if ($request->filled('modelo')) {
             $val = trim((string) $request->input('modelo'));
@@ -441,6 +442,13 @@ class PatrimonioService
             $val = trim((string) $request->input('marca'));
             if ($val !== '') {
                 $query->whereRaw('LOWER(MARCA) LIKE ?', ['%' . mb_strtolower($val) . '%']);
+            }
+        }
+
+        if ($request->filled('numof')) {
+            $val = trim((string) $request->input('numof'));
+            if ($val !== '') {
+                $query->where('NUMOF', 'like', '%' . $val . '%');
             }
         }
 
@@ -507,6 +515,7 @@ class PatrimonioService
             'marca' => 'MARCA',
             'descricao' => 'DEPATRIMONIO',
             'situacao' => 'SITUACAO',
+            'conferido' => 'FLCONFERIDO',
             'dtaquisicao' => 'DTAQUISICAO',
             'dtoperacao' => 'DTOPERACAO',
             'responsavel' => 'CDMATRFUNCIONARIO',
@@ -683,5 +692,33 @@ class PatrimonioService
         // 2. UF do local (CDLOCAL → locais_projeto.UF)
         // 3. UF do projeto (CDPROJETO → tabfant.UF)
         $query->byUf($values->all());
+    }
+
+    protected function aplicarFiltroConferido(Builder $query, Request $request): void
+    {
+        $raw = $request->input('conferido');
+        if (is_null($raw)) {
+            return;
+        }
+
+        $val = strtoupper(trim((string) $raw));
+        if ($val === '') {
+            return;
+        }
+
+        $truthy = ['S', '1', 'SIM', 'TRUE', 'T', 'Y', 'YES', 'ON', 'VERIFICADO', 'VERIFICADOS'];
+        $falsy = ['N', '0', 'NAO', 'NÃO', 'NO', 'FALSE', 'F', 'OFF', 'NAO VERIFICADO', 'NAO VERIFICADOS', 'NÃO VERIFICADO', 'NÃO VERIFICADOS'];
+
+        $expr = "UPPER(COALESCE(NULLIF(TRIM(FLCONFERIDO), ''), 'N'))";
+        $truthyDb = "('S','1','T','Y')";
+
+        if (in_array($val, $truthy, true)) {
+            $query->whereRaw("{$expr} IN {$truthyDb}");
+            return;
+        }
+
+        if (in_array($val, $falsy, true)) {
+            $query->whereRaw("{$expr} NOT IN {$truthyDb}");
+        }
     }
 }

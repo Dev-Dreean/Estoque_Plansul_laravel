@@ -48,7 +48,9 @@ class Patrimonio extends Model
         'FLCONFERIDO',
         'NUMOF',
         'CODOBJETO',
-        'NMPLANTA'
+        'NMPLANTA',
+        'PESO',
+        'TAMANHO'
     ];
 
     protected $casts = [
@@ -57,6 +59,8 @@ class Patrimonio extends Model
         'DTBAIXA'     => 'date:Y-m-d',
         'DTGARANTIA'  => 'date:Y-m-d',
         'DTLAUDO'     => 'date:Y-m-d',
+        'PESO'        => 'float',
+        'TAMANHO'     => 'string',
     ];
 
     protected $appends = ['projeto_correto'];

@@ -4,13 +4,6 @@
     <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
         <div class="flex items-center gap-2">
             {{ $usuario->NOMEUSER }}
-            @if ($usuario->isSupervisor())
-            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300" title="Supervisor de {{ count($usuario->supervisor_de ?? []) }} usuário(s)">
-                <span class="mr-1">👥</span>
-                <span>Supervisor</span>
-                <span class="ml-2 px-1.5 py-0.5 bg-indigo-200 dark:bg-indigo-800 text-indigo-900 dark:text-indigo-100 text-[10px] rounded-full font-semibold">{{ count($usuario->supervisor_de ?? []) }}</span>
-            </span>
-            @endif
         </div>
     </td>
     <td class="px-6 py-4">{{ $usuario->NMLOGIN }}</td>
@@ -115,4 +108,3 @@
     })();
 </script>
 @endif
-

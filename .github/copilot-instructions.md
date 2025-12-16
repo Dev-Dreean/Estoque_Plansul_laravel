@@ -498,3 +498,171 @@ echo "tabfant: " . DB::table('tabfant')->count() . " vs KingHost XX\n";
 ```
 
 Se for necessário alterar este guia, peça aqui no chat. O assistente atualizará este arquivo (ou criará/atualizará um `.txt`) conforme sua orientação.
+
+---
+
+## 15) PADRÃO PARA IMPLEMENTAR NOVOS CAMPOS (OBRIGATÓRIO)
+
+**⚠️ CRÍTICO:** Toda vez que adicionar um campo novo, SEMPRE seguir este checklist para evitar quebras e inconsistências.
+
+### 15.1 Checklist de Implementação de Novo Campo
+
+**Quando receber solicitação: "Adicione o campo X"**
+
+1. **Database (Migration)**
+   - [ ] Criar arquivo migration: `database/migrations/YYYY_MM_DD_add_<fieldname>_to_<table>.php`
+   - [ ] Usar nomenclatura SQL uppercase: `PESO`, `TAMANHO`, `DESCRICAO` (não peso, tamanho)
+   - [ ] Adicionar tipo apropriado: `string()`, `integer()`, `decimal(10, 2)`, `date()`, etc
+   - [ ] SEMPRE nullable() para não quebrar registros existentes
+   - [ ] Adicionar comment() com descrição do campo
+   - [ ] Rodar migration: `php artisan migrate --path=database/migrations/YYYY_MM_DD_*.php`
+   - [ ] Validar com: `php artisan db:table <tabela>` (verificar coluna aparece)
+
+2. **Model (app/Models/<Model>.php)**
+   - [ ] Adicionar campo ao array `$fillable` (ordem: agrupar por relacionamento temático)
+   - [ ] Adicionar cast em `$casts` se necessário (`'PESO' => 'float'`, `'DATA' => 'date:Y-m-d'`)
+   - [ ] Adicionar ao `$appends` se for atributo calculado
+
+3. **Formulário Edição (resources/views/components/<model>-form.blade.php)**
+   - [ ] Criar input correspondente com padrão: `<input x-model="formData.<FIELDNAME>" name="<FIELDNAME>" ...>`
+   - [ ] **IMPORTANTE:** Copiar EXATAMENTE as classes Tailwind de outro input similar (não inventar)
+   - [ ] Se campo novo + relacionado: encapsular em `<div class="border-2 border-indigo-500 dark:border-indigo-400 rounded-lg p-4">`
+   - [ ] Adicionar label com `text-xs font-medium text-gray-700 dark:text-gray-300`
+   - [ ] **NUNCA** adicionar background-color diretamente (usar apenas border + estrutura)
+   - [ ] Adicionar ao objeto `formData` no script (seção `return {`)
+   - [ ] Se campo em grid com outros: respeitar layout `md:grid-cols-<N>` (2, 3 ou 4)
+
+4. **View Visualização (resources/views/<model>/show.blade.php)**
+   - [ ] Copiar estrutura DO FORMULÁRIO (mesma ordem, mesma grid)
+   - [ ] Usar `readonly` em inputs
+   - [ ] Adicionar ao array `$dadosOriginais` (para detectar mudanças na edição)
+
+5. **View Edição (resources/views/<model>/edit.blade.php)**
+   - [ ] Adicionar campo ao array `$dadosOriginais` (para modal de confirmação)
+   - [ ] Adicionar label no mapa `labelCampos` (para exibir no modal: `'PESO': 'Peso (kg)'`)
+
+6. **Validação e Testes**
+   - [ ] Rodar `php -l` em todos arquivos PHP modificados
+   - [ ] Testar criar novo registro COM o campo preenchido
+   - [ ] Testar editar registro DEIXANDO campo vazio (deve aceitar)
+   - [ ] Testar em tema claro E escuro (dark mode)
+   - [ ] Verificar modal de confirmação mostra mudança do campo
+
+### 15.2 Exemplo Passo a Passo: Adicionar Campo "CODIGO_BARRAS"
+
+**Passo 1: Migration**
+```php
+// database/migrations/2025_12_15_add_codigo_barras_to_patr.php
+$table->string('CODIGO_BARRAS', 50)->nullable()->comment('Código de barras do patrimônio');
+```
+
+**Passo 2: Model**
+```php
+// app/Models/Patrimonio.php
+protected $fillable = [
+    // ... campos existentes ...
+    'CODIGO_BARRAS', // novo
+];
+```
+
+**Passo 3: Form (patrimonio-form.blade.php)**
+```blade
+<div class="md:col-span-1">
+    <label for="CODIGO_BARRAS" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Barras</label>
+    <input x-model="formData.CODIGO_BARRAS" id="CODIGO_BARRAS" name="CODIGO_BARRAS" type="text" tabindex="XX"
+        class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500"
+        placeholder="Ex: 123456789012" />
+</div>
+```
+
+Adicionar ao formData:
+```javascript
+CODIGO_BARRAS: (config.old?.CODIGO_BARRAS ?? config.patrimonio?.CODIGO_BARRAS) || '',
+```
+
+**Passo 4: Show (show.blade.php)**
+```blade
+<div>
+    <x-input-label for="CODIGO_BARRAS" value="Código de Barras" />
+    <input type="text" id="CODIGO_BARRAS" value="{{ $patrimonio->CODIGO_BARRAS ?? '-' }}" readonly
+        class="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100">
+</div>
+```
+
+Adicionar a `$dadosOriginais`:
+```php
+'CODIGO_BARRAS' => $patrimonio->CODIGO_BARRAS ?? '',
+```
+
+**Passo 5: Edit (edit.blade.php)**
+Adicionar ao mapa:
+```javascript
+'CODIGO_BARRAS': 'Código de Barras',
+```
+
+### 15.3 Padrões de CSS/Tailwind (OBRIGATÓRIO)
+
+**✅ CERTO - Copiar de campos existentes:**
+```blade
+class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500"
+```
+
+**❌ ERRADO - Inventar estilos novos:**
+```blade
+class="bg-blue-200 dark:bg-blue-900 p-2 my-custom-class"
+```
+
+**❌ ERRADO - Usar cores saturadas:**
+```blade
+class="bg-blue-500" <!-- Vai ficar feio -->
+```
+
+**✅ CORRETO - Se campo novo destaque:**
+```blade
+<div class="border-2 border-indigo-500 dark:border-indigo-400 rounded-lg p-4">
+    <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-300 mb-3">Label do grupo</p>
+    <!-- campos aqui -->
+</div>
+```
+
+### 15.4 Grid Layout Reference
+
+**Para 1 campo (full width):**
+```blade
+<div class="md:col-span-3"> <!-- em grid cols-3 -->
+```
+
+**Para 2 campos lado a lado:**
+```blade
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+```
+
+**Para 3 campos:**
+```blade
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+```
+
+**Para 4 campos (Projeto 2col + Peso + Tamanho):**
+```blade
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="md:col-span-2">Projeto</div>
+    <div>Peso</div>
+    <div>Tamanho</div>
+</div>
+```
+
+### 15.5 Verificação Final (Antes de Commitar)
+
+- [ ] Sintaxe PHP validada: `php -l app/Models/*.php` ✅
+- [ ] Sintaxe PHP validada: `php -l database/migrations/*.php` ✅
+- [ ] Blade validada visualmente (sem `@` incorretos)
+- [ ] Dark mode testado (Alt+Shift+D ou toggle no navegador)
+- [ ] Mobile responsivo testado (viewport reduzido)
+- [ ] Campo vazio não quebra o formulário
+- [ ] Campo preenchido aparece no modal de confirmação
+- [ ] Nenhuma classe Tailwind inventada (todas existem)
+- [ ] Log atualizado em `storage/logs/`
+
+```
+
+Se for necessário alterar este guia, peça aqui no chat. O assistente atualizará este arquivo conforme sua orientação.

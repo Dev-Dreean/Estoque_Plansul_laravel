@@ -11,7 +11,7 @@
   >
     <div class="py-3">
       <div class="w-full px-2 sm:px-4 lg:px-6">
-        <div class="bg-white dark:bg-gray-900 shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-700">
+        <div class="bg-white dark:bg-gray-900 shadow-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div class="p-4 sm:p-5 space-y-3">
             @include('patrimonios.partials.flash-messages')
             @include('patrimonios.partials.filter-form')
@@ -56,24 +56,55 @@
                 id="bulk-confirm-modal"
                 class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 backdrop-blur-sm px-4"
               >
-              <div class="w-full max-w-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-5 space-y-4">
-                <div class="flex items-start justify-between gap-3 border-b border-gray-200 dark:border-gray-700 pb-3">
-                  <div class="space-y-1">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="bulk-confirm-title">Confirmar alteração em massa</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400" id="bulk-confirm-desc">Revise os patrimônios selecionados</p>
+              <div class="w-full max-w-2xl bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden">
+                
+                <!-- Header com gradiente e ícone -->
+                <div class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 dark:from-indigo-700 dark:via-indigo-800 dark:to-purple-800 px-6 py-4 flex items-start justify-between relative overflow-hidden">
+                  <div class="absolute -right-16 -top-16 w-40 h-40 bg-white/5 rounded-full"></div>
+                  <div class="relative space-y-1">
+                    <div class="flex items-center gap-3">
+                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                      </svg>
+                      <h3 class="text-2xl font-bold text-white" id="bulk-confirm-title">Confirmar Alteração em Massa</h3>
+                    </div>
+                    <p class="text-indigo-100 text-sm ml-9">Revise os <span id="bulk-confirm-count-header" class="font-semibold">0</span> patrimônios selecionados</p>
                   </div>
-                  <button id="bulk-confirm-close" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition text-lg leading-none">×</button>
+                  <button id="bulk-confirm-close" class="text-indigo-200 hover:text-white transition text-3xl leading-none mt-1 relative">×</button>
                 </div>
-                <div class="text-sm space-y-1" id="bulk-confirm-situacao-wrapper" style="display:none;">
-                  <span class="text-gray-600 dark:text-gray-400">Nova situação:</span>
-                  <p id="bulk-confirm-new" class="font-semibold text-indigo-600 dark:text-indigo-400 text-base"></p>
+
+                <!-- Conteúdo compacto -->
+                <div class="px-6 py-4 space-y-3">
+                  
+                  <!-- Nova situação com badge destacado -->
+                  <div id="bulk-confirm-situacao-wrapper" style="display:none;" class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-l-4 border-indigo-600 dark:border-indigo-400 rounded-lg p-3">
+                    <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">Novo Status</p>
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                      </svg>
+                      <span id="bulk-confirm-new" class="text-base font-bold text-indigo-700 dark:text-indigo-300"></span>
+                    </div>
+                  </div>
+
+                  <!-- Lista de patrimônios compacta -->
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                      <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Patrimônios a Alterar:</p>
+                      <span class="inline-block px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
+                        <span id="bulk-confirm-count">0</span>
+                      </span>
+                    </div>
+                    <div id="bulk-confirm-list" class="max-h-56 overflow-y-auto space-y-1.5 pr-1">
+                      <!-- itens gerados via JS -->
+                    </div>
+                  </div>
                 </div>
-                <div id="bulk-confirm-list" class="max-h-52 overflow-y-auto space-y-1 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-md p-3 text-gray-700 dark:text-gray-300">
-                  <!-- itens gerados via JS -->
-                </div>
-                <div class="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                  <button id="bulk-confirm-cancel" class="px-4 py-2 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition">Cancelar</button>
-                  <button id="bulk-confirm-yes" class="px-4 py-2 rounded-md bg-indigo-600 dark:bg-indigo-600 text-white hover:bg-indigo-700 dark:hover:bg-indigo-700 font-medium transition">Confirmar</button>
+
+                <!-- Footer com ações -->
+                <div class="bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-3">
+                  <button id="bulk-confirm-cancel" class="px-6 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold transition transform hover:scale-105 text-sm">Cancelar</button>
+                  <button id="bulk-confirm-yes" class="px-6 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 font-semibold transition shadow-lg hover:shadow-xl transform hover:scale-105 text-sm">✓ Confirmar</button>
                 </div>
               </div>
             </div>
@@ -279,21 +310,53 @@
             return;
           }
           bulkConfirmNew.textContent = situacao;
+          document.getElementById('bulk-confirm-count-header').textContent = selectedIds.size;
           bulkConfirmList.innerHTML = '';
+          document.getElementById('bulk-confirm-count').textContent = selectedIds.size;
           selectedIds.forEach((id) => {
             const row = document.querySelector(`[data-row-id=\"${id}\"]`);
-            const prev = row?.dataset?.situacao || '---';
+            const prev = row?.dataset?.situacao || '—';
             const patr = row?.dataset?.patrimonio || id;
+            
             const item = document.createElement('div');
-            item.className = 'flex justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-1 last:border-0';
-            const left = document.createElement('div');
-            left.className = 'font-semibold text-gray-900 dark:text-white';
-            left.textContent = `Nº Patrimônio ${patr}`;
-            const right = document.createElement('div');
-            right.className = 'text-xs text-gray-800 dark:text-gray-200';
-            right.textContent = `De: ${prev} -> Para: ${situacao}`;
-            item.appendChild(left);
-            item.appendChild(right);
+            item.className = 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-500 transition-all';
+            
+            // Número do patrimônio
+            const numDiv = document.createElement('div');
+            numDiv.className = 'flex items-center gap-2 mb-2';
+            const numBadge = document.createElement('span');
+            numBadge.className = 'px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-bold text-xs';
+            numBadge.textContent = `Nº ${patr}`;
+            numDiv.appendChild(numBadge);
+            item.appendChild(numDiv);
+            
+            // Transição de status com seta bonita
+            const transDiv = document.createElement('div');
+            transDiv.className = 'flex items-center gap-2 justify-between';
+            
+            const badgeFrom = document.createElement('span');
+            badgeFrom.className = 'flex-1 px-2.5 py-1.5 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-xs text-center';
+            badgeFrom.textContent = prev;
+            
+            const arrowContainer = document.createElement('div');
+            arrowContainer.className = 'flex-shrink-0 flex items-center justify-center px-1';
+            const arrow = document.createElement('div');
+            arrow.innerHTML = `
+              <svg class="w-5 h-5 text-indigo-500 dark:text-indigo-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+              </svg>
+            `;
+            arrowContainer.appendChild(arrow);
+            
+            const badgeTo = document.createElement('span');
+            badgeTo.className = 'flex-1 px-2.5 py-1.5 rounded-md bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/50 dark:to-emerald-900/50 text-green-700 dark:text-green-300 font-bold text-xs text-center';
+            badgeTo.textContent = situacao;
+            
+            transDiv.appendChild(badgeFrom);
+            transDiv.appendChild(arrowContainer);
+            transDiv.appendChild(badgeTo);
+            item.appendChild(transDiv);
+            
             bulkConfirmList.appendChild(item);
           });
           bulkConfirmModal.classList.remove('hidden');
@@ -834,7 +897,7 @@
               <p id="consulta-projeto" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
             </div>
             <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
-              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Local</p>
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Local Físico</p>
               <p id="consulta-local" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
             </div>
           </div>

@@ -36,7 +36,7 @@
                                     class="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100">
                             </div>
                             <div>
-                                <x-input-label for="CDLOCAL" value="Local" />
+                                <x-input-label for="CDLOCAL" value="Local Físico" />
                                 <input type="text" id="CDLOCAL" value="{{ $patrimonio->local?->delocal ?? '-' }}" readonly 
                                     class="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100">
                             </div>
@@ -82,6 +82,25 @@
                             <x-input-label for="USUARIO" value="Criado por" />
                             <input type="text" id="USUARIO" value="{{ $patrimonio->USUARIO ?? '-' }}" readonly 
                                 class="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100">
+                        </div>
+
+                        {{-- Peso e Tamanho --}}
+                        <div>
+                            <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-300 mb-2">Novos campos</p>
+                            <div class="border-2 border-indigo-500 dark:border-indigo-400 rounded-lg p-2">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    <div>
+                                        <x-input-label for="PESO" value="Peso (kg)" />
+                                        <input type="text" id="PESO" value="{{ $patrimonio->PESO ?? '-' }}" readonly 
+                                            class="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100">
+                                    </div>
+                                    <div>
+                                        <x-input-label for="TAMANHO" value="Dimensões" />
+                                        <input type="text" id="TAMANHO" value="{{ $patrimonio->TAMANHO ?? '-' }}" readonly 
+                                            class="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

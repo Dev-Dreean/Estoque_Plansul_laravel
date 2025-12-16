@@ -10,6 +10,18 @@
 </div>
 @endif
 
+@php
+    $canGrantRemovidos = auth()->user()?->isAdmin() ?? false;
+    $hasRemovidos = false;
+    if ($canGrantRemovidos && isset($usuario) && !empty($usuario->CDMATRFUNCIONARIO)) {
+        $hasRemovidos = \App\Models\AcessoUsuario::query()
+            ->where('CDMATRFUNCIONARIO', $usuario->CDMATRFUNCIONARIO)
+            ->where('NUSEQTELA', 1009)
+            ->whereRaw("TRIM(UPPER(INACESSO)) = 'S'")
+            ->exists();
+    }
+@endphp
+
 <div
     x-data="userForm({
         existingId: {{ isset($usuario) ? (int)$usuario->NUSEQUSUARIO : 'null' }},
@@ -17,6 +29,7 @@
         loginOld: @js(old('NMLOGIN', isset($usuario)? $usuario->NMLOGIN : '')),
         matriculaOld: @js(old('CDMATRFUNCIONARIO', isset($usuario)? $usuario->CDMATRFUNCIONARIO : '')),
         perfilOld: @js(old('PERFIL', isset($usuario)? $usuario->PERFIL : 'USR')),
+        acessoRemovidosOld: @js((bool) old('ACESSO_REMOVIDOS', $hasRemovidos)),
     })"
     class="space-y-4">
     <div>
@@ -57,6 +70,46 @@
         </p>
     </div>
 
+    @if($canGrantRemovidos)
+    <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Permissões Especiais</h3>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    Habilite apenas para gestores autorizados.
+                </p>
+            </div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
+                Admin
+            </span>
+        </div>
+
+        <div class="mt-3">
+            <input type="hidden" name="ACESSO_REMOVIDOS" value="0">
+            <label class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <input
+                    type="checkbox"
+                    name="ACESSO_REMOVIDOS"
+                    value="1"
+                    x-model="acessoRemovidos"
+                    class="mt-1 rounded border-gray-300 dark:border-gray-600 text-emerald-600 focus:ring-emerald-600 focus:ring-offset-0"
+                >
+                <div class="flex-1">
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        Acesso à tela Removidos
+                    </div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                        Permite conferir exclusões e executar <span class="font-semibold">restaurar</span> ou <span class="font-semibold">remover definitivamente</span>.
+                    </div>
+                    <div class="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                        Use com cautela: ações podem impactar auditoria e dados.
+                    </div>
+                </div>
+            </label>
+        </div>
+    </div>
+    @endif
+
     <div>
         @if(isset($usuario))
         <x-input-label for="SENHA" value="Senha" />
@@ -71,26 +124,21 @@
         @endif
     </div>
 
-    @if(isset($usuariosUsrDisponiveis))
-    <div x-show="perfil === 'USR'" x-cloak>
-        @include('usuarios.partials.supervisao_form', compact('usuario', 'usuariosUsrDisponiveis'))
-    </div>
-    @endif
-
     <script>
         function userForm({
             existingId,
             nomeOld,
             loginOld,
             matriculaOld,
-            perfilOld
+            perfilOld,
+            acessoRemovidosOld
         }) {
             return {
                 matricula: matriculaOld || '',
                 nome: nomeOld || '',
                 login: loginOld || '',
                 perfil: perfilOld || 'USR',
-                senhaAdmin: '',
+                acessoRemovidos: !!acessoRemovidosOld,
                 loginAuto: false,
                 loginDisponivel: true,
                 matriculaExiste: false,
@@ -201,15 +249,6 @@
                     this.loginAuto = false;
                 },
                 validateForm() {
-                    // Se perfil é SUP, senha de super admin é obrigatória
-                    if (this.perfil === 'SUP' && !this.senhaAdmin) {
-                        alert('A senha de autorização de Super Admin é obrigatória para criar/atualizar um Super Administrador.');
-                        return false;
-                    }
-                    // Se o perfil não for USR, garantir que não enviemos supervisionados
-                    if (this.perfil !== 'USR') {
-                        document.querySelectorAll('input[name="supervisor_de[]"]').forEach(el => el.remove());
-                    }
                     return true;
                 }
             }

@@ -18,14 +18,12 @@ use Illuminate\Support\Facades\DB;
  * @property string|null $NMLOGIN
  * @property string|null $NOMEUSER
  * @property string|null $CDMATRFUNCIONARIO
- * @property array|null $supervisor_de
  * 
  * @method bool isGod()
  * @method bool isAdmin()
  * @method bool podeExcluir()
  * @method bool temAcessoTela(int|string $nuseqtela)
  * @method bool telaVisivel(int|string $nuseqtela)
- * @method array getSupervisionados()
  * @method \Illuminate\Database\Eloquent\Relations\HasMany acessos()
  */
 class User extends Authenticatable
@@ -69,13 +67,11 @@ class User extends Authenticatable
         'must_change_password',
         'password_policy_version',
         'theme',
-        'supervisor_de',
     ];
 
     protected $casts = [
         'must_change_password' => 'boolean',
         'password_policy_version' => 'integer',
-        'supervisor_de' => 'array',
     ];
 
     /**
@@ -248,21 +244,4 @@ class User extends Authenticatable
             ->toArray();
     }
 
-    /**
-     * Retorna true se o usuário é supervisor de outros usuários
-     */
-    public function isSupervisor(): bool
-    {
-        return !empty($this->supervisor_de);
-    }
-
-    /**
-     * Retorna a lista de logins que este usuário supervisiona
-     */
-    public function getSupervisionados(): array
-    {
-        return $this->supervisor_de ?? [];
-    }
-
 }
-

@@ -117,4 +117,5 @@ $telasMenu = MenuHelper::getTelasParaMenu();
 .nav-item-amber:hover { border-color: rgba(245, 158, 11, 0.6); background: rgba(245, 158, 11, 0.1); }
 .nav-item-violet:hover { border-color: rgba(139, 92, 246, 0.6); background: rgba(139, 92, 246, 0.1); }
 .nav-item-teal:hover { border-color: rgba(20, 184, 166, 0.6); background: rgba(20, 184, 166, 0.1); }
+.nav-item-red:hover { border-color: rgba(239, 68, 68, 0.6); background: rgba(239, 68, 68, 0.1); }
 </style>

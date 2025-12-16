@@ -10,11 +10,14 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        // Permitir acesso para Admin (ADM) e Super Admin (SUP)
-        if (Auth::check() && in_array(Auth::user()->PERFIL, ['ADM', 'SUP'])) {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        // Permitir acesso apenas para Admin (ADM)
+        if ($user && $user->isAdmin()) {
             return $next($request); // Acesso permitido, pode passar.
         }
-        // Se não for admin ou super admin, nega o acesso.
+        // Se não for admin, nega o acesso.
         abort(403, 'Acesso não autorizado.');
     }
 }

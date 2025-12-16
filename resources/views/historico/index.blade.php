@@ -31,7 +31,7 @@
                     <label for="tipo" class="sr-only">Tipo de evento</label>
                     <select id="tipo" name="tipo" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
                       <option value="">Tipo de evento</option>
-                      @foreach(['projeto','situacao','termo'] as $tp)
+                      @foreach(['local','projeto','situacao','termo','conferido'] as $tp)
                       <option value="{{ $tp }}" @selected(request('tipo')==$tp)>{{ ucfirst($tp) }}</option>
                       @endforeach
                     </select>
@@ -75,17 +75,17 @@
           </div>
 
           <div class="relative overflow-x-auto shadow-md sm:rounded-lg w-full z-0">
-            <table class="w-full text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
-              <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                <tr>
-                  <th class="px-2 py-2">Nº Pat.</th>
-                  <th class="px-2 py-2">Cód. Projeto</th>
+            <table class="w-full text-xs sm:text-[13px] md:text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+              <thead class="text-[13px] sm:text-sm md:text-[15px] lg:text-base text-gray-900 dark:text-gray-100 uppercase bg-gray-50 dark:bg-gray-700 font-bold">
+                <tr class="font-semibold">
+                  <th class="px-2 py-2 w-[90px] sm:w-[110px]">Nº Pat.</th>
+                  <th class="px-2 py-2 w-[100px] sm:w-[120px]">Projeto</th>
                   <th class="px-2 py-2">Detalhe</th>
-                  <th class="px-2 py-2 text-center">Usuário</th>
-                  <th class="px-2 py-2">Data Operação</th>
+                  <th class="px-2 py-2 text-center w-[140px] sm:w-[180px]">Usuário</th>
+                  <th class="px-2 py-2 w-[120px] sm:w-[140px]">Data</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="font-semibold text-[13px] sm:text-sm md:text-[15px] lg:text-base">
                 @forelse($historicos as $h)
                 @php
                 $tipo = strtolower($h->TIPO ?? '');
@@ -93,7 +93,13 @@
                 $para = $h->VALOR_NOVO ?? null;
                 $deU = \Illuminate\Support\Str::upper($de ?? '—');
                 $paraU = \Illuminate\Support\Str::upper($para ?? '—');
-                $toneClasses = function($val) {
+                $toneClasses = function($val) use ($tipo) {
+                if ($tipo === 'conferido') {
+                  $v = \Illuminate\Support\Str::upper(trim((string) ($val ?? '')));
+                  if (in_array($v, ['S', '1', 'SIM', 'TRUE', 'T', 'Y', 'YES', 'ON'], true)) return 'green';
+                  if (in_array($v, ['N', '0', 'NAO', 'NO', 'FALSE', 'F', 'OFF'], true)) return 'red';
+                  return 'gray';
+                }
                 $v = \Illuminate\Support\Str::upper($val ?? '');
                 if (\Illuminate\Support\Str::contains($v, 'BAIXA')) return 'red';
                 if (\Illuminate\Support\Str::contains($v, 'CONSERTO')) return 'amber';
@@ -117,8 +123,8 @@
                 };
                 @endphp
                 <tr class="tr-hover text-sm border-b dark:border-gray-700 border-l-4 {{ $border }}">
-                  <td class="px-2 py-2">{{ $h->NUPATR }}</td>
-                  <td class="px-2 py-2">{{ $h->CODPROJ }}</td>
+                  <td class="px-2 py-2 whitespace-nowrap truncate font-semibold" title="{{ $h->NUPATR }}">{{ $h->NUPATR }}</td>
+                  <td class="px-2 py-2 whitespace-nowrap truncate font-medium" title="{{ $h->CODPROJ }}">{{ $h->CODPROJ }}</td>
                   <td class="px-2 py-2">
                     @if($tipo === 'termo')
                     @if(is_null($de) && !is_null($para))
@@ -130,7 +136,47 @@
                     <x-heroicon-o-arrow-right class="w-4 h-4 mx-2 inline text-gray-400" />
                     <span class="font-mono">{{ $para ?? '—' }}</span>
                     @endif
-                    @elseif($tipo === 'situacao' || $tipo === 'projeto')
+                    @elseif($tipo === 'local')
+                    {{-- Mostrar nomes de locais em vez de apenas códigos --}}
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded">
+                        @if(!empty($h->LOC_ANTIGO_NOME))
+                          {{ $de }} - {{ $h->LOC_ANTIGO_NOME }}
+                        @else
+                          {{ $de ?? '—' }}
+                        @endif
+                      </span>
+                      <x-heroicon-o-arrow-right class="w-4 h-4 text-gray-400" />
+                      <span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 rounded">
+                        @if(!empty($h->LOC_NOVO_NOME))
+                          {{ $para }} - {{ $h->LOC_NOVO_NOME }}
+                        @else
+                          {{ $para ?? '—' }}
+                        @endif
+                      </span>
+                    </div>
+                    
+                    @elseif($tipo === 'projeto')
+                    {{-- Mostrar nomes de projetos em vez de apenas códigos --}}
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 rounded">
+                        @if(!empty($h->PROJ_ANTIGO_NOME))
+                          {{ $de }} - {{ $h->PROJ_ANTIGO_NOME }}
+                        @else
+                          {{ $de ?? '—' }}
+                        @endif
+                      </span>
+                      <x-heroicon-o-arrow-right class="w-4 h-4 text-gray-400" />
+                      <span class="px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 rounded">
+                        @if(!empty($h->PROJ_NOVO_NOME))
+                          {{ $para }} - {{ $h->PROJ_NOVO_NOME }}
+                        @else
+                          {{ $para ?? '—' }}
+                        @endif
+                      </span>
+                    </div>
+                    
+                    @elseif($tipo === 'situacao')
                     @php
                     $deFmt = $tipo==='situacao' ? $deU : ($de ?? '—');
                     $paraFmt = $tipo==='situacao' ? $paraU : ($para ?? '—');
@@ -138,13 +184,49 @@
                     <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset {{ $badge($de) }}">{{ $deFmt }}</span>
                     <x-heroicon-o-arrow-right class="w-4 h-4 mx-2 inline text-gray-400" />
                     <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset {{ $badge($para) }}">{{ $paraFmt }}</span>
+                    
+                    @elseif($tipo === 'conferido')
+                    @php
+                      $toBool = function ($v) {
+                        $vv = \Illuminate\Support\Str::upper(trim((string) ($v ?? '')));
+                        if (in_array($vv, ['S', '1', 'SIM', 'TRUE', 'T', 'Y', 'YES', 'ON'], true)) return true;
+                        if (in_array($vv, ['N', '0', 'NAO', 'NO', 'FALSE', 'F', 'OFF'], true)) return false;
+                        return null;
+                      };
+                      $fromOk = $toBool($de);
+                      $toOk = $toBool($para);
+                      $fmt = fn ($b) => $b === true ? 'Verificado' : ($b === false ? 'Nao verificado' : '—');
+                      $badgeClass = fn ($b) => $b === true
+                        ? 'bg-emerald-100 text-emerald-800 ring-emerald-600/20 dark:bg-emerald-900/30 dark:text-emerald-300'
+                        : ($b === false
+                          ? 'bg-red-100 text-red-800 ring-red-600/20 dark:bg-red-900/30 dark:text-red-300'
+                          : 'bg-gray-100 text-gray-800 ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-300');
+                    @endphp
+                    <div class="flex flex-col gap-1">
+                      <div class="flex items-center gap-2 text-xs">
+                        <span class="text-gray-500 italic text-xs">CONFERIDO:</span>
+                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset {{ $badgeClass($fromOk) }}">{{ $fmt($fromOk) }}</span>
+                        <x-heroicon-o-arrow-right class="w-4 h-4 text-gray-400" />
+                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset {{ $badgeClass($toOk) }}">{{ $fmt($toOk) }}</span>
+                      </div>
+                      <div class="text-[12px] text-gray-600 dark:text-gray-300">
+                        Por: <span class="font-semibold">{{ $h->NM_USUARIO ?? $h->USUARIO }}</span>
+                      </div>
+                    </div>
+
                     @else
-                    —
+                    {{-- Tipo desconhecido ou genérico --}}
+                    <span class="text-gray-500 italic text-xs">{{ strtoupper($tipo ?? '') }}:</span>
+                    <span class="font-mono text-xs">{{ $de ?? '—' }}</span>
+                    @if(!is_null($de) && !is_null($para))
+                      <x-heroicon-o-arrow-right class="w-3 h-3 mx-1 inline text-gray-400" />
+                    @endif
+                    <span class="font-mono text-xs">{{ $para ?? '—' }}</span>
                     @endif
                   </td>
                   <td class="px-2 py-2 text-gray-800 dark:text-gray-200">
                     <div class="leading-tight">
-                      <div class="font-semibold">{{ $h->NM_USUARIO ?? $h->USUARIO }}</div>
+                      <div class="font-semibold truncate max-w-[160px] sm:max-w-[220px]" title="{{ $h->NM_USUARIO ?? $h->USUARIO }}">{{ $h->NM_USUARIO ?? $h->USUARIO }}</div>
                       @if(!empty($h->MAT_USUARIO))
                       <div class="text-[11px] text-gray-500">Matrícula: {{ $h->MAT_USUARIO }}</div>
                       @endif
@@ -158,7 +240,7 @@
                     </div>
                     @endif
                   </td>
-                  <td class="px-2 py-2 font-semibold">{{ \Carbon\Carbon::parse($h->DTOPERACAO)->timezone(config('app.timezone'))->format('d/m/Y H:i') }}</td>
+                  <td class="px-2 py-2 font-medium whitespace-nowrap">{{ \Carbon\Carbon::parse($h->DTOPERACAO)->timezone(config('app.timezone'))->format('d/m H:i') }}</td>
                 </tr>
                 @empty
                 <tr>

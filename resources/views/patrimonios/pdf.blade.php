@@ -22,7 +22,7 @@
         <th>Descrição</th>
         <th>Situação</th>
         <th>Modelo</th>
-        <th>Local</th>
+        <th>Local Físico</th>
         <th>Usuário</th>
       </tr>
     </thead>

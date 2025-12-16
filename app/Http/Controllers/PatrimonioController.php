@@ -301,7 +301,7 @@ class PatrimonioController extends Controller
     {
         /** @var \App\Models\User|null $currentUser */
         $currentUser = Auth::user();
-        if (!($currentUser && (in_array(($currentUser->PERFIL ?? ''), ['SUP', 'ADM'], true)))) {
+        if (!($currentUser && $currentUser->isAdmin())) {
             abort(403, 'Acesso restrito ao beta.');
         }
 
@@ -336,6 +336,8 @@ class PatrimonioController extends Controller
      */
     public function create(): View
     {
+        $this->authorize('create', Patrimonio::class);
+
         // TODO: Substitua estes arrays pelas suas consultas reais ao banco de dados.
         $projetos = Tabfant::select('CDPROJETO', 'NOMEPROJETO')->distinct()->orderBy('NOMEPROJETO')->get();
 
@@ -350,16 +352,21 @@ class PatrimonioController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', Patrimonio::class);
+
         // DEBUG: Ver o que foi recebido
-        Log::info("SITUACAO recebido", [
-            "raw" => $request->input("SITUACAO"),
-            "length" => strlen($request->input("SITUACAO") ?? ""),
+        Log::info("🚀 [STORE] Dados recebidos no formulário", [
+            "SITUACAO" => $request->input("SITUACAO"),
+            "PESO" => $request->input("PESO"),
+            "TAMANHO" => $request->input("TAMANHO"),
+            "all_inputs" => $request->all(),
         ]);
         // 1) Validar os campos conforme o formulÃ¡rio (nomes em MAIÃSCULO)
         $validated = $request->validate([
             // O NÂº PatrimÃ´nio pode se repetir entre tipos; removido UNIQUE
             'NUPATRIMONIO' => 'required|integer',
             'NUSEQOBJ' => 'required|integer',
+            'FLCONFERIDO' => 'nullable|string|in:S,N,1,0',
             'DEOBJETO' => 'nullable|string|max:350', // obrigatÃ³ria apenas quando cÃ³digo for novo
             'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,À DISPOSIÇÃO',
             'CDMATRFUNCIONARIO' => 'nullable|integer|exists:funcionarios,CDMATRFUNCIONARIO',
@@ -373,6 +380,8 @@ class PatrimonioController extends Controller
             'MODELO' => 'nullable|string|max:30',
             'DTAQUISICAO' => 'nullable|date',
             'DTBAIXA' => 'nullable|date',
+            'PESO' => 'nullable|numeric|min:0',
+            'TAMANHO' => 'nullable|string|max:100',
         ]);
 
         // Regra especial para almoxarifado central (999915) e em transito (2002)
@@ -430,6 +439,7 @@ class PatrimonioController extends Controller
             // Usaremos a descriÃ§Ã£o do objeto como DEPATRIMONIO para manter compatibilidade atual do front
             'DEPATRIMONIO' => $objeto->DEOBJETO ?? $request->input('DEOBJETO'),
             'SITUACAO' => $validated['SITUACAO'],
+            'FLCONFERIDO' => $this->normalizeConferidoFlag($validated['FLCONFERIDO'] ?? null),
             'CDMATRFUNCIONARIO' => isset($validated['CDMATRFUNCIONARIO']) ? (int) $validated['CDMATRFUNCIONARIO'] : null,
             'NUMOF' => $validated['NUMOF'] ?? null,
             'DEHISTORICO' => $validated['DEHISTORICO'] ?? null,
@@ -440,6 +450,8 @@ class PatrimonioController extends Controller
             'MODELO' => $validated['MODELO'] ?? null,
             'DTAQUISICAO' => $validated['DTAQUISICAO'] ?? null,
             'DTBAIXA' => $validated['DTBAIXA'] ?? null,
+            'PESO' => $validated['PESO'] ?? null,
+            'TAMANHO' => $validated['TAMANHO'] ?? null,
             'USUARIO' => $usuarioCriador,
             'DTOPERACAO' => now(),
         ];
@@ -460,10 +472,26 @@ class PatrimonioController extends Controller
         // Carregar relaÃ§Ãµes para exibir dados corretos no formulÃ¡rio
         $patrimonio->load(['local', 'local.projeto', 'funcionario']);
 
+        $ultimaVerificacao = null;
+        try {
+            $ultimaVerificacao = HistoricoMovimentacao::query()
+                ->where('NUPATR', $patrimonio->NUPATRIMONIO)
+                ->where('CAMPO', 'FLCONFERIDO')
+                ->where('VALOR_NOVO', 'S')
+                ->orderByDesc('DTOPERACAO')
+                ->first();
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao buscar ultima verificacao do patrimonio', [
+                'NUSEQPATR' => $patrimonio->NUSEQPATR ?? null,
+                'NUPATRIMONIO' => $patrimonio->NUPATRIMONIO ?? null,
+                'erro' => $e->getMessage(),
+            ]);
+        }
+
         // TODO: Substitua estes arrays pelas suas consultas reais ao banco de dados.
         $projetos = Tabfant::select('CDPROJETO', 'NOMEPROJETO')->distinct()->orderBy('NOMEPROJETO')->get();
 
-        return view('patrimonios.edit', compact('patrimonio', 'projetos'));
+        return view('patrimonios.edit', compact('patrimonio', 'projetos', 'ultimaVerificacao'));
     }
 
     /**
@@ -516,6 +544,8 @@ class PatrimonioController extends Controller
         $oldProjeto = $patrimonio->CDPROJETO;
         $oldSituacao = $patrimonio->SITUACAO;
         $oldLocal = $patrimonio->CDLOCAL;
+        $oldConferido = $this->normalizeConferidoFlag($patrimonio->FLCONFERIDO) ?? 'N';
+        $flashMessage = 'Patrimônio atualizado com sucesso!';
 
         // ð Debug: Log antes do update
         Log::info('ð [UPDATE] Chamando $patrimonio->update()', [
@@ -530,6 +560,7 @@ class PatrimonioController extends Controller
         $newProjeto = $patrimonio->CDPROJETO;
         $newSituacao = $patrimonio->SITUACAO;
         $newLocal = $patrimonio->CDLOCAL;
+        $newConferido = $this->normalizeConferidoFlag($patrimonio->FLCONFERIDO) ?? 'N';
 
         // â Log dos dados apÃ³s a atualizaÃ§Ã£o
         Log::info('PatrimÃ´nio UPDATE: Dados apÃ³s a atualizaÃ§Ã£o', [
@@ -638,7 +669,41 @@ class PatrimonioController extends Controller
                 ]);
             }
         }
-        return redirect()->route('patrimonios.index')->with('success', 'PatrimÃ´nio atualizado com sucesso!');
+        if ($newConferido !== $oldConferido) {
+            try {
+                $coAutor = null;
+                $actorMat = Auth::user()->CDMATRFUNCIONARIO ?? null;
+                $ownerMat = $patrimonio->CDMATRFUNCIONARIO;
+                if (!empty($actorMat) && !empty($ownerMat) && $actorMat != $ownerMat) {
+                    $coAutor = User::where('CDMATRFUNCIONARIO', $ownerMat)->value('NMLOGIN');
+                }
+
+                HistoricoMovimentacao::create([
+                    'TIPO' => 'conferido',
+                    'CAMPO' => 'FLCONFERIDO',
+                    'VALOR_ANTIGO' => $oldConferido,
+                    'VALOR_NOVO' => $newConferido,
+                    'NUPATR' => $patrimonio->NUPATRIMONIO,
+                    'CODPROJ' => $newProjeto,
+                    'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+                    'CO_AUTOR' => $coAutor,
+                    'DTOPERACAO' => now(),
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('Falha ao gravar historico (conferido)', [
+                    'patrimonio' => $patrimonio->NUSEQPATR,
+                    'erro' => $e->getMessage(),
+                ]);
+            }
+
+            if ($newConferido === 'S') {
+                $flashMessage = 'Patrimônio atualizado e verificado com sucesso!';
+            } else {
+                $flashMessage = 'Patrimônio atualizado e marcado como não verificado!';
+            }
+        }
+
+        return redirect()->route('patrimonios.index')->with('success', $flashMessage);
     }
 
     /**
@@ -731,16 +796,8 @@ class PatrimonioController extends Controller
                 'DEPATRIMONIO' => $patrimonio->DEPATRIMONIO
             ]);
 
-            // Verificar autorizaÃ§Ã£o (sem travar se falhar)
-            try {
-                $this->authorize('delete', $patrimonio);
-                \Illuminate\Support\Facades\Log::info('â [DELETE] AutorizaÃ§Ã£o OK');
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::warning('â ï¸ [DELETE] AutorizaÃ§Ã£o falhou, permitindo mesmo assim', [
-                    'erro' => $e->getMessage()
-                ]);
-                // Continuar mesmo se autorizaÃ§Ã£o falhar (temporÃ¡rio para debug)
-            }
+            $this->authorize('delete', $patrimonio);
+            \Illuminate\Support\Facades\Log::info('â [DELETE] AutorizaÃ§Ã£o OK');
 
             // Salvar dados antes de deletar
             $dadosPatrimonio = [
@@ -763,6 +820,16 @@ class PatrimonioController extends Controller
                 'patrimonio' => $dadosPatrimonio
             ], 200);
 
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            \Illuminate\Support\Facades\Log::warning('â [DELETE] AutorizaÃ§Ã£o negada', [
+                'id' => $id,
+                'erro' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'VocÃª nÃ£o tem permissÃ£o para deletar este patrimÃ´nio.',
+            ], 403);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('â [DELETE] Erro ao deletar', [
                 'id' => $id,
@@ -906,8 +973,13 @@ class PatrimonioController extends Controller
         }
 
         $situacao = strtoupper($request->input('situacao'));
+        /** @var User|null $user */
         $user = Auth::user();
-        $isAdmin = $user && in_array(($user->PERFIL ?? ''), ['ADM', 'SUP'], true);
+        if ($user && ($user->PERFIL ?? null) === User::PERFIL_CONSULTOR) {
+            return response()->json(['error' => 'Você não tem permissão para alterar patrimônios.'], 403);
+        }
+
+        $isAdmin = $user && $user->isAdmin();
         
         // Usuários com permissão total para alteração em massa
         $superUsers = ['BEATRIZ.SC', 'TIAGOP', 'BRUNO'];
@@ -982,10 +1054,11 @@ class PatrimonioController extends Controller
             return response()->json(['error' => 'Nenhum patrimônio selecionado.'], 422);
         }
 
+        /** @var User|null $user */
         $user = Auth::user();
-        $isAdmin = $user && in_array(($user->PERFIL ?? ''), ['ADM', 'SUP'], true);
+        $isAdmin = $user && $user->isAdmin();
         
-        // Apenas ADM, SUP e super-users podem deletar
+        // Apenas ADM e super-users podem deletar
         $superUsers = ['BEATRIZ.SC', 'TIAGOP', 'BRUNO'];
         $isSuperUser = $user && in_array(strtoupper($user->NMLOGIN ?? ''), $superUsers, true);
 
@@ -1013,8 +1086,15 @@ class PatrimonioController extends Controller
             ];
         }
 
-        // Deletar
-        $deleted = Patrimonio::whereIn('NUSEQPATR', $ids)->delete();
+        // Deletar (por modelo para disparar observers/eventos e registrar em "Removidos")
+        $deleted = 0;
+        DB::transaction(function () use ($patrimonios, &$deleted) {
+            foreach ($patrimonios as $p) {
+                if ($p->delete()) {
+                    $deleted++;
+                }
+            }
+        });
 
         Log::info('🗑️ Bulk deleção de patrimônios', [
             'user' => $user->NMLOGIN ?? null,
@@ -1041,33 +1121,9 @@ class PatrimonioController extends Controller
                 return response()->json([], 403);
             }
 
-            // Super Admin (SUP) e Admin (ADM) tÃªm acesso a TODOS os patrimÃ´nios
-            if ($user->PERFIL === 'SUP' || $user->PERFIL === 'ADM') {
-                $patrimonios = Patrimonio::select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO'])
-                    ->get()
-                    ->toArray();
-            } else {
-                // UsuÃ¡rios comuns: sÃ³ podem ver patrimonios que sÃ£o responsÃ¡veis ou criadores
-                $supervisionados = $user->getSupervisionados();
-                
-                $patrimonios = Patrimonio::where(function ($query) use ($user, $supervisionados) {
-                    // ResponsÃ¡vel pelo patrimÃ´nio
-                    $query->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
-                        // OU criador (USUARIO)
-                        ->orWhere('USUARIO', $user->NMLOGIN)
-                        ->orWhere('USUARIO', $user->NOMEUSER)
-                        // OU criado pelo SISTEMA â visÃ­vel a todos
-                        ->orWhere('USUARIO', 'SISTEMA');
-                    
-                    // Se for supervisor, ver tambÃ©m registros dos supervisionados
-                    if (!empty($supervisionados)) {
-                        $query->orWhereIn(DB::raw('LOWER(USUARIO)'), array_map('strtolower', $supervisionados));
-                    }
-                })
-                    ->select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO'])
-                    ->get()
-                    ->toArray();
-            }
+            $patrimonios = Patrimonio::select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO'])
+                ->get()
+                ->toArray();
 
             // Aplicar filtro inteligente
             $filtrados = \App\Services\FilterService::filtrar(
@@ -2057,18 +2113,13 @@ class PatrimonioController extends Controller
 
     /**
      * ð¯ API: Retorna lista de cadastradores disponÃ­veis para filtro multi-select
-     * Para supervisores: retorna seus supervisionados
-     * Para admins: retorna todos os usuÃ¡rios
-     * Para usuÃ¡rios comuns: retorna apenas ele mesmo + SISTEMA
+     * Retorna usuÃ¡rios ativos + SISTEMA
      */
     public function listarCadradores(Request $request): JsonResponse
     {
         try {
             /** @var \App\Models\User $user */
             $user = Auth::user();
-            
-            $isSupervisor = !empty($user->getSupervisionados() ?? []);
-            $isAdmin = in_array(($user->PERFIL ?? ''), ['SUP', 'ADM'], true);
 
             $cadastradores = [];
 
@@ -2079,47 +2130,21 @@ class PatrimonioController extends Controller
                 'type' => 'sistema'
             ];
 
-            if ($isAdmin) {
-                // Admin vÃª todos os usuÃ¡rios que jÃ¡ cadastraram algo
-                $usuarios = User::whereIn('PERFIL', ['USR', 'ADM'])
-                    ->where('LGATIVO', 'S')
-                    ->orderBy('NOMEUSER')
-                    ->get(['NMLOGIN', 'NOMEUSER', 'CDMATRFUNCIONARIO']);
+            $usuarios = User::where('LGATIVO', 'S')
+                ->orderBy('NOMEUSER')
+                ->get(['NMLOGIN', 'NOMEUSER', 'CDMATRFUNCIONARIO']);
 
-                foreach ($usuarios as $u) {
-                    $cadastradores[] = [
-                        'label' => $u->NOMEUSER . ' (' . $u->NMLOGIN . ')',
-                        'value' => $u->NMLOGIN,
-                        'type' => 'usuario'
-                    ];
-                }
-            } elseif ($isSupervisor) {
-                // Supervisor vÃª seus supervisionados
-                $supervisionados = $user->getSupervisionados() ?? [];
-                
-                foreach ($supervisionados as $login) {
-                    $u = User::where('NMLOGIN', $login)->first(['NMLOGIN', 'NOMEUSER']);
-                    if ($u) {
-                        $cadastradores[] = [
-                            'label' => $u->NOMEUSER . ' (' . $u->NMLOGIN . ')',
-                            'value' => $u->NMLOGIN,
-                            'type' => 'supervisionado'
-                        ];
-                    }
-                }
-            } else {
-                // UsuÃ¡rio comum vÃª apenas ele mesmo
+            foreach ($usuarios as $u) {
                 $cadastradores[] = [
-                    'label' => $user->NOMEUSER . ' (' . $user->NMLOGIN . ')',
-                    'value' => $user->NMLOGIN,
+                    'label' => $u->NOMEUSER . ' (' . $u->NMLOGIN . ')',
+                    'value' => $u->NMLOGIN,
                     'type' => 'usuario'
                 ];
             }
 
             Log::info('ð [API] Listar cadastradores executado', [
                 'user_login' => $user->NMLOGIN,
-                'is_supervisor' => $isSupervisor,
-                'is_admin' => $isAdmin,
+                'user_perfil' => $user->PERFIL,
                 'total_cadastradores' => count($cadastradores)
             ]);
 
@@ -2146,29 +2171,7 @@ class PatrimonioController extends Controller
         
         $query = Patrimonio::with(['funcionario', 'local.projeto', 'creator']);
 
-        // Filtra patrimÃ´nios por usuÃ¡rio (exceto Admin e Super Admin)
-        if (!in_array(($user->PERFIL ?? ''), ['SUP', 'ADM'], true)) {
-            $nmLogin = (string) ($user->NMLOGIN ?? '');
-            $nmUser  = (string) ($user->NOMEUSER ?? '');
-            
-            // Verificar se Ã© supervisor
-            $supervisionados = $user->getSupervisionados(); // Array de logins supervisionados
-
-            $query->where(function ($q) use ($user, $nmLogin, $nmUser, $supervisionados) {
-                // Ver seus prÃ³prios registros
-                $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser])
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', ['SISTEMA']);
-                
-                // Se for supervisor, ver tambÃ©m registros dos supervisionados
-                if (!empty($supervisionados)) {
-                    $q->orWhereIn(DB::raw('LOWER(USUARIO)'), array_map('strtolower', $supervisionados));
-                }
-            });
-        }
-
-        // Filtro MULTI-SELECT para cadastrador (para supervisores acompanharem mÃºltiplos usuÃ¡rios)
+        // Filtro MULTI-SELECT para cadastrador
         $cadastradoresMulti = $request->input('cadastrados_por', []);
         if (is_string($cadastradoresMulti)) {
             // Se vier como string separada por vÃ­rgula, converter para array
@@ -2181,38 +2184,15 @@ class PatrimonioController extends Controller
                 'count' => count($cadastradoresMulti)
             ]);
 
-            // Para supervisores: permitir filtrar por seus supervisionados
-            // Para admins: permitir qualquer usuÃ¡rio
-            $supervisionados = $user->getSupervisionados() ?? [];
-            $isSupervisor = !empty($supervisionados);
-            $isAdmin = in_array(($user->PERFIL ?? ''), ['SUP', 'ADM'], true);
-
-            // Construir lista de logins/matrÃ­culas permitidas
+            // Construir lista de cadastradores selecionados
             $permitidos = [];
             foreach ($cadastradoresMulti as $valor) {
                 $valor = trim((string)$valor);
-                if (empty($valor)) continue;
-
-                // Se for admin, permitir qualquer um
-                if ($isAdmin) {
+                if ($valor !== '') {
                     $permitidos[] = $valor;
-                    continue;
-                }
-
-                // Se for supervisor, permitir apenas supervisionados
-                if ($isSupervisor) {
-                    if (in_array($valor, $supervisionados) || strcasecmp($valor, 'SISTEMA') === 0) {
-                        $permitidos[] = $valor;
-                    }
-                }
-
-                // Se for usuÃ¡rio comum, permitir apenas ele mesmo e SISTEMA
-                if (!$isSupervisor && !$isAdmin) {
-                    if (strcasecmp($valor, $user->NMLOGIN ?? '') === 0 || strcasecmp($valor, 'SISTEMA') === 0) {
-                        $permitidos[] = $valor;
-                    }
                 }
             }
+            $permitidos = array_values(array_unique($permitidos));
 
             if (!empty($permitidos)) {
                 Log::info('ð¯ [FILTRO MULTI] Aplicando filtro com usuÃ¡rios permitidos', [
@@ -2242,18 +2222,6 @@ class PatrimonioController extends Controller
                 if (trim((string)$valorFiltro) === '__TODOS__') {
                     // nÃ£o filtrar
                 } else {
-                    // Se usuÃ¡rio NÃO for Admin/SUP, sÃ³ permita filtrar por ele mesmo ou por SISTEMA
-                    if (!($user->isGod() || $user->PERFIL === 'ADM')) {
-                        $allowed = [strtoupper(trim((string)($user->NMLOGIN ?? ''))), 'SISTEMA'];
-                        if (!empty($user->CDMATRFUNCIONARIO)) {
-                            $allowed[] = (string)$user->CDMATRFUNCIONARIO;
-                        }
-                        if (!in_array(strtoupper(trim((string)$valorFiltro)), array_map('strtoupper', $allowed))) {
-                            // valor nÃ£o permitido para este usuÃ¡rio; ignorar filtro
-                            $valorFiltro = null;
-                        }
-                    }
-
                     if ($valorFiltro) {
                         if (strcasecmp($valorFiltro, 'SISTEMA') === 0) {
                             $query->where(function($q) {
@@ -2607,9 +2575,12 @@ class PatrimonioController extends Controller
             'NMPLANTA' => 'nullable|integer',
             'MARCA' => 'nullable|string|max:30',
             'MODELO' => 'nullable|string|max:30',
+            'FLCONFERIDO' => 'nullable|string|in:S,N,1,0',
             'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,À DISPOSIÇÃO',
             'DTAQUISICAO' => 'nullable|date',
             'DTBAIXA' => 'nullable|date',
+            'PESO' => 'nullable|numeric|min:0',
+            'TAMANHO' => 'nullable|string|max:100',
             // Matricula precisa existir na tabela funcionarios
             'CDMATRFUNCIONARIO' => 'nullable|integer|exists:funcionarios,CDMATRFUNCIONARIO',
         ]);
@@ -2651,6 +2622,9 @@ class PatrimonioController extends Controller
         $data['CODOBJETO'] = $codigo;
         $data['DEPATRIMONIO'] = $objeto->DEOBJETO; // mantÃ©m compatibilidade de exibiÃ§Ã£o no index/relatÃ³rios
         unset($data['NUSEQOBJ'], $data['DEOBJETO']);
+        if (array_key_exists('FLCONFERIDO', $data)) {
+            $data['FLCONFERIDO'] = $this->normalizeConferidoFlag($data['FLCONFERIDO']);
+        }
 
         Log::info('ð [VALIDATE] ApÃ³s mapear cÃ³digo do objeto', [
             'CODOBJETO' => $data['CODOBJETO'],
@@ -2681,6 +2655,31 @@ class PatrimonioController extends Controller
     }
 
     /* === Rotas solicitadas para geraÃ§Ã£o e atribuiÃ§Ã£o direta de cÃ³digos (fluxo simplificado) === */
+    private function normalizeConferidoFlag(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $raw = mb_strtoupper(trim((string) $value));
+        if ($raw === '') {
+            return null;
+        }
+
+        $truthy = ['S', '1', 'SIM', 'TRUE', 'T', 'Y', 'YES', 'ON'];
+        $falsy = ['N', '0', 'NAO', 'NÃO', 'NO', 'FALSE', 'F', 'OFF'];
+
+        if (in_array($raw, $truthy, true)) {
+            return 'S';
+        }
+
+        if (in_array($raw, $falsy, true)) {
+            return 'N';
+        }
+
+        return null;
+    }
+
     public function gerarCodigo(Request $request, CodigoService $service): JsonResponse
     {
         try {

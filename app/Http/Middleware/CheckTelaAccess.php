@@ -12,7 +12,8 @@ class CheckTelaAccess
 {
     /**
      * Controle de acesso simplificado por perfil
-     * - USR: acesso apenas a telas 1000 (Patrimônio) e 1001 (Gráficos)
+     * - C: acesso apenas a tela 1000 (Patrimônio)
+     * - USR: acesso apenas a telas 1000 (Patrimônio), 1001 (Gráficos), 1006 (Relatórios) e 1007 (Histórico)
      * - ADM: acesso a tudo
      */
     public function handle(Request $request, Closure $next, ?int $nuseqtela = null): Response
@@ -30,11 +31,34 @@ class CheckTelaAccess
             return $next($request);
         }
 
+        // Consultor (C) só pode acessar tela 1000 (Patrimônio)
+        if ($user->PERFIL === User::PERFIL_CONSULTOR) {
+            $telasPermitidas = [1000];
+
+            if ($nuseqtela !== null && !in_array($nuseqtela, $telasPermitidas, true)) {
+                // Permite telas adicionais via permissões no banco (acessousuario + acessotela)
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => 'Você não tem permissão para acessar esta funcionalidade.',
+                        'code' => 'access_denied',
+                    ], 403);
+                }
+
+                return redirect()->route('patrimonios.index')
+                    ->with('error', 'Você não tem permissão para acessar esta página.');
+            }
+        }
+
         // Usuário comum (USR) só pode acessar telas 1000, 1001, 1006 e 1007
         if ($user->PERFIL === User::PERFIL_USUARIO) {
             $telasPermitidas = [1000, 1001, 1006, 1007];
             
-            if ($nuseqtela !== null && !in_array($nuseqtela, $telasPermitidas)) {
+            if ($nuseqtela !== null && !in_array($nuseqtela, $telasPermitidas, true)) {
+                // Permite telas adicionais via permissões no banco (acessousuario + acessotela)
+                if ($user->temAcessoTela($nuseqtela)) {
+                    return $next($request);
+                }
+
                 if ($request->expectsJson()) {
                     return response()->json([
                         'message' => 'Você não tem permissão para acessar esta funcionalidade.',

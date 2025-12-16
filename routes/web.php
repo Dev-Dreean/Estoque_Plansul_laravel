@@ -9,10 +9,12 @@
  */
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AcessoUsuarioController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PatrimonioController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjetoController;
+use App\Http\Controllers\RemovidosController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -190,11 +192,11 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::get('/api/locais/buscar', [App\Http\Controllers\PatrimonioController::class, 'buscarLocais'])->name('api.locais.buscar');
     Route::get('/api/locais/{id}', [App\Http\Controllers\PatrimonioController::class, 'buscarLocalPorId'])->name('api.locais.por-id');
     Route::get('/api/locais/debug', [App\Http\Controllers\PatrimonioController::class, 'debugLocaisPorCodigo'])->name('api.locais.debug');
-    Route::post('/api/locais/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalVinculadoProjeto'])->name('api.locais.criar')->middleware('auth');
-    Route::post('/api/locais/criar-novo', [App\Http\Controllers\PatrimonioController::class, 'criarNovoLocal'])->name('api.locais.criar-novo')->middleware('auth');
-    Route::post('/api/locais-projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalProjeto'])->name('api.locais-projetos.criar')->middleware('auth');
-    Route::post('/api/locais-projetos/criar-simples', [ProjetoController::class, 'criarSimples'])->name('api.locais-projetos.criar-simples')->middleware('auth');
-    Route::post('/api/locais/criar-com-projeto', [App\Http\Controllers\PatrimonioController::class, 'criarLocalComProjeto'])->name('api.locais.criar-com-projeto')->middleware('auth');
+    Route::post('/api/locais/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalVinculadoProjeto'])->name('api.locais.criar')->middleware(['auth', 'can:create,App\\Models\\Patrimonio']);
+    Route::post('/api/locais/criar-novo', [App\Http\Controllers\PatrimonioController::class, 'criarNovoLocal'])->name('api.locais.criar-novo')->middleware(['auth', 'can:create,App\\Models\\Patrimonio']);
+    Route::post('/api/locais-projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalProjeto'])->name('api.locais-projetos.criar')->middleware(['auth', 'can:create,App\\Models\\Patrimonio']);
+    Route::post('/api/locais-projetos/criar-simples', [ProjetoController::class, 'criarSimples'])->name('api.locais-projetos.criar-simples')->middleware(['auth', 'can:create,App\\Models\\Patrimonio']);
+    Route::post('/api/locais/criar-com-projeto', [App\Http\Controllers\PatrimonioController::class, 'criarLocalComProjeto'])->name('api.locais.criar-com-projeto')->middleware(['auth', 'can:create,App\\Models\\Patrimonio']);
     // ⚠️ Evitar rotas ambíguas como /api/locais/{cdprojeto} (colide com /api/locais/{id}).
     // Padronizar sempre em: /api/locais/buscar?cdprojeto=<CDPROJETO>&termo=
 
@@ -214,8 +216,6 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // Rotas de Usuários (T:1003)
     Route::resource('usuarios', UserController::class)->middleware(['tela.access:1003', 'can.delete']);
     Route::get('usuarios/confirmacao', [UserController::class, 'confirmacao'])->name('usuarios.confirmacao')->middleware('tela.access:1003');
-    Route::get('/usuarios/{usuario}/supervisao', [UserController::class, 'gerenciarSupervisao'])->name('usuarios.supervisao')->middleware('tela.access:1003');
-    Route::put('/usuarios/{usuario}/supervisao', [UserController::class, 'atualizarSupervisao'])->name('usuarios.supervisao.update')->middleware('tela.access:1003');
     // Impersonation / developer helpers (restritos a admin ou ambiente local dentro do controller)
     Route::post('/usuarios/{usuario}/impersonate', [UserController::class, 'impersonate'])->name('usuarios.impersonate')->middleware('auth');
     Route::post('/impersonate/stop', [UserController::class, 'stopImpersonate'])->name('impersonate.stop')->middleware('auth');
@@ -242,7 +242,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     });
 
     // Rotas de Termos
-    Route::prefix('termos')->name('termos.')->group(function () {
+    Route::prefix('termos')->name('termos.')->middleware(['can:create,App\\Models\\Patrimonio'])->group(function () {
         Route::post('/atribuir', [\App\Http\Controllers\TermoController::class, 'store'])->name('atribuir.store');
         Route::post('/exportar/excel', [\App\Http\Controllers\TermoController::class, 'exportarExcel'])->name('exportar.excel');
         Route::post('/desatribuir', [\App\Http\Controllers\TermoController::class, 'desatribuir'])->name('desatribuir');
@@ -256,6 +256,20 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
 
     // Rota de Histórico
     Route::get('/historico', [\App\Http\Controllers\HistoricoController::class, 'index'])->name('historico.index')->middleware('tela.access:1007');
+
+    // Tela de Removidos (conferência de exclusões)
+    Route::get('/removidos', [RemovidosController::class, 'index'])->name('removidos.index')->middleware('tela.access:1009');
+    Route::get('/removidos/{removido}', [RemovidosController::class, 'show'])->whereNumber('removido')->name('removidos.show')->middleware('tela.access:1009');
+    Route::post('/removidos/{removido}/restaurar', [RemovidosController::class, 'restore'])->whereNumber('removido')->name('removidos.restore')->middleware('tela.access:1009');
+    Route::delete('/removidos/{removido}', [RemovidosController::class, 'destroy'])->whereNumber('removido')->name('removidos.destroy')->middleware('tela.access:1009');
+
+    // Gerenciar acessos por usuário (apenas Admin)
+    Route::middleware(['admin'])->group(function () {
+        Route::get('/acessos', [AcessoUsuarioController::class, 'index'])->name('acessos.index');
+        Route::get('/acessos/{cdMatrFuncionario}/edit', [AcessoUsuarioController::class, 'edit'])->name('acessos.edit');
+        Route::put('/acessos/{cdMatrFuncionario}', [AcessoUsuarioController::class, 'update'])->name('acessos.update');
+        Route::delete('/acessos/{cdMatrFuncionario}', [AcessoUsuarioController::class, 'destroy'])->name('acessos.destroy');
+    });
 
     // Debug do tema (apenas em ambiente local ou se user for admin)
     Route::get('/debug/theme', function (\Illuminate\Http\Request $request) {

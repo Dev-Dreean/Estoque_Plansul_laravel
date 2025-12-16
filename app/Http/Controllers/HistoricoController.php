@@ -37,6 +37,34 @@ class HistoricoController extends Controller
 
         // TODOS podem ver TODOS os lançamentos (sem restrição de supervisão)
         // Filtros aplicados apenas via formulário de busca
+        // JOINs para resolver nomes de locais e projetos dinamicamente
+        $query->leftJoin('locais_projeto as lp_de', function($join) {
+            $join->on('lp_de.cdlocal', '=', DB::raw("CAST(VALOR_ANTIGO AS UNSIGNED)"))
+                 ->where('movpartr.TIPO', '=', 'local');
+        });
+        
+        $query->leftJoin('locais_projeto as lp_para', function($join) {
+            $join->on('lp_para.cdlocal', '=', DB::raw("CAST(VALOR_NOVO AS UNSIGNED)"))
+                 ->where('movpartr.TIPO', '=', 'local');
+        });
+        
+        $query->leftJoin('tabfant as tf_de', function($join) {
+            $join->on('tf_de.CDPROJETO', '=', DB::raw("CAST(VALOR_ANTIGO AS UNSIGNED)"))
+                 ->where('movpartr.TIPO', '=', 'projeto');
+        });
+        
+        $query->leftJoin('tabfant as tf_para', function($join) {
+            $join->on('tf_para.CDPROJETO', '=', DB::raw("CAST(VALOR_NOVO AS UNSIGNED)"))
+                 ->where('movpartr.TIPO', '=', 'projeto');
+        });
+        
+        // Adicionar colunas de nomes
+        $query->addSelect(
+            DB::raw("COALESCE(lp_de.delocal, '') as LOC_ANTIGO_NOME"),
+            DB::raw("COALESCE(lp_para.delocal, '') as LOC_NOVO_NOME"),
+            DB::raw("COALESCE(tf_de.NOMEPROJETO, '') as PROJ_ANTIGO_NOME"),
+            DB::raw("COALESCE(tf_para.NOMEPROJETO, '') as PROJ_NOVO_NOME")
+        );
 
         if ($request->filled('nupatr')) {
             $query->where('NUPATR', $request->nupatr);

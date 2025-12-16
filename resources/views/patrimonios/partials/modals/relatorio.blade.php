@@ -311,7 +311,7 @@
                 <th scope="col" class="px-6 py-3">Descrição</th>
                 <th scope="col" class="px-6 py-3">Modelo</th>
                 <th scope="col" class="px-6 py-3 text-xs">Situação</th>
-                <th scope="col" class="px-6 py-3">Local</th>
+                <th scope="col" class="px-6 py-3">Local Físico</th>
                 <th scope="col" class="px-6 py-3">Cadastrador</th>
               </tr>
             </thead>

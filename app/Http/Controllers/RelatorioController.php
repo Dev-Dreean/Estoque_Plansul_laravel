@@ -100,25 +100,6 @@ class RelatorioController extends Controller
                 $query = Patrimonio::query()->with('creator', 'local.projeto');
             }
 
-            // Filtra patrimônios por usuário (exceto Admin e Super Admin)
-            /** @var \App\Models\User|null $user */
-            $user = Auth::user();
-            if ($user && !$user->isGod() && ($user->PERFIL ?? null) !== 'ADM') {
-                $nmLogin = (string) ($user->NMLOGIN ?? '');
-                $nmUser  = (string) ($user->NOMEUSER ?? '');
-                $supervisionados = $user->getSupervisionados();
-                
-                $query->where(function ($q) use ($user, $nmLogin, $nmUser, $supervisionados) {
-                    $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
-                        ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
-                        ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser]);
-                    
-                    // Se for supervisor, ver também registros dos supervisionados
-                    if (!empty($supervisionados)) {
-                        $q->orWhereIn(DB::raw('LOWER(USUARIO)'), array_map('strtolower', $supervisionados));
-                    }
-                });
-            }
             switch ($tipo) {
                 case 'numero':
                     if ($request->filled('numero_busca')) {
@@ -212,25 +193,6 @@ class RelatorioController extends Controller
             $query = Patrimonio::query()->with('creator', 'local.projeto');
         }
 
-        // Filtra patrimônios por usuário (exceto Admin e Super Admin)
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-        if ($user && !$user->isGod() && ($user->PERFIL ?? null) !== 'ADM') {
-            $nmLogin = (string) ($user->NMLOGIN ?? '');
-            $nmUser  = (string) ($user->NOMEUSER ?? '');
-            $supervisionados = $user->getSupervisionados();
-            
-            $query->where(function ($q) use ($user, $nmLogin, $nmUser, $supervisionados) {
-                $q->where('CDMATRFUNCIONARIO', $user->CDMATRFUNCIONARIO)
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmLogin])
-                    ->orWhereRaw('LOWER(USUARIO) = LOWER(?)', [$nmUser]);
-                
-                // Se for supervisor, ver também registros dos supervisionados
-                if (!empty($supervisionados)) {
-                    $q->orWhereIn(DB::raw('LOWER(USUARIO)'), array_map('strtolower', $supervisionados));
-                }
-            });
-        }
         switch ($validated['tipo_relatorio']) {
             case 'numero':
                 if ($request->filled('numero_busca')) {

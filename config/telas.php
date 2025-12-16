@@ -23,6 +23,14 @@ return [
         'route' => 'projetos.index',
         'icone' => 'fa-location-dot',
         'cor' => 'orange',
+        'ordem' => 4,
+    ],
+    '1009' => [
+        'nome' => 'Removidos',
+        'descricao' => 'Conferencia de registros removidos',
+        'route' => 'removidos.index',
+        'icone' => 'fa-trash-can',
+        'cor' => 'red',
         'ordem' => 3,
     ],
     '1003' => [
@@ -31,7 +39,7 @@ return [
         'route' => 'usuarios.index',
         'icone' => 'fa-users-cog',
         'cor' => 'cyan',
-        'ordem' => 4,
+        'ordem' => 5,
     ],
     '1004' => [
         'nome' => 'Telas',
@@ -39,15 +47,15 @@ return [
         'route' => 'cadastro-tela.index',
         'icone' => 'fa-window-restore',
         'cor' => 'slate',
-        'ordem' => 5,
+        'ordem' => 6,
     ],
     '1005' => [
         'nome' => 'Gerenciar Acessos',
         'descricao' => 'Gestao de regras de acesso por usuario',
-        'route' => null,
+        'route' => 'acessos.index',
         'icone' => 'fa-key',
         'cor' => 'emerald',
-        'ordem' => 6,
+        'ordem' => 7,
     ],
     '1006' => [
         'nome' => 'Relatorios',
@@ -55,7 +63,7 @@ return [
         'route' => 'relatorios.patrimonios.gerar',
         'icone' => 'fa-file-lines',
         'cor' => 'amber',
-        'ordem' => 7,
+        'ordem' => 8,
     ],
     '1007' => [
         'nome' => 'Historico de Movimentacoes',
@@ -63,7 +71,7 @@ return [
         'route' => 'historico.index',
         'icone' => 'fa-clock-rotate-left',
         'cor' => 'violet',
-        'ordem' => 8,
+        'ordem' => 9,
     ],
     '1008' => [
         'nome' => 'Tema',
@@ -71,6 +79,6 @@ return [
         'route' => 'settings.theme',
         'icone' => 'fa-palette',
         'cor' => 'teal',
-        'ordem' => 9,
+        'ordem' => 10,
     ],
 ];

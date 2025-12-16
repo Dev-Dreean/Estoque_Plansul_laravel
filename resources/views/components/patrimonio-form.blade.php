@@ -1,4 +1,10 @@
-@props(['patrimonio' => null])
+@props(['patrimonio' => null, 'ultimaVerificacao' => null])
+
+@php
+  $rawConferido = old('FLCONFERIDO', $patrimonio?->FLCONFERIDO);
+  $rawConferido = is_string($rawConferido) ? strtoupper(trim($rawConferido)) : ($rawConferido !== null ? (string) $rawConferido : '');
+  $isConferido = in_array($rawConferido, ['S','1','SIM','TRUE','T','Y','YES','ON'], true);
+@endphp
 
 @if ($errors->any())
 <div class="mb-3 bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded-lg relative text-sm" role="alert">
@@ -28,6 +34,114 @@
   data-old='{!! json_encode(old()) !!}'>
 
   {{-- GRUPO 1: 4 Inputs lado a lado - Botão Gerar, Número Patrimônio, OC, Descrição e Código do Objeto --}}
+  @if($patrimonio)
+    @php
+      $usuarioAtual = auth()->user()?->NMLOGIN ?? auth()->user()?->NOMEUSER ?? 'SISTEMA';
+      $usuarioAtual = trim((string) $usuarioAtual) !== '' ? (string) $usuarioAtual : 'SISTEMA';
+      $ultimaUsuario = $ultimaVerificacao?->USUARIO ?? null;
+    @endphp
+
+    <div
+      x-data="{
+        conferido: @js($isConferido),
+        confirmOpen: false,
+        pendingAction: null,
+        usuarioAtual: @js($usuarioAtual),
+        ultimaUsuario: @js($ultimaUsuario),
+      }"
+      x-init="formData.FLCONFERIDO = conferido ? 'S' : 'N'"
+      x-effect="formData.FLCONFERIDO = conferido ? 'S' : 'N'"
+      class="rounded-xl border border-l-4 p-3 sm:p-4 shadow-sm"
+      :style="conferido
+        ? 'border-color: var(--ok); border-left-color: var(--ok); background: color-mix(in srgb, var(--ok) 18%, var(--surface));'
+        : 'border-color: var(--danger); border-left-color: var(--danger); background: color-mix(in srgb, var(--danger) 16%, var(--surface));'"
+    >
+      <input type="hidden" name="FLCONFERIDO" :value="conferido ? 'S' : 'N'">
+
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <div class="flex items-start gap-3 min-w-0">
+          <div class="mt-0.5 flex-shrink-0" :style="conferido ? 'color: var(--ok);' : 'color: var(--danger);'">
+            <svg x-show="conferido" class="w-7 h-7" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 00-1.06 1.06l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+            </svg>
+            <svg x-show="!conferido" class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v6" stroke-linecap="round" />
+              <path d="M12 16h.01" stroke-linecap="round" />
+            </svg>
+          </div>
+
+          <div class="min-w-0">
+            <div class="text-xs sm:text-sm font-extrabold tracking-wide" :style="conferido ? 'color: var(--ok);' : 'color: var(--danger);'">
+              <span x-text="conferido ? 'PATRIMONIO VERIFICADO' : 'PATRIMONIO NAO VERIFICADO'"></span>
+            </div>
+
+            <div class="mt-1 text-xs text-[var(--text)]">
+              <template x-if="conferido">
+                <div class="font-semibold">
+                  Verificado por <span class="font-mono" x-text="ultimaUsuario || '—'"></span>
+                </div>
+              </template>
+              <template x-if="!conferido">
+                <div class="font-semibold">
+                  Este patrimonio ainda nao foi verificado.
+                </div>
+              </template>
+            </div>
+
+            <div class="mt-1 text-[11px] text-[var(--text-soft)]">
+              Clique em <span class="font-semibold">Atualizar Patrimonio</span> para salvar.
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button
+            type="button"
+            class="px-3 py-2 rounded-md text-xs font-bold border border-[var(--border)] bg-[var(--surface)] hover:opacity-90"
+            @click="pendingAction = conferido ? 'unverify' : 'verify'; confirmOpen = true"
+          >
+            <span x-text="conferido ? 'Desmarcar verificacao' : 'Marcar como verificado'"></span>
+          </button>
+        </div>
+      </div>
+
+      <div x-show="confirmOpen" x-cloak x-transition class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" @keydown.escape.window="confirmOpen = false" @click.self="confirmOpen = false">
+        <div class="bg-surface text-app rounded-lg shadow-lg p-6 max-w-sm w-full border border-app" @click.stop>
+          <h3 class="text-lg font-semibold text-app mb-2" x-text="pendingAction === 'verify' ? 'Confirmar verificacao' : 'Confirmar remocao da verificacao'"></h3>
+
+          <p class="text-muted mb-6">
+            <span x-show="pendingAction === 'verify'" class="block">Deseja marcar este patrimonio como <strong>verificado</strong>?</span>
+            <span x-show="pendingAction === 'unverify'" class="block">Deseja marcar este patrimonio como <strong>nao verificado</strong>?</span>
+            Esta alteracao sera aplicada ao clicar em <strong>Atualizar Patrimonio</strong>.
+          </p>
+
+          <div class="flex gap-3 justify-end">
+            <button
+              type="button"
+              class="px-4 py-2 text-sm font-semibold rounded-md border border-app bg-surface text-app hover:bg-[var(--surface-2)] transition"
+              @click="confirmOpen = false"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="px-4 py-2 text-sm text-white rounded font-semibold transition"
+              :class="pendingAction === 'verify' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'"
+              @click="
+                conferido = (pendingAction === 'verify');
+                ultimaUsuario = conferido ? usuarioAtual : null;
+                confirmOpen = false;
+              "
+            >
+              <span x-text="pendingAction === 'verify' ? 'Confirmar verificacao' : 'Confirmar'"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
     {{-- Número do Patrimônio (Dropdown com patrimônios do usuário) --}}
     <div>
@@ -223,7 +337,7 @@
 
     {{-- LOCAL: Botão + | Código | Dropdown Nome --}}
     <div class="md:col-span-2">
-      <label for="CDLOCAL_INPUT" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Local *</label>
+      <label for="CDLOCAL_INPUT" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Local Físico *</label>
 
       <div class="flex gap-3 items-stretch">
         {{-- Botão + (Criar Novo Local/Projeto) --}}
@@ -231,7 +345,7 @@
           @click="abrirModalCriarProjeto()"
           @keydown.space.prevent="abrirModalCriarProjeto()"
           class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
-          title="Criar novo local/projeto (Espaço)"
+          title="Criar novo Local Físico/projeto (Espaço)"
           tabindex="6">
           <span class="text-lg font-bold leading-none">+</span>
         </button>
@@ -250,7 +364,7 @@
             @keydown.enter.prevent="selecionarCodigoLocalEnter()"
             @keydown.escape.prevent="showCodigoLocalDropdown=false"
             :disabled="!formData.CDPROJETO"
-            placeholder="Digite código ou nome do local"
+            placeholder="Digite código ou nome do Local Físico"
             tabindex="7"
             :class="[
               'block w-full h-8 text-xs rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500 border',
@@ -432,6 +546,27 @@
         tabindex="15"
         class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
       <x-input-error class="mt-2" :messages="$errors->get('DTBAIXA')" />
+    </div>
+  </div>
+
+  {{-- GRUPO 7: Peso e Tamanho (Novos Campos) --}}
+  <div class="md:col-span-4">
+    <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-300 mb-1">Novos campos</p>
+    <div class="border-2 border-indigo-500 dark:border-indigo-400 rounded-lg p-2">
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label for="PESO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Peso (kg)</label>
+          <input x-model="formData.PESO" id="PESO" name="PESO" type="number" step="0.01" tabindex="16" 
+            class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" 
+            placeholder="Ex: 15.50" />
+        </div>
+        <div>
+          <label for="TAMANHO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Dimensões</label>
+          <input x-model="formData.TAMANHO" id="TAMANHO" name="TAMANHO" type="text" tabindex="17" 
+            class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" 
+            placeholder="Ex: 10x20x30 cm" />
+        </div>
+      </div>
     </div>
   </div>
 
@@ -687,6 +822,8 @@
           return d.includes('T') ? d.split('T')[0] : (d.includes(' ') ? d.split(' ')[0] : d);
         })() : '')),
         CDMATRFUNCIONARIO: (config.old?.CDMATRFUNCIONARIO ?? config.patrimonio?.CDMATRFUNCIONARIO) || '',
+        PESO: (config.old?.PESO ?? config.patrimonio?.PESO) || '',
+        TAMANHO: (config.old?.TAMANHO ?? config.patrimonio?.TAMANHO) || '',
       },
       // == ESTADO DA UI ==
       loading: false,

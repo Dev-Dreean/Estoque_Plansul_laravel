@@ -17,7 +17,7 @@
   ];
 
   $columns = array_merge(
-    ['nupatrimonio'],
+    ['nupatrimonio', 'conferido'],
     array_values($mapBeforeDescricao),
     ['modelo', 'marca'],
     ['descricao', 'situacao'],
@@ -39,7 +39,6 @@
 <div id="patrimonios-pagination" class="mt-3">
   {{ $patrimonios->appends(request()->query())->onEachSide(1)->links('pagination::tailwind', ['attributes' => ['data-ajax-page' => true]]) }}
 </div>
-
 
 
 
