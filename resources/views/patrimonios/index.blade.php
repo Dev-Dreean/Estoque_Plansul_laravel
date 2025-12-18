@@ -54,7 +54,7 @@
             @unless($isConsultor)
               <div
                 id="bulk-confirm-modal"
-                class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-sm px-4"
+                class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-sm px-4"
               >
               <div class="w-full max-w-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 
@@ -287,6 +287,7 @@
           pendingSituacao = null;
           if (bulkConfirmModal) {
             bulkConfirmModal.classList.add('hidden');
+            bulkConfirmModal.classList.remove('flex');
           }
         };
 
@@ -347,6 +348,7 @@
             bulkConfirmList.appendChild(item);
           });
           bulkConfirmModal.classList.remove('hidden');
+          bulkConfirmModal.classList.add('flex');
         };
 
         const applyBulkSituacao = () => {
@@ -508,6 +510,7 @@
             bulkConfirmList.appendChild(item);
           });
           bulkConfirmModal.classList.remove('hidden');
+          bulkConfirmModal.classList.add('flex');
         };
         
         const runBulkDelete = () => {
