@@ -28,24 +28,34 @@
     </div>
 
     {{-- MODAL DE CONFIRMAÇÃO --}}
-    <div id="modalConfirmacao" x-data="{ show: false }" x-show="show" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4" style="display: none;">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md" @click.stop>
-            {{-- Header --}}
-            <div class="px-6 py-3 border-b border-gray-200 dark:border-gray-700">
-                <h3 class="text-base font-semibold text-gray-900 dark:text-white">Confirmar Alterações</h3>
+    <div id="modalConfirmacao" class="fixed inset-0 bg-black/60 dark:bg-black/80 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-2xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-700" @click.stop>
+            {{-- Header com ícone de aviso --}}
+            <div class="flex items-start mb-4">
+                <div class="flex-shrink-0">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
+                        <svg class="h-6 w-6 text-orange-600 dark:text-orange-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c.866 1.5 2.537 2.912 4.583 2.912h10.84c2.046 0 3.717-1.412 4.583-2.912M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-4 flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar Alterações</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Revise as mudanças antes de atualizar</p>
+                </div>
             </div>
 
             {{-- Conteúdo --}}
-            <div id="alteracoes" class="px-6 py-4 max-h-80 overflow-y-auto">
+            <div id="alteracoes" class="max-h-64 overflow-y-auto mb-6 pb-2 bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                 <!-- Alterações serão inseridas aqui dinamicamente -->
             </div>
 
             {{-- Footer --}}
-            <div class="px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex gap-3 justify-end">
-                <button type="button" id="btnCancelarModal" class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition">
+            <div class="flex gap-3 justify-end">
+                <button type="button" id="btnCancelarModal" class="px-4 py-2 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:focus:ring-offset-gray-800">
                     Cancelar
                 </button>
-                <button type="button" id="btnConfirmarAtualizacao" class="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 rounded transition">
+                <button type="button" id="btnConfirmarAtualizacao" class="px-4 py-2 text-sm font-medium rounded-md bg-indigo-600 hover:bg-indigo-700 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
                     Confirmar
                 </button>
             </div>
@@ -501,12 +511,14 @@ $jsonDados = json_encode($dadosOriginais, JSON_UNESCAPED_SLASHES);
 
             const html = await gerarAlteracoes(dadosNovos);
             alteracoesDiv.innerHTML = html;
-            modalConfirmacao.style.display = 'flex';
+            modalConfirmacao.classList.remove('hidden');
+            modalConfirmacao.classList.add('flex');
         }
 
         // Fechar modal
         function fecharModal() {
-            modalConfirmacao.style.display = 'none';
+            modalConfirmacao.classList.add('hidden');
+            modalConfirmacao.classList.remove('flex');
         }
 
         // Eventos
@@ -556,7 +568,7 @@ $jsonDados = json_encode($dadosOriginais, JSON_UNESCAPED_SLASHES);
 
         // Suporte para tecla ESC
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modalConfirmacao.style.display === 'flex') {
+            if (e.key === 'Escape' && !modalConfirmacao.classList.contains('hidden')) {
                 fecharModal();
             }
         });
