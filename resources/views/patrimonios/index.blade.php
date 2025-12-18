@@ -54,57 +54,45 @@
             @unless($isConsultor)
               <div
                 id="bulk-confirm-modal"
-                class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+                class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-sm px-4"
               >
-              <div class="w-full max-w-2xl bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden">
+              <div class="w-full max-w-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 
-                <!-- Header com gradiente e ícone -->
-                <div class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 dark:from-indigo-700 dark:via-indigo-800 dark:to-purple-800 px-6 py-4 flex items-start justify-between relative overflow-hidden">
-                  <div class="absolute -right-16 -top-16 w-40 h-40 bg-white/5 rounded-full"></div>
-                  <div class="relative space-y-1">
-                    <div class="flex items-center gap-3">
-                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                      </svg>
-                      <h3 class="text-2xl font-bold text-white" id="bulk-confirm-title">Confirmar Alteração em Massa</h3>
-                    </div>
-                    <p class="text-indigo-100 text-sm ml-9">Revise os <span id="bulk-confirm-count-header" class="font-semibold">0</span> patrimônios selecionados</p>
-                  </div>
-                  <button id="bulk-confirm-close" class="text-indigo-200 hover:text-white transition text-3xl leading-none mt-1 relative">×</button>
+                {{-- Header --}}
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar Alteração</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Revise os patrimônios selecionados</p>
                 </div>
 
-                <!-- Conteúdo compacto -->
-                <div class="px-6 py-4 space-y-3">
+                {{-- Conteúdo compacto --}}
+                <div class="px-6 py-4 space-y-3 max-h-64 overflow-y-auto">
                   
-                  <!-- Nova situação com badge destacado -->
-                  <div id="bulk-confirm-situacao-wrapper" style="display:none;" class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-l-4 border-indigo-600 dark:border-indigo-400 rounded-lg p-3">
+                  {{-- Nova situação com badge destacado --}}
+                  <div id="bulk-confirm-situacao-wrapper" style="display:none;" class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3">
                     <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">Novo Status</p>
                     <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                      </svg>
                       <span id="bulk-confirm-new" class="text-base font-bold text-indigo-700 dark:text-indigo-300"></span>
                     </div>
                   </div>
 
-                  <!-- Lista de patrimônios compacta -->
+                  {{-- Lista de patrimônios compacta --}}
                   <div class="space-y-2">
                     <div class="flex items-center justify-between">
                       <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Patrimônios a Alterar:</p>
                       <span class="inline-block px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
-                        <span id="bulk-confirm-count">0</span>
+                        <span id="bulk-confirm-count">0</span> / <span id="bulk-confirm-count-header">0</span>
                       </span>
                     </div>
-                    <div id="bulk-confirm-list" class="max-h-56 overflow-y-auto space-y-1.5 pr-1">
+                    <div id="bulk-confirm-list" class="max-h-48 overflow-y-auto space-y-1.5 pr-1">
                       <!-- itens gerados via JS -->
                     </div>
                   </div>
                 </div>
 
-                <!-- Footer com ações -->
+                {{-- Footer com ações --}}
                 <div class="bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-3">
-                  <button id="bulk-confirm-cancel" class="px-6 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold transition transform hover:scale-105 text-sm">Cancelar</button>
-                  <button id="bulk-confirm-yes" class="px-6 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 font-semibold transition shadow-lg hover:shadow-xl transform hover:scale-105 text-sm">✓ Confirmar</button>
+                  <button id="bulk-confirm-cancel" class="px-4 py-2 rounded-md text-sm font-semibold border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition">Cancelar</button>
+                  <button id="bulk-confirm-yes" class="px-4 py-2 rounded-md text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition">✓ Confirmar</button>
                 </div>
               </div>
             </div>
@@ -299,7 +287,6 @@
           pendingSituacao = null;
           if (bulkConfirmModal) {
             bulkConfirmModal.classList.add('hidden');
-            bulkConfirmModal.style.display = 'none';
           }
         };
 
@@ -360,7 +347,6 @@
             bulkConfirmList.appendChild(item);
           });
           bulkConfirmModal.classList.remove('hidden');
-          bulkConfirmModal.style.display = 'flex';
         };
 
         const applyBulkSituacao = () => {
@@ -522,7 +508,6 @@
             bulkConfirmList.appendChild(item);
           });
           bulkConfirmModal.classList.remove('hidden');
-          bulkConfirmModal.style.display = 'flex';
         };
         
         const runBulkDelete = () => {
