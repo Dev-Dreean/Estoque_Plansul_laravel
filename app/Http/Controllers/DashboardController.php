@@ -103,4 +103,54 @@ class DashboardController extends Controller
             'period' => $period,
         ]);
     }
+
+    /**
+     * Retorna JSON com contagem de lançamentos agrupados por UF (estado).
+     * Obs: este gráfico é "geral" (sem filtro por período).
+     */
+    public function ufData(Request $request)
+    {
+        // Prioridade: patr.UF (se preenchido) -> locais_projeto.UF -> tabfant.UF
+        $ufExpr = "UPPER(TRIM(COALESCE(NULLIF(patr.UF,''), NULLIF(locais_projeto.UF,''), NULLIF(tabfant.UF,''))))";
+
+        $rows = DB::table('patr')
+            ->leftJoin('locais_projeto', 'locais_projeto.cdlocal', '=', 'patr.CDLOCAL')
+            ->leftJoin('tabfant', 'tabfant.CDPROJETO', '=', 'patr.CDPROJETO')
+            ->selectRaw("$ufExpr as uf, COUNT(*) as total")
+            ->groupBy('uf')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        $labels = [];
+        $values = [];
+        $semUf = 0;
+
+        foreach ($rows as $row) {
+            $uf = isset($row->uf) ? trim((string) $row->uf) : '';
+            $total = (int) ($row->total ?? 0);
+
+            if ($total <= 0) {
+                continue;
+            }
+
+            if ($uf === '') {
+                $semUf += $total;
+                continue;
+            }
+
+            $labels[] = $uf;
+            $values[] = $total;
+        }
+
+        if ($semUf > 0) {
+            $labels[] = 'SEM UF';
+            $values[] = $semUf;
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'data' => $values,
+            'period' => 'all',
+        ]);
+    }
 }
