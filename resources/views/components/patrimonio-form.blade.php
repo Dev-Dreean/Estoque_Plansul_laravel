@@ -1,4 +1,4 @@
-@props(['patrimonio' => null, 'ultimaVerificacao' => null])
+﻿@props(['patrimonio' => null, 'ultimaVerificacao' => null])
 
 @php
   $rawConferido = old('FLCONFERIDO', $patrimonio?->FLCONFERIDO);
@@ -28,10 +28,10 @@
 @endif
 
 <div x-data="patrimonioForm($el)"
-  x-init="if (patSearch) { $nextTick(() => buscarPatrimonio()); }"
+  x-init="init(); if (patSearch) { $nextTick(() => buscarPatrimonio()); }"
   @keydown.enter.prevent="handleEnter($event)" class="space-y-4 text-sm"
-  data-patrimonio='{!! json_encode($patrimonio) !!}'
-  data-old='{!! json_encode(old()) !!}'>
+  data-patrimonio='@json($patrimonio)'
+  data-old='@json(old())'>
 
   {{-- GRUPO 1: 4 Inputs lado a lado - Botão Gerar, Número Patrimônio, OC, Descrição e Código do Objeto --}}
   @if($patrimonio)
@@ -213,49 +213,59 @@
     {{-- Descrição do Objeto (busca com dropdown) --}}
     <div>
       <label for="DEOBJETO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Descrição do Objeto *</label>
-      <div class="relative" @click.away="showCodigoDropdown=false">
-        <input id="DEOBJETO"
-          x-model="descricaoSearch"
-          @focus="abrirDropdownCodigos()"
-          @blur.debounce.150ms="(function(){ showCodigoDropdown=false; buscarCodigo(); })()"
-          @input.debounce.300ms="(function(){ const t=String(descricaoSearch||'').trim(); if(t.length>0){ showCodigoDropdown=true; buscarCodigos(); } else { showCodigoDropdown=false; codigosLista=[]; highlightedCodigoIndex=-1; } })()"
-          @keydown.down.prevent="navegarCodigos(1)"
-          @keydown.up.prevent="navegarCodigos(-1)"
-          @keydown.enter.prevent="selecionarCodigoEnter()"
-          @keydown.tab.prevent="selecionarCodigoTab($event)"
-          @keydown.escape.prevent="showCodigoDropdown=false"
-          type="text"
-          tabindex="4"
-          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500"
-          placeholder="Informe a descrição" required />
-        {{-- Valor enviado (hidden) --}}
-        <input type="hidden" name="NUSEQOBJ" :value="formData.NUSEQOBJ" />
-        <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
-          <button type="button" x-show="formData.NUSEQOBJ" @click="limparCodigo" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none" title="Limpar seleção" tabindex="-1">×</button>
-          <button type="button" @click="abrirDropdownCodigos(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" tabindex="-1">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-            </svg>
-          </button>
-        </div>
-        <div x-show="showCodigoDropdown" x-transition class="absolute z-50 top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto text-xs">
-          <template x-if="loadingCodigos">
-            <div class="p-2 text-gray-500 text-center">Buscando...</div>
-          </template>
-          <template x-if="!loadingCodigos && codigosLista.length === 0">
-            <div class="p-2 text-gray-500 text-center" x-text="String(descricaoSearch || '').trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
-          </template>
-          <template x-for="(c,i) in (codigosLista || [])" :key="c.CODOBJETO || i">
-            <div data-cod-item @click="selecionarCodigo(c)" @mouseover="highlightedCodigoIndex=i" :class="['px-3 py-1.5 cursor-pointer text-xs', highlightedCodigoIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
-              <span class="text-gray-700 dark:text-gray-300" x-text="c.DESCRICAO"></span>
-              <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400 ml-1" x-text="'(' + c.CODOBJETO + ')'"></span>
-            </div>
-          </template>
+      <div class="flex items-stretch gap-2">
+        <button type="button"
+          @click="abrirModalCriarBem()"
+          @keydown.space.prevent="abrirModalCriarBem()"
+          class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
+          title="Criar novo bem (Espaço)"
+          tabindex="-1">
+          <span class="text-lg font-bold leading-none">+</span>
+        </button>
+        <div class="relative flex-grow min-w-0" @click.away="showCodigoDropdown=false">
+          <input id="DEOBJETO"
+            x-model="descricaoSearch"
+            @focus="abrirDropdownCodigos()"
+            @blur.debounce.150ms="(function(){ showCodigoDropdown=false; buscarCodigo(); })()"
+            @input.debounce.300ms="(function(){ const t=String(descricaoSearch||'').trim(); if(t.length>0){ showCodigoDropdown=true; buscarCodigos(); } else { showCodigoDropdown=false; codigosLista=[]; highlightedCodigoIndex=-1; } })()"
+            @keydown.down.prevent="navegarCodigos(1)"
+            @keydown.up.prevent="navegarCodigos(-1)"
+            @keydown.enter.prevent="selecionarCodigoEnter()"
+            @keydown.tab.prevent="selecionarCodigoTab($event)"
+            @keydown.escape.prevent="showCodigoDropdown=false"
+            type="text"
+            tabindex="4"
+            class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500"
+            placeholder="Informe a descrição" required />
+          {{-- Valor enviado (hidden) --}}
+          <input type="hidden" name="NUSEQOBJ" :value="formData.NUSEQOBJ" />
+          <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
+            <button type="button" x-show="formData.NUSEQOBJ" @click="limparCodigo" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none" title="Limpar seleção" tabindex="-1">×</button>
+            <button type="button" @click="abrirDropdownCodigos(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" tabindex="-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+          <div x-show="showCodigoDropdown" x-transition class="absolute z-50 top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto text-xs">
+            <template x-if="loadingCodigos">
+              <div class="p-2 text-gray-500 text-center">Buscando...</div>
+            </template>
+            <template x-if="!loadingCodigos && codigosLista.length === 0">
+              <div class="p-2 text-gray-500 text-center" x-text="String(descricaoSearch || '').trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
+            </template>
+            <template x-for="(c,i) in (codigosLista || [])" :key="c.CODOBJETO || i">
+              <div data-cod-item @click="selecionarCodigo(c)" @mouseover="highlightedCodigoIndex=i" :class="['px-3 py-1.5 cursor-pointer text-xs', highlightedCodigoIndex===i ? 'bg-indigo-100 dark:bg-gray-700' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+                <span class="text-gray-700 dark:text-gray-300" x-text="c.DESCRICAO"></span>
+                <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400 ml-1" x-text="'(' + c.CODOBJETO + ')'"></span>
+              </div>
+            </template>
+          </div>
         </div>
       </div>
     </div>
 
-    {{-- Código do Objeto (preenchido automaticamente) --}}
+{{-- Código do Objeto (preenchido automaticamente) --}}
     <div>
       <label for="NUSEQOBJ" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código do Objeto *</label>
       <input id="NUSEQOBJ"
@@ -566,6 +576,76 @@
             class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" 
             placeholder="Ex: 10x20x30 cm" />
         </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- MODAL DE CRIAR NOVO BEM --}}
+  <div x-show="modalCriarBemOpen"
+    x-transition
+    x-cloak
+    @keydown.escape.window="fecharModalCriarBem"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md"
+      @keydown.enter.stop.prevent="salvarNovoBem">
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Cadastrar Bem</h4>
+        <button type="button"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+          @click="fecharModalCriarBem"
+          :disabled="salvandoBem"
+          title="Fechar">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="grid gap-3" style="grid-template-columns: 140px 1fr;">
+          <div>
+            <label for="modal_nuseqtipo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Cód. Tipo</label>
+            <input id="modal_nuseqtipo"
+              x-ref="inputBemTipoCodigo"
+              x-model="novoBem.NUSEQTIPOPATR"
+              type="number"
+              class="mt-1 block w-full border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md h-10 px-3"
+              placeholder="Ex.: 1" />
+          </div>
+          <div>
+            <label for="modal_detipo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo</label>
+            <input id="modal_detipo"
+              x-model="novoBem.DETIPOPATR"
+              type="text"
+              class="mt-1 block w-full border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md h-10 px-3"
+              placeholder="Ex.: APARADOR DE GRAMA" />
+            <p class="mt-1 text-xs text-gray-500">Informe o nome do tipo se o código não existir.</p>
+          </div>
+        </div>
+
+        <div>
+          <label for="modal_deobjeto" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Descrição do Bem</label>
+          <input id="modal_deobjeto"
+            x-model="novoBem.DEOBJETO"
+            type="text"
+            class="mt-1 block w-full border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md h-10 px-3"
+            placeholder="Ex.: APARADOR DE GRAMA TRAMONTINA 127V" />
+        </div>
+
+        <template x-if="erroCriacaoBem">
+          <p class="text-sm text-red-600" x-text="erroCriacaoBem"></p>
+        </template>
+      </div>
+
+      <div class="mt-6 flex items-center justify-end gap-3">
+        <button type="button"
+          class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500"
+          @click="fecharModalCriarBem"
+          :disabled="salvandoBem">Cancelar</button>
+        <button type="button"
+          class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-70"
+          @click="salvarNovoBem"
+          :disabled="salvandoBem">Salvar</button>
       </div>
     </div>
   </div>
@@ -896,6 +976,16 @@
       loadingPatrimonios: false,
       showPatDropdown: false,
       highlightedPatIndex: -1,
+
+      // Modal de Bem
+      modalCriarBemOpen: false,
+      novoBem: {
+        NUSEQTIPOPATR: '',
+        DETIPOPATR: '',
+        DEOBJETO: '',
+      },
+      salvandoBem: false,
+      erroCriacaoBem: '',
 
       // Modais de Local
       modalCriarLocalOpen: false,
@@ -2634,7 +2724,141 @@
           .map(x => x.item);
       },
 
+      
       // ========================================
+      // FUNCOES DO MODAL CRIAR BEM
+      // ========================================
+      abrirModalCriarBem() {
+        this.erroCriacaoBem = '';
+        this.salvandoBem = false;
+        this.novoBem = {
+          NUSEQTIPOPATR: '',
+          DETIPOPATR: '',
+          DEOBJETO: '',
+        };
+
+        const descricaoAtual = String(this.descricaoSearch || this.formData.DEOBJETO || '').trim();
+        if (descricaoAtual) {
+          this.novoBem.DEOBJETO = descricaoAtual;
+        }
+
+        this.modalCriarBemOpen = true;
+
+        this.$nextTick(() => {
+          const input = this.$refs.inputBemTipoCodigo;
+          if (input) {
+            input.focus();
+          }
+        });
+      },
+
+      fecharModalCriarBem() {
+        this.modalCriarBemOpen = false;
+        this.erroCriacaoBem = '';
+        this.salvandoBem = false;
+        this.novoBem = {
+          NUSEQTIPOPATR: '',
+          DETIPOPATR: '',
+          DEOBJETO: '',
+        };
+      },
+
+      async salvarNovoBem() {
+        const tipoCodigo = String(this.novoBem.NUSEQTIPOPATR || '').trim();
+        const tipoNome = String(this.novoBem.DETIPOPATR || '').trim();
+        const descricao = String(this.novoBem.DEOBJETO || '').trim();
+
+        if (!tipoCodigo) {
+          this.erroCriacaoBem = 'Informe o c?digo do tipo.';
+          return;
+        }
+
+        if (!descricao) {
+          this.erroCriacaoBem = 'Informe a descrição do bem.';
+          return;
+        }
+
+        this.salvandoBem = true;
+        this.erroCriacaoBem = '';
+
+        try {
+          const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+          const payload = {
+            NUSEQTIPOPATR: tipoCodigo,
+            DETIPOPATR: tipoNome || null,
+            DEOBJETO: descricao,
+          };
+
+          const response = await fetch("{{ route('relatorios.bens.store') }}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'application/json',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(payload),
+          });
+
+          if (!response.ok) {
+            let message = '';
+            try {
+              const errData = await response.clone().json();
+              if (errData?.errors) {
+                const key = Object.keys(errData.errors)[0];
+                message = errData.errors[key]?.[0] || '';
+              }
+              if (!message) {
+                message = errData?.message || '';
+              }
+            } catch (_) {
+              message = '';
+            }
+
+            if (!message) {
+              try {
+                message = await response.text();
+              } catch (_) {
+                message = '';
+              }
+            }
+
+            throw new Error(message || 'Erro ao criar bem.');
+          }
+
+          const data = await response.json();
+          const novoId = data?.data?.id || data?.id || '';
+          const descricaoFinal = data?.data?.descricao || descricao;
+
+          if (!novoId) {
+            throw new Error('C?digo do bem n?o retornado.');
+          }
+
+          this.formData.NUSEQOBJ = String(novoId);
+          this.formData.DEOBJETO = descricaoFinal;
+          this.descricaoSearch = descricaoFinal;
+          this.isNovoCodigo = false;
+          this.codigoBuscaStatus = '';
+          this.showCodigoDropdown = false;
+          this.codigosLista = [];
+          this.highlightedCodigoIndex = -1;
+
+          this.fecharModalCriarBem();
+
+          this.$nextTick(() => {
+            setTimeout(() => {
+              document.getElementById('DEHISTORICO')?.focus();
+            }, 50);
+          });
+        } catch (e) {
+          this.erroCriacaoBem = e?.message || 'Erro ao criar bem.';
+        } finally {
+          this.salvandoBem = false;
+        }
+      },
+
+// ========================================
       // �🆕 FUNÇÕES DO MODAL CRIAR PROJETO/LOCAL
       // ========================================
 
@@ -3947,3 +4171,4 @@
     }
   }
 </script>
+
