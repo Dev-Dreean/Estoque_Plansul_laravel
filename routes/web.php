@@ -167,6 +167,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::get('/api/patrimonios/id/{id}', [PatrimonioController::class, 'buscarPorId'])->name('api.patrimonios.buscarId');
     Route::get('/api/patrimonios/pesquisar', [PatrimonioController::class, 'pesquisar'])->name('api.patrimonios.pesquisar');
     Route::get('/api/patrimonios/listar-cadastradores', [PatrimonioController::class, 'listarCadradores'])->name('api.patrimonios.listar-cadastradores');
+    Route::get('/api/patrimonios/{numero}/verificacao', [PatrimonioController::class, 'getVerificacao'])->name('api.patrimonios.verificacao');
     // Autocomplete Usuários
     // Rota antiga /api/usuarios/pesquisar removida após migração para funcionários
     // Nova rota: pesquisa de funcionários

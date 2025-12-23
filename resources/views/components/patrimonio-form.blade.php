@@ -49,7 +49,19 @@
         usuarioAtual: @js($usuarioAtual),
         ultimaUsuario: @js($ultimaUsuario),
       }"
-      x-init="formData.FLCONFERIDO = conferido ? 'S' : 'N'"
+      x-init="
+        formData.FLCONFERIDO = conferido ? 'S' : 'N';
+        // Carregar dados de verificação do servidor se em modo edição
+        if (formData.NUPATRIMONIO) {
+          fetch('/api/patrimonios/' + formData.NUPATRIMONIO + '/verificacao')
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(data => {
+              ultimaUsuario = data.usuario || ultimaUsuario;
+              conferido = data.conferido === 'S' || conferido;
+            })
+            .catch(e => console.warn('Não foi possível carregar dados de verificação', e));
+        }
+      "
       x-effect="formData.FLCONFERIDO = conferido ? 'S' : 'N'"
       class="rounded-lg border border-l-4 p-2 sm:p-3 shadow-sm"
       :style="conferido

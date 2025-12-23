@@ -1930,6 +1930,72 @@ class PatrimonioController extends Controller
 
     /**
 
+     * Retorna dados de verificação de um patrimônio
+
+     */
+
+    public function getVerificacao($numero): JsonResponse
+
+    {
+
+        try {
+
+            $patrimonio = Patrimonio::where('NUPATRIMONIO', $numero)->first();
+
+            if (!$patrimonio) {
+
+                return response()->json(['conferido' => 'N', 'usuario' => null], 404);
+
+            }
+
+
+
+            $ultimaVerificacao = null;
+
+            try {
+
+                $ultimaVerificacao = HistoricoMovimentacao::query()
+
+                    ->where('NUPATR', $patrimonio->NUPATRIMONIO)
+
+                    ->where('CAMPO', 'FLCONFERIDO')
+
+                    ->where('VALOR_NOVO', 'S')
+
+                    ->orderByDesc('DTOPERACAO')
+
+                    ->first();
+
+            } catch (\Throwable $e) {
+
+                Log::warning('Falha ao buscar ultima verificacao', ['NUPATRIMONIO' => $numero]);
+
+            }
+
+
+
+            return response()->json([
+
+                'conferido' => $patrimonio->FLCONFERIDO ?? 'N',
+
+                'usuario' => $ultimaVerificacao?->USUARIO ?? null,
+
+            ]);
+
+        } catch (\Throwable $e) {
+
+            Log::error('Erro ao buscar verificacao do patrimonio', ['error' => $e->getMessage()]);
+
+            return response()->json(['conferido' => 'N', 'usuario' => null], 500);
+
+        }
+
+    }
+
+
+
+    /**
+
      * Buscar patrimônio por ID (NUSEQPATR) para modal de consultor
 
      * Usado no modal de leitura (PERFIL='C')
