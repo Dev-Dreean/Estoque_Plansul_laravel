@@ -498,11 +498,6 @@
   window.initPatrimonioEditForm = initPatrimonioEditForm;
   window.destroyPatrimonioEditForm = destroyPatrimonioEditForm;
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      initPatrimonioEditForm(document);
-    }, { once: true });
-  } else {
-    initPatrimonioEditForm(document);
-  }
+  // ❌ Removida inicialização automática para evitar dupla chamada
+  // A inicialização é feita pelo modal controller (index.blade.php) ao carregar o HTML
 </script>

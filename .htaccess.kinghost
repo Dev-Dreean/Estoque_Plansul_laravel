@@ -1,0 +1,23 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Redireciona os assets (CSS/JS/Imagens)
+    # Se o pedido for para a pasta 'build' (onde ficam os assets do Vite)...
+    RewriteCond %{REQUEST_URI} ^/build/
+    # ...e o ficheiro existir na pasta public do Laravel...
+    RewriteCond %{DOCUMENT_ROOT}/estoque-laravel/public%{REQUEST_URI} -f
+    # ...então sirva o ficheiro diretamente de lá.
+    RewriteRule ^(build/.*)$ estoque-laravel/public/$1 [L]
+
+    # Redireciona a pasta vendor (para Chart.js e outras libs)
+    RewriteCond %{REQUEST_URI} ^/vendor/
+    RewriteCond %{DOCUMENT_ROOT}/estoque-laravel/public%{REQUEST_URI} -f
+    RewriteRule ^(vendor/.*)$ estoque-laravel/public/$1 [L]
+
+    # Regra padrão para o resto do site
+    # Se o ficheiro/pasta não existir, manda para o index.php principal
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>
