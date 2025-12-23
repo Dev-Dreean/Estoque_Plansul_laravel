@@ -123,7 +123,8 @@
       </div>
     </footer>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Chart.js servido localmente para evitar bloqueio de Tracking Prevention -->
+  <script src="{{ asset('vendor/chart.js/chart.umd.min.js') }}"></script>
   <script>
     // Desativa autocomplete global (exceto login)
     (function() {
