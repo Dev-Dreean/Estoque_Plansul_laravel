@@ -123,7 +123,7 @@
       </div>
     </footer>
   </div>
-  <script src="{{ asset('vendor/chart.js/chart.umd.min.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script>
     // Desativa autocomplete global (exceto login)
     (function() {
@@ -149,6 +149,16 @@
       });
 
       window.addEventListener('unload', function() {});
+
+      // Suprimir erro de extensões do navegador: "A listener indicated an asynchronous response"
+      // Este erro é causado por extensões (como AdBlock, Grammarly, etc.) que não finalizam corretamente
+      // e não impacta a funcionalidade da aplicação
+      window.addEventListener('unhandledrejection', function(event) {
+        if (event.reason && event.reason.message && 
+            event.reason.message.includes('A listener indicated an asynchronous response')) {
+          event.preventDefault();
+        }
+      });
     })();
 
     // Transition behavior removed per request — no page overlay transitions

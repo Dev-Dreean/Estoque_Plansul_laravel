@@ -204,7 +204,7 @@
             </div>
           </div>
 
-          {{-- Modal de VisualizaÇõÇœo (estilo consulta) --}}
+          {{-- Modal de Visualização (estilo consulta) --}}
           <div x-show="mostraModalVisualizar" x-cloak x-transition class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8" @click.self="fecharModalVisualizar()" style="display: none;">
             <div class="bg-surface text-app rounded-2xl shadow-2xl w-full max-w-[98vw] h-[92vh] flex flex-col border border-app overflow-hidden" @click.stop>
               {{-- Header --}}
@@ -314,8 +314,7 @@
 
                             <template x-if="campo.kind !== 'codeName'">
                               <div
-                                class="mt-1 text-sm font-medium overflow-hidden"
-                                style="-webkit-box-orient: vertical; -webkit-line-clamp: 2; display: -webkit-box;"
+                                class="mt-1 text-sm font-medium overflow-hidden line-clamp-2"
                                 :class="campo.empty ? 'text-muted italic opacity-80' : 'text-app'"
                                 :title="campo.value"
                                 x-text="campo.value"
@@ -362,7 +361,7 @@
 @push('scripts')
 <script>
   function removidosIndex() {
-    const showUrlTemplate = @json(route('removidos.show', ['removido' => 0]));
+    const showUrlTemplate = `{{ route('removidos.show', ['removido' => '__ID__']) }}`.replace('__ID__', '%s');
 
     return {
       mostraModalConfirmacao: false,

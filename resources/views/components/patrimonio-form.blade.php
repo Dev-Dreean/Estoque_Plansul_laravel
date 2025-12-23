@@ -51,69 +51,64 @@
       }"
       x-init="formData.FLCONFERIDO = conferido ? 'S' : 'N'"
       x-effect="formData.FLCONFERIDO = conferido ? 'S' : 'N'"
-      class="rounded-xl border border-l-4 p-3 sm:p-4 shadow-sm"
+      class="rounded-lg border border-l-4 p-2 sm:p-3 shadow-sm"
       :style="conferido
         ? 'border-color: var(--ok); border-left-color: var(--ok); background: color-mix(in srgb, var(--ok) 18%, var(--surface));'
         : 'border-color: var(--danger); border-left-color: var(--danger); background: color-mix(in srgb, var(--danger) 16%, var(--surface));'"
     >
       <input type="hidden" name="FLCONFERIDO" :value="conferido ? 'S' : 'N'">
 
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-        <div class="flex items-start gap-3 min-w-0">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-start gap-2 min-w-0">
           <div class="mt-0.5 flex-shrink-0" :style="conferido ? 'color: var(--ok);' : 'color: var(--danger);'">
-            <svg x-show="conferido" class="w-7 h-7" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <svg x-show="conferido" class="w-6 h-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 00-1.06 1.06l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
             </svg>
-            <svg x-show="!conferido" class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <svg x-show="!conferido" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <circle cx="12" cy="12" r="9" />
               <path d="M12 7v6" stroke-linecap="round" />
               <path d="M12 16h.01" stroke-linecap="round" />
             </svg>
           </div>
 
-          <div class="min-w-0">
-            <div class="text-xs sm:text-sm font-extrabold tracking-wide" :style="conferido ? 'color: var(--ok);' : 'color: var(--danger);'">
-              <span x-text="conferido ? 'PATRIMONIO VERIFICADO' : 'PATRIMONIO NAO VERIFICADO'"></span>
-            </div>
-
-            <div class="mt-1 text-xs text-[var(--text)]">
+          <div class="min-w-0 leading-snug">
+            <div class="text-xs sm:text-sm font-semibold tracking-wide" :style="conferido ? 'color: var(--ok);' : 'color: var(--danger);'">
               <template x-if="conferido">
-                <div class="font-semibold">
-                  Verificado por <span class="font-mono" x-text="ultimaUsuario || '—'"></span>
-                </div>
+                <span>
+                  PATRIMÔNIO VERIFICADO POR <span class="font-mono font-semibold text-emerald-200" x-text="ultimaUsuario || '-'"></span>
+                </span>
               </template>
               <template x-if="!conferido">
-                <div class="font-semibold">
-                  Este patrimonio ainda nao foi verificado.
-                </div>
+                <span>PATRIMÔNIO NÃO VERIFICADO</span>
               </template>
-            </div>
-
-            <div class="mt-1 text-[11px] text-[var(--text-soft)]">
-              Clique em <span class="font-semibold">Atualizar Patrimonio</span> para salvar.
             </div>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 flex-shrink-0">
+        <div class="flex items-center justify-end gap-2 flex-shrink-0">
+          <template x-if="!conferido">
+            <span class="text-[11px] sm:text-xs text-[var(--text-soft)]">
+              Clique em <span class="font-semibold">Atualizar Patrimônio</span> para salvar.
+            </span>
+          </template>
           <button
             type="button"
-            class="px-3 py-2 rounded-md text-xs font-bold border border-[var(--border)] bg-[var(--surface)] hover:opacity-90"
+            class="px-3 py-1.5 rounded text-xs font-semibold border border-[var(--border)] bg-[var(--surface)] hover:opacity-90"
             @click="pendingAction = conferido ? 'unverify' : 'verify'; confirmOpen = true"
           >
-            <span x-text="conferido ? 'Desmarcar verificacao' : 'Marcar como verificado'"></span>
+            <span x-text="conferido ? 'Desmarcar verificação' : 'Marcar como verificado'"></span>
           </button>
         </div>
       </div>
 
       <div x-show="confirmOpen" x-cloak x-transition class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" @keydown.escape.window="confirmOpen = false" @click.self="confirmOpen = false">
         <div class="bg-surface text-app rounded-lg shadow-lg p-6 max-w-sm w-full border border-app" @click.stop>
-          <h3 class="text-lg font-semibold text-app mb-2" x-text="pendingAction === 'verify' ? 'Confirmar verificacao' : 'Confirmar remocao da verificacao'"></h3>
+          <h3 class="text-lg font-semibold text-app mb-2" x-text="pendingAction === 'verify' ? 'Confirmar verificação' : 'Confirmar remoção da verificação'"></h3>
 
           <p class="text-muted mb-6">
-            <span x-show="pendingAction === 'verify'" class="block">Deseja marcar este patrimonio como <strong>verificado</strong>?</span>
-            <span x-show="pendingAction === 'unverify'" class="block">Deseja marcar este patrimonio como <strong>nao verificado</strong>?</span>
-            Esta alteracao sera aplicada ao clicar em <strong>Atualizar Patrimonio</strong>.
+            <span x-show="pendingAction === 'verify'" class="block">Deseja marcar este patrimônio como <strong>verificado</strong>?</span>
+            <span x-show="pendingAction === 'unverify'" class="block">Deseja marcar este patrimônio como <strong>não verificado</strong>?</span>
+            Esta alteração será aplicada ao clicar em <strong>Atualizar Patrimônio</strong>.
           </p>
 
           <div class="flex gap-3 justify-end">
@@ -134,7 +129,7 @@
                 confirmOpen = false;
               "
             >
-              <span x-text="pendingAction === 'verify' ? 'Confirmar verificacao' : 'Confirmar'"></span>
+              <span x-text="pendingAction === 'verify' ? 'Confirmar verificação' : 'Confirmar'"></span>
             </button>
           </div>
         </div>

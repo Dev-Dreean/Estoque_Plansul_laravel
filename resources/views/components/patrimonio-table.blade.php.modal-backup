@@ -138,7 +138,7 @@
           @if($clickable && $onRowClick && !$isConsultor)
             @click="window.location.href='{{ str_replace(':id', $item->NUSEQPATR ?? $item->id, $onRowClick) }}'"
           @elseif($clickable && !$isConsultor)
-            @click="typeof openEditModal === 'function' ? openEditModal({{ $item->NUSEQPATR ?? $item->id }}) : (window.location.href='{{ route('patrimonios.edit', $item) }}')"
+            @click="window.location.href='{{ route('patrimonios.edit', $item) }}'"
           @elseif($clickable && $isConsultor)
             @click="openModalConsulta({{ $item->NUSEQPATR ?? $item->id }})"
           @endif

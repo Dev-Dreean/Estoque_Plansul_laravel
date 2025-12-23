@@ -144,13 +144,108 @@
     @include('patrimonios.partials.modals.relatorio')
     @include('patrimonios.partials.modals.termo')
 
+    {{-- Modal de create/edit --}}
+    <!-- Overlay Background -->
+    <div
+      x-show="formModalOpen"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      x-cloak
+      class="fixed inset-0 z-[60] bg-black/60 dark:bg-black/80 p-3 sm:p-6"
+      @click="if(!formModalLoading) closeFormModal()"
+    ></div>
+
+    <!-- Loading Screen (Overlay) -->
+    <div
+      x-show="formModalOpen && formModalLoading"
+      x-transition:leave="transition ease-out duration-300"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-95"
+      x-cloak
+      class="fixed inset-0 z-[70] flex items-center justify-center pointer-events-none"
+    >
+      <div class="flex flex-col items-center gap-6">
+        <!-- Spinner Animado -->
+        <div class="relative w-20 h-20">
+          <svg class="w-full h-full animate-spin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" style="color: rgb(209, 213, 219);"></circle>
+            <path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" style="color: rgb(99, 102, 241);"></path>
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500/20 to-blue-500/20"></div>
+          </div>
+        </div>
+        
+        <!-- Texto de Loading -->
+        <div class="text-center">
+          <h3 class="text-xl font-semibold text-white mb-2">Carregando...</h3>
+          <p class="text-gray-300 text-sm">Preparando o formulário para você</p>
+        </div>
+
+        <!-- Barra de Progresso Animada -->
+        <div class="w-48 h-1 bg-gray-700 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-indigo-500 via-blue-500 to-indigo-500 rounded-full animate-pulse" style="animation: shimmer 2s infinite;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Principal -->
+    <div
+      x-show="formModalOpen && !formModalLoading"
+      x-cloak
+      class="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-6 pointer-events-none"
+    >
+      <div 
+        x-show="formModalOpen && !formModalLoading"
+        x-transition:enter="transition ease-out duration-500 delay-300"
+        x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+        x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+        class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-[92vw] xl:max-w-[1400px] 2xl:max-w-[1600px] max-h-[94vh] overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col min-h-0 pointer-events-auto"
+        @click.self="closeFormModal"
+      >
+        <div class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+          <div>
+            <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white" x-text="formModalTitle"></h3>
+            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400" x-text="formModalSubtitle" x-show="formModalSubtitle"></p>
+          </div>
+          <button type="button" @click="closeFormModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">×</button>
+        </div>
+        <div class="relative flex-1 min-h-0 overflow-hidden">
+          <div id="patrimonio-form-modal-body" class="h-full min-h-0 overflow-y-auto overscroll-contain"></div>
+        </div>
+      </div>
+    </div>
+
     {{-- Modal de confirmacao de exclusao --}}
     <div
       x-show="deleteModalOpen"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
       x-cloak
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
     >
-      <div @click.outside="deleteModalOpen=false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 border border-gray-200 dark:border-gray-700">
+      <div 
+        x-show="deleteModalOpen"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+        x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+        @click.outside="deleteModalOpen=false" 
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 border border-gray-200 dark:border-gray-700"
+      >
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Confirmar exclusão</h3>
         <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">Tem certeza que deseja excluir <strong x-text="deleteItemName"></strong>? Esta ação não pode ser desfeita.</p>
         <div class="flex justify-end gap-3">
@@ -166,6 +261,43 @@
 
   @push('scripts')
     <script>
+      function renderPatrimonioModalContent(html, target) {
+        if (!target) return;
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const scripts = Array.from(doc.querySelectorAll('script'));
+        scripts.forEach((script) => script.remove());
+        target.innerHTML = doc.body.innerHTML;
+        scripts.forEach((original) => {
+          const script = document.createElement('script');
+          if (original.type) {
+            script.type = original.type;
+          }
+          if (original.src) {
+            script.src = original.src;
+            script.async = false;
+          } else {
+            script.text = original.textContent || '';
+          }
+          document.body.appendChild(script);
+        });
+      }
+
+      function bindPatrimonioModalHandlers(root, onClose, onSubmit) {
+        if (!root) return;
+        root.querySelectorAll('[data-modal-close]').forEach((btn) => {
+          btn.addEventListener('click', () => onClose());
+        });
+        root.querySelectorAll('form[data-modal-form]').forEach((form) => {
+          if (form.dataset.modalBound === 'true') return;
+          form.dataset.modalBound = 'true';
+          form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            onSubmit(form);
+          });
+        });
+      }
+
       document.addEventListener('DOMContentLoaded', () => {
         const form = document.querySelector('#patrimonio-filter-form');
         const tableContainer = document.querySelector('#patrimonios-table-container');
@@ -584,6 +716,12 @@
           tipoRelatorio: 'numero',
           relatorioErrors: {},
           relatorioGlobalError: null,
+          formModalOpen: false,
+          formModalLoading: false,
+          formModalTitle: '',
+          formModalSubtitle: '',
+          formModalMode: null,
+          formModalId: null,
           init() {
             if (window.location.hash === '#atribuir-termo') {
               this.atribuirTermoModalOpen = true;
@@ -601,6 +739,14 @@
               this.relatorioErrors = {};
               this.relatorioGlobalError = null;
             });
+            this.$watch('formModalOpen', (open) => {
+              document.documentElement.classList.toggle('overflow-hidden', open);
+              document.body.classList.toggle('overflow-hidden', open);
+            });
+            window.addEventListener('patrimonio-modal-create', () => {
+              this.openCreateModal();
+            });
+            window.submitPatrimonioModalForm = (form) => this.submitModalForm(form);
           },
           csrf() {
             return document.querySelector('meta[name=csrf-token]')?.content || '';
@@ -614,6 +760,126 @@
           abrirAtribuir() {
             this.atribuirTermoModalOpen = true;
             window.location.hash = 'atribuir-termo';
+          },
+          openCreateModal() {
+            this.openFormModal('create');
+          },
+          openEditModal(id) {
+            if (!id) return;
+            this.openFormModal('edit', id);
+          },
+          openFormModal(mode, id = null) {
+            const modalBody = document.getElementById('patrimonio-form-modal-body');
+            if (!modalBody) return;
+            if (mode === 'edit' && !id) return;
+
+            this.formModalMode = mode;
+            this.formModalId = id;
+            this.formModalTitle = mode === 'create' ? 'Cadastrar Patrimonio' : 'Editar Patrimonio';
+            this.formModalSubtitle = mode === 'create'
+              ? 'Cadastre um novo patrimonio.'
+              : 'Atualize os dados do patrimonio.';
+            this.formModalOpen = true;
+            this.formModalLoading = true;
+
+            const baseUrl = mode === 'create'
+              ? "{{ route('patrimonios.create') }}"
+              : "{{ url('patrimonios') }}/" + encodeURIComponent(id) + "/edit";
+            const url = baseUrl + (baseUrl.includes('?') ? '&' : '?') + 'modal=1';
+
+            fetch(url, {
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html',
+              },
+            })
+              .then((resp) => {
+                if (!resp.ok) {
+                  throw new Error(`HTTP ${resp.status}`);
+                }
+                return resp.text();
+              })
+              .then((html) => {
+                this.applyFormModalHtml(html);
+              })
+              .catch((err) => {
+                console.error('[PATRI] Modal fetch error', err);
+                modalBody.innerHTML = '<div class="p-6 text-sm text-red-600">Falha ao carregar formulario.</div>';
+              })
+              .finally(() => {
+                this.formModalLoading = false;
+              });
+          },
+          closeFormModal() {
+            this.formModalOpen = false;
+            this.formModalLoading = false;
+            this.formModalTitle = '';
+            this.formModalSubtitle = '';
+            this.formModalMode = null;
+            this.formModalId = null;
+            const modalBody = document.getElementById('patrimonio-form-modal-body');
+            if (modalBody) {
+              modalBody.innerHTML = '';
+            }
+            if (typeof window.destroyPatrimonioEditForm === 'function') {
+              window.destroyPatrimonioEditForm();
+            }
+          },
+          applyFormModalHtml(html) {
+            const modalBody = document.getElementById('patrimonio-form-modal-body');
+            if (!modalBody) return;
+            renderPatrimonioModalContent(html, modalBody);
+            if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+              window.Alpine.initTree(modalBody);
+            }
+            if (typeof window.initPatrimonioEditForm === 'function') {
+              window.initPatrimonioEditForm(modalBody);
+            }
+            bindPatrimonioModalHandlers(
+              modalBody,
+              () => this.closeFormModal(),
+              (form) => this.submitModalForm(form)
+            );
+          },
+          async submitModalForm(form) {
+            if (!form) return;
+            this.formModalLoading = true;
+            const formData = new FormData(form);
+            const method = (form.getAttribute('method') || 'POST').toUpperCase();
+
+            try {
+              const resp = await fetch(form.action, {
+                method,
+                body: formData,
+                headers: {
+                  'X-Requested-With': 'XMLHttpRequest',
+                  'Accept': 'text/html',
+                },
+              });
+              const contentType = resp.headers.get('content-type') || '';
+              if (resp.status === 422) {
+                const html = await resp.text();
+                this.applyFormModalHtml(html);
+                return;
+              }
+              if (contentType.includes('application/json')) {
+                const data = await resp.json().catch(() => ({}));
+                if (data.redirect) {
+                  window.location.href = data.redirect;
+                  return;
+                }
+              }
+              if (resp.redirected && resp.url) {
+                window.location.href = resp.url;
+                return;
+              }
+              window.location.reload();
+            } catch (err) {
+              console.error('[PATRI] Modal submit error', err);
+              alert('Falha ao salvar patrimonio.');
+            } finally {
+              this.formModalLoading = false;
+            }
           },
           gerarRelatorio(event) {
             event?.preventDefault?.();
@@ -921,6 +1187,23 @@
         </div>
       </div>
     </div>
+    @include('patrimonios.partials.edit-form-script')
+
+    <style>
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+    </style>
   @endpush
 </x-app-layout>
 
