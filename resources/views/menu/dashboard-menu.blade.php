@@ -23,7 +23,8 @@
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: radial-gradient(circle at 10% 20%, rgb(30, 58, 138) 0%, rgb(15, 23, 42) 90%);
+            background: radial-gradient(circle at 75% 18%, rgba(251, 146, 60, 0.28) 0%, rgba(251, 146, 60, 0) 35%),
+                radial-gradient(circle at 10% 20%, rgb(30, 58, 138) 0%, rgb(15, 23, 42) 90%);
             min-height: 100vh;
             color: white;
             overflow-x: hidden;
@@ -31,12 +32,13 @@
 
         .premium-container {
             min-height: 100vh;
+            min-height: 100svh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             position: relative;
-            padding: 20px;
+            padding: clamp(12px, 2.5vh, 20px);
             overflow: hidden;
             transition: background-position 0.3s ease-out;
             background-attachment: fixed;
@@ -62,7 +64,7 @@
             height: 600px;
             top: -150px;
             left: -250px;
-            opacity: 0.20;
+            opacity: 0.15;
         }
 
         .shape-orange {
@@ -71,7 +73,7 @@
             height: 600px;
             bottom: -150px;
             right: -250px;
-            opacity: 0.20;
+            opacity: 0.30;
             animation-delay: 5s;
         }
 
@@ -83,12 +85,14 @@
             transform: translate(-50%, -50%);
             z-index: 2;
             opacity: 0;
-            width: 1100px; /* ajuste: tamanho atual da logo grande */
+            width: clamp(480px, 72vw, 980px); /* ajuste: tamanho atual da logo grande */
             height: auto;
             filter: blur(0px);
             pointer-events: none;
-            animation: logoReveal 1.5s ease-out forwards, opacityFade 2s ease-out 1.8s forwards, floatingLogoScale 12s ease-in-out 1.5s infinite, blurLogoProgress 3s ease-out 2.5s forwards;
+            animation: logoReveal 1s ease-out forwards, opacityFade 1.2s ease-out 1s forwards, floatingLogoScale 12s ease-in-out 1s infinite, blurLogoProgress 2s ease-out 1.6s forwards;
         }
+
+
 
         @keyframes logoReveal {
             0% {
@@ -143,6 +147,7 @@
             z-index: 20;
             text-align: center;
             max-width: 800px;
+            width: min(900px, 100%);
         }
 
         @keyframes fadeInUp {
@@ -157,7 +162,7 @@
         }
 
         .greeting-section {
-            margin-bottom: 40px;
+            margin-bottom: clamp(24px, 4vh, 40px);
         }
 
         /* Logo Section */
@@ -173,7 +178,7 @@
             object-fit: contain;
             filter: drop-shadow(0 10px 25px rgba(251, 146, 60, 0.2));
             transition: all 0.3s ease;
-            animation: fadeInLogo 0.8s ease-out;
+            animation: fadeInLogo 0.5s ease-out;
         }
 
         .company-logo:hover {
@@ -194,7 +199,7 @@
 
         .greeting-section {
             margin-bottom: 40px;
-            animation: fadeInUp 0.6s ease-out 1.8s both;
+            animation: fadeInUp 0.2s ease-out 0.8s both;
         }
 
         .greeting-icon {
@@ -210,7 +215,7 @@
         }
 
         .greeting-text {
-            font-size: 16px;
+            font-size: clamp(12px, 1.8vw, 16px);
             color: rgba(226, 232, 240, 0.9);
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -223,11 +228,11 @@
         }
 
         .greeting-message {
-            font-size: 60px;
+            font-size: clamp(36px, 6vw, 60px);
             font-weight: 800;
             margin-bottom: 0;
             line-height: 1.1;
-            animation: scaleInName 0.8s ease-out;
+            animation: scaleInName 0.5s ease-out;
         }
 
         @keyframes scaleInName {
@@ -291,33 +296,33 @@
         }
 
         .subtitle {
-            font-size: 16px;
+            font-size: clamp(13px, 2vw, 16px);
             color: rgba(226, 232, 240, 0.8);
-            margin-bottom: 30px;
+            margin-bottom: clamp(20px, 3.5vh, 30px);
             line-height: 1.6;
             background: linear-gradient(90deg, rgba(251, 146, 60, 0.1), rgba(37, 99, 235, 0.1));
-            padding: 20px;
+            padding: clamp(12px, 2.2vw, 20px);
             border-radius: 15px;
             border-left: 4px solid #fb923c;
-            animation: fadeInUp 0.6s ease-out 2.2s both;
+            animation: fadeInUp 0.2s ease-out 1.0s both;
         }
 
         /* Services Grid */
         .services-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 50px;
+            gap: clamp(18px, 3vw, 30px);
+            margin-bottom: clamp(30px, 4vh, 50px);
             max-width: 800px;
             width: 100%;
         }
 
         .services-grid .service-card:nth-child(1) {
-            animation: fadeInUp 0.6s ease-out 2.6s both;
+            animation: fadeInUp 0.2s ease-out 1.2s both;
         }
 
         .services-grid .service-card:nth-child(2) {
-            animation: fadeInUp 0.6s ease-out 2.9s both;
+            animation: fadeInUp 0.2s ease-out 1.4s both;
         }
 
         .service-card {
@@ -326,7 +331,7 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 25px;
-            padding: 40px 30px;
+            padding: clamp(22px, 3vw, 40px) clamp(18px, 2.5vw, 30px);
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
@@ -335,7 +340,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 300px;
+            min-height: clamp(210px, 32vh, 300px);
             position: relative;
             overflow: hidden;
         }
@@ -424,27 +429,27 @@
 
         /* Button reset para service-card */
         button.service-card {
-            padding: 40px 30px !important;
+            padding: clamp(22px, 3vw, 40px) clamp(18px, 2.5vw, 30px) !important;
             background: rgba(30, 41, 59, 0.8) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             cursor: pointer;
         }
 
         button.service-card:hover {
-            padding: 40px 30px !important;
+            padding: clamp(22px, 3vw, 40px) clamp(18px, 2.5vw, 30px) !important;
             background: rgba(30, 41, 59, 0.95) !important;
         }
 
         .service-icon {
-            width: 90px;
-            height: 90px;
+            width: clamp(60px, 7vw, 90px);
+            height: clamp(60px, 7vw, 90px);
             background: linear-gradient(135deg, rgb(251, 146, 60), rgb(234, 88, 12));
             border-radius: 25px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 45px;
-            margin: 0 auto 25px auto;
+            font-size: clamp(30px, 4vw, 45px);
+            margin: 0 auto clamp(16px, 2.5vh, 25px) auto;
             transition: all 0.3s ease;
             position: relative;
             z-index: 1;
@@ -466,7 +471,7 @@
         }
 
         .service-title {
-            font-size: 22px;
+            font-size: clamp(18px, 2.6vw, 22px);
             font-weight: 700;
             margin-bottom: 15px;
             position: relative;
@@ -475,7 +480,7 @@
         }
 
         .service-description {
-            font-size: 14px;
+            font-size: clamp(12px, 2vw, 14px);
             color: rgba(226, 232, 240, 0.75);
             text-align: center;
             position: relative;
@@ -490,8 +495,8 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(251, 146, 60, 0.3);
             border-radius: 20px;
-            padding: 30px;
-            margin-top: 40px;
+            padding: clamp(20px, 3vw, 30px);
+            margin-top: clamp(24px, 4vh, 40px);
             text-align: left;
             transition: all 0.3s ease;
             box-shadow: 0 10px 30px rgba(251, 146, 60, 0.1);
@@ -499,7 +504,7 @@
             grid-template-columns: 1fr auto;
             gap: 30px;
             align-items: center;
-            animation: fadeInUp 0.6s ease-out 3.2s both;
+            animation: fadeInUp 0.2s ease-out 1.6s both;
         }
 
         .user-info-card:hover {
@@ -514,8 +519,8 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(251, 146, 60, 0.3);
             border-radius: 20px;
-            padding: 30px;
-            margin-top: 40px;
+            padding: clamp(20px, 3vw, 30px);
+            margin-top: clamp(24px, 4vh, 40px);
             text-align: left;
             transition: all 0.3s ease;
             box-shadow: 0 10px 30px rgba(251, 146, 60, 0.1);
@@ -523,7 +528,7 @@
             grid-template-columns: 1fr 1fr;
             gap: 30px;
             align-items: center;
-            animation: fadeInUp 0.6s ease-out 3.2s both;
+            animation: fadeInUp 0.2s ease-out 1.6s both;
         }
 
         .login-info-card:hover {
@@ -633,14 +638,14 @@
         }
 
         .user-details h4 {
-            font-size: 16px;
+            font-size: clamp(13px, 2vw, 16px);
             font-weight: 700;
             margin-bottom: 5px;
             color: #fb923c;
         }
 
         .user-details p {
-            font-size: 13px;
+            font-size: clamp(11px, 1.8vw, 13px);
             color: rgba(226, 232, 240, 0.6);
         }
 
@@ -673,7 +678,7 @@
 
         .weather-label,
         .location-label {
-            font-size: 10px;
+            font-size: clamp(9px, 1.4vw, 10px);
             color: rgba(226, 232, 240, 0.4);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -682,7 +687,7 @@
 
         .weather-value,
         .location-value {
-            font-size: 14px;
+            font-size: clamp(12px, 1.8vw, 14px);
             font-weight: 700;
             color: white;
         }
@@ -716,9 +721,9 @@
             background: linear-gradient(135deg, #fb923c, #ea580c);
             border: none;
             color: white;
-            padding: 14px 20px;
+            padding: clamp(10px, 2vh, 14px) 20px;
             border-radius: 15px;
-            font-size: 14px;
+            font-size: clamp(12px, 1.8vw, 14px);
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -728,12 +733,18 @@
             justify-content: center;
             gap: 8px;
             box-shadow: 0 10px 25px rgba(251, 146, 60, 0.3);
-            animation: fadeInUp 0.6s ease-out 3.5s both;
+            animation: fadeInUp 0.2s ease-out 1.8s both;
         }
 
         .logout-btn-full:hover {
             transform: translateY(-3px);
             box-shadow: 0 15px 35px rgba(251, 146, 60, 0.4);
+        }
+
+        .logout-form {
+            width: 100%;
+            max-width: 800px;
+            margin-top: clamp(12px, 2vh, 20px);
         }
 
         /* Modal Styles */
@@ -1288,6 +1299,104 @@
             }
         }
 
+        @media (max-height: 820px) {
+            .premium-container {
+                padding-top: 12px;
+                padding-bottom: 12px;
+            }
+
+            .greeting-section {
+                margin-bottom: 24px;
+            }
+
+            .subtitle {
+                margin-bottom: 20px;
+            }
+
+            .services-grid {
+                margin-bottom: 24px;
+            }
+
+            .service-card {
+                min-height: 220px;
+            }
+
+            .user-info-card,
+            .login-info-card {
+                margin-top: 24px;
+            }
+        }
+
+        @media (max-height: 740px) {
+            .greeting-message {
+                font-size: 34px;
+            }
+
+            .services-grid {
+                gap: 16px;
+                margin-bottom: 18px;
+            }
+
+            .service-card {
+                min-height: 200px;
+                padding: 20px 18px;
+            }
+
+            .service-icon {
+                width: 56px;
+                height: 56px;
+                font-size: 28px;
+                margin-bottom: 14px;
+            }
+
+            .user-info-card,
+            .login-info-card {
+                padding: 18px;
+                margin-top: 18px;
+            }
+
+            .logout-form {
+                margin-top: 10px;
+            }
+        }
+
+        @media (max-height: 680px) {
+            .greeting-section {
+                margin-bottom: 18px;
+            }
+
+            .subtitle {
+                padding: 10px 12px;
+                margin-bottom: 16px;
+            }
+
+            .service-card {
+                min-height: 180px;
+            }
+
+            .user-info-card,
+            .login-info-card {
+                gap: 16px;
+            }
+
+            .logout-form {
+                margin-top: 8px;
+            }
+        }
+
+        @media (max-width: 1280px) {
+            .background-logo {
+                width: clamp(440px, 78vw, 900px);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .services-grid {
+                grid-template-columns: 1fr;
+                max-width: 600px;
+            }
+        }
+
         /* Loading Modal Styles */
         .loading-modal {
             display: none;
@@ -1458,7 +1567,7 @@
                 </div>
 
                 <!-- Logout Button -->
-                <form id="logoutForm" action="{{ route('logout') }}" method="POST" style="width: 100%; max-width: 800px; margin-top: 20px;">
+                <form id="logoutForm" action="{{ route('logout') }}" method="POST" class="logout-form">
                     @csrf
                     <button type="submit" class="logout-btn-full">
                         <i class="fas fa-sign-out-alt"></i>
@@ -1979,4 +2088,3 @@
 </body>
 
 </html>
-
