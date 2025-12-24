@@ -164,7 +164,9 @@
           title="Gerar um novo número de patrimônio (opcional)"
           tabindex="1"
           class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors active:bg-green-800">
-          <x-heroicon-o-arrow-path class="w-5 h-5" />
+          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 2.2"/>
+          </svg>
         </button>
 
         {{-- Input de Busca/Seleção --}}
