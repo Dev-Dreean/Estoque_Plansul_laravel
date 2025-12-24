@@ -164,7 +164,7 @@
           title="Gerar um novo número de patrimônio (opcional)"
           tabindex="1"
           class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors active:bg-green-800">
-          ?
+          <i class="fas fa-dice-six"></i>
         </button>
 
         {{-- Input de Busca/Seleção --}}
