@@ -6,7 +6,7 @@
   <div class="w-full {{ $isModal ? '' : 'sm:px-6 lg:px-8' }}">
     <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
       <div class="p-4 sm:p-6">
-        <form method="POST" action="{{ route('patrimonios.store') }}" @if($isModal) data-modal-form="create" @endif>
+        <form method="POST" action="{{ route('patrimonios.store') }}" autocomplete="off" @if($isModal) data-modal-form="create" @endif>
           @csrf
           @if($isModal)
             <input type="hidden" name="modal" value="1">
@@ -20,7 +20,7 @@
             @else
               <a href="{{ route('patrimonios.index') }}" class="mr-4">Cancelar</a>
             @endif
-            <x-primary-button>{{ __('Salvar PatrimÇïnio') }}</x-primary-button>
+            <x-primary-button>{{ __('Salvar Patrimônio') }}</x-primary-button>
           </div>
         </form>
       </div>

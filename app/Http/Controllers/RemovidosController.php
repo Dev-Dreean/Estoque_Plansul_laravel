@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
@@ -186,6 +187,12 @@ class RemovidosController extends Controller
             ->orderBy('entity')
             ->pluck('entity')
             ->toArray();
+
+        Cache::put(
+            'removidos_last_seen_' . $user->id,
+            now()->toDateTimeString(),
+            now()->addDays(30)
+        );
 
         return view('removidos.index', [
             'registros' => $registros,

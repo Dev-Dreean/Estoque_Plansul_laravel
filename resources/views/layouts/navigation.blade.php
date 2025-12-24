@@ -22,6 +22,29 @@
             ->filter(fn ($tela) => $tela['route'] && MenuHelper::rotaExiste($tela['route']))
             ->sortBy('ordem')
             ->values();
+
+        $removidosBadgeCount = 0;
+        $canSeeRemovidos = auth()->user()?->temAcessoTela(1009) ?? false;
+
+        if ($canSeeRemovidos && \Illuminate\Support\Facades\Schema::hasTable('registros_removidos')) {
+            $lastSeenKey = 'removidos_last_seen_' . (auth()->id() ?? 'guest');
+            $lastSeenRaw = \Illuminate\Support\Facades\Cache::get($lastSeenKey);
+            $lastSeen = null;
+
+            if ($lastSeenRaw) {
+                try {
+                    $lastSeen = \Carbon\Carbon::parse($lastSeenRaw);
+                } catch (\Throwable $e) {
+                    $lastSeen = null;
+                }
+            }
+
+            $removidosQuery = \App\Models\RegistroRemovido::query();
+            if ($lastSeen) {
+                $removidosQuery->where('deleted_at', '>', $lastSeen);
+            }
+            $removidosBadgeCount = $removidosQuery->count();
+        }
     @endphp
     <div class="w-full sm:px-6 lg:px-8">
         <div class="flex items-center h-16">
@@ -35,7 +58,10 @@
                 <div class="hidden space-x-8 sm:-my-px sm:flex" x-cloak>
                     @foreach($telasNav as $tela)
                         <x-nav-link :href="route($tela['route'])" :active="request()->routeIs($tela['activePattern'])">
-                            {{ $tela['nome'] }}
+                            <span>{{ $tela['nome'] }}</span>
+                            @if($tela['route'] === 'removidos.index')
+                                <x-notification-badge :count="$removidosBadgeCount" class="ml-2" title="Novos removidos" />
+                            @endif
                         </x-nav-link>
                     @endforeach
                 </div>
@@ -104,7 +130,10 @@
         <div class="pt-2 pb-3 space-y-1">
             @foreach($telasNav as $tela)
                 <x-responsive-nav-link :href="route($tela['route'])" :active="request()->routeIs($tela['activePattern'])">
-                    {{ $tela['nome'] }}
+                    <span>{{ $tela['nome'] }}</span>
+                    @if($tela['route'] === 'removidos.index')
+                        <x-notification-badge :count="$removidosBadgeCount" class="ml-2 align-middle" title="Novos removidos" />
+                    @endif
                 </x-responsive-nav-link>
             @endforeach
         </div>

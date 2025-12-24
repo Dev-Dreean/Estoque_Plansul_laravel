@@ -207,10 +207,10 @@
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
         x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-        class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-[92vw] xl:max-w-[1400px] 2xl:max-w-[1600px] max-h-[94vh] overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col min-h-0 pointer-events-auto"
+        class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-[calc(100vw-1.5rem)] sm:max-w-[calc(100vw-3rem)] xl:max-w-[1400px] 2xl:max-w-[1600px] h-[calc(100vh-1.5rem)] sm:h-[calc(100vh-3rem)] max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col min-h-0 pointer-events-auto"
         @click.self="closeFormModal"
       >
-        <div class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+        <div class="flex items-center justify-between px-4 sm:px-6 py-4 bg-white dark:bg-gray-900">
           <div>
             <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white" x-text="formModalTitle"></h3>
             <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400" x-text="formModalSubtitle" x-show="formModalSubtitle"></p>
@@ -775,10 +775,10 @@
 
             this.formModalMode = mode;
             this.formModalId = id;
-            this.formModalTitle = mode === 'create' ? 'Cadastrar Patrimonio' : 'Editar Patrimonio';
+            this.formModalTitle = mode === 'create' ? 'Cadastrar Patrimônio' : 'Editar Patrimônio';
             this.formModalSubtitle = mode === 'create'
-              ? 'Cadastre um novo patrimonio.'
-              : 'Atualize os dados do patrimonio.';
+              ? 'Cadastre um novo patrimônio.'
+              : 'Atualize os dados do patrimônio.';
             this.formModalOpen = true;
             this.formModalLoading = true;
 
