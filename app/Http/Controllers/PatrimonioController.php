@@ -2250,27 +2250,8 @@ class PatrimonioController extends Controller
 
         $user = Auth::user();
 
-        $isAdmin = $user && $user->isAdmin();
-
-        
-
-        // Apenas ADM e super-users podem deletar
-
-        $superUsers = ['BEATRIZ.SC', 'TIAGOP', 'BRUNO'];
-
-        $isSuperUser = $user && in_array(strtoupper($user->NMLOGIN ?? ''), $superUsers, true);
-
-
-
-        if (!$isAdmin && !$isSuperUser) {
-
-            return response()->json([
-
-                'error' => 'Você não tem permissão para deletar patrimônios.',
-
-            ], 403);
-
-        }
+        // Todos os usuários autenticados podem deletar patrimônios
+        // Os patrimônios vão para a tela de removidos para análise pelo Bruno
 
 
 

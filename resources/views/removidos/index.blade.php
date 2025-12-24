@@ -442,7 +442,7 @@
           if (input) input.focus();
         });
 
-        const url = showUrlTemplate.replace(/\/0$/, '/' + parsedId);
+        const url = showUrlTemplate.replace('%s', parsedId);
 
         fetch(url, {
           headers: {
