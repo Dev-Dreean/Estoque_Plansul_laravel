@@ -7,6 +7,7 @@
 
   <div
     x-data="patrimoniosIndex()"
+    @keydown.window="handleCreateKey($event)"
     class="py-4"
   >
     <div class="py-3">
@@ -739,6 +740,18 @@
           formModalSubtitle: '',
           formModalMode: null,
           formModalId: null,
+          handleCreateKey(event) {
+            if (!event || event.defaultPrevented) return;
+            if (event.ctrlKey || event.metaKey || event.altKey) return;
+            if (event.key !== 'c' && event.key !== 'C') return;
+            const target = event.target;
+            const tag = target ? target.tagName : '';
+            if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag))) return;
+            if (!document.querySelector('[data-create-patrimonio]')) return;
+            if (this.formModalOpen) return;
+            event.preventDefault();
+            this.openCreateModal();
+          },
           init() {
             if (window.location.hash === '#atribuir-termo') {
               this.atribuirTermoModalOpen = true;
