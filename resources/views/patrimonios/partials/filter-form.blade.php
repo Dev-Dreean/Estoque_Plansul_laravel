@@ -56,7 +56,39 @@
   }
 @endphp
 
-<div x-data="{ open: false }" @click.outside="open = false" class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg mb-3" x-id="['filtro-patrimonios']" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimonios')">
+<div
+  x-data="{
+    open: false,
+    focusFirst() {
+      this.open = true;
+      $nextTick(() => {
+        const el = this.$refs.firstFilterInput;
+        if (el) {
+          el.focus();
+          if (typeof el.select === 'function') {
+            el.select();
+          }
+        }
+      });
+    },
+    handleKey(event) {
+      if (!event || event.defaultPrevented) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.key !== 'f' && event.key !== 'F') return;
+      const target = event.target;
+      const tag = target ? target.tagName : '';
+      if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag))) return;
+      event.preventDefault();
+      this.focusFirst();
+    }
+  }"
+  @click.outside="open = false"
+  @keydown.window="handleKey($event)"
+  class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg mb-3"
+  x-id="['filtro-patrimonios']"
+  :aria-expanded="open.toString()"
+  :aria-controls="$id('filtro-patrimonios')"
+>
   <div class="flex justify-between items-center gap-3">
     <div class="flex items-center gap-3">
       <h3 class="font-semibold text-lg">Filtros de Busca</h3>
@@ -145,7 +177,7 @@
       @endif
       <div class="flex flex-wrap gap-3 lg:gap-4 overflow-visible pb-2 w-full mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
         <div class="flex-1 min-w-[100px] max-w-[140px] basis-[110px]">
-          <input type="text" name="nupatrimonio" placeholder="N. Patr." value="{{ request('nupatrimonio') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+          <input type="text" name="nupatrimonio" placeholder="N. Patr." value="{{ request('nupatrimonio') }}" x-ref="firstFilterInput" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
         </div>
         <div class="flex-1 min-w-[120px] max-w-[170px] basis-[130px]">
           <div
