@@ -784,21 +784,13 @@ class PatrimonioController extends Controller
 
             $this->enforceAlmoxRulesOnCreate($validated['CDLOCAL'] ?? null);
 
-
-
-            //  VALIDAÇÃO CRÍTICA: Local deve pertencer ao projeto selecionado
+            //  VALIDACAO CRITICA: Local deve pertencer ao projeto selecionado
 
             $localSelecionado = $this->validateLocalBelongsToProjeto(
-
                 $validated['CDPROJETO'] ?? null,
-
                 $validated['CDLOCAL'] ?? null,
-
-                'criação de patrimônio'
-
+                'criacao de patrimonio'
             );
-
-
 
             // Garantir que vamos persistir sempre o código do local (cdlocal) e o projeto correto do local escolhido
 
@@ -1044,23 +1036,28 @@ class PatrimonioController extends Controller
         $localSelecionado = null;
 
         try {
-            $validatedData = $this->validatePatrimonio($request);
+            $validatedData = $this->validatePatrimonio($request, $patrimonio);
 
             $this->enforceAlmoxRulesOnUpdate($patrimonio->CDLOCAL, $validatedData['CDLOCAL'] ?? $patrimonio->CDLOCAL);
 
 
 
-            //  VALIDAÇÃO CRÍTICA: Local deve pertencer ao projeto selecionado
+            $incomingCdProjeto = $validatedData['CDPROJETO'] ?? $patrimonio->CDPROJETO;
+            $incomingCdLocal = $request->input('CDLOCAL');
+            if ($incomingCdLocal === null || $incomingCdLocal === '') {
+                $incomingCdLocal = $validatedData['CDLOCAL'] ?? $patrimonio->CDLOCAL;
+            }
+            $localChanged = (string) $incomingCdLocal !== (string) $patrimonio->CDLOCAL;
+            $projetoChanged = (string) $incomingCdProjeto !== (string) $patrimonio->CDPROJETO;
 
-            $localSelecionado = $this->validateLocalBelongsToProjeto(
-
-                $validatedData['CDPROJETO'] ?? $patrimonio->CDPROJETO,
-
-                $request->input('CDLOCAL') ?? $validatedData['CDLOCAL'] ?? $patrimonio->CDLOCAL,
-
-                'atualização de patrimônio'
-
-            );
+            if ($localChanged || $projetoChanged) {
+                //  VALIDACAO CRITICA: Local deve pertencer ao projeto selecionado
+                $localSelecionado = $this->validateLocalBelongsToProjeto(
+                    $incomingCdProjeto,
+                    $incomingCdLocal,
+                    'atualizacao de patrimonio'
+                );
+            }
         } catch (ValidationException $e) {
             if ($isModal) {
                 $request->flash();
@@ -5222,7 +5219,7 @@ class PatrimonioController extends Controller
 
 
 
-    private function validatePatrimonio(Request $request): array
+    private function validatePatrimonio(Request $request, ?Patrimonio $patrimonio = null): array
 
     {
 
@@ -5286,11 +5283,29 @@ class PatrimonioController extends Controller
 
             // Matricula precisa existir na tabela funcionarios
 
-            'CDMATRFUNCIONARIO' => 'nullable|integer|exists:funcionarios,CDMATRFUNCIONARIO',
+            'CDMATRFUNCIONARIO' => 'nullable|integer',
 
         ]);
 
 
+
+        if (array_key_exists('CDMATRFUNCIONARIO', $data) && $data['CDMATRFUNCIONARIO'] !== null && $data['CDMATRFUNCIONARIO'] !== '') {
+            $cdMat = (int) $data['CDMATRFUNCIONARIO'];
+            $exists = DB::table('funcionarios')->where('CDMATRFUNCIONARIO', $cdMat)->exists();
+            $isSameLegacy = $patrimonio && (string) $patrimonio->CDMATRFUNCIONARIO === (string) $cdMat;
+            if (!$exists && !$isSameLegacy) {
+                throw ValidationException::withMessages([
+                    'CDMATRFUNCIONARIO' => 'Matricula do responsavel nao encontrada no sistema.',
+                ]);
+            }
+            if (!$exists && $isSameLegacy) {
+                Log::warning('Matricula responsavel legado nao encontrada em funcionarios; mantendo valor existente.', [
+                    'CDMATRFUNCIONARIO' => $cdMat,
+                    'NUSEQPATR' => $patrimonio?->NUSEQPATR,
+                    'NUPATRIMONIO' => $patrimonio?->NUPATRIMONIO,
+                ]);
+            }
+        }
 
         Log::info('ð [VALIDATE] Dados apÃ³s validaÃ§Ã£o inicial', [
 
