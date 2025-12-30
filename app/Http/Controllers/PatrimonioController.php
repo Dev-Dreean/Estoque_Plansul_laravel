@@ -1035,6 +1035,18 @@ class PatrimonioController extends Controller
         $validatedData = [];
         $localSelecionado = null;
 
+        // 🔍 DEBUG COMPLETO: Log de todos os dados recebidos para diagnóstico 422
+        Log::info('🔍 [UPDATE START] Patrimônio 7966 - Dados completos recebidos', [
+            'patrimonio_id' => $patrimonio->NUSEQPATR,
+            'request_all' => $request->except(['_token']),
+            'patrimonio_atual' => [
+                'CDPROJETO' => $patrimonio->CDPROJETO,
+                'CDLOCAL' => $patrimonio->CDLOCAL,
+                'CDMATRFUNCIONARIO' => $patrimonio->CDMATRFUNCIONARIO,
+                'SITUACAO' => $patrimonio->SITUACAO,
+            ],
+        ]);
+
         try {
             $validatedData = $this->validatePatrimonio($request, $patrimonio);
 
@@ -5338,34 +5350,41 @@ class PatrimonioController extends Controller
 
 
 
-        // 3) Garantir existÃªncia do registro em OBJETOPATR (se código informado)
-
+        // 3) Garantir existência do registro em OBJETOPATR (se código informado)
+        // ⚠️ TOLERÂNCIA LEGADO: Permitir que patrimônios mantenham códigos inexistentes
+        //    se o código NÃO foi alterado (dados legados do KingHost)
         $objeto = null;
         if ($codigo !== null) {
             $objeto = ObjetoPatr::find($codigo);
 
             if (!$objeto) {
-
-                $descricao = trim((string) $request->input('DEOBJETO', ''));
-
-                if ($descricao === '') {
-
-                    throw ValidationException::withMessages([
-
-                        'DEOBJETO' => 'Informe a descrição do novo código.'
-
+                // Verificar se o código já existia no patrimônio (dado legado)
+                $patrimonioExistente = $patrimonio ?? null;
+                $codigoOriginal = $patrimonioExistente?->CODOBJETO ?? null;
+                
+                // Se código não mudou OU não tem patrimônio referência: tolerar dado legado
+                if ($codigoOriginal !== null && (int)$codigoOriginal === $codigo) {
+                    Log::warning('⚠️ [LEGACY TOLERÂNCIA] Objeto inexistente mantido', [
+                        'CODOBJETO' => $codigo,
+                        'patrimonio_id' => $patrimonioExistente?->NUSEQPATR,
+                        'motivo' => 'Código não foi alterado - mantendo dado legado do KingHost',
                     ]);
+                    // Permitir continuar com objeto NULL (será validado depois)
+                } else {
+                    // Código NOVO ou ALTERADO: exigir descrição para criar objeto
+                    $descricao = trim((string) $request->input('DEOBJETO', ''));
 
+                    if ($descricao === '') {
+                        throw ValidationException::withMessages([
+                            'DEOBJETO' => 'Informe a descrição do novo código de objeto. (Código não encontrado: ' . $codigo . ')',
+                        ]);
+                    }
+
+                    $objeto = ObjetoPatr::create([
+                        'NUSEQOBJ' => $codigo,
+                        'DEOBJETO' => $descricao,
+                    ]);
                 }
-
-                $objeto = ObjetoPatr::create([
-
-                    'NUSEQOBJ' => $codigo,
-
-                    'DEOBJETO' => $descricao,
-
-                ]);
-
             }
         }
 
