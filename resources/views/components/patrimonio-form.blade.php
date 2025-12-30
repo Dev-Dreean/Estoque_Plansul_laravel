@@ -279,7 +279,7 @@
 
 {{-- Código do Objeto (preenchido automaticamente) --}}
     <div>
-      <label for="NUSEQOBJ" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código do Objeto *</label>
+      <label for="NUSEQOBJ" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código do Objeto</label>
       <input id="NUSEQOBJ"
         x-model="formData.NUSEQOBJ"
         type="text"

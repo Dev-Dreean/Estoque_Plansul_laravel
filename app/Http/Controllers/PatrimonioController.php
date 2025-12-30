@@ -742,7 +742,7 @@ class PatrimonioController extends Controller
 
                 'NUPATRIMONIO' => 'required|integer',
 
-                'NUSEQOBJ' => 'required|integer',
+                'NUSEQOBJ' => 'nullable|integer',
 
                 'FLCONFERIDO' => 'nullable|string|in:S,N,1,0',
 
@@ -837,39 +837,31 @@ class PatrimonioController extends Controller
             // 2) Garantir existÃªncia do ObjetoPatr (tabela objetopatr)
 
             //    O Model ObjetoPatr usa PK 'NUSEQOBJ'.
+            //    ✅ SUPORTE NULL: Permite patrimônios sem objeto definido
 
-            $codigo = (int) $validated['NUSEQOBJ'];
+            $codigoInput = $validated['NUSEQOBJ'] ?? null;
+            $codigo = $codigoInput !== null ? (int) $codigoInput : null;
+            $objeto = null;
 
-            $objeto = ObjetoPatr::find($codigo);
+            if ($codigo !== null) {
+                $objeto = ObjetoPatr::find($codigo);
 
+                if (!$objeto) {
+                    // Se for novo códigodigo, exigir DEOBJETO
 
+                    $request->validate([
+                        'DEOBJETO' => 'required|string|max:350',
+                    ], [
+                        'DEOBJETO.required' => 'Informe a descrição do novo código.',
+                    ]);
 
-            if (!$objeto) {
+                    $objeto = ObjetoPatr::create([
+                        'NUSEQOBJ' => $codigo,
+                        // NUSEQTIPOPATR pode ser opcional aqui; ajustar se sua regra exigir
 
-                // Se for novo códigodigo, exigir DEOBJETO
-
-                $request->validate([
-
-                    'DEOBJETO' => 'required|string|max:350',
-
-                ], [
-
-                    'DEOBJETO.required' => 'Informe a descrição do novo código.',
-
-                ]);
-
-
-
-                $objeto = ObjetoPatr::create([
-
-                    'NUSEQOBJ' => $codigo,
-
-                    // NUSEQTIPOPATR pode ser opcional aqui; ajustar se sua regra exigir
-
-                    'DEOBJETO' => $request->input('DEOBJETO'),
-
-                ]);
-
+                        'DEOBJETO' => $request->input('DEOBJETO'),
+                    ]);
+                }
             }
 
 
@@ -898,11 +890,12 @@ class PatrimonioController extends Controller
 
             'NUPATRIMONIO' => $nupatrimonio,
 
-            'CODOBJETO' => $codigo, // campo da tabela patr
+            'CODOBJETO' => $codigo, // campo da tabela patr (pode ser NULL)
 
             // Usaremos a descrição do objeto como DEPATRIMONIO para manter compatibilidade atual do front
+            // ✅ SUPORTE NULL: DEPATRIMONIO pode ser NULL quando não há objeto definido
 
-            'DEPATRIMONIO' => $objeto->DEOBJETO ?? $request->input('DEOBJETO'),
+            'DEPATRIMONIO' => $objeto ? $objeto->DEOBJETO : $request->input('DEOBJETO'),
 
             'SITUACAO' => $validated['SITUACAO'],
 
@@ -967,8 +960,9 @@ class PatrimonioController extends Controller
 
 
         // Carregar relaÃ§Ãµes para exibir dados corretos no formulário
+        // FONTE DE VERDADE: Carregar projeto diretamente via CDPROJETO
 
-        $patrimonio->load(['local', 'local.projeto', 'funcionario']);
+        $patrimonio->load(['local', 'projeto', 'funcionario']);
 
 
 
@@ -1072,7 +1066,8 @@ class PatrimonioController extends Controller
                 $request->flash();
                 $errors = new \Illuminate\Support\MessageBag($e->errors());
 
-                $patrimonio->load(['local', 'local.projeto', 'funcionario']);
+                // FONTE DE VERDADE: Carregar projeto diretamente via CDPROJETO
+                $patrimonio->load(['local', 'projeto', 'funcionario']);
                 $ultimaVerificacao = null;
                 try {
                     $ultimaVerificacao = HistoricoMovimentacao::query()
@@ -1476,7 +1471,11 @@ class PatrimonioController extends Controller
 
         }
 
-
+        // ✅ Se for requisição AJAX (modal), NÃO fazer redirect
+        // Retornar apenas resposta 200 para que JavaScript faça AJAX fetch do grid
+        if ($request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response('', 200);
+        }
 
         return redirect()->route('patrimonios.index')->with('success', $flashMessage);
 
@@ -1886,7 +1885,8 @@ class PatrimonioController extends Controller
 
         try {
 
-            $patrimonio = Patrimonio::with(['local', 'local.projeto', 'funcionario'])->where('NUPATRIMONIO', $numero)->first();
+            // FONTE DE VERDADE: Carregar projeto diretamente via CDPROJETO
+            $patrimonio = Patrimonio::with(['local', 'projeto', 'funcionario'])->where('NUPATRIMONIO', $numero)->first();
 
             
 
@@ -2008,7 +2008,9 @@ class PatrimonioController extends Controller
 
         try {
 
-            $patrimonio = Patrimonio::with(['local', 'local.projeto', 'funcionario'])->where('NUSEQPATR', $id)->first();
+            // FONTE DE VERDADE: Carregar projeto diretamente via CDPROJETO, não via local
+
+            $patrimonio = Patrimonio::with(['local', 'projeto', 'funcionario'])->where('NUSEQPATR', $id)->first();
 
             
 
@@ -4456,8 +4458,9 @@ class PatrimonioController extends Controller
         ]);
 
         
+        // FONTE DE VERDADE: Carregar projeto diretamente via CDPROJETO, não via local
 
-        $query = Patrimonio::with(['funcionario', 'local.projeto', 'creator']);
+        $query = Patrimonio::with(['funcionario', 'local', 'projeto', 'creator']);
 
 
 
@@ -5301,17 +5304,12 @@ class PatrimonioController extends Controller
 
         $codigoInput = $request->input('NUSEQOBJ', $request->input('CODOBJETO'));
 
+        // Se não informar código, permitir NULL (patrimônios com objeto indefinido)
         if ($codigoInput === null || $codigoInput === '') {
-
-            throw ValidationException::withMessages([
-
-                'NUSEQOBJ' => 'Informe o códigodigo do objeto.'
-
-            ]);
-
+            $codigoInput = null;
         }
 
-        if (!is_numeric($codigoInput)) {
+        if ($codigoInput !== null && !is_numeric($codigoInput)) {
 
             throw ValidationException::withMessages([
 
@@ -5321,36 +5319,39 @@ class PatrimonioController extends Controller
 
         }
 
-        $codigo = (int) $codigoInput;
+        $codigo = $codigoInput !== null ? (int) $codigoInput : null;
 
 
 
-        // 3) Garantir existÃªncia do registro em OBJETOPATR
+        // 3) Garantir existÃªncia do registro em OBJETOPATR (se código informado)
 
-        $objeto = ObjetoPatr::find($codigo);
+        $objeto = null;
+        if ($codigo !== null) {
+            $objeto = ObjetoPatr::find($codigo);
 
-        if (!$objeto) {
+            if (!$objeto) {
 
-            $descricao = trim((string) $request->input('DEOBJETO', ''));
+                $descricao = trim((string) $request->input('DEOBJETO', ''));
 
-            if ($descricao === '') {
+                if ($descricao === '') {
 
-                throw ValidationException::withMessages([
+                    throw ValidationException::withMessages([
 
-                    'DEOBJETO' => 'Informe a descrição do novo código.'
+                        'DEOBJETO' => 'Informe a descrição do novo código.'
+
+                    ]);
+
+                }
+
+                $objeto = ObjetoPatr::create([
+
+                    'NUSEQOBJ' => $codigo,
+
+                    'DEOBJETO' => $descricao,
 
                 ]);
 
             }
-
-            $objeto = ObjetoPatr::create([
-
-                'NUSEQOBJ' => $codigo,
-
-                'DEOBJETO' => $descricao,
-
-            ]);
-
         }
 
 
@@ -5358,8 +5359,9 @@ class PatrimonioController extends Controller
         // 4) Mapear para os campos reais da tabela PATR
 
         $data['CODOBJETO'] = $codigo;
-
-        $data['DEPATRIMONIO'] = $objeto->DEOBJETO; // mantÃ©m compatibilidade de exibiÃ§Ã£o no index/relatÃ³rios
+        if ($codigo !== null) {
+            $data['DEPATRIMONIO'] = $objeto ? $objeto->DEOBJETO : null; // mantÃ©m compatibilidade de exibiÃ§Ã£o no index/relatÃ³rios
+        }
 
         unset($data['NUSEQOBJ'], $data['DEOBJETO']);
 
@@ -5375,7 +5377,7 @@ class PatrimonioController extends Controller
 
             'CODOBJETO' => $data['CODOBJETO'],
 
-            'DEPATRIMONIO' => $data['DEPATRIMONIO'],
+            'DEPATRIMONIO' => $data['DEPATRIMONIO'] ?? null,
 
         ]);
 

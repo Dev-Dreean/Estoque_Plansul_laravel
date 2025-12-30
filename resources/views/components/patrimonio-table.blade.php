@@ -194,7 +194,12 @@
             @elseif($col === 'projeto')
               <td class="{{ $headerPadding }}">
                 @php
-                  $project = $item->projeto ?? ($item->local->projeto ?? null);
+                  // FONTE DE VERDADE: SEMPRE usar CDPROJETO direto do patrimônio
+                  // Não usar local->projeto para evitar inconsistências
+                  $project = null;
+                  if (!empty($item->CDPROJETO)) {
+                    $project = $item->projeto; // Relação direta com Tabfant via CDPROJETO
+                  }
                   $projectName = $project->NMPROJETO ?? $project->NOMEPROJETO ?? null;
                 @endphp
                 @if($project)

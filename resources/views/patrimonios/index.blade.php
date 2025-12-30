@@ -500,17 +500,31 @@
           if (!tableContainer) return;
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, 'text/html');
+          
+          // ✅ Atualizar tabela
           const fresh = doc.querySelector('#patrimonios-table-content');
           if (fresh && tableContent) tableContent.innerHTML = fresh.innerHTML;
 
+          // ✅ Atualizar tags de filtro - procura em todo o documento
+          // As tags estão em patrimonios/partials/filter-form dentro de patrimonios-tags div
           const freshTags = doc.querySelector('#patrimonios-tags');
-          const tags = document.querySelector('#patrimonios-tags');
-          if (freshTags && tags) {
-            tags.innerHTML = freshTags.innerHTML;
+          const tagsContainer = document.querySelector('#patrimonios-tags');
+          
+          if (freshTags && tagsContainer) {
+            // Copiar conteúdo AND atributos x-data
+            tagsContainer.innerHTML = freshTags.innerHTML;
+            // Copiar os atributos Alpine (x-data, etc)
+            Array.from(freshTags.attributes).forEach(attr => {
+              if (attr.name.startsWith('x-') || attr.name.startsWith('@')) {
+                tagsContainer.setAttribute(attr.name, attr.value);
+              }
+            });
+            // Reinicializar Alpine para as tags
             if (window.Alpine && typeof Alpine.initTree === 'function') {
-              Alpine.initTree(tags);
+              Alpine.initTree(tagsContainer);
             }
           }
+          
           logTags('after-swap');
           bindCheckboxes();
         };
@@ -545,6 +559,9 @@
               if (loadingTop) loadingTop.classList.add('hidden');
             });
         };
+
+        // ✅ Expor ajaxFetch globalmente para que possa ser chamada após salvar modal
+        window.ajaxFetchPatrimonios = ajaxFetch;
 
         if (form) {
           form.addEventListener('submit', (e) => {
@@ -869,11 +886,14 @@
                   return;
                 }
               }
-              if (resp.redirected && resp.url) {
-                window.location.href = resp.url;
-                return;
+              // ✅ SUCESSO: Fechar modal e recarregar grid via AJAX (mantendo filtros e paginação)
+              this.closeFormModal();
+              const currentUrl = window.location.pathname + window.location.search;
+              if (window.ajaxFetchPatrimonios) {
+                window.ajaxFetchPatrimonios(currentUrl);
+              } else {
+                window.location.reload();
               }
-              window.location.reload();
             } catch (err) {
               console.error('[PATRI] Modal submit error', err);
               alert('Falha ao salvar patrimonio.');
@@ -1057,13 +1077,21 @@
             console.log('[PATRI] Preenchendo modal com:', patrimonio);
             
             // Preencher campos com acesso correto às propriedades
+            // FONTE DE VERDADE: Sempre usar CDPROJETO direto do patrimônio, não do local
+            let projetoTexto = '-';
+            if (patrimonio.CDPROJETO && patrimonio.projeto) {
+              projetoTexto = `${patrimonio.projeto.CDPROJETO} - ${patrimonio.projeto.NOMEPROJETO || patrimonio.projeto.NMPROJETO || ''}`;
+            } else if (patrimonio.CDPROJETO) {
+              projetoTexto = patrimonio.CDPROJETO;
+            }
+            
             const campos = {
               'consulta-nupatrimonio': patrimonio.NUPATRIMONIO || '-',
               'consulta-depatrimonio': patrimonio.DEPATRIMONIO || '-',
               'consulta-codobjeto': patrimonio.CODOBJETO || '-',
               'consulta-modelo': patrimonio.MODELO || '-',
               'consulta-marca': patrimonio.MARCA || '-',
-              'consulta-projeto': patrimonio.projeto?.NOMEPROJETO || patrimonio.projeto?.CDPROJETO || '-',
+              'consulta-projeto': projetoTexto,
               'consulta-local': patrimonio.local?.delocal || '-',
               'consulta-responsavel': patrimonio.funcionario?.NMFUNCIONARIO || patrimonio.CDMATRFUNCIONARIO || '-',
               'consulta-situacao': patrimonio.SITUACAO || '-',

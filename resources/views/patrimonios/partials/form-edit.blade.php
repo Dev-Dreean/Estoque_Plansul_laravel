@@ -83,7 +83,7 @@
     @endunless
     <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
       <div class="{{ $isModal ? 'p-3 sm:p-4' : 'p-4 sm:p-6' }} text-gray-900 dark:text-gray-100">
-        <form method="POST" action="{{ route('patrimonios.update', $patrimonio) }}" id="editPatrimonioForm" data-dados-originais='@json($dadosOriginais)' autocomplete="off" @if($isModal) data-modal-form="edit" @endif>
+        <form method="POST" action="{{ route('patrimonios.update', $patrimonio) }}" id="editPatrimonioForm" data-dados-originais='@json($dadosOriginais)' data-require-codobjeto="{{ env('PATRIMONIO_REQUIRE_CODOBJETO', '') }}" autocomplete="off" @if($isModal) data-modal-form="edit" @endif>
           @csrf
           @method('PUT')
           @if($isModal)

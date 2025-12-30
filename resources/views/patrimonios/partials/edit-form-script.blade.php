@@ -429,7 +429,13 @@
       // Verificar campos obrigatÇürios
       const erros = [];
       if (!alpineData.formData.NUPATRIMONIO) erros.push('NÇ§mero do PatrimÇïnio Ç¸ obrigatÇürio');
-      if (!alpineData.formData.NUSEQOBJ) erros.push('CÇüdigo do Objeto Ç¸ obrigatÇürio');
+      const requireCodigoOverride = String(formElement.dataset.requireCodobjeto || '').trim().toLowerCase();
+      const requireCodigoObjeto = (requireCodigoOverride === '1' || requireCodigoOverride === 'true')
+        ? true
+        : (requireCodigoOverride === '0' || requireCodigoOverride === 'false')
+          ? false
+          : Boolean(dadosOriginais.NUSEQOBJ) || Boolean(alpineData.isNovoCodigo);
+      if (requireCodigoObjeto && !alpineData.formData.NUSEQOBJ) erros.push('CÇüdigo do Objeto Ç¸ obrigatÇürio');
       if (!alpineData.formData.CDMATRFUNCIONARIO) erros.push('MatrÇðcula do ResponsÇ­vel Ç¸ obrigatÇüria');
       if (!alpineData.formData.SITUACAO) erros.push('SituaÇõÇœo Ç¸ obrigatÇüria');
       if (erros.length > 0) {
