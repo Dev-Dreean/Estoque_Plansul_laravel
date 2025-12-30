@@ -3846,9 +3846,10 @@
             }
           }
 
-          // 3?? CARREGAR CÓDIGO DO OBJETO
-          if (this.formData.NUSEQOBJ) {
-            console.log(`? [CARREGA EDIÇÃO] Carregando código ${this.formData.NUSEQOBJ}...`);
+          // 3️⃣ CARREGAR CÓDIGO DO OBJETO
+          // ✅ Verifica se código é válido antes de fazer fetch (patrimônios legados podem ter NULL)
+          if (this.formData.NUSEQOBJ && this.formData.NUSEQOBJ !== '' && this.formData.NUSEQOBJ !== 'null') {
+            console.log(`🔍 [CARREGA EDIÇÃO] Carregando código ${this.formData.NUSEQOBJ}...`);
             try {
               const codResp = await fetch(`/api/codigos/buscar/${this.formData.NUSEQOBJ}`);
               if (codResp.ok) {
@@ -3856,17 +3857,21 @@
                 if (codigo && codigo.descricao) {
                   this.descricaoSearch = codigo.descricao;
                   this.formData.DEOBJETO = codigo.descricao;
-                  console.log(`? [CARREGA EDIÇÃO] Código: ${this.descricaoSearch}`);
+                  console.log(`✅ [CARREGA EDIÇÃO] Código: ${this.descricaoSearch}`);
                 }
+              } else {
+                console.warn(`⚠️  [CARREGA EDIÇÃO] Código ${this.formData.NUSEQOBJ} não encontrado (status ${codResp.status})`);
               }
             } catch (e) {
-              console.warn(`?? [CARREGA EDIÇÃO] Erro ao carregar código:`, e);
+              console.warn(`⚠️  [CARREGA EDIÇÃO] Erro ao carregar código:`, e);
             }
+          } else {
+            console.log(`ℹ️  [CARREGA EDIÇÃO] Sem código do objeto (patrimônio legado)`);
           }
 
-          // 4?? CARREGAR FUNCIONÁRIO RESPONSÁVEL
+          // 4️⃣ CARREGAR FUNCIONÁRIO RESPONSÁVEL
           if (this.formData.CDMATRFUNCIONARIO) {
-            console.log(`?? [CARREGA EDIÇÃO] Carregando funcionário ${this.formData.CDMATRFUNCIONARIO}...`);
+            console.log(`🔍 [CARREGA EDIÇÃO] Carregando funcionário ${this.formData.CDMATRFUNCIONARIO}...`);
             try {
               const funcResp = await fetch(`/api/funcionarios/pesquisar?q=${this.formData.CDMATRFUNCIONARIO}`);
               if (funcResp.ok) {
