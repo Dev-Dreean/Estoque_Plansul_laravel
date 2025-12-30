@@ -88,7 +88,7 @@ class PatrimonioController extends Controller
 
             if (!$registro) {
 
-                return response()->json(['found' => false, 'message' => 'Código não encontrado.'], 404);
+                return response()->json(['found' => false, 'message' => 'Código não encontrado.'], 200);
 
             }
 
@@ -108,7 +108,7 @@ class PatrimonioController extends Controller
 
             // Evita erro 500 no front: retorna 404 genérico quando houver exceção não crítica
 
-            return response()->json(['found' => false, 'message' => 'Código não encontrado.'], 404);
+            return response()->json(['found' => false, 'message' => 'Código não encontrado.'], 200);
 
         }
 
@@ -1645,7 +1645,7 @@ class PatrimonioController extends Controller
 
                     'message' => 'Patrimônio nãoo encontrado'
 
-                ], 404);
+                ], 200);
 
             }
 
