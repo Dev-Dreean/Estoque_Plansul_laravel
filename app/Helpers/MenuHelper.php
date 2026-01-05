@@ -9,20 +9,15 @@ use App\Models\User;
 class MenuHelper
 {
     /**
-     * Telas que são sempre obrigatórias e não aparecem no menu principal
-     * mas devem estar sempre ativas
+     * Telas obrigatórias (mantido para compatibilidade; atualmente nenhuma).
      */
-    private const TELAS_OBRIGATORIAS = [
-        '1006', // Relatórios - sempre ativo, não aparece no menu
-        '1007', // Histórico de Movimentações - aparece no submenu de Patrimônio
-    ];
+    private const TELAS_OBRIGATORIAS = [];
 
     /**
      * Telas que aparecem no submenu de Patrimônio e são sempre obrigatórias
      */
     private const TELAS_SUBMENU_PATRIMONIO = [
         '1000', // Patrimônios (obrigatória)
-        '1007', // Histórico de Movimentações (obrigatória)
         // Outras telas podem ser adicionadas aqui e controladas por permissão
     ];
 
@@ -53,19 +48,13 @@ class MenuHelper
             return false;
         }
 
-        // Histórico (1007) só aparece no submenu de Patrimônio
-        if ($nuseqtela === '1007') {
-            return false;
-        }
-
         return true;
     }
 
     /**
-     * Obtém as telas que o usuário tem acesso baseado no perfil
-     * - C: acesso apenas a 1000
-     * - USR: acesso apenas a 1000 e 1001
+     * Obtém as telas que o usuário tem acesso baseado no banco (acessotela + acessousuario).
      * - ADM: acesso a tudo
+     * - Demais perfis: somente telas com vínculo ativo
      */
     public static function getTelasComAcesso(): array
     {
@@ -83,19 +72,14 @@ class MenuHelper
             return array_keys($telasConfig);
         }
 
-        // Usuário comum (USR) só tem acesso a Patrimônio e Gráficos
-        if ($user->PERFIL === User::PERFIL_USUARIO) {
-            $base = ['1000', '1001'];
-            $extra = array_map('strval', $user->telasComAcesso());
-            return array_values(array_unique(array_merge($base, $extra)));
+        $telasComAcesso = [];
+        foreach (array_keys($telasConfig) as $codigo) {
+            if ($user->temAcessoTela((string) $codigo)) {
+                $telasComAcesso[] = (string) $codigo;
+            }
         }
 
-        // Consultor (C) tem acesso apenas a Patrimônio (somente leitura)
-        if ($user->PERFIL === User::PERFIL_CONSULTOR) {
-            return ['1000'];
-        }
-
-        return [];
+        return $telasComAcesso;
     }
 
     /**
@@ -129,8 +113,7 @@ class MenuHelper
     }
 
     /**
-     * Verifica se o usuário tem acesso a uma tela específica
-     * Inclui verificação de telas obrigatórias
+     * Verifica se o usuario tem acesso a uma tela especifica.
      */
     public static function temAcessoTela(string $nuseqtela): bool
     {
@@ -146,18 +129,12 @@ class MenuHelper
             return true;
         }
 
-        // Telas obrigatórias são sempre acessíveis
-        if (self::isTelaObrigatoria($nuseqtela)) {
-            return true;
-        }
-
         // Verifica permissão do usuário
         return $user->temAcessoTela($nuseqtela);
     }
 
     /**
-     * Obtém as telas do submenu de Patrimônio
-     * Inclui telas obrigatórias e telas com permissão
+     * Obtem as telas do submenu de Patrimonio conforme acesso.
      */
     public static function getSubmenuPatrimonio(): array
     {
@@ -171,16 +148,12 @@ class MenuHelper
         $submenu = [];
         $telasConfig = self::getTelasDisponiveis();
 
-        // Adiciona tela de Patrimônios (sempre obrigatória)
-        if (isset($telasConfig['1000'])) {
+        // Adiciona tela de Patrimonios se estiver liberada
+        if (isset($telasConfig['1000']) && $user->temAcessoTela('1000')) {
             $submenu['1000'] = array_merge($telasConfig['1000'], ['obrigatoria' => true]);
         }
 
-        // Adiciona Histórico de Movimentações (sempre obrigatória)
-        if (isset($telasConfig['1007'])) {
-            $submenu['1007'] = array_merge($telasConfig['1007'], ['obrigatoria' => true]);
-        }
-
+        // Adiciona Historico de Movimentacoes se estiver liberada
         // Outras telas podem ser adicionadas aqui conforme necessário
 
         return $submenu;

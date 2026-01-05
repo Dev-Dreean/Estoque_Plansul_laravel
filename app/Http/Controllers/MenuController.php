@@ -228,8 +228,8 @@ class MenuController extends Controller
     {
         return match ($perfil) {
             User::PERFIL_ADMIN => 'Admin: acesso a todas as telas liberadas, sem deletar.',
-            User::PERFIL_USUARIO => 'Usuario: acesso liberado apenas quando possuir o codigo da tela.',
-            User::PERFIL_CONSULTOR => 'Consultor: acesso somente leitura ao Controle de Patrimônio.',
+            User::PERFIL_USUARIO => 'Usuario: acesso conforme telas liberadas.',
+            User::PERFIL_CONSULTOR => 'Consultor: acesso somente leitura conforme telas liberadas.',
             default => 'Visitante: faca login para solicitar liberacao.',
         };
     }

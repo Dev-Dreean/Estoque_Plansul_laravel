@@ -34,6 +34,8 @@ class User extends Authenticatable
     public const PERFIL_USUARIO = 'USR';
     public const PERFIL_ADMIN = 'ADM';
     public const PERFIL_CONSULTOR = 'C';
+    public const TELA_PATRIMONIO = '1000';
+    public const TELA_RELATORIOS = '1006';
 
     /**
      * @var string A tabela do banco de dados associada a este Model.
@@ -178,6 +180,16 @@ class User extends Authenticatable
     {
         $nuseqtela = (string) $nuseqtela;
 
+        // Controle de Patrimonio e obrigatorio para todos os usuarios logados
+        if ($nuseqtela === self::TELA_PATRIMONIO) {
+            return true;
+        }
+
+        // Relatorios acompanham o acesso ao Controle de Patrimonio
+        if ($nuseqtela === self::TELA_RELATORIOS && $this->temAcessoTela(self::TELA_PATRIMONIO)) {
+            return true;
+        }
+
         // Admin tem acesso total
         if ($this->isAdmin()) {
             return true;
@@ -202,6 +214,10 @@ class User extends Authenticatable
     {
         $nuseqtela = (string) $nuseqtela;
 
+        if ($nuseqtela === self::TELA_PATRIMONIO) {
+            return true;
+        }
+
         if ($this->isAdmin()) {
             return true;
         }
@@ -218,13 +234,7 @@ class User extends Authenticatable
             return false;
         }
 
-        $nivelVisibilidade = $tela->NIVEL_VISIBILIDADE ?? 'TODOS';
-
-        if ($this->PERFIL === self::PERFIL_ADMIN) {
-            return in_array($nivelVisibilidade, ['TODOS', 'ADM']);
-        }
-
-        return $nivelVisibilidade === 'TODOS';
+        return true;
     }
 
     public function telasComAcesso(): array
@@ -236,12 +246,23 @@ class User extends Authenticatable
                 ->toArray();
         }
 
-        return $this->acessos()
+        $telas = $this->acessos()
             ->join('acessotela', 'acessousuario.NUSEQTELA', '=', 'acessotela.NUSEQTELA')
             ->whereRaw("TRIM(UPPER(acessousuario.INACESSO)) = 'S'")
             ->whereRaw("TRIM(UPPER(acessotela.FLACESSO)) = 'S'")
             ->pluck('acessousuario.NUSEQTELA')
             ->toArray();
+
+        if (!in_array((int) self::TELA_PATRIMONIO, $telas, true)) {
+            $telas[] = (int) self::TELA_PATRIMONIO;
+        }
+
+        if (in_array((int) self::TELA_PATRIMONIO, $telas, true)
+            && !in_array((int) self::TELA_RELATORIOS, $telas, true)) {
+            $telas[] = (int) self::TELA_RELATORIOS;
+        }
+
+        return $telas;
     }
 
 }

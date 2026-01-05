@@ -16,7 +16,9 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
-    private const TELA_REMOVIDOS = 1009;
+    private const TELA_PATRIMONIO = 1000;
+    private const TELA_GERENCIAR_ACESSOS = 1005;
+    private const TELA_RELATORIOS = 1006;
 
     public function index(Request $request)
     {
@@ -176,7 +178,10 @@ class UserController extends Controller
 
     public function create(): View
     {
-        return view('usuarios.create');
+        $telasDisponiveis = $this->carregarTelasDisponiveis();
+        $acessosAtuais = [];
+
+        return view('usuarios.create', compact('telasDisponiveis', 'acessosAtuais'));
     }
 
     public function store(Request $request): View|\Illuminate\Http\RedirectResponse
@@ -186,7 +191,8 @@ class UserController extends Controller
             'NMLOGIN' => ['required', 'string', 'max:30', 'unique:usuario,NMLOGIN'],
             'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', 'unique:usuario,CDMATRFUNCIONARIO'],
             'PERFIL' => ['required', \Illuminate\Validation\Rule::in(['ADM', 'USR', 'C'])], 
-            'ACESSO_REMOVIDOS' => ['nullable', 'boolean'],
+            'telas' => ['nullable', 'array'],
+            'telas.*' => ['integer', 'exists:acessotela,NUSEQTELA'],
         ]);
 
         // Senha provisória forte: prefixo 'Plansul@' + 6 números aleatórios
@@ -206,8 +212,8 @@ class UserController extends Controller
         /** @var User|null $me */
         $me = Auth::user();
         if ($me?->isAdmin()) {
-            $allowRemovidos = $request->boolean('ACESSO_REMOVIDOS');
-            $this->syncTela($user->CDMATRFUNCIONARIO, self::TELA_REMOVIDOS, $allowRemovidos);
+            $telasSelecionadas = $this->normalizarTelas($request->input('telas', []));
+            $this->syncTelas($user->CDMATRFUNCIONARIO, $telasSelecionadas);
         }
 
         // Retornar tela de confirmação com credenciais para copiar/repasse
@@ -219,7 +225,10 @@ class UserController extends Controller
 
     public function edit(User $usuario): View
     {
-        return view('usuarios.edit', compact('usuario'));
+        $telasDisponiveis = $this->carregarTelasDisponiveis();
+        $acessosAtuais = $this->carregarAcessosAtuais($usuario->CDMATRFUNCIONARIO);
+
+        return view('usuarios.edit', compact('usuario', 'telasDisponiveis', 'acessosAtuais'));
     }
 
     public function update(Request $request, User $usuario): RedirectResponse
@@ -230,7 +239,8 @@ class UserController extends Controller
             'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', Rule::unique('usuario', 'CDMATRFUNCIONARIO')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
             'PERFIL' => ['required', Rule::in(['ADM', 'USR', 'C'])],
             'SENHA' => ['nullable', 'string', 'min:8'],
-            'ACESSO_REMOVIDOS' => ['nullable', 'boolean'],
+            'telas' => ['nullable', 'array'],
+            'telas.*' => ['integer', 'exists:acessotela,NUSEQTELA'],
         ]);
 
         $oldMatricula = $usuario->CDMATRFUNCIONARIO;
@@ -255,8 +265,8 @@ class UserController extends Controller
                 $this->migrateAcessosMatricula($oldMatricula, $newMatricula);
             }
 
-            $allowRemovidos = $request->boolean('ACESSO_REMOVIDOS');
-            $this->syncTela($usuario->CDMATRFUNCIONARIO, self::TELA_REMOVIDOS, $allowRemovidos);
+            $telasSelecionadas = $this->normalizarTelas($request->input('telas', []));
+            $this->syncTelas($usuario->CDMATRFUNCIONARIO, $telasSelecionadas);
         }
 
         return redirect()->route('usuarios.index')->with('success', 'Usuário atualizado com sucesso!');
@@ -305,6 +315,82 @@ class UserController extends Controller
             ->where('CDMATRFUNCIONARIO', $matricula)
             ->where('NUSEQTELA', $tela)
             ->delete();
+    }
+
+    private function carregarTelasDisponiveis()
+    {
+        return DB::table('acessotela')
+            ->whereRaw("TRIM(UPPER(FLACESSO)) = 'S'")
+            ->where('NUSEQTELA', '!=', self::TELA_GERENCIAR_ACESSOS)
+            ->orderBy('NUSEQTELA')
+            ->get();
+    }
+
+    private function carregarAcessosAtuais(?string $matricula): array
+    {
+        $matricula = trim((string) $matricula);
+        if ($matricula === '') {
+            return [];
+        }
+
+        return AcessoUsuario::query()
+            ->where('CDMATRFUNCIONARIO', $matricula)
+            ->whereRaw("TRIM(UPPER(INACESSO)) = 'S'")
+            ->pluck('NUSEQTELA')
+            ->toArray();
+    }
+
+    private function normalizarTelas($telas): array
+    {
+        if (!is_array($telas)) {
+            return [];
+        }
+
+        $normalizadas = [];
+        foreach ($telas as $tela) {
+            if (is_numeric($tela)) {
+                $normalizadas[] = (int) $tela;
+            }
+        }
+
+        return array_values(array_unique($normalizadas));
+    }
+
+    private function syncTelas(?string $matricula, array $telas, array $ignorar = []): void
+    {
+        $matricula = trim((string) $matricula);
+        if ($matricula === '') {
+            return;
+        }
+
+        $telas = $this->normalizarTelas($telas);
+        $ignorar = $this->normalizarTelas($ignorar);
+        $telas = array_values(array_diff($telas, $ignorar));
+        if (!in_array(self::TELA_PATRIMONIO, $telas, true)) {
+            $telas[] = self::TELA_PATRIMONIO;
+        }
+        if (!in_array(self::TELA_RELATORIOS, $telas, true)) {
+            $telas[] = self::TELA_RELATORIOS;
+        }
+
+        DB::transaction(function () use ($matricula, $telas, $ignorar) {
+            $deleteQuery = AcessoUsuario::query()
+                ->where('CDMATRFUNCIONARIO', $matricula);
+
+            if (!empty($ignorar)) {
+                $deleteQuery->whereNotIn('NUSEQTELA', $ignorar);
+            }
+
+            $deleteQuery->delete();
+
+            foreach ($telas as $tela) {
+                AcessoUsuario::create([
+                    'CDMATRFUNCIONARIO' => $matricula,
+                    'NUSEQTELA' => $tela,
+                    'INACESSO' => 'S',
+                ]);
+            }
+        });
     }
 
     private function migrateAcessosMatricula(string $from, string $to): void

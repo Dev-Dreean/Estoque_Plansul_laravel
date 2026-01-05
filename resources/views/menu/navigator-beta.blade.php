@@ -1,13 +1,14 @@
 <x-app-layout>
 @php
   $controleItems = [
-    ['label' => 'Patrimônio', 'href' => route('patrimonios.index'), 'icon' => 'cube', 'active' => true],
-    ['label' => 'Atribuir Cód.', 'href' => route('patrimonios.atribuir'), 'icon' => 'tag'],
-    ['label' => 'Histórico', 'href' => route('historico.index'), 'icon' => 'clock'],
+    ['label' => 'Patrimonio', 'href' => route('patrimonios.index'), 'icon' => 'cube', 'active' => true],
+    ['label' => 'Atribuir Cod.', 'href' => route('patrimonios.atribuir'), 'icon' => 'tag'],
   ];
 
   $atalhos = [
     ['label' => 'Dashboard', 'href' => route('dashboard'), 'icon' => 'chart'],
+    ['label' => 'Removidos', 'href' => route('removidos.index'), 'icon' => 'trash'],
+    ['label' => 'Histórico', 'href' => route('historico.index'), 'icon' => 'clock'],
     ['label' => 'Locais', 'href' => route('projetos.index'), 'icon' => 'map'],
     ['label' => 'Usuários', 'href' => route('usuarios.index'), 'icon' => 'users'],
     ['label' => 'Telas', 'href' => route('cadastro-tela.index'), 'icon' => 'window'],
@@ -21,6 +22,7 @@
     'cube' => '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4 8 4 8-4z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10l8 4 8-4V7"/></svg>',
     'tag' => '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.59 13.41l-8-8A2 2 0 0011.17 5H5a2 2 0 00-2 2v6.17a2 2 0 00.59 1.42l8 8a2 2 0 002.82 0l6.18-6.18a2 2 0 000-2.82z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01"/></svg>',
     'clock' => '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9" stroke-width="2"/></svg>',
+    'trash' => '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-1 0l-.5 11a2 2 0 01-2 2H10.5a2 2 0 01-2-2L8 7m4 4v6m4-6v6"/></svg>',
     'chart' => '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3v18M6 9v12M16 13v8M21 5v16"/></svg>',
     'map' => '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5 2V6l5-2m0 16l6-2m-6 2V4m6 14l5 2V6l-5-2m0 16V4M9 4l6 2"/></svg>',
     'users' => '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M23 20v-2a4 4 0 00-3-3.87"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 3.13a4 4 0 010 7.75"/></svg>',

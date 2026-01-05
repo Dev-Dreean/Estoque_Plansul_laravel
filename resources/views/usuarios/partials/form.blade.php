@@ -11,14 +11,33 @@
 @endif
 
 @php
-    $canGrantRemovidos = auth()->user()?->isAdmin() ?? false;
-    $hasRemovidos = false;
-    if ($canGrantRemovidos && isset($usuario) && !empty($usuario->CDMATRFUNCIONARIO)) {
-        $hasRemovidos = \App\Models\AcessoUsuario::query()
-            ->where('CDMATRFUNCIONARIO', $usuario->CDMATRFUNCIONARIO)
-            ->where('NUSEQTELA', 1009)
-            ->whereRaw("TRIM(UPPER(INACESSO)) = 'S'")
-            ->exists();
+    $canGrantTelas = auth()->user()?->isAdmin() ?? false;
+    $telaObrigatoria = 1000;
+    $telasCombinadasIds = [1000, 1006];
+    $telasPrincipaisIds = [1001, 1007];
+    $telasDisponiveis = collect($telasDisponiveis ?? []);
+    $telaPatrimonio = $telasDisponiveis->firstWhere('NUSEQTELA', $telaObrigatoria);
+    $telasPrincipais = $telasDisponiveis->filter(function ($tela) use ($telasPrincipaisIds) {
+        return in_array((int) $tela->NUSEQTELA, $telasPrincipaisIds, true);
+    })->values();
+    $telasEspeciais = $telasDisponiveis->reject(function ($tela) use ($telasPrincipaisIds, $telasCombinadasIds) {
+        $codigo = (int) $tela->NUSEQTELA;
+        return in_array($codigo, $telasPrincipaisIds, true)
+            || in_array($codigo, $telasCombinadasIds, true);
+    })->values();
+
+    $acessosAtuais = $acessosAtuais ?? [];
+    $telasSelecionadas = old('telas', $acessosAtuais);
+    if (!is_array($telasSelecionadas)) {
+        $telasSelecionadas = [];
+    }
+    $telasSelecionadas = array_map('intval', $telasSelecionadas);
+    if (!in_array($telaObrigatoria, $telasSelecionadas, true)) {
+        $telasSelecionadas[] = $telaObrigatoria;
+    }
+    if (in_array($telaObrigatoria, $telasSelecionadas, true)
+        && !in_array(1006, $telasSelecionadas, true)) {
+        $telasSelecionadas[] = 1006;
     }
 @endphp
 
@@ -29,7 +48,6 @@
         loginOld: @js(old('NMLOGIN', isset($usuario)? $usuario->NMLOGIN : '')),
         matriculaOld: @js(old('CDMATRFUNCIONARIO', isset($usuario)? $usuario->CDMATRFUNCIONARIO : '')),
         perfilOld: @js(old('PERFIL', isset($usuario)? $usuario->PERFIL : 'USR')),
-        acessoRemovidosOld: @js((bool) old('ACESSO_REMOVIDOS', $hasRemovidos)),
     })"
     class="space-y-4">
     <div>
@@ -64,19 +82,116 @@
             <option value="ADM" @selected(old('PERFIL', $usuario->PERFIL ?? '' )=='ADM' )>Administrador</option>
         </select>
         <p class="text-xs text-gray-500 mt-1">
-            <span x-show="perfil === 'USR'">Usuário comum com acesso apenas às telas Controle de Patrimônio e Gráficos.</span>
-            <span x-show="perfil === 'C'">Consultor com acesso apenas para visualizar patrimônios. Não pode editar, deletar ou criar novos registros.</span>
+            <span x-show="perfil === 'USR'">Usuario com acesso definido pelas telas liberadas.</span>
+            <span x-show="perfil === 'C'">Consultor com acesso definido pelas telas liberadas (somente leitura).</span>
             <span x-show="perfil === 'ADM'">Administrador com acesso a todas as telas.</span>
         </p>
     </div>
 
-    @if($canGrantRemovidos)
+    @if($canGrantTelas)
     <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
         <div class="flex items-start justify-between gap-3">
             <div>
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Permissões Especiais</h3>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Permissoes de Tela</h3>
                 <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    Habilite apenas para gestores autorizados.
+                    Controle de Patrimonio, Histórico, Gráficos e Relatórios.
+                </p>
+            </div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
+                Admin
+            </span>
+        </div>
+
+        @if(isset($usuario) && ($usuario->PERFIL ?? '') === 'ADM')
+        <p class="mt-2 text-xs text-gray-600 dark:text-gray-400">
+            Perfil ADM tem acesso total. A selecao abaixo nao altera esse acesso.
+        </p>
+        @endif
+
+        <div class="mt-3 flex flex-wrap gap-2">
+            <button type="button" @click.prevent="marcarTodas()" class="text-xs px-3 py-1 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
+                Marcar todas
+            </button>
+            <button type="button" @click.prevent="desmarcarTodas()" class="text-xs px-3 py-1 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
+                Desmarcar todas
+            </button>
+        </div>
+
+        <div class="mt-3">
+            @if($telasPrincipais->isEmpty())
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+                Nenhuma tela cadastrada em acessotela.
+            </p>
+            @else
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-72 overflow-y-auto p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+                @if($telaPatrimonio)
+                @php
+                    $selecionada = in_array($telaObrigatoria, $telasSelecionadas, true);
+                    $nomePatrimonio = $telaPatrimonio->DETELA ?? 'Controle de Patrimonio';
+                @endphp
+                <label class="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer transition-colors">
+                    <input
+                        type="checkbox"
+                        name="telas[]"
+                        value="{{ $telaObrigatoria }}"
+                        class="mt-1 rounded border-gray-300 text-plansul-blue focus:ring-plansul-blue focus:ring-offset-0"
+                        {{ $selecionada ? 'checked' : '' }}
+                        {{ $telaObrigatoria ? 'disabled' : '' }}>
+                    <input type="hidden" name="telas[]" value="1006">
+                    <div class="ml-3 flex-1">
+                        <span class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {{ $nomePatrimonio }}
+                        </span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                            Codigos: 1000 e 1006
+                            @if($telaObrigatoria)
+                            | Obrigatoria
+                            @endif
+                        </span>
+                    </div>
+                </label>
+                @endif
+                @foreach($telasPrincipais as $tela)
+                @php
+                    $selecionada = in_array((int) $tela->NUSEQTELA, $telasSelecionadas, true);
+                @endphp
+                <label class="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer transition-colors">
+                    <input
+                        type="checkbox"
+                        name="telas[]"
+                        value="{{ $tela->NUSEQTELA }}"
+                        class="mt-1 rounded border-gray-300 text-plansul-blue focus:ring-plansul-blue focus:ring-offset-0"
+                        {{ $selecionada ? 'checked' : '' }}>
+                    <div class="ml-3 flex-1">
+                        <span class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {{ $tela->DETELA }}
+                        </span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                            Codigo: {{ $tela->NUSEQTELA }}
+                            @if(!empty($tela->NMSISTEMA))
+                            | Sistema: {{ $tela->NMSISTEMA }}
+                            @endif
+                        </span>
+                    </div>
+                </label>
+                @endforeach
+            </div>
+            @endif
+
+            @error('telas')
+            <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
+    </div>
+    @endif
+
+    @if($canGrantTelas)
+    <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Permissoes Especiais</h3>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    Telas administrativas e operacionais adicionais.
                 </p>
             </div>
             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
@@ -85,27 +200,38 @@
         </div>
 
         <div class="mt-3">
-            <input type="hidden" name="ACESSO_REMOVIDOS" value="0">
-            <label class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <input
-                    type="checkbox"
-                    name="ACESSO_REMOVIDOS"
-                    value="1"
-                    x-model="acessoRemovidos"
-                    class="mt-1 rounded border-gray-300 dark:border-gray-600 text-emerald-600 focus:ring-emerald-600 focus:ring-offset-0"
-                >
-                <div class="flex-1">
-                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        Acesso à tela Removidos
+            @if($telasEspeciais->isEmpty())
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+                Nenhuma tela especial cadastrada.
+            </p>
+            @else
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-72 overflow-y-auto p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+                @foreach($telasEspeciais as $tela)
+                @php
+                    $selecionada = in_array((int) $tela->NUSEQTELA, $telasSelecionadas, true);
+                @endphp
+                <label class="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer transition-colors">
+                    <input
+                        type="checkbox"
+                        name="telas[]"
+                        value="{{ $tela->NUSEQTELA }}"
+                        class="mt-1 rounded border-gray-300 text-plansul-blue focus:ring-plansul-blue focus:ring-offset-0"
+                        {{ $selecionada ? 'checked' : '' }}>
+                    <div class="ml-3 flex-1">
+                        <span class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {{ $tela->DETELA }}
+                        </span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                            Codigo: {{ $tela->NUSEQTELA }}
+                            @if(!empty($tela->NMSISTEMA))
+                            | Sistema: {{ $tela->NMSISTEMA }}
+                            @endif
+                        </span>
                     </div>
-                    <div class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                        Permite conferir exclusões e executar <span class="font-semibold">restaurar</span> ou <span class="font-semibold">remover definitivamente</span>.
-                    </div>
-                    <div class="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                        Use com cautela: ações podem impactar auditoria e dados.
-                    </div>
-                </div>
-            </label>
+                </label>
+                @endforeach
+            </div>
+            @endif
         </div>
     </div>
     @endif
@@ -130,15 +256,13 @@
             nomeOld,
             loginOld,
             matriculaOld,
-            perfilOld,
-            acessoRemovidosOld
+            perfilOld
         }) {
             return {
                 matricula: matriculaOld || '',
                 nome: nomeOld || '',
                 login: loginOld || '',
                 perfil: perfilOld || 'USR',
-                acessoRemovidos: !!acessoRemovidosOld,
                 loginAuto: false,
                 loginDisponivel: true,
                 matriculaExiste: false,
@@ -147,10 +271,14 @@
                     return this.login ? (this.loginDisponivel ? 'Login disponível' : 'Login já em uso') : '';
                 },
                 marcarTodas() {
-                    document.querySelectorAll('input[name="telas[]"]').forEach(cb => cb.checked = true);
+                    document.querySelectorAll('input[name="telas[]"]').forEach(cb => {
+                        if (!cb.disabled) cb.checked = true;
+                    });
                 },
                 desmarcarTodas() {
-                    document.querySelectorAll('input[name="telas[]"]').forEach(cb => cb.checked = false);
+                    document.querySelectorAll('input[name="telas[]"]').forEach(cb => {
+                        if (!cb.disabled) cb.checked = false;
+                    });
                 },
                 onMatriculaInput(e) {
                     const val = (e?.target?.value ?? '').trim();

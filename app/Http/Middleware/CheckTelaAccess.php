@@ -11,10 +11,9 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckTelaAccess
 {
     /**
-     * Controle de acesso simplificado por perfil
-     * - C: acesso apenas a tela 1000 (Patrimônio)
-     * - USR: acesso apenas a telas 1000 (Patrimônio), 1001 (Gráficos), 1006 (Relatórios) e 1007 (Histórico)
-     * - ADM: acesso a tudo
+     * Controle de acesso por tela baseado em acessotela + acessousuario.
+     * - ADM: acesso total
+     * - Demais perfis: acesso apenas se houver vínculo ativo
      */
     public function handle(Request $request, Closure $next, ?int $nuseqtela = null): Response
     {
@@ -31,45 +30,15 @@ class CheckTelaAccess
             return $next($request);
         }
 
-        // Consultor (C) só pode acessar tela 1000 (Patrimônio)
-        if ($user->PERFIL === User::PERFIL_CONSULTOR) {
-            $telasPermitidas = [1000];
-
-            if ($nuseqtela !== null && !in_array($nuseqtela, $telasPermitidas, true)) {
-                // Permite telas adicionais via permissões no banco (acessousuario + acessotela)
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'message' => 'Você não tem permissão para acessar esta funcionalidade.',
-                        'code' => 'access_denied',
-                    ], 403);
-                }
-
-                return redirect()->route('patrimonios.index')
-                    ->with('error', 'Você não tem permissão para acessar esta página.');
+        if ($nuseqtela !== null && !$user->temAcessoTela($nuseqtela)) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Você não tem permissão para acessar esta funcionalidade.',
+                    'code' => 'access_denied',
+                ], 403);
             }
-        }
 
-        // Usuário comum (USR) só pode acessar telas 1000, 1001, 1006 e 1007
-        if ($user->PERFIL === User::PERFIL_USUARIO) {
-            $telasPermitidas = [1000, 1001, 1006, 1007];
-            
-            if ($nuseqtela !== null && !in_array($nuseqtela, $telasPermitidas, true)) {
-                // Permite telas adicionais via permissões no banco (acessousuario + acessotela)
-                if ($user->temAcessoTela($nuseqtela)) {
-                    return $next($request);
-                }
-
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'message' => 'Você não tem permissão para acessar esta funcionalidade.',
-                        'code' => 'access_denied',
-                    ], 403);
-                }
-
-                // Para requisições normais, redireciona para dashboard com mensagem
-                return redirect()->route('dashboard')
-                    ->with('error', 'Você não tem permissão para acessar esta página.');
-            }
+            return response()->view('errors.403', [], 403);
         }
 
         return $next($request);

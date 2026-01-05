@@ -9,7 +9,6 @@
  */
 
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AcessoUsuarioController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PatrimonioController;
 use App\Http\Controllers\ProfileController;
@@ -264,14 +263,6 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::get('/removidos/{removido}', [RemovidosController::class, 'show'])->whereNumber('removido')->name('removidos.show')->middleware('tela.access:1009');
     Route::post('/removidos/{removido}/restaurar', [RemovidosController::class, 'restore'])->whereNumber('removido')->name('removidos.restore')->middleware('tela.access:1009');
     Route::delete('/removidos/{removido}', [RemovidosController::class, 'destroy'])->whereNumber('removido')->name('removidos.destroy')->middleware('tela.access:1009');
-
-    // Gerenciar acessos por usuário (apenas Admin)
-    Route::middleware(['admin'])->group(function () {
-        Route::get('/acessos', [AcessoUsuarioController::class, 'index'])->name('acessos.index');
-        Route::get('/acessos/{cdMatrFuncionario}/edit', [AcessoUsuarioController::class, 'edit'])->name('acessos.edit');
-        Route::put('/acessos/{cdMatrFuncionario}', [AcessoUsuarioController::class, 'update'])->name('acessos.update');
-        Route::delete('/acessos/{cdMatrFuncionario}', [AcessoUsuarioController::class, 'destroy'])->name('acessos.destroy');
-    });
 
     // Debug do tema (apenas em ambiente local ou se user for admin)
     Route::get('/debug/theme', function (\Illuminate\Http\Request $request) {

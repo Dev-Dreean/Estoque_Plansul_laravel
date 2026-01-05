@@ -59,7 +59,7 @@
                     <a href="{{ route('usuarios.index') }}" 
                        class="text-orange-400 hover:text-orange-300 transition-colors text-sm font-medium">
                         <i class="fas fa-users-cog mr-1"></i>
-                        Gerenciar Acessos
+                        Gerenciar Usuarios
                     </a>
                 @endif
             </div>

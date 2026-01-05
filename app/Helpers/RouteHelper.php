@@ -14,11 +14,6 @@ class RouteHelper
      */
     public static function exists(string $routeName): bool
     {
-        try {
-            Route::getRoutes()->getByName($routeName);
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
+        return (bool) Route::getRoutes()->getByName($routeName);
     }
 }

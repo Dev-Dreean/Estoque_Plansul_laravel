@@ -102,12 +102,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 300);
         });
         
-        inputEl.addEventListener('focus', function() {
-            if (this.value.trim().length > 0 && !dropdownEl.classList.contains('hidden')) {
-                dropdownEl.classList.remove('hidden');
-            }
-        });
-        
         inputEl.addEventListener('blur', function() {
             setTimeout(() => {
                 dropdownEl.classList.add('hidden');

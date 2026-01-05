@@ -239,7 +239,6 @@
             <input
               type="text"
               x-model="search"
-              @focus="open=true"
               @input="open=search.length>0; syncValue()"
               @keydown.enter.prevent="handleManual()"
               @blur="syncValue()"
@@ -353,7 +352,6 @@
             <input
               type="text"
               x-model="search"
-              @focus="open=true"
               @input="open=search.length>0"
               placeholder="Local Físico"
               class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md"
@@ -403,7 +401,7 @@
             class="relative"
             @click.outside="open=false"
           >
-            <input type="text" x-model="search" @focus="open=true" @input="open=search.length>0" placeholder="Modelo" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+            <input type="text" x-model="search" @input="open=search.length>0" placeholder="Modelo" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
             <input type="hidden" name="modelo" :value="value">
             <div x-show="open" x-transition class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-56 overflow-y-auto">
               <template x-for="opt in filtered()" :key="opt.code">
@@ -444,7 +442,7 @@
             class="relative"
             @click.outside="open=false"
           >
-            <input type="text" x-model="search" @focus="open=true" @input="open=search.length>0" placeholder="Marca" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+            <input type="text" x-model="search" @input="open=search.length>0" placeholder="Marca" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
             <input type="hidden" name="marca" :value="value">
             <div x-show="open" x-transition class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-56 overflow-y-auto">
               <template x-for="opt in filtered()" :key="opt.code">

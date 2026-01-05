@@ -20,11 +20,6 @@
       'active' => request()->routeIs('patrimonios.atribuir') || request()->routeIs('patrimonios.atribuir.*'),
     ],
     [
-      'label' => 'Histórico',
-      'route' => 'historico.index',
-      'active' => request()->routeIs('historico.*'),
-    ],
-    [
       'label' => 'Relatório de Bens',
       'route' => 'relatorios.bens.index',
       'active' => request()->routeIs('relatorios.bens.*'),
@@ -40,11 +35,11 @@
 
 <div class="bg-surface-2 border-b border-app">
   <div class="w-full sm:px-6 lg:px-8">
-    <div class="flex items-center gap-16 overflow-x-auto">
+    <div class="flex items-center gap-6 overflow-x-hidden py-2 min-h-[48px]">
       @foreach($patrimonioTabs as $tab)
         @if($tab['route'] === 'patrimonios.index')
           {{-- Aba Patrimônios com submenu tipo "nuvem" contendo o CTA Cadastrar --}}
-          <div class="mx-2" x-data="{open:false, x:0, y:0, toggle(e){ if(window.matchMedia('(hover: none)').matches){ this.open = !this.open; } }, show(e){ this.open = true; this.$nextTick(()=>{ const r = this.$refs.anchor.getBoundingClientRect(); this.x = Math.max(8, r.left + window.scrollX); this.y = Math.max(8, r.bottom + window.scrollY + 6); }); }, hide(){ this.open = false; }}"
+          <div class="mx-1" x-data="{open:false, x:0, y:0, toggle(e){ if(window.matchMedia('(hover: none)').matches){ this.open = !this.open; } }, show(e){ this.open = true; this.$nextTick(()=>{ const r = this.$refs.anchor.getBoundingClientRect(); this.x = Math.max(8, r.left + window.scrollX); this.y = Math.max(8, r.bottom + window.scrollY + 6); }); }, hide(){ this.open = false; }}"
                @mouseenter="show" @mouseleave="hide" @focusin="show" @focusout="hide">
               <a href="{{ route('patrimonios.index') }}" x-ref="anchor" @click="if(window.matchMedia('(hover: none)').matches){ $event.preventDefault(); toggle($event); }" class="px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors duration-150 {{ $tab['active'] ? 'accent-text accent-border' : 'text-muted border-transparent hover:text-[var(--text)]' }}" tabindex="0">
               {{-- Ícone Patrimônios (herda cor com currentColor) --}}
@@ -81,7 +76,7 @@
           </div>
         @elseif($tab['route'] === 'patrimonios.atribuir')
           {{-- Aba especial: submenu com posicionamento dinâmico (fixed na index, relativo em outras páginas) --}}
-          <div class="mx-2" x-data="{open:false, x:0, y:0, toggle(e){ if(window.matchMedia('(hover: none)').matches){ this.open = !this.open; } }, show(e){ this.open = true; this.$nextTick(()=>{ const r = this.$refs.anchor.getBoundingClientRect(); this.x = Math.max(8, r.left + window.scrollX); this.y = Math.max(8, r.bottom + window.scrollY + 6); }); }, hide(){ this.open = false; }}"
+          <div class="mx-1" x-data="{open:false, x:0, y:0, toggle(e){ if(window.matchMedia('(hover: none)').matches){ this.open = !this.open; } }, show(e){ this.open = true; this.$nextTick(()=>{ const r = this.$refs.anchor.getBoundingClientRect(); this.x = Math.max(8, r.left + window.scrollX); this.y = Math.max(8, r.bottom + window.scrollY + 6); }); }, hide(){ this.open = false; }}"
                @mouseenter="show" @mouseleave="hide" @focusin="show" @focusout="hide">
             <a href="{{ route('patrimonios.atribuir.codigos', ['status' => 'disponivel']) }}" x-ref="anchor" @click="if(window.matchMedia('(hover: none)').matches){ $event.preventDefault(); toggle($event); }" class="px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors duration-150 {{ $tab['active'] ? 'accent-text accent-border' : 'text-muted border-transparent hover:text-[var(--text)]' }}" tabindex="0">
               {{-- Ícone Atribuir (herda cor com currentColor) --}}
@@ -113,7 +108,7 @@
           </div>
         @elseif($tab['route'] === 'relatorios.bens.index')
           {{-- Aba Relatório de Bens com submenu inteligente --}}
-          <div class="mx-2" x-data="{open:false, x:0, y:0, toggle(e){ if(window.matchMedia('(hover: none)').matches){ this.open = !this.open; } }, show(e){ this.open = true; this.$nextTick(()=>{ const r = this.$refs.anchor.getBoundingClientRect(); this.x = Math.max(8, r.left + window.scrollX); this.y = Math.max(8, r.bottom + window.scrollY + 6); }); }, hide(){ this.open = false; }}" @mouseenter="show" @mouseleave="hide" @focusin="show" @focusout="hide">
+          <div class="mx-1" x-data="{open:false, x:0, y:0, toggle(e){ if(window.matchMedia('(hover: none)').matches){ this.open = !this.open; } }, show(e){ this.open = true; this.$nextTick(()=>{ const r = this.$refs.anchor.getBoundingClientRect(); this.x = Math.max(8, r.left + window.scrollX); this.y = Math.max(8, r.bottom + window.scrollY + 6); }); }, hide(){ this.open = false; }}" @mouseenter="show" @mouseleave="hide" @focusin="show" @focusout="hide">
             <a href="{{ route('relatorios.bens.index') }}" x-ref="anchor" @click="if(window.matchMedia('(hover: none)').matches){ $event.preventDefault(); toggle($event); }" class="px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors duration-150 {{ $tab['active'] ? 'accent-text accent-border' : 'text-muted border-transparent hover:text-[var(--text)]' }}" tabindex="0">
               {{-- Ícone Relatório (herda cor com currentColor) --}}
               <svg class="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -138,7 +133,7 @@
             </div>
           </div>
         @else
-          <a href="{{ route($tab['route']) }}" class="px-4 py-2 mx-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors duration-150 {{ $tab['active'] ? 'accent-text accent-border' : 'text-muted border-transparent hover:text-[var(--text)]' }}">
+          <a href="{{ route($tab['route']) }}" class="px-4 py-2 mx-1 text-sm font-medium whitespace-nowrap border-b-2 transition-colors duration-150 {{ $tab['active'] ? 'accent-text accent-border' : 'text-muted border-transparent hover:text-[var(--text)]' }}">
             @if($tab['route'] === 'patrimonios.index')
               <svg class="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -146,10 +141,6 @@
             @elseif($tab['route'] === 'patrimonios.create')
               <svg class="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16M4 12h16"></path>
-              </svg>
-            @elseif($tab['route'] === 'historico.index')
-              <svg class="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3M12 20a8 8 0 100-16 8 8 0 000 16z"></path>
               </svg>
             @elseif($tab['route'] === 'relatorios.bens.index')
               <svg class="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

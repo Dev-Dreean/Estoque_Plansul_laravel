@@ -216,9 +216,8 @@ class CadastroTelaController extends Controller
             ['codigo' => 1002, 'nome' => 'Cadastro de Locais', 'rota' => '/projetos'],
             ['codigo' => 1003, 'nome' => 'Cadastro de Usuários', 'rota' => '/usuarios'],
             ['codigo' => 1004, 'nome' => 'Cadastro de Telas', 'rota' => '/cadastro-tela'],
-            ['codigo' => 1005, 'nome' => 'Gerenciar Acessos', 'rota' => '/acessos'],
             ['codigo' => 1006, 'nome' => 'Relatórios', 'rota' => '/relatorios'],
-            ['codigo' => 1007, 'nome' => 'Histórico de Movimentações', 'rota' => '/historico'],
+            ['codigo' => 1007, 'nome' => 'Histórico', 'rota' => '/historico'],
             ['codigo' => 1008, 'nome' => 'Configurações de Tema', 'rota' => '/settings/theme'],
         ];
     }
