@@ -3342,6 +3342,59 @@
         return await this.buscarLocaisPorCodigoDigitado();
       },
 
+      /**
+       * ?? FUNÇÃO CRÍTICA: Busca projeto + carrega locais do projeto
+       * Chamada após selecionar um projeto (CDPROJETO preenchido)
+       * Carrega lista de locais disponíveis para aquele projeto
+       */
+      async buscarProjetoELocais() {
+        const cdProjeto = String(this.formData.CDPROJETO || '').trim();
+        
+        if (!cdProjeto) {
+          console.warn('?? [buscarProjetoELocais] CDPROJETO vazio, cancelando busca');
+          this.codigosLocaisFiltrados = [];
+          this.modalCodigosLocaisDisponiveis = [];
+          return;
+        }
+
+        try {
+          console.log('?? [buscarProjetoELocais] Buscando locais para projeto:', cdProjeto);
+          
+          // Buscar todos os locais do projeto
+          const resp = await fetch(`/api/locais/buscar?cdprojeto=${encodeURIComponent(cdProjeto)}&termo=`, {
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          });
+
+          if (!resp.ok) {
+            console.error('?? [buscarProjetoELocais] Erro HTTP:', resp.status);
+            this.codigosLocaisFiltrados = [];
+            this.modalCodigosLocaisDisponiveis = [];
+            return;
+          }
+
+          const locais = await resp.json();
+          console.log(`? [buscarProjetoELocais] ${locais.length} locais encontrados para projeto ${cdProjeto}`);
+
+          // Preencher arrays para uso nos dropdowns
+          this.codigosLocaisFiltrados = locais || [];
+          this.modalCodigosLocaisDisponiveis = locais || [];
+          
+          // Log dos locais carregados
+          if (locais && locais.length > 0) {
+            console.log('✅ [buscarProjetoELocais] Locais carregados com sucesso:');
+            locais.forEach(l => {
+              console.log(`   - ${l.cdlocal}: ${l.LOCAL || l.delocal}`);
+            });
+          }
+
+        } catch (e) {
+          console.error('❌ [buscarProjetoELocais] Erro ao buscar locais:', e);
+          this.codigosLocaisFiltrados = [];
+          this.modalCodigosLocaisDisponiveis = [];
+        }
+      },
+
       async abrirBuscaLocais() {
         console.log('?? [LUPA] Abrindo busca de locais');
         try {
