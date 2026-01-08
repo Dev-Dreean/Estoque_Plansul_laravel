@@ -16,30 +16,24 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('patr', function (Blueprint $table) {
-            // Índice simples para busca por número de patrimônio (mais frequente)
-            // Melhora em até 100x quando combinado com cache
-            if (!Schema::hasColumn('patr', 'NUPATRIMONIO')) {
-                // Tabela pode não ter a coluna, skip
-                return;
-            }
-            
-            // Verificar se índice já existe antes de criar (evita erro)
-            $indexes = Schema::getIndexes('patr');
-            $indexNames = collect($indexes)->pluck('name')->toArray();
-            
-            // Índice para NUPATRIMONIO (busca rápida)
-            if (!in_array('idx_patr_nupatrimonio', $indexNames)) {
+            // Índices para otimizar queries frequentes
+            // KingHost MySQL antigo: criar sem verificação de schema (que falha)
+            try {
                 $table->index('NUPATRIMONIO', 'idx_patr_nupatrimonio');
+            } catch (\Exception $e) {
+                // Índice já existe ou erro MySQL antigo
             }
             
-            // Índice composto para filtro de situação + projeto (muito usado)
-            if (!in_array('idx_patr_situacao_cdprojeto', $indexNames)) {
+            try {
                 $table->index(['SITUACAO', 'CDPROJETO'], 'idx_patr_situacao_cdprojeto');
+            } catch (\Exception $e) {
+                // Índice já existe ou erro MySQL antigo
             }
             
-            // Índice para busca por local (usado no filtro)
-            if (!in_array('idx_patr_cdlocal', $indexNames)) {
+            try {
                 $table->index('CDLOCAL', 'idx_patr_cdlocal');
+            } catch (\Exception $e) {
+                // Índice já existe ou erro MySQL antigo
             }
         });
     }
