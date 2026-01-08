@@ -117,6 +117,7 @@ Route::get('/debug-acessos', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/completar-perfil',  [ProfileController::class, 'showCompletionForm'])->name('profile.completion.create');
     Route::post('/completar-perfil', [ProfileController::class, 'storeCompletionForm'])->name('profile.completion.store');
+    Route::get('/api/usuarios/por-matricula', [UserController::class, 'porMatricula'])->name('api.usuarios.porMatricula');
 
     // Relatório / lista
     Route::get('/relatorios/bens',  [RelatorioBensController::class, 'index'])->name('relatorios.bens.index');
@@ -159,7 +160,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::post('/patrimonios/gerar-codigo', [PatrimonioController::class, 'gerarCodigo'])->name('patrimonios.gerarCodigo');
     Route::post('/patrimonios/atribuir-codigo', [PatrimonioController::class, 'atribuirCodigo'])->name('patrimonios.atribuirCodigo');
     Route::post('/patrimonios/desatribuir-codigo', [PatrimonioController::class, 'desatribuirCodigo'])->name('patrimonios.desatribuirCodigo');
+    Route::post('/patrimonios/filtrar', [PatrimonioController::class, 'ajaxFilter'])->name('patrimonios.ajax-filter');
     Route::post('/patrimonios/bulk-situacao', [PatrimonioController::class, 'bulkSituacao'])->name('patrimonios.bulk-situacao');
+    Route::post('/patrimonios/bulk-verificar', [PatrimonioController::class, 'bulkVerificar'])->name('patrimonios.bulk-verificar');
     Route::post('/patrimonios/bulk-delete', [PatrimonioController::class, 'bulkDelete'])->name('patrimonios.bulk-delete');
     Route::get('/api/patrimonios/disponiveis', [PatrimonioController::class, 'getPatrimoniosDisponiveis'])->name('api.patrimonios.disponiveis');
     Route::get('/api/patrimonios/buscar/{numero}', [PatrimonioController::class, 'buscarPorNumero'])->name('api.patrimonios.buscar');
@@ -222,7 +225,6 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::post('/impersonate/stop', [UserController::class, 'stopImpersonate'])->name('impersonate.stop')->middleware('auth');
     Route::post('/usuarios/{usuario}/reset-senha', [UserController::class, 'resetSenha'])->name('usuarios.resetSenha')->middleware('auth');
     // APIs auxiliares do formulário de usuário
-    Route::get('/api/usuarios/por-matricula', [UserController::class, 'porMatricula'])->name('api.usuarios.porMatricula')->middleware('tela.access:1003');
     Route::get('/api/usuarios/sugerir-login', [UserController::class, 'sugerirLogin'])->name('api.usuarios.sugerirLogin')->middleware('tela.access:1003');
     Route::get('/api/usuarios/login-disponivel', [UserController::class, 'loginDisponivel'])->name('api.usuarios.loginDisponivel')->middleware('tela.access:1003');
 

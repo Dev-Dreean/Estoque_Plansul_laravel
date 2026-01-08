@@ -28,10 +28,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // If the user must change password (temporary password), redirect them
-        // immediately to the profile completion flow before anywhere else.
+        // If the user must complete profile or change password, redirect them first.
         $user = $request->user();
-        if ($user && ($user->must_change_password ?? false)) {
+        $needsPassword = $user && ($user->must_change_password ?? false);
+        $needsProfile = $user && ($user->needsUf() || $user->needsIdentityUpdate());
+        if ($needsPassword || $needsProfile) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,

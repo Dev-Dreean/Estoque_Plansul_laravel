@@ -12,12 +12,27 @@
       <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6 text-gray-900 dark:text-gray-100">
 
+          @php
+            $user = Auth::user();
+            $needsUf = $needsUf ?? ($user?->needsUf() ?? false);
+            $needsName = $needsName ?? ($user?->shouldRequestName() ?? false);
+            $needsMatricula = $needsMatricula ?? ($user?->shouldRequestMatricula() ?? false);
+            $needsIdentity = $needsIdentity ?? ($user?->needsIdentityUpdate() ?? false);
+            $forceIdentityClear = $forceIdentityClear ?? false;
+          @endphp
+
           <p class="mb-4">
-            @php($user = Auth::user())
             @if($user && ($user->must_change_password ?? false))
-            Este é seu primeiro acesso. Defina uma nova senha e informe sua UF para continuar.
+            Este e seu primeiro acesso. Defina uma nova senha.
             @else
-            Percebemos que seu cadastro está incompleto. Por favor, informe sua UF para continuar.
+            Percebemos que seu cadastro esta incompleto.
+            @endif
+            @if($needsUf && $needsIdentity)
+            Informe sua UF e complete seus dados de cadastro para continuar.
+            @elseif($needsUf)
+            Informe sua UF para continuar.
+            @elseif($needsIdentity)
+            Atualize seus dados de cadastro para continuar.
             @endif
           </p>
 
@@ -33,11 +48,44 @@
             <input type="password" name="_dummy_password" autocomplete="new-password" class="hidden" tabindex="-1" aria-hidden="true">
             @csrf
 
+
+            @if($needsIdentity)
+            @php
+              $matriculaOld = old('CDMATRFUNCIONARIO', $user?->CDMATRFUNCIONARIO ?? '');
+              $nomeOld = old('NOMEUSER', $user?->NOMEUSER ?? '');
+              $lookupOnInit = trim((string) $nomeOld) === '' && trim((string) $matriculaOld) !== '';
+            @endphp
+            <div class="space-y-4" x-data="identityCompletionForm({
+                matriculaOld: @js($matriculaOld),
+                nomeOld: @js($nomeOld),
+                lookupOnInit: @js($lookupOnInit),
+                forceIdentityClear: @js($forceIdentityClear)
+            })" x-init="initLookup()">
+              @if($needsMatricula)
+              <div>
+                <x-input-label for="CDMATRFUNCIONARIO" value="Matricula *" />
+                <x-text-input id="CDMATRFUNCIONARIO" name="CDMATRFUNCIONARIO" type="text" class="mt-1 block w-full" x-model="matricula" required @blur="onMatriculaBlur" @input="onMatriculaInput" />
+                <p class="text-xs text-gray-500 mt-1" x-show="matriculaExiste">Matricula encontrada. Nome preenchido automaticamente.</p>
+                <x-input-error :messages="$errors->get('CDMATRFUNCIONARIO')" class="mt-2" />
+              </div>
+              @endif
+              @if($needsName)
+              <div>
+                <x-input-label for="NOMEUSER" value="Nome Completo *" />
+                <x-text-input id="NOMEUSER" name="NOMEUSER" type="text" class="mt-1 block w-full" x-model="nome" x-bind:readonly="nomeBloqueado"
+                  x-bind:class="nomeBloqueado ? 'bg-blue-50 dark:bg-blue-900/20 cursor-not-allowed ring-1 ring-blue-300/50 border-blue-300/60' : ''" required />
+                <x-input-error :messages="$errors->get('NOMEUSER')" class="mt-2" />
+              </div>
+              @endif
+            </div>
+            @endif
+            @if($needsUf)
             <div>
               <x-input-label for="UF" :value="__('UF (Estado)')" />
-              <x-text-input id="UF" class="block mt-1 w-full uppercase tracking-wider" type="text" name="UF" :value="old('UF')" required autofocus maxlength="2" autocomplete="one-time-code" inputmode="text" data-lpignore="true" />
+              <x-text-input id="UF" class="block mt-1 w-full uppercase tracking-wider" type="text" name="UF" :value="old('UF')" required maxlength="2" autocomplete="one-time-code" inputmode="text" data-lpignore="true" />
               <x-input-error :messages="$errors->get('UF')" class="mt-2" />
             </div>
+            @endif
 
             @if($user && ($user->must_change_password ?? false))
             <div class="mt-4" x-data="{ show: true }">
@@ -133,6 +181,63 @@
                   }
                   // tudo ok -> enviar manualmente
                   e.target.submit();
+                }
+              }
+            }
+
+            function identityCompletionForm({
+              matriculaOld,
+              nomeOld,
+              lookupOnInit,
+              forceIdentityClear
+            }) {
+              const initialMatricula = forceIdentityClear ? '' : (matriculaOld || '');
+              const initialNome = forceIdentityClear ? '' : (nomeOld || '');
+              const initialLookup = forceIdentityClear ? false : !!lookupOnInit;
+              return {
+                matricula: initialMatricula,
+                nome: initialNome,
+                lookupOnInit: initialLookup,
+                matriculaExiste: false,
+                nomeBloqueado: false,
+                initLookup() {
+                  if (this.lookupOnInit && this.matricula) {
+                    this.lookupMatricula(this.matricula);
+                  }
+                },
+                onMatriculaInput(e) {
+                  const val = (e?.target?.value ?? '').trim();
+                  if (val === '') {
+                    this.matriculaExiste = false;
+                    this.nomeBloqueado = false;
+                    this.nome = '';
+                  }
+                },
+                async onMatriculaBlur() {
+                  const mat = (this.matricula || '').trim();
+                  if (!mat) return;
+                  await this.lookupMatricula(mat);
+                },
+                async lookupMatricula(mat) {
+                  try {
+                    const url = `{{ route('api.usuarios.porMatricula') }}?matricula=${encodeURIComponent(mat)}`;
+                    const res = await fetch(url, {
+                      headers: {
+                        'Accept': 'application/json'
+                      }
+                    });
+                    if (!res.ok) throw new Error('Falha busca matricula');
+                    const data = await res.json();
+                    this.matriculaExiste = !!data?.exists;
+                    if (data?.exists && data?.nome) {
+                      this.nome = data.nome;
+                      this.nomeBloqueado = true;
+                    } else {
+                      this.nomeBloqueado = false;
+                    }
+                  } catch (e) {
+                    console.warn('Lookup matricula falhou', e);
+                  }
                 }
               }
             }

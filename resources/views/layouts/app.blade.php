@@ -5,6 +5,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
+  <!-- CSP: Bloquear requisições de ads e conteúdo externo problemático -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; img-src 'self' https: data:; font-src 'self' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://fonts.bunny.net;">
 
   <title>{{ config('app.name', 'Laravel') }}</title>
 
@@ -60,6 +62,46 @@
 
 <body class="font-sans antialiased bg-base text-base-color" x-data="{persistTheme(){try{localStorage.setItem('theme', document.documentElement.getAttribute('data-theme'));}catch(e){}}}" x-init="persistTheme()" @theme-changed.window="persistTheme()">
   
+  <script>
+    // 🛡️ Bloquear requisições a domínios de ads e extensões problemáticas
+    (function() {
+      const blockedDomains = [
+        'googlesyndication.com',
+        'safeframe.googlesyndication.com',
+        'adsbygoogle.js',
+        'pagead',
+        'googleads',
+        'doubleclick.net'
+      ];
+      
+      // Interceptar fetch
+      const originalFetch = window.fetch;
+      window.fetch = function(...args) {
+        const url = args[0]?.toString?.() || '';
+        if (blockedDomains.some(domain => url.includes(domain))) {
+          console.warn('[APP] ✅ Bloqueada requisição de ads:', url);
+          return Promise.reject(new Error('Blocked by CSP'));
+        }
+        return originalFetch.apply(this, args);
+      };
+      
+      // Interceptar XMLHttpRequest
+      const originalOpen = XMLHttpRequest.prototype.open;
+      XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+        if (blockedDomains.some(domain => url.includes(domain))) {
+          console.warn('[APP] ✅ Bloqueado XMLHttpRequest para ads:', url);
+          this._blocked = true;
+          return;
+        }
+        return originalOpen.apply(this, [method, url, ...rest]);
+      };
+      
+      XMLHttpRequest.prototype.send = function(...args) {
+        if (this._blocked) return;
+        return XMLHttpRequest.prototype.send.apply(this, args);
+      };
+    })();
+  </script>
   <style>
     /* Skeleton loader para prevenir flash durante carregamento */
     .nav-skeleton {
@@ -151,15 +193,66 @@
 
       window.addEventListener('unload', function() {});
 
-      // Suprimir erro de extensões do navegador: "A listener indicated an asynchronous response"
-      // Este erro é causado por extensões (como AdBlock, Grammarly, etc.) que não finalizam corretamente
-      // e não impacta a funcionalidade da aplicação
+      // Suprimir erro de extensões do navegador e ads
+      // Erros causados por extensões (AdBlock, Grammarly, etc.) e requisições de ads bloqueadas
+      
+      // Estratégia 1: Capturar unhandledrejection
       window.addEventListener('unhandledrejection', function(event) {
-        if (event.reason && event.reason.message && 
-            event.reason.message.includes('A listener indicated an asynchronous response')) {
+        const msg = event.reason?.message || '';
+        if (msg.includes('A listener indicated an asynchronous response') ||
+            msg.includes('Blocked by CSP') ||
+            msg.includes('googlesyndication') ||
+            msg.includes('safeframe')) {
           event.preventDefault();
+          console.warn('[APP] ✅ Suprimido erro de extensão/ads');
         }
       });
+      
+      // Estratégia 2: Capturar erro global
+      window.addEventListener('error', function(event) {
+        const msg = event.message || event.type || '';
+        const errorMsg = event.reason?.message || '';
+        if (msg.includes('A listener indicated an asynchronous response') ||
+            msg.includes('googlesyndication') ||
+            msg.includes('safeframe') ||
+            msg.includes('Blocked by CSP') ||
+            errorMsg.includes('googlesyndication')) {
+          event.preventDefault ? event.preventDefault() : null;
+          console.warn('[APP] ✅ Suprimido erro (ads/extensão)');
+          return true;
+        }
+      });
+      
+      // Estratégia 3: Filtrar console de erros não críticos
+      const originalConsoleError = console.error;
+      console.error = function() {
+        const msg = Array.from(arguments).join(' ');
+        const ignoredPatterns = [
+          'A listener indicated an asynchronous response',
+          'googlesyndication',
+          'safeframe',
+          'Blocked by CSP',
+          'CreateDumpAdElements',
+          'CheckAdblockerActivityStatus',
+          'CheckForActiveAdblocker'
+        ];
+        
+        if (ignoredPatterns.some(pattern => msg.includes(pattern))) {
+          // Silenciar apenas estes erros específicos
+          return;
+        }
+        originalConsoleError.apply(console, arguments);
+      };
+      
+      // Estratégia 4: Interceptar console.warn também para ads
+      const originalConsoleWarn = console.warn;
+      console.warn = function() {
+        const msg = Array.from(arguments).join(' ');
+        if (msg.includes('googlesyndication') || msg.includes('safeframe')) {
+          return;
+        }
+        originalConsoleWarn.apply(console, arguments);
+      };
     })();
 
     // Transition behavior removed per request — no page overlay transitions

@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * App\Models\User
@@ -36,6 +37,8 @@ class User extends Authenticatable
     public const PERFIL_CONSULTOR = 'C';
     public const TELA_PATRIMONIO = '1000';
     public const TELA_RELATORIOS = '1006';
+    public const MATRICULA_PLACEHOLDERS = ['0', '1'];
+    public const MATRICULA_PLACEHOLDER_PREFIX = 'TMP-';
 
     /**
      * @var string A tabela do banco de dados associada a este Model.
@@ -68,12 +71,14 @@ class User extends Authenticatable
         'UF',
         'must_change_password',
         'password_policy_version',
+        'needs_identity_update',
         'theme',
     ];
 
     protected $casts = [
         'must_change_password' => 'boolean',
         'password_policy_version' => 'integer',
+        'needs_identity_update' => 'boolean',
     ];
 
     /**
@@ -235,6 +240,70 @@ class User extends Authenticatable
         }
 
         return true;
+    }
+
+    public function needsUf(): bool
+    {
+        $uf = trim((string) ($this->UF ?? ''));
+        return $uf === '';
+    }
+
+    public function needsName(): bool
+    {
+        return trim((string) ($this->NOMEUSER ?? '')) === '';
+    }
+
+    public function needsMatricula(): bool
+    {
+        $matricula = trim((string) ($this->CDMATRFUNCIONARIO ?? ''));
+        return self::isPlaceholderMatriculaValue($matricula);
+    }
+
+    public function isPlaceholderMatricula(): bool
+    {
+        $matricula = trim((string) ($this->CDMATRFUNCIONARIO ?? ''));
+        return self::isPlaceholderMatriculaValue($matricula);
+    }
+
+    public function shouldRequestMatricula(): bool
+    {
+        return $this->needsMatricula() || ($this->needs_identity_update ?? false);
+    }
+
+    public function shouldRequestName(): bool
+    {
+        return $this->needsName() || ($this->needs_identity_update ?? false);
+    }
+
+    public function needsIdentityCompletion(): bool
+    {
+        return $this->needsName() || $this->needsMatricula();
+    }
+
+    public function needsIdentityUpdate(): bool
+    {
+        return $this->needsIdentityCompletion() || ($this->needs_identity_update ?? false);
+    }
+
+    public static function isPlaceholderMatriculaValue(?string $matricula): bool
+    {
+        $matricula = trim((string) ($matricula ?? ''));
+        if ($matricula === '') {
+            return true;
+        }
+        if (in_array($matricula, self::MATRICULA_PLACEHOLDERS, true)) {
+            return true;
+        }
+        return str_starts_with($matricula, self::MATRICULA_PLACEHOLDER_PREFIX);
+    }
+
+    public static function generateTemporaryMatricula(): string
+    {
+        do {
+            $candidate = self::MATRICULA_PLACEHOLDER_PREFIX . Str::upper(Str::random(4));
+        } while (self::where('CDMATRFUNCIONARIO', $candidate)->exists());
+
+        return $candidate;
     }
 
     public function telasComAcesso(): array

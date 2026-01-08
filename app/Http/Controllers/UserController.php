@@ -186,27 +186,43 @@ class UserController extends Controller
 
     public function store(Request $request): View|\Illuminate\Http\RedirectResponse
     {
-        $request->validate([
-            'NOMEUSER' => ['required', 'string', 'max:80'],
+        $matriculaInput = trim((string) ($request->CDMATRFUNCIONARIO ?? ''));
+
+        $rules = [
+            'NOMEUSER' => ['nullable', 'string', 'max:80'],
             'NMLOGIN' => ['required', 'string', 'max:30', 'unique:usuario,NMLOGIN'],
-            'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', 'unique:usuario,CDMATRFUNCIONARIO'],
-            'PERFIL' => ['required', \Illuminate\Validation\Rule::in(['ADM', 'USR', 'C'])], 
+            'PERFIL' => ['required', \Illuminate\Validation\Rule::in(['ADM', 'USR', 'C'])],
+            'needs_identity_update' => ['nullable', 'boolean'],
             'telas' => ['nullable', 'array'],
             'telas.*' => ['integer', 'exists:acessotela,NUSEQTELA'],
-        ]);
+        ];
+
+        $matriculaRules = ['nullable', 'string', 'max:8'];
+        if ($matriculaInput !== '') {
+            $matriculaRules[] = Rule::unique('usuario', 'CDMATRFUNCIONARIO');
+        }
+        $rules['CDMATRFUNCIONARIO'] = $matriculaRules;
+
+        $request->validate($rules);
 
         // Senha provisória forte: prefixo 'Plansul@' + 6 números aleatórios
         $randomNumbers = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $senhaProvisoria = 'Plansul@' . $randomNumbers;
 
+        $matricula = $matriculaInput !== '' ? $matriculaInput : User::generateTemporaryMatricula();
+        $forceIdentityUpdate = $request->boolean('needs_identity_update', false)
+            || User::isPlaceholderMatriculaValue($matricula)
+            || trim((string) ($request->NOMEUSER ?? '')) === '';
+
         $user = User::create([
             'NOMEUSER' => $request->NOMEUSER,
             'NMLOGIN' => $request->NMLOGIN,
-            'CDMATRFUNCIONARIO' => $request->CDMATRFUNCIONARIO,
+            'CDMATRFUNCIONARIO' => $matricula,
             'PERFIL' => $request->PERFIL,
             'SENHA' => $senhaProvisoria,
             'LGATIVO' => 'S',
             'must_change_password' => true,
+            'needs_identity_update' => $forceIdentityUpdate,
         ]);
 
         /** @var User|null $me */
@@ -233,22 +249,37 @@ class UserController extends Controller
 
     public function update(Request $request, User $usuario): RedirectResponse
     {
-        $request->validate([
-            'NOMEUSER' => ['required', 'string', 'max:80'],
+        $matriculaInput = trim((string) ($request->CDMATRFUNCIONARIO ?? ''));
+
+        $rules = [
+            'NOMEUSER' => ['nullable', 'string', 'max:80'],
             'NMLOGIN' => ['required', 'string', 'max:30', Rule::unique('usuario', 'NMLOGIN')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
-            'CDMATRFUNCIONARIO' => ['required', 'string', 'max:8', Rule::unique('usuario', 'CDMATRFUNCIONARIO')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
             'PERFIL' => ['required', Rule::in(['ADM', 'USR', 'C'])],
+            'needs_identity_update' => ['nullable', 'boolean'],
             'SENHA' => ['nullable', 'string', 'min:8'],
             'telas' => ['nullable', 'array'],
             'telas.*' => ['integer', 'exists:acessotela,NUSEQTELA'],
-        ]);
+        ];
+
+        $matriculaRules = ['nullable', 'string', 'max:8'];
+        if ($matriculaInput !== '') {
+            $matriculaRules[] = Rule::unique('usuario', 'CDMATRFUNCIONARIO')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO');
+        }
+        $rules['CDMATRFUNCIONARIO'] = $matriculaRules;
+
+        $request->validate($rules);
 
         $oldMatricula = $usuario->CDMATRFUNCIONARIO;
+        $matricula = $matriculaInput !== '' ? $matriculaInput : User::generateTemporaryMatricula();
+        $forceIdentityUpdate = $request->boolean('needs_identity_update', false)
+            || User::isPlaceholderMatriculaValue($matricula)
+            || trim((string) ($request->NOMEUSER ?? '')) === '';
 
         $usuario->NOMEUSER = $request->NOMEUSER;
         $usuario->NMLOGIN = $request->NMLOGIN;
-        $usuario->CDMATRFUNCIONARIO = $request->CDMATRFUNCIONARIO;
+        $usuario->CDMATRFUNCIONARIO = $matricula;
         $usuario->PERFIL = $request->PERFIL;
+        $usuario->needs_identity_update = $forceIdentityUpdate;
 
         if ($request->filled('SENHA')) {
             $usuario->SENHA = $request->SENHA;

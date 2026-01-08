@@ -32,7 +32,19 @@
                   <span>selecionado<span id="bulk-plural">s</span></span>
                 </div>
                 <div class="h-5 w-px bg-gray-300 dark:bg-gray-600"></div>
-                <select id="bulk-situacao" class="h-9 px-3 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 transition">
+                                <div id="bulk-conferido-group" class="flex items-center gap-1">
+                  <button id="bulk-conferido-yes" type="button" class="h-9 w-9 rounded-md border border-green-600 bg-green-600 text-white transition flex items-center justify-center" aria-pressed="false" aria-label="Verificado" title="Verificado">
+                    <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 00-1.06 1.06l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                  <button id="bulk-conferido-no" type="button" class="h-9 w-9 rounded-md border border-red-600 bg-red-600 text-white transition flex items-center justify-center" aria-pressed="false" aria-label="Nao verificado" title="Nao verificado">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M8 12h8" />
+                    </svg>
+                  </button>
+                </div>                <select id="bulk-situacao" class="h-9 px-3 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 transition">
                   <option value="" disabled selected class="text-gray-500 dark:text-gray-400">Situação</option>
                   <option value="EM USO">EM USO</option>
                   <option value="CONSERTO">CONSERTO</option>
@@ -45,9 +57,11 @@
                 <button id="bulk-delete" class="h-9 px-4 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out shadow-sm">
                   Deletar
                 </button>
-                <button id="bulk-clear" class="h-9 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition duration-150">
-                  Limpar
-                </button>
+                <div class="ml-auto">
+                  <button id="bulk-clear" class="h-9 px-4 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition duration-150">
+                    Limpar
+                  </button>
+                </div>
               </div>
             </div>
             @endunless
@@ -57,22 +71,21 @@
                 id="bulk-confirm-modal"
                 class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-sm px-4"
               >
-              <div class="w-full max-w-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div class="w-full max-w-6xl max-h-[90vh] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
                 
                 {{-- Header --}}
-                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                   <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar Alteração</h3>
                   <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Revise os patrimônios selecionados</p>
                 </div>
 
                 {{-- Conteúdo compacto --}}
-                <div class="px-6 py-4 space-y-3 max-h-64 overflow-y-auto">
+                <div class="px-6 py-4 space-y-4 overflow-y-auto bg-white dark:bg-gray-800">
                   
-                  {{-- Nova situação com badge destacado --}}
-                  <div id="bulk-confirm-situacao-wrapper" style="display:none;" class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3">
-                    <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">Novo Status</p>
+                  <div id="bulk-confirm-situacao-wrapper" style="display:none;" class="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3">
+                    <p class="text-xs font-semibold text-indigo-700 dark:text-indigo-300 uppercase tracking-wider mb-1">Novo Status</p>
                     <div class="flex items-center gap-2">
-                      <span id="bulk-confirm-new" class="text-base font-bold text-indigo-700 dark:text-indigo-300"></span>
+                      <span id="bulk-confirm-new" class="text-base font-bold text-indigo-700 dark:text-indigo-200"></span>
                     </div>
                   </div>
 
@@ -80,19 +93,19 @@
                   <div class="space-y-2">
                     <div class="flex items-center justify-between">
                       <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Patrimônios a Alterar:</p>
-                      <span class="inline-block px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
+                      <span class="inline-block px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 text-xs font-bold border border-indigo-200 dark:border-indigo-700/60">
                         <span id="bulk-confirm-count">0</span> / <span id="bulk-confirm-count-header">0</span>
                       </span>
                     </div>
-                    <div id="bulk-confirm-list" class="max-h-48 overflow-y-auto space-y-1.5 pr-1">
+                    <div id="bulk-confirm-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[55vh] overflow-y-auto pr-1">
                       <!-- itens gerados via JS -->
                     </div>
                   </div>
                 </div>
 
                 {{-- Footer com ações --}}
-                <div class="bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-3">
-                  <button id="bulk-confirm-cancel" class="px-4 py-2 rounded-md text-sm font-semibold border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition">Cancelar</button>
+                <div class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-3">
+                  <button id="bulk-confirm-cancel" class="px-4 py-2 rounded-md text-sm font-semibold border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition">Cancelar</button>
                   <button id="bulk-confirm-yes" class="px-4 py-2 rounded-md text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition">✓ Confirmar</button>
                 </div>
               </div>
@@ -310,6 +323,8 @@
         const bulkCount = document.querySelector('#bulk-count');
         const bulkPlural = document.querySelector('#bulk-plural');
         const bulkSelect = document.querySelector('#bulk-situacao');
+        const bulkConferidoYes = document.querySelector('#bulk-conferido-yes');
+        const bulkConferidoNo = document.querySelector('#bulk-conferido-no');
         const bulkApply = document.querySelector('#bulk-apply');
         const bulkClear = document.querySelector('#bulk-clear');
         const bulkConfirmModal = document.querySelector('#bulk-confirm-modal');
@@ -319,14 +334,72 @@
         const bulkConfirmCancel = document.querySelector('#bulk-confirm-cancel');
         const bulkConfirmClose = document.querySelector('#bulk-confirm-close');
         const bulkEndpoint = "{{ route('patrimonios.bulk-situacao') }}";
+        const filterEndpoint = "{{ route('patrimonios.ajax-filter') }}";
         const csrf = document.querySelector('meta[name=\"csrf-token\"]')?.content || '';
         const selectedIds = new Set();
+        const selectedMeta = new Map();
         let pendingSituacao = null;
+        let pendingConferido = null;
         const logTags = (label = 'tags') => {
           const tags = Array.from(document.querySelectorAll('#patrimonios-tags [data-ajax-tag-remove]')).map(t => t.textContent.trim());
           console.log('[PATRI] ' + label, tags);
         };
+
+        const normalizeSituacaoValue = (value) => {
+          if (!value) return '';
+          return value
+            .toString()
+            .trim()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/\s+/g, ' ')
+            .toUpperCase();
+        };
+
+        const situationStyles = {
+          'EM USO': 'bg-yellow-500 text-white border-yellow-500 dark:bg-yellow-800 dark:border-yellow-700',
+          'CONSERTO': 'bg-orange-500 text-white border-orange-500 dark:bg-orange-800 dark:border-orange-700',
+          'BAIXA': 'bg-slate-900 text-white border-slate-900 dark:bg-slate-800 dark:border-slate-700',
+          'A DISPOSICAO': 'bg-emerald-500 text-white border-emerald-500 dark:bg-emerald-800 dark:border-emerald-700',
+          'DISPONIVEL': 'bg-emerald-500 text-white border-emerald-500 dark:bg-emerald-800 dark:border-emerald-700',
+        };
+
+        const getSituacaoClasses = (value) => {
+          const normalized = normalizeSituacaoValue(value);
+          return situationStyles[normalized] ?? 'bg-gray-200 text-gray-900 border-gray-200 dark:bg-gray-700 dark:text-white';
+        };
         console.log('[PATRI] bulk-js init');
+        const storageKey = 'patrimonios.bulk.selection';
+        const saveSelection = () => {
+          try {
+            const ids = Array.from(selectedIds);
+            const meta = {};
+            selectedMeta.forEach((value, key) => {
+              if (selectedIds.has(key)) {
+                meta[key] = value;
+              }
+            });
+            sessionStorage.setItem(storageKey, JSON.stringify({ ids, meta }));
+          } catch (_) {
+          }
+        };
+
+        const loadSelection = () => {
+          try {
+            const raw = sessionStorage.getItem(storageKey);
+            if (!raw) return;
+            const data = JSON.parse(raw);
+            selectedIds.clear();
+            selectedMeta.clear();
+            (data.ids || []).forEach((id) => {
+              selectedIds.add(String(id));
+            });
+            Object.entries(data.meta || {}).forEach(([id, meta]) => {
+              selectedMeta.set(String(id), meta);
+            });
+          } catch (_) {
+          }
+        };
 
         const updateBulkBar = () => {
           if (!bulkBar) return;
@@ -350,6 +423,7 @@
               }
             }, 200);
           }
+          updateConferidoToggle();
           console.log('[PATRI] bulk-bar update', {
             size,
             active,
@@ -358,38 +432,145 @@
           });
         };
 
-        const toggleId = (id, checked) => {
-          if (!id) return;
-          if (checked) {
-            selectedIds.add(id);
-          } else {
-            selectedIds.delete(id);
+        const readRowMeta = (id) => {
+          const row = document.querySelector(`[data-row-id="${id}"]`);
+          if (!row) return null;
+          return {
+            conferido: row.dataset.conferido || 'N',
+            situacao: row.dataset.situacao || '-',
+            patrimonio: row.dataset.patrimonio || id,
+          };
+        };
+
+        const syncSelectedMeta = () => {
+          selectedIds.forEach((id) => {
+            const meta = readRowMeta(id);
+            if (meta) {
+              selectedMeta.set(id, meta);
+            }
+          });
+        };
+
+        const summarizeConferido = () => {
+          let verificados = 0;
+          let naoVerificados = 0;
+          selectedMeta.forEach((meta, id) => {
+            if (!selectedIds.has(id)) return;
+            if ((meta.conferido || 'N') === 'S') {
+              verificados += 1;
+            } else {
+              naoVerificados += 1;
+            }
+          });
+          return { verificados, naoVerificados };
+        };
+        const updateConferidoVisibility = () => {
+          const summary = summarizeConferido();
+          const hasSelection = selectedIds.size > 0;
+          if (!hasSelection) {
+            if (bulkConferidoYes) bulkConferidoYes.style.display = 'none';
+            if (bulkConferidoNo) bulkConferidoNo.style.display = 'none';
+            pendingConferido = null;
+            return;
           }
-          console.log('[PATRI] toggle', id, checked, 'total', selectedIds.size);
+          if (summary.verificados > 0 && summary.naoVerificados === 0) {
+            if (bulkConferidoYes) bulkConferidoYes.style.display = 'none';
+            if (bulkConferidoNo) bulkConferidoNo.style.display = '';
+            if (pendingConferido === 'S') pendingConferido = null;
+            return;
+          }
+          if (summary.naoVerificados > 0 && summary.verificados === 0) {
+            if (bulkConferidoYes) bulkConferidoYes.style.display = '';
+            if (bulkConferidoNo) bulkConferidoNo.style.display = 'none';
+            if (pendingConferido === 'N') pendingConferido = null;
+            return;
+          }
+          if (bulkConferidoYes) bulkConferidoYes.style.display = '';
+          if (bulkConferidoNo) bulkConferidoNo.style.display = '';
+        };
+
+        const updateConferidoToggle = () => {
+          updateConferidoVisibility();
+          const hasSelection = selectedIds.size > 0;
+          const disable = !hasSelection;
+          [bulkConferidoYes, bulkConferidoNo].forEach((btn) => {
+            if (!btn) return;
+            btn.disabled = disable;
+            btn.classList.toggle('opacity-50', disable);
+            btn.classList.toggle('cursor-not-allowed', disable);
+            btn.classList.remove('ring-2', 'ring-offset-2', 'ring-green-600', 'ring-red-600');
+          });
+          if (pendingConferido === 'S' && bulkConferidoYes && bulkConferidoYes.style.display !== 'none') {
+            bulkConferidoYes.classList.add('ring-2', 'ring-offset-2', 'ring-green-600');
+            bulkConferidoYes.setAttribute('aria-pressed', 'true');
+            if (bulkConferidoNo) bulkConferidoNo.setAttribute('aria-pressed', 'false');
+          } else if (pendingConferido === 'N' && bulkConferidoNo && bulkConferidoNo.style.display !== 'none') {
+            bulkConferidoNo.classList.add('ring-2', 'ring-offset-2', 'ring-red-600');
+            bulkConferidoNo.setAttribute('aria-pressed', 'true');
+            if (bulkConferidoYes) bulkConferidoYes.setAttribute('aria-pressed', 'false');
+          } else {
+            if (bulkConferidoYes) bulkConferidoYes.setAttribute('aria-pressed', 'false');
+            if (bulkConferidoNo) bulkConferidoNo.setAttribute('aria-pressed', 'false');
+          }
+        };
+
+        const inferConferidoAction = () => {
+          const summary = summarizeConferido();
+          if (summary.verificados > 0 && summary.naoVerificados === 0) return 'N';
+          if (summary.naoVerificados > 0 && summary.verificados === 0) return 'S';
+          return 'S';
+        };
+                        const toggleId = (id, checked) => {
+          if (!id) return;
+          const key = String(id);
+          if (checked) {
+            selectedIds.add(key);
+            const meta = readRowMeta(key);
+            if (meta) selectedMeta.set(key, meta);
+          } else {
+            selectedIds.delete(key);
+            selectedMeta.delete(key);
+          }
+          console.log('[PATRI] toggle', key, checked, 'total', selectedIds.size);
+          saveSelection();
           updateBulkBar();
         };
 
-        const bindCheckboxes = () => {
+                        const bindCheckboxes = () => {
           if (!tableContent) return;
           const boxes = tableContent.querySelectorAll('.patrimonio-checkbox');
           boxes.forEach((box) => {
             const id = box.value;
-            box.checked = selectedIds.has(id);
+            box.checked = selectedIds.has(String(id));
           });
+          syncSelectedMeta();
+          saveSelection();
           updateBulkBar();
         };
 
         const refreshHeaderCheckbox = () => {};
 
-        const clearSelection = () => {
+                        const clearSelection = () => {
           selectedIds.clear();
+          selectedMeta.clear();
+          pendingConferido = null;
           const boxes = tableContent?.querySelectorAll('.patrimonio-checkbox') || [];
           boxes.forEach(b => { b.checked = false; });
           refreshHeaderCheckbox();
+          saveSelection();
           updateBulkBar();
         };
 
-        const runBulkUpdate = (situacao) => {
+                const runBulkUpdate = (situacao) => {
+          const payload = {
+            ids: Array.from(selectedIds),
+          };
+          if (situacao) {
+            payload.situacao = situacao;
+          }
+          if (pendingConferido) {
+            payload.conferido = pendingConferido;
+          }
           fetch(bulkEndpoint, {
             method: 'POST',
             headers: {
@@ -397,10 +578,7 @@
               'Accept': 'application/json',
               'X-CSRF-TOKEN': csrf,
             },
-            body: JSON.stringify({
-              ids: Array.from(selectedIds),
-              situacao,
-            }),
+            body: JSON.stringify(payload),
           }).then(async (resp) => {
             const data = await resp.json().catch(() => ({}));
             if (!resp.ok) {
@@ -408,11 +586,11 @@
             }
             clearSelection();
             if (window.location.href) {
-              ajaxFetch(window.location.href);
+              ajaxFetchParams(buildParamsFromForm());
             }
           }).catch((err) => {
             console.error(err);
-            alert(err.message || 'Falha ao aplicar situação.');
+            alert(err.message || 'Falha ao aplicar alteracoes.');
           });
         };
 
@@ -424,74 +602,106 @@
           }
         };
 
-        const openConfirmModal = (situacao) => {
-          pendingSituacao = situacao;
+                const openConfirmModal = (situacao) => {
+          pendingSituacao = situacao || null;
+          const hasSituacao = !!pendingSituacao;
+          const hasConferido = pendingConferido !== null;
           if (!bulkConfirmModal || !bulkConfirmList || !bulkConfirmNew) {
-            runBulkUpdate(situacao);
+            runBulkUpdate(pendingSituacao);
             return;
           }
-          bulkConfirmNew.textContent = situacao;
+          if (bulkConfirmNew) {
+            bulkConfirmNew.textContent = hasSituacao ? pendingSituacao : '';
+            bulkConfirmNew.className = hasSituacao ? 'text-base font-bold rounded px-3 py-1 ' + getSituacaoClasses(pendingSituacao) : 'text-base font-bold';
+          }
+          const createArrowIcon = () => {
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = `
+              <svg class="w-5 h-5 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+              </svg>
+            `;
+            return wrapper;
+          };
           document.getElementById('bulk-confirm-count-header').textContent = selectedIds.size;
           bulkConfirmList.innerHTML = '';
           document.getElementById('bulk-confirm-count').textContent = selectedIds.size;
           selectedIds.forEach((id) => {
-            const row = document.querySelector(`[data-row-id=\"${id}\"]`);
-            const prev = row?.dataset?.situacao || '—';
-            const patr = row?.dataset?.patrimonio || id;
-            
+            const meta = selectedMeta.get(id) || readRowMeta(id) || {};
+            const prevSituacao = meta.situacao || '-';
+            const prevConferido = (meta.conferido || 'N') === 'S' ? 'Verificado' : 'Nao verificado';
+            const patr = meta.patrimonio || id;
+
             const item = document.createElement('div');
-            item.className = 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-500 transition-all';
-            
-            // Número do patrimônio
+            item.className = 'bg-gray-50 dark:bg-gray-800/60 border border-black/20 dark:border-black rounded-lg p-3 transition-all shadow-[0_20px_35px_-25px_rgba(0,0,0,0.6)] hover:shadow-[0_25px_45px_-25px_rgba(0,0,0,0.9)] hover:border-indigo-400 dark:hover:border-indigo-500';
+
             const numDiv = document.createElement('div');
             numDiv.className = 'flex items-center gap-2 mb-2';
             const numBadge = document.createElement('span');
-            numBadge.className = 'px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-bold text-xs';
-            numBadge.textContent = `Nº ${patr}`;
+            numBadge.className = 'px-2.5 py-1 rounded-full bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-200 font-bold text-xs border border-orange-200 dark:border-orange-700/60';
+            numBadge.textContent = 'N ' + patr;
             numDiv.appendChild(numBadge);
             item.appendChild(numDiv);
-            
-            // Transição de status com seta bonita
-            const transDiv = document.createElement('div');
-            transDiv.className = 'flex items-center gap-2 justify-between';
-            
-            const badgeFrom = document.createElement('span');
-            badgeFrom.className = 'flex-1 px-2.5 py-1.5 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-xs text-center';
-            badgeFrom.textContent = prev;
-            
-            const arrowContainer = document.createElement('div');
-            arrowContainer.className = 'flex-shrink-0 flex items-center justify-center px-1';
-            const arrow = document.createElement('div');
-            arrow.innerHTML = `
-              <svg class="w-5 h-5 text-indigo-500 dark:text-indigo-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-              </svg>
-            `;
-            arrowContainer.appendChild(arrow);
-            
-            const badgeTo = document.createElement('span');
-            badgeTo.className = 'flex-1 px-2.5 py-1.5 rounded-md bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/50 dark:to-emerald-900/50 text-green-700 dark:text-green-300 font-bold text-xs text-center';
-            badgeTo.textContent = situacao;
-            
-            transDiv.appendChild(badgeFrom);
-            transDiv.appendChild(arrowContainer);
-            transDiv.appendChild(badgeTo);
-            item.appendChild(transDiv);
-            
+
+            if (hasSituacao) {
+              const transDiv = document.createElement('div');
+              transDiv.className = 'flex items-center gap-2 justify-between';
+
+              const badgeFrom = document.createElement('span');
+              badgeFrom.className = 'flex-1 px-2.5 py-1.5 rounded-md text-xs font-semibold text-center border ' + getSituacaoClasses(prevSituacao);
+              badgeFrom.textContent = prevSituacao === '-' ? '-' : prevSituacao;
+
+              const arrowContainer = document.createElement('div');
+              arrowContainer.className = 'flex-shrink-0 flex items-center justify-center px-1';
+              const arrow = createArrowIcon();
+              arrowContainer.appendChild(arrow);
+
+              const badgeTo = document.createElement('span');
+              badgeTo.className = 'flex-1 px-2.5 py-1.5 rounded-md text-xs font-bold text-center border ' + getSituacaoClasses(pendingSituacao);
+              badgeTo.textContent = pendingSituacao;
+
+              transDiv.appendChild(badgeFrom);
+              transDiv.appendChild(arrowContainer);
+              transDiv.appendChild(badgeTo);
+              item.appendChild(transDiv);
+            }
+
+            if (hasConferido) {
+              const conferidoDiv = document.createElement('div');
+              conferidoDiv.className = hasSituacao ? 'flex items-center gap-2 justify-between mt-2' : 'flex items-center gap-2 justify-between';
+
+              const badgeFrom = document.createElement('span');
+              badgeFrom.className = 'flex-1 px-2.5 py-1.5 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold text-xs text-center border border-gray-200 dark:border-gray-600';
+              badgeFrom.textContent = prevConferido;
+
+              const arrow = createArrowIcon();
+
+              const badgeTo = document.createElement('span');
+              badgeTo.className = pendingConferido === 'S'
+                ? 'flex-1 px-2.5 py-1.5 rounded-md bg-green-600 text-white font-bold text-xs text-center border border-green-700'
+                : 'flex-1 px-2.5 py-1.5 rounded-md bg-red-600 text-white font-bold text-xs text-center border border-red-700';
+              badgeTo.textContent = pendingConferido === 'S' ? 'Verificado' : 'Nao verificado';
+
+              conferidoDiv.appendChild(badgeFrom);
+              conferidoDiv.appendChild(arrow);
+              conferidoDiv.appendChild(badgeTo);
+              item.appendChild(conferidoDiv);
+            }
+
             bulkConfirmList.appendChild(item);
           });
           bulkConfirmModal.classList.remove('hidden');
           bulkConfirmModal.classList.add('flex');
         };
 
-        const applyBulkSituacao = () => {
+                const applyBulkSituacao = () => {
           const situacao = bulkSelect?.value || '';
           if (selectedIds.size === 0) {
-            alert('Selecione ao menos um patrimônio.');
+            alert('Selecione ao menos um patrimonio.');
             return;
           }
-          if (!situacao) {
-            alert('Escolha a situação para aplicar.');
+          if (!situacao && !pendingConferido) {
+            alert('Escolha a situacao ou verificacao para aplicar.');
             return;
           }
           openConfirmModal(situacao);
@@ -512,28 +722,42 @@
           const tagsContainer = document.querySelector('#patrimonios-tags');
           
           if (freshTags && tagsContainer) {
-            // Copiar conteúdo AND atributos x-data
-            tagsContainer.innerHTML = freshTags.innerHTML;
-            // Copiar os atributos Alpine (x-data, etc)
-            Array.from(freshTags.attributes).forEach(attr => {
-              if (attr.name.startsWith('x-') || attr.name.startsWith('@')) {
-                tagsContainer.setAttribute(attr.name, attr.value);
-              }
-            });
+            tagsContainer.replaceWith(freshTags);
             // Reinicializar Alpine para as tags
             if (window.Alpine && typeof Alpine.initTree === 'function') {
-              Alpine.initTree(tagsContainer);
+              Alpine.initTree(freshTags);
             }
           }
           
           logTags('after-swap');
-          bindCheckboxes();
+            bindCheckboxes();
         };
 
-        const buildUrlFromForm = () => {
-          if (!form) return null;
-          const params = new URLSearchParams(new FormData(form));
-          return form.action + (params.toString() ? '?' + params.toString() : '');
+                const buildParamsFromForm = () => {
+          if (!form) return new URLSearchParams();
+          return new URLSearchParams(new FormData(form));
+        };
+
+        const buildParamsWithOverrides = (overrides) => {
+          const params = buildParamsFromForm();
+          Object.entries(overrides || {}).forEach(([key, value]) => {
+            if (value === null || value === '' || typeof value === 'undefined') {
+              params.delete(key);
+            } else {
+              params.set(key, value);
+            }
+          });
+          return params;
+        };
+
+        const parseHrefParams = (href) => {
+          try {
+            const url = new URL(href, window.location.origin);
+            return url.searchParams;
+          } catch (_) {
+            const idx = href.indexOf('?');
+            return new URLSearchParams(idx >= 0 ? href.slice(idx + 1) : '');
+          }
         };
 
         const scrollToTopSmooth = () => {
@@ -544,16 +768,36 @@
           }
         };
 
-        const ajaxFetch = (url) => {
+        const stripQueryFromUrl = () => {
+          if (!window.history || !window.location.search) return;
+          const url = window.location.pathname + window.location.hash;
+          window.history.replaceState(null, '', url);
+        };
+
+        const ajaxFetchParams = (params) => {
           if (!tableContainer) return;
           scrollToTopSmooth();
           if (loading) loading.classList.remove('hidden');
           if (loadingTop) loadingTop.classList.remove('hidden');
           tableContainer.classList.add('opacity-60');
-          fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          const body = params instanceof URLSearchParams ? params.toString() : '';
+          fetch(filterEndpoint, {
+            method: 'POST',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRF-TOKEN': csrf,
+              'Accept': 'text/html',
+              'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            },
+            body,
+          })
             .then(resp => resp.text())
             .then(swapTable)
-            .catch(() => window.location.href = url)
+            .then(stripQueryFromUrl)
+            .catch((err) => {
+              console.error('[PATRI] ajax fetch error', err);
+              alert('Falha ao atualizar a listagem. Tente novamente.');
+            })
             .finally(() => {
               tableContainer.classList.remove('opacity-60');
               if (loading) loading.classList.add('hidden');
@@ -561,39 +805,48 @@
             });
         };
 
-        // ✅ Expor ajaxFetch globalmente para que possa ser chamada após salvar modal
-        window.ajaxFetchPatrimonios = ajaxFetch;
+        // ?o. Expor ajaxFetch globalmente para que possa ser chamada ap??s salvar modal
+        window.ajaxFetchPatrimonios = () => ajaxFetchParams(buildParamsFromForm());
 
         if (form) {
           form.addEventListener('submit', (e) => {
             e.preventDefault();
-            const url = buildUrlFromForm();
-            if (url) {
-              ajaxFetch(url);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+            ajaxFetchParams(buildParamsFromForm());
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           });
         }
 
         cleanLinks.forEach(link => {
           link.addEventListener('click', (e) => {
             e.preventDefault();
-            const href = link.getAttribute('href');
-            if (href) {
-              ajaxFetch(href);
-              if (form) form.reset();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+            if (form) form.reset();
+            ajaxFetchParams(buildParamsFromForm());
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           });
         });
 
         document.addEventListener('click', (e) => {
+          const tagLink = e.target.closest('[data-ajax-tag-remove]');
+          if (tagLink) {
+            e.preventDefault();
+            const href = tagLink.getAttribute('href');
+            if (href) {
+              ajaxFetchParams(parseHrefParams(href));
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            return;
+          }
+
           const sortLink = e.target.closest('[data-ajax-sort]');
           if (sortLink) {
             e.preventDefault();
             const href = sortLink.getAttribute('href');
             if (href) {
-              ajaxFetch(href);
+              const hrefParams = parseHrefParams(href);
+              ajaxFetchParams(buildParamsWithOverrides({
+                sort: hrefParams.get('sort'),
+                direction: hrefParams.get('direction'),
+              }));
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }
             return;
@@ -604,7 +857,11 @@
             e.preventDefault();
             const href = pagLink.getAttribute('href');
             if (href) {
-              ajaxFetch(href);
+              const hrefParams = parseHrefParams(href);
+              ajaxFetchParams(buildParamsWithOverrides({
+                page: hrefParams.get('page'),
+                per_page: hrefParams.get('per_page'),
+              }));
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }
             return;
@@ -620,8 +877,28 @@
         if (tableContent) tableContent.addEventListener('change', checkboxChangeHandler);
         document.addEventListener('change', checkboxChangeHandler);
 
+        stripQueryFromUrl();
+        loadSelection();
         bindCheckboxes();
-        bulkApply?.addEventListener('click', applyBulkSituacao);
+        bulkApply?.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          applyBulkSituacao();
+        });
+        bulkConferidoYes?.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (selectedIds.size === 0) return;
+          pendingConferido = pendingConferido === 'S' ? null : 'S';
+          updateConferidoToggle();
+        });
+        bulkConferidoNo?.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (selectedIds.size === 0) return;
+          pendingConferido = pendingConferido === 'N' ? null : 'N';
+          updateConferidoToggle();
+        });
         
         // ✅ Novo: Listener para deletar em massa
         const bulkDelete = document.querySelector('#bulk-delete');
@@ -640,11 +917,9 @@
         const openConfirmDeleteModal = () => {
           const title = document.querySelector('#bulk-confirm-title');
           const desc = document.querySelector('#bulk-confirm-desc');
-          const situacaoWrapper = document.querySelector('#bulk-confirm-situacao-wrapper');
           
           if (title) title.textContent = '⚠️ Confirmar exclusão em massa';
           if (desc) desc.textContent = 'Esta ação é irreversível! Os patrimônios serão deletados permanentemente.';
-          if (situacaoWrapper) situacaoWrapper.style.display = 'none';
           
           if (!bulkConfirmModal || !bulkConfirmList) return;
           bulkConfirmList.innerHTML = '';
@@ -682,7 +957,7 @@
             clearSelection();
             pendingDeleteIds.clear();
             if (window.location.href) {
-              ajaxFetch(window.location.href);
+              ajaxFetchParams(buildParamsFromForm());
             }
           }).catch((err) => {
             console.error(err);
@@ -690,31 +965,42 @@
           });
         };
         
-        bulkDelete?.addEventListener('click', applyBulkDelete);
+        bulkDelete?.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          applyBulkDelete();
+        });
         
         // ✅ Modificar o listener do botão YES para detectar operação
         const originalConfirmYes = bulkConfirmYes?.onclick;
-        bulkConfirmYes?.addEventListener('click', () => {
+                bulkConfirmYes?.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
           if (pendingDeleteIds.size > 0) {
             closeConfirmModal();
             runBulkDelete();
-          } else if (pendingSituacao) {
+          } else {
             const situacao = pendingSituacao;
             closeConfirmModal();
             runBulkUpdate(situacao);
           }
         });
         
-        bulkClear?.addEventListener('click', clearSelection);
-        bulkConfirmYes?.addEventListener('click', () => {
-          if (pendingSituacao) {
-            const situacao = pendingSituacao;
-            closeConfirmModal();
-            runBulkUpdate(situacao);
-          }
+        bulkClear?.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          clearSelection();
         });
-        bulkConfirmCancel?.addEventListener('click', closeConfirmModal);
-        bulkConfirmClose?.addEventListener('click', closeConfirmModal);
+        bulkConfirmCancel?.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          closeConfirmModal();
+        });
+        bulkConfirmClose?.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          closeConfirmModal();
+        });
         logTags('initial');
       });
       function patrimoniosIndex() {
@@ -901,9 +1187,8 @@
               }
               // ✅ SUCESSO: Fechar modal e recarregar grid via AJAX (mantendo filtros e paginação)
               this.closeFormModal();
-              const currentUrl = window.location.pathname + window.location.search;
               if (window.ajaxFetchPatrimonios) {
-                window.ajaxFetchPatrimonios(currentUrl);
+                window.ajaxFetchPatrimonios();
               } else {
                 window.location.reload();
               }
@@ -1247,4 +1532,40 @@
     </style>
   @endpush
 </x-app-layout>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

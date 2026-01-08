@@ -1281,13 +1281,15 @@
                 });
               }
             }
+
+            // Preenchimento de inputs é monitorado pela função aguardarPreenchimentoInputsModal no index.blade.php
           }
         } catch (error) {
           console.error('Erro ao buscar patrimonio:', error);
-        } finally {
           this.loading = false;
         }
       },
+
       selecionarUsuario(usuario) {
         if (!usuario) return;
         const matricula = String(usuario.CDMATRFUNCIONARIO || usuario.matricula || '').trim();

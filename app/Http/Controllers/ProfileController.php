@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AcessoUsuario;
+use App\Models\Funcionario;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -59,7 +64,17 @@ class ProfileController extends Controller
     }
     public function showCompletionForm()
     {
-        return view('profile.complete');
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        $needsIdentity = $user?->needsIdentityUpdate() ?? false;
+        return view('profile.complete', [
+            'needsUf' => $user?->needsUf() ?? false,
+            'needsName' => $user?->shouldRequestName() ?? false,
+            'needsMatricula' => $user?->shouldRequestMatricula() ?? false,
+            'needsIdentity' => $needsIdentity,
+            'forceIdentityClear' => $needsIdentity,
+        ]);
     }
 
     /**
@@ -70,11 +85,31 @@ class ProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $rules = [
-            'UF' => ['required', 'string', 'size:2'],
-        ];
+        $needsUf = $user?->needsUf() ?? false;
+        $needsName = $user?->shouldRequestName() ?? false;
+        $needsMatricula = $user?->shouldRequestMatricula() ?? false;
+
+        $rules = [];
 
         $changingPassword = $user && ($user->must_change_password ?? false);
+
+        if ($needsUf) {
+            $rules['UF'] = ['required', 'string', 'size:2'];
+        }
+
+        if ($needsMatricula) {
+            $rules['CDMATRFUNCIONARIO'] = [
+                'required',
+                'string',
+                'max:8',
+                'not_in:' . implode(',', \App\Models\User::MATRICULA_PLACEHOLDERS),
+                Rule::unique('usuario', 'CDMATRFUNCIONARIO')->ignore($user->NUSEQUSUARIO, 'NUSEQUSUARIO'),
+            ];
+        }
+
+        if ($needsName) {
+            $rules['NOMEUSER'] = ['nullable', 'string', 'max:80'];
+        }
 
         if ($changingPassword) {
             $rules['password'] = [
@@ -90,7 +125,38 @@ class ProfileController extends Controller
             'password.regex' => 'A senha deve conter ao menos: 1 letra maiúscula, 1 letra minúscula, 1 número e 1 caractere especial.',
         ]);
 
-        $user->UF = strtoupper($validated['UF']);
+        $oldMatricula = trim((string) ($user->CDMATRFUNCIONARIO ?? ''));
+        $newMatricula = $needsMatricula
+            ? trim((string) ($validated['CDMATRFUNCIONARIO'] ?? ''))
+            : $oldMatricula;
+
+        $nomeInput = $needsName ? trim((string) ($validated['NOMEUSER'] ?? '')) : '';
+        $nomeFromFuncionario = null;
+
+        if ($newMatricula !== '') {
+            $func = Funcionario::where('CDMATRFUNCIONARIO', $newMatricula)->first(['NMFUNCIONARIO']);
+            if ($func?->NMFUNCIONARIO) {
+                $nomeFromFuncionario = $this->sanitizeNome((string) $func->NMFUNCIONARIO);
+            }
+        }
+
+        if ($needsName && $nomeFromFuncionario === null && $nomeInput === '') {
+            throw ValidationException::withMessages([
+                'NOMEUSER' => 'Informe o nome completo.',
+            ]);
+        }
+
+        if ($needsUf) {
+            $user->UF = strtoupper($validated['UF']);
+        }
+
+        if ($needsMatricula && $newMatricula !== '') {
+            $user->CDMATRFUNCIONARIO = $newMatricula;
+        }
+
+        if ($needsName) {
+            $user->NOMEUSER = $nomeFromFuncionario ?? $nomeInput;
+        }
 
         if ($changingPassword) {
             // Ajustar campo de senha (coluna SENHA)
@@ -104,8 +170,61 @@ class ProfileController extends Controller
             }
         }
 
+        if (($user->needs_identity_update ?? false)) {
+            $user->needs_identity_update = false;
+        }
+
         $user->save();
 
+        if ($needsMatricula && $oldMatricula !== '' && $newMatricula !== '' && $oldMatricula !== $newMatricula) {
+            $this->migrateAcessosMatricula($oldMatricula, $newMatricula);
+        }
+
         return redirect()->route('patrimonios.index')->with('status', 'Perfil atualizado com sucesso!');
+    }
+
+    private function sanitizeNome(string $nome): string
+    {
+        $nome = preg_replace('/[^\p{L}\s]/u', ' ', $nome);
+        $nome = preg_replace('/\s+/u', ' ', $nome);
+        return trim($nome);
+    }
+
+    private function migrateAcessosMatricula(string $from, string $to): void
+    {
+        $from = trim($from);
+        $to = trim($to);
+        if ($from === '' || $to === '' || $from === $to) {
+            return;
+        }
+
+        DB::transaction(function () use ($from, $to) {
+            $rows = AcessoUsuario::query()
+                ->where('CDMATRFUNCIONARIO', $from)
+                ->get(['NUSEQTELA', 'INACESSO']);
+
+            if ($rows->isEmpty()) {
+                return;
+            }
+
+            // Primeiro, deletar acessos antigos do usuário temporário
+            AcessoUsuario::query()
+                ->where('CDMATRFUNCIONARIO', $from)
+                ->delete();
+
+            // Depois, migrar para o novo usuário usando updateOrInsert
+            // para evitar violação de constraint se o acesso já existir
+            foreach ($rows as $row) {
+                AcessoUsuario::updateOrInsert(
+                    [
+                        'CDMATRFUNCIONARIO' => $to,
+                        'NUSEQTELA' => (int) $row->NUSEQTELA,
+                    ],
+                    [
+                        'INACESSO' => $row->INACESSO ? 'S' : 'N',
+                    ]
+                );
+            }
+        });
     }
 }

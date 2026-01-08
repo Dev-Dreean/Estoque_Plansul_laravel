@@ -132,9 +132,11 @@
         @php
           $rowSituacao = trim(preg_replace('/[\r\n]+/', ' ', (string)($item->SITUACAO ?? '')));
           $rowPatrimonio = $item->NUPATRIMONIO ?? $item->NUSEQPATR ?? $item->id;
+          $rowConferidoRaw = is_string($item->FLCONFERIDO ?? null) ? strtoupper(trim((string) $item->FLCONFERIDO)) : ($item->FLCONFERIDO ?? '');
+          $rowConferido = in_array($rowConferidoRaw, ['S', '1', 'T', 'Y'], true) ? 'S' : 'N';
           $isConsultor = auth()->user()->PERFIL === 'C';
         @endphp
-        <tr data-row-id="{{ $item->NUSEQPATR ?? $item->id }}" data-situacao="{{ $rowSituacao }}" data-patrimonio="{{ $rowPatrimonio }}" class="tr-hover {{ $clickable ? 'cursor-pointer' : '' }}"
+        <tr data-row-id="{{ $item->NUSEQPATR ?? $item->id }}" data-situacao="{{ $rowSituacao }}" data-conferido="{{ $rowConferido }}" data-patrimonio="{{ $rowPatrimonio }}" class="tr-hover {{ $clickable ? 'cursor-pointer' : '' }}"
           @if($clickable && $onRowClick && !$isConsultor)
             @click="window.location.href='{{ str_replace(':id', $item->NUSEQPATR ?? $item->id, $onRowClick) }}'"
           @elseif($clickable && !$isConsultor)
@@ -264,12 +266,12 @@
                   $norm = preg_replace('/\s+/', ' ', $norm);
 
                   $situationBadgeMap = [
-                    'EM USO' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-                    'BAIXA' => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
-                    'CONSERTO' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-                    'A DISPOSICAO' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-                    'DISPONIVEL' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-                    'LAVOR' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+                    'EM USO' => 'bg-yellow-500 text-white dark:bg-yellow-800 dark:text-white border border-yellow-500/70 dark:border-yellow-700',
+                    'BAIXA' => 'bg-slate-900 text-white dark:bg-slate-800 dark:text-white border border-slate-900/80 dark:border-slate-700',
+                    'CONSERTO' => 'bg-orange-500 text-white dark:bg-orange-800 dark:text-white border border-orange-500/70 dark:border-orange-700',
+                    'A DISPOSICAO' => 'bg-emerald-500 text-white dark:bg-emerald-800 dark:text-white border border-emerald-500/70 dark:border-emerald-700',
+                    'DISPONIVEL' => 'bg-emerald-500 text-white dark:bg-emerald-800 dark:text-white border border-emerald-500/70 dark:border-emerald-700',
+                    'LAVOR' => 'bg-yellow-500 text-white dark:bg-yellow-800 dark:text-white border border-yellow-500/70 dark:border-yellow-700',
                   ];
 
                   $badgeClasses = $situationBadgeMap[$norm] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';

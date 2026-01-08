@@ -48,17 +48,20 @@
         loginOld: @js(old('NMLOGIN', isset($usuario)? $usuario->NMLOGIN : '')),
         matriculaOld: @js(old('CDMATRFUNCIONARIO', isset($usuario)? $usuario->CDMATRFUNCIONARIO : '')),
         perfilOld: @js(old('PERFIL', isset($usuario)? $usuario->PERFIL : 'USR')),
+        needsIdentityUpdateOld: @js(old('needs_identity_update', isset($usuario)? (bool) $usuario->needs_identity_update : false)),
     })"
     class="space-y-4">
     <div>
-        <x-input-label for="CDMATRFUNCIONARIO" value="Matrícula *" />
-        <x-text-input id="CDMATRFUNCIONARIO" name="CDMATRFUNCIONARIO" type="text" class="mt-1 block w-full" x-model="matricula" required autofocus @blur="onMatriculaBlur" @input="onMatriculaInput" />
-        <p class="text-xs text-gray-500 mt-1" x-show="matriculaExiste">Matrícula encontrada. Nome preenchido automaticamente.</p>
+        <x-input-label for="CDMATRFUNCIONARIO" value="Matrícula (opcional)" />
+        <x-text-input id="CDMATRFUNCIONARIO" name="CDMATRFUNCIONARIO" type="text" class="mt-1 block w-full" x-model="matricula" autofocus @blur="onMatriculaBlur" @input="onMatriculaInput" />
+        <p class="text-xs text-gray-500 mt-1" x-show="matriculaExiste">Matrícula existente. Nome preenchido automaticamente.</p>
+        <p class="text-xs text-gray-500 mt-1" x-show="!matricula">Deixe em branco para gerar uma matrícula temporária e obrigar o usuário a completar no primeiro acesso.</p>
     </div>
     <div>
         <x-input-label for="NOMEUSER" value="Nome Completo *" />
         <x-text-input id="NOMEUSER" name="NOMEUSER" type="text" class="mt-1 block w-full" x-model="nome" x-bind:readonly="nomeBloqueado"
-            x-bind:class="nomeBloqueado ? 'bg-blue-50 dark:bg-blue-900/20 cursor-not-allowed ring-1 ring-blue-300/50 border-blue-300/60' : ''" required />
+            x-bind:class="nomeBloqueado ? 'bg-blue-50 dark:bg-blue-900/20 cursor-not-allowed ring-1 ring-blue-300/50 border-blue-300/60' : ''" x-bind:required="nameRequired" />
+        <p class="text-xs text-gray-500 mt-1" x-show="isPlaceholderMatricula()">Nome poderá ser preenchido pelo usuário no primeiro acesso.</p>
     </div>
     <div>
         <x-input-label for="NMLOGIN" value="Login de Acesso *" />
@@ -87,9 +90,27 @@
             <span x-show="perfil === 'ADM'">Administrador com acesso a todas as telas.</span>
         </p>
     </div>
+    @if($canGrantTelas)
+    <div class="flex items-start gap-2">
+        <input type="hidden" name="needs_identity_update" value="0">
+        <input
+            id="needs_identity_update"
+            name="needs_identity_update"
+            value="1"
+            type="checkbox"
+            class="h-4 w-4 rounded border-gray-300 text-plansul-blue focus:ring-plansul-blue"
+            x-model="needsIdentityUpdate">
+        <label for="needs_identity_update" class="text-sm text-gray-700 dark:text-gray-300">
+            Exigir atualização do cadastro no próximo login
+        </label>
+    </div>
+    <p class="text-xs text-gray-500">
+        Ative esta opção para obrigar o usuário a revisar nome e matrícula ao logar novamente. A flag é removida automaticamente após a conclusão.
+    </p>
+    @endif
 
     @if($canGrantTelas)
-    <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
+    <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 flex flex-col max-h-[calc(100vh-200px)]">
         <div class="flex items-start justify-between gap-3">
             <div>
                 <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Permissoes de Tela</h3>
@@ -108,7 +129,7 @@
         </p>
         @endif
 
-        <div class="mt-3 flex flex-wrap gap-2">
+        <div class="mt-3 flex flex-wrap gap-2 flex-shrink-0">
             <button type="button" @click.prevent="marcarTodas()" class="text-xs px-3 py-1 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
                 Marcar todas
             </button>
@@ -117,13 +138,13 @@
             </button>
         </div>
 
-        <div class="mt-3">
+        <div class="mt-3 flex-1 overflow-y-auto">
             @if($telasPrincipais->isEmpty())
             <p class="text-xs text-gray-500 dark:text-gray-400">
                 Nenhuma tela cadastrada em acessotela.
             </p>
             @else
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-72 overflow-y-auto p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pr-2">
                 @if($telaPatrimonio)
                 @php
                     $selecionada = in_array($telaObrigatoria, $telasSelecionadas, true);
@@ -184,9 +205,6 @@
         </div>
     </div>
     @endif
-
-    @if($canGrantTelas)
-    <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
         <div class="flex items-start justify-between gap-3">
             <div>
                 <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Permissoes Especiais</h3>
@@ -256,17 +274,26 @@
             nomeOld,
             loginOld,
             matriculaOld,
-            perfilOld
+            perfilOld,
+            needsIdentityUpdateOld
         }) {
             return {
                 matricula: matriculaOld || '',
                 nome: nomeOld || '',
                 login: loginOld || '',
                 perfil: perfilOld || 'USR',
+                needsIdentityUpdate: needsIdentityUpdateOld ?? false,
                 loginAuto: false,
                 loginDisponivel: true,
                 matriculaExiste: false,
                 nomeBloqueado: false,
+                get nameRequired() {
+                    return !this.isPlaceholderMatricula();
+                },
+                isPlaceholderMatricula() {
+                    const mat = (this.matricula || '').trim();
+                    return mat === '' || ['0', '1'].includes(mat) || mat.startsWith('TMP-');
+                },
                 get loginHint() {
                     return this.login ? (this.loginDisponivel ? 'Login disponível' : 'Login já em uso') : '';
                 },
@@ -295,6 +322,11 @@
                 async onMatriculaBlur() {
                     const mat = (this.matricula || '').trim();
                     if (!mat) return;
+                    if (this.isPlaceholderMatricula()) {
+                        this.matriculaExiste = false;
+                        this.nomeBloqueado = false;
+                        return;
+                    }
                     try {
                         const url = `{{ route('api.usuarios.porMatricula') }}?matricula=${encodeURIComponent(mat)}`;
                         const res = await fetch(url, {

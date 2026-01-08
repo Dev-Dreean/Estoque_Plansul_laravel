@@ -21,7 +21,7 @@ class EnsureProfileIsComplete // <-- Verifique se o nome da classe está correto
         $user = Auth::user();
 
         if ($user) {
-            $needsProfile = is_null($user->UF);
+            $needsProfile = $user->needsUf() || $user->needsIdentityUpdate();
             // Eloquent attributes must be checked via null-coalescing; property_exists doesn't work for dynamic attributes
             $needsPassword = ($user->must_change_password ?? false) || ($user->password_policy_version ?? 0) < 1;
             if (($needsProfile || $needsPassword) && !$request->routeIs('profile.completion.*')) {
