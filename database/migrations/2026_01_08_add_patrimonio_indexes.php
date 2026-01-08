@@ -50,9 +50,24 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('patr', function (Blueprint $table) {
-            $table->dropIndexIfExists('idx_patr_nupatrimonio');
-            $table->dropIndexIfExists('idx_patr_situacao_cdprojeto');
-            $table->dropIndexIfExists('idx_patr_cdlocal');
+            // Usar dropIndex em vez de dropIndexIfExists (compatível com Laravel 11)
+            try {
+                $table->dropIndex('idx_patr_nupatrimonio');
+            } catch (\Exception $e) {
+                // Index não existe, ignorar
+            }
+            
+            try {
+                $table->dropIndex('idx_patr_situacao_cdprojeto');
+            } catch (\Exception $e) {
+                // Index não existe, ignorar
+            }
+            
+            try {
+                $table->dropIndex('idx_patr_cdlocal');
+            } catch (\Exception $e) {
+                // Index não existe, ignorar
+            }
         });
     }
 };

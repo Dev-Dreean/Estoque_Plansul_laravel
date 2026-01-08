@@ -73,4 +73,12 @@ return [
         'cor' => 'teal',
         'ordem' => 9,
     ],
+    '1010' => [
+        'nome' => 'Solicitacoes de Bens',
+        'descricao' => 'Pedidos de compras e separacao de itens',
+        'route' => 'solicitacoes-bens.index',
+        'icone' => 'fa-inbox',
+        'cor' => 'green',
+        'ordem' => 10,
+    ],
 ];
