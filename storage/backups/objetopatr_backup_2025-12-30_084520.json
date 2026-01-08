@@ -1,0 +1,6062 @@
+[
+    {
+        "NUSEQOBJETO": 1,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA AP1000T"
+    },
+    {
+        "NUSEQOBJETO": 2,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA BEAVER LIGHT"
+    },
+    {
+        "NUSEQOBJETO": 3,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA TRAP 1000"
+    },
+    {
+        "NUSEQOBJETO": 4,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA TRAPP MASTER 1000 PLUS"
+    },
+    {
+        "NUSEQOBJETO": 5,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO A20L"
+    },
+    {
+        "NUSEQOBJETO": 6,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO AEROPLUS"
+    },
+    {
+        "NUSEQOBJETO": 7,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO APV 1240"
+    },
+    {
+        "NUSEQOBJETO": 8,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO AS 35"
+    },
+    {
+        "NUSEQOBJETO": 9,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO BL 25"
+    },
+    {
+        "NUSEQOBJETO": 10,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO EQUIPT"
+    },
+    {
+        "NUSEQOBJETO": 11,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO FLEX 1400"
+    },
+    {
+        "NUSEQOBJETO": 12,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO GBP20"
+    },
+    {
+        "NUSEQOBJETO": 13,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO GT PROFI 20"
+    },
+    {
+        "NUSEQOBJETO": 14,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO GT2000"
+    },
+    {
+        "NUSEQOBJETO": 15,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ELETROLUX GT3000"
+    },
+    {
+        "NUSEQOBJETO": 16,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO GTW INOX 20"
+    },
+    {
+        "NUSEQOBJETO": 17,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO HIDRO LAV 2600W"
+    },
+    {
+        "NUSEQOBJETO": 18,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO HIDROLUX"
+    },
+    {
+        "NUSEQOBJETO": 19,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO INDUSTRIAL"
+    },
+    {
+        "NUSEQOBJETO": 20,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO IPX4 SILENT POWER"
+    },
+    {
+        "NUSEQOBJETO": 21,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA LAVOR KRONOS 23"
+    },
+    {
+        "NUSEQOBJETO": 22,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO LAVAVET"
+    },
+    {
+        "NUSEQOBJETO": 23,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO NT 585"
+    },
+    {
+        "NUSEQOBJETO": 24,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO POWER DUO 1200W"
+    },
+    {
+        "NUSEQOBJETO": 25,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO PROFISSIONAL 20 L"
+    },
+    {
+        "NUSEQOBJETO": 26,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO TRIO"
+    },
+    {
+        "NUSEQOBJETO": 27,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO TURBO INOX DUO"
+    },
+    {
+        "NUSEQOBJETO": 28,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO VAC 22"
+    },
+    {
+        "NUSEQOBJETO": 29,
+        "NUSEQTIPOPATR": 3,
+        "DEOBJETO": "BALDE ESPREMEDOR ESPREMEDOR DUO BETTANIN"
+    },
+    {
+        "NUSEQOBJETO": 30,
+        "NUSEQTIPOPATR": 3,
+        "DEOBJETO": "BALDE ESPREMEDOR ESPREMEDOR DUO BRALIMPIA"
+    },
+    {
+        "NUSEQOBJETO": 31,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO DE MÃO PADRÃO"
+    },
+    {
+        "NUSEQOBJETO": 32,
+        "NUSEQTIPOPATR": 5,
+        "DEOBJETO": "CARRO FUNCIONAL BRALIMPIA"
+    },
+    {
+        "NUSEQOBJETO": 33,
+        "NUSEQTIPOPATR": 5,
+        "DEOBJETO": "CARRO FUNCIONAL PERFECT TOOLS"
+    },
+    {
+        "NUSEQOBJETO": 34,
+        "NUSEQTIPOPATR": 6,
+        "DEOBJETO": "CONTENTOR DE LIXO 1000 LITROS"
+    },
+    {
+        "NUSEQOBJETO": 35,
+        "NUSEQTIPOPATR": 6,
+        "DEOBJETO": "CONTENTOR DE LIXO 1500 LITROS"
+    },
+    {
+        "NUSEQOBJETO": 36,
+        "NUSEQTIPOPATR": 7,
+        "DEOBJETO": "CORTADOR DE GRAMA A GASOLINA LF-600RM"
+    },
+    {
+        "NUSEQOBJETO": 37,
+        "NUSEQTIPOPATR": 7,
+        "DEOBJETO": "CORTADOR DE GRAMA A GASOLINA SL 350"
+    },
+    {
+        "NUSEQOBJETO": 38,
+        "NUSEQTIPOPATR": 7,
+        "DEOBJETO": "CORTADOR DE GRAMA A GASOLINA CE35 M"
+    },
+    {
+        "NUSEQOBJETO": 39,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA DEEP CLEAN 300"
+    },
+    {
+        "NUSEQOBJETO": 41,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA DEEP CLEAN 400"
+    },
+    {
+        "NUSEQOBJETO": 42,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CLEANER 300"
+    },
+    {
+        "NUSEQOBJETO": 43,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CLEANER 350"
+    },
+    {
+        "NUSEQOBJETO": 44,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CLEANER 400"
+    },
+    {
+        "NUSEQOBJETO": 45,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CLEANER 1500"
+    },
+    {
+        "NUSEQOBJETO": 46,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA MINUTE MAN"
+    },
+    {
+        "NUSEQOBJETO": 47,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA R3"
+    },
+    {
+        "NUSEQOBJETO": 48,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA SCHUELER 350"
+    },
+    {
+        "NUSEQOBJETO": 49,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA 3 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 50,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DE ALUMINIO 5 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 51,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DE ALUMINIO 6 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 52,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DE ALUMINIO 7 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 53,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA 9 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 54,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA 10 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 55,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA 11 DEGRAUS EXTENSIVA"
+    },
+    {
+        "NUSEQOBJETO": 56,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA EXTENSIVA ARTICULADA"
+    },
+    {
+        "NUSEQOBJETO": 57,
+        "NUSEQTIPOPATR": 10,
+        "DEOBJETO": "FURADEIRA BOSCH GSB 13 RE"
+    },
+    {
+        "NUSEQOBJETO": 58,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO KARCHER HD 585"
+    },
+    {
+        "NUSEQOBJETO": 59,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO ELECTRA 1600W EAS"
+    },
+    {
+        "NUSEQOBJETO": 60,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO K1"
+    },
+    {
+        "NUSEQOBJETO": 61,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO LV1900"
+    },
+    {
+        "NUSEQOBJETO": 62,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO MAXX 1600"
+    },
+    {
+        "NUSEQOBJETO": 63,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO NEW MAX T80"
+    },
+    {
+        "NUSEQOBJETO": 64,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO PW1400"
+    },
+    {
+        "NUSEQOBJETO": 65,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO RE 109"
+    },
+    {
+        "NUSEQOBJETO": 66,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO RE 98"
+    },
+    {
+        "NUSEQOBJETO": 67,
+        "NUSEQTIPOPATR": 12,
+        "DEOBJETO": "MÁQUINA A VAPOR LAVOR"
+    },
+    {
+        "NUSEQOBJETO": 68,
+        "NUSEQTIPOPATR": 13,
+        "DEOBJETO": "VARREDORA DE CARPETE KM 70 KARCHER"
+    },
+    {
+        "NUSEQOBJETO": 69,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS MIDEA 21 LITROS 127V"
+    },
+    {
+        "NUSEQOBJETO": 70,
+        "NUSEQTIPOPATR": 14,
+        "DEOBJETO": "PARAFUSADEIRA 20V"
+    },
+    {
+        "NUSEQOBJETO": 71,
+        "NUSEQTIPOPATR": 14,
+        "DEOBJETO": "PARAFUSADEIRA BOSCH ALTO IMPACTO"
+    },
+    {
+        "NUSEQOBJETO": 72,
+        "NUSEQTIPOPATR": 14,
+        "DEOBJETO": "PARAFUSADEIRA BOSCH GSR 1000"
+    },
+    {
+        "NUSEQOBJETO": 73,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA VULCAN TRENT VR430S"
+    },
+    {
+        "NUSEQOBJETO": 75,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA FS 120 STIHL"
+    },
+    {
+        "NUSEQOBJETO": 76,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA 63CC 2 TEMPOS"
+    },
+    {
+        "NUSEQOBJETO": 77,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA HUSQVARNA"
+    },
+    {
+        "NUSEQOBJETO": 78,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA VULCAN TRENT"
+    },
+    {
+        "NUSEQOBJETO": 79,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA RI260 ACN"
+    },
+    {
+        "NUSEQOBJETO": 80,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA STIHL FS-120 3 FACAS"
+    },
+    {
+        "NUSEQOBJETO": 81,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA FS 160 STIHL"
+    },
+    {
+        "NUSEQOBJETO": 82,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA FS 190 STIHL"
+    },
+    {
+        "NUSEQOBJETO": 83,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA TOYAMA TBC52X PREMIUM"
+    },
+    {
+        "NUSEQOBJETO": 84,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA DT-52 CC"
+    },
+    {
+        "NUSEQOBJETO": 85,
+        "NUSEQTIPOPATR": 18,
+        "DEOBJETO": "SOPRADOR DE FOLHAS GARTHEN GSF 260"
+    },
+    {
+        "NUSEQOBJETO": 86,
+        "NUSEQTIPOPATR": 18,
+        "DEOBJETO": "SOPRADOR DE FOLHAS A GASOLINA 26CC 2T 0,9HP"
+    },
+    {
+        "NUSEQOBJETO": 87,
+        "NUSEQTIPOPATR": 19,
+        "DEOBJETO": "TESOURÃO PODA PADRÃO"
+    },
+    {
+        "NUSEQOBJETO": 89,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR 19 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 90,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR 24 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 91,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR 26 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 92,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR 29 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 93,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO 9000 BTUS"
+    },
+    {
+        "NUSEQOBJETO": 94,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO 12000 BTUS"
+    },
+    {
+        "NUSEQOBJETO": 95,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO 18000 BTUS"
+    },
+    {
+        "NUSEQOBJETO": 96,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO 24000 BTUS"
+    },
+    {
+        "NUSEQOBJETO": 97,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR PHILIPS 18.5\" LED HD HDMI\/VGA"
+    },
+    {
+        "NUSEQOBJETO": 98,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO IDEAPAD 3I I5 8GB 256GB W11"
+    },
+    {
+        "NUSEQOBJETO": 99,
+        "NUSEQTIPOPATR": 24,
+        "DEOBJETO": "ARQUIVO DE AÇO 1,33X0,46X0,60"
+    },
+    {
+        "NUSEQOBJETO": 100,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO ACQUA POWER ELECTROLUX AQP20"
+    },
+    {
+        "NUSEQOBJETO": 101,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR KÄRCHER NT 2000 20L CINZA 127V"
+    },
+    {
+        "NUSEQOBJETO": 102,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS ELECTROLUX MTD30"
+    },
+    {
+        "NUSEQOBJETO": 103,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA WAP GTW BAGLESS 1400W AZUL E PRETO"
+    },
+    {
+        "NUSEQOBJETO": 104,
+        "NUSEQTIPOPATR": 25,
+        "DEOBJETO": "SERRA CIRCULAR PROFISSIONAL 185MM 7-1\/4 POL. 1400W"
+    },
+    {
+        "NUSEQOBJETO": 105,
+        "NUSEQTIPOPATR": 26,
+        "DEOBJETO": "RELÓGIO PONTO BIOMÉTRICO CONTROL ID CLASS"
+    },
+    {
+        "NUSEQOBJETO": 106,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA VULCAN TRENT VR620H"
+    },
+    {
+        "NUSEQOBJETO": 107,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "COMPUTADOR SKILL PRO INTEL 12ª GERAÇÃO CORE I5 - ANDRE DESENVOLVIMENTO"
+    },
+    {
+        "NUSEQOBJETO": 108,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR LED WIDESCREEN 15.4\" BRAZILPC 15BPC-KAN HDMI - BRAZIL PC"
+    },
+    {
+        "NUSEQOBJETO": 109,
+        "NUSEQTIPOPATR": 28,
+        "DEOBJETO": "SUPORTE PARA SABONETE ESPUMA"
+    },
+    {
+        "NUSEQOBJETO": 110,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA TRAMONTINA AP1500T"
+    },
+    {
+        "NUSEQOBJETO": 111,
+        "NUSEQTIPOPATR": 18,
+        "DEOBJETO": "SOPRADOR À GASOLINA 63CC EVALD"
+    },
+    {
+        "NUSEQOBJETO": 112,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS NN-ST25LWRU 700W BRANCO PANASONIC 127V"
+    },
+    {
+        "NUSEQOBJETO": 113,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA COMPACTO 1400W 10 LITROS GTW 10 WAP AMARELO 110V"
+    },
+    {
+        "NUSEQOBJETO": 114,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA WAP GTW 10"
+    },
+    {
+        "NUSEQOBJETO": 115,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO"
+    },
+    {
+        "NUSEQOBJETO": 116,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO 1300 LIBRAS LAV1300"
+    },
+    {
+        "NUSEQOBJETO": 117,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK IDEAPAD 1I (14\" INTEL) I5-1235U WINDOWS 11 HOME"
+    },
+    {
+        "NUSEQOBJETO": 118,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA KNAKASAKI ST-630"
+    },
+    {
+        "NUSEQOBJETO": 120,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO VONDER LEVE LAV 1200"
+    },
+    {
+        "NUSEQOBJETO": 122,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ELECTROLUX 1400W + ACQUA POWER AQP20"
+    },
+    {
+        "NUSEQOBJETO": 123,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA 14L 1250W 220V POWER DUO NEW LAVOR"
+    },
+    {
+        "NUSEQOBJETO": 124,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO 220V"
+    },
+    {
+        "NUSEQOBJETO": 125,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA INDUSTR.  220 V"
+    },
+    {
+        "NUSEQOBJETO": 126,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA"
+    },
+    {
+        "NUSEQOBJETO": 127,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA 8 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 128,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA GARTHEN CG-450 42,7CC"
+    },
+    {
+        "NUSEQOBJETO": 129,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO HIDROLUX AWD01 5L PRETO E AZUL ELECTROLUX 110V"
+    },
+    {
+        "NUSEQOBJETO": 130,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA WAP GTW 10 COMPACTO 1400W 10 LITROS 220V"
+    },
+    {
+        "NUSEQOBJETO": 131,
+        "NUSEQTIPOPATR": 14,
+        "DEOBJETO": "PARAFUSADEIRA 13MM FATMAX STANLEY, MODELO SCD711C2K, SEM FIO COM MALETA DE FERRAMENTAS"
+    },
+    {
+        "NUSEQOBJETO": 132,
+        "NUSEQTIPOPATR": 29,
+        "DEOBJETO": "CLIMATIZADOR DE PAREDE 60 CM - ATENAS 110V"
+    },
+    {
+        "NUSEQOBJETO": 133,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO SPLIT HI WALL SPRINGER MIDEA AIRVOLUTION 18.000 BTU\/H"
+    },
+    {
+        "NUSEQOBJETO": 134,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS 20L BRANCO PORTA PRETA MINUTO FÁCIL MIDEA 110V"
+    },
+    {
+        "NUSEQOBJETO": 135,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK GAMER ACER NITRO 5 INTEL CORE I7-11800H, 16GB RAM, NVIDIA RTX3050, SSD 512GB, 15.6\" LED FHD IPS, LINUX, PRETO - AN515-57-7"
+    },
+    {
+        "NUSEQOBJETO": 136,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK IDEAPAD GAMING 3I I7 16GB 512GB SSD GTX 1650"
+    },
+    {
+        "NUSEQOBJETO": 137,
+        "NUSEQTIPOPATR": 30,
+        "DEOBJETO": "BALANÇA DIGITAL SMART BLACK BL-05 150KG PRETA MONDIAL BIVOLT COR PRETO"
+    },
+    {
+        "NUSEQOBJETO": 138,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA FRIGOBAR GALLANT GFB07C01A BRANCA 70L 220V"
+    },
+    {
+        "NUSEQOBJETO": 139,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO SPLIT GREE SPLIT 12.000 BTUS FRIO - G-TOP PLUS GWC12AAC-D3NNA1D"
+    },
+    {
+        "NUSEQOBJETO": 140,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO"
+    },
+    {
+        "NUSEQOBJETO": 141,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO 110V"
+    },
+    {
+        "NUSEQOBJETO": 142,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA INDUSTR. 110V"
+    },
+    {
+        "NUSEQOBJETO": 143,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO 110V"
+    },
+    {
+        "NUSEQOBJETO": 144,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO 220V"
+    },
+    {
+        "NUSEQOBJETO": 145,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA"
+    },
+    {
+        "NUSEQOBJETO": 146,
+        "NUSEQTIPOPATR": 32,
+        "DEOBJETO": "CORTADOR DE GRAMA MAKITA ELM3320"
+    },
+    {
+        "NUSEQOBJETO": 147,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA VONDER INDUSTRIAL"
+    },
+    {
+        "NUSEQOBJETO": 148,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA 20L 1400W WORKER"
+    },
+    {
+        "NUSEQOBJETO": 149,
+        "NUSEQTIPOPATR": 33,
+        "DEOBJETO": "TELEVISÃO SMART ROKU 50\" PHILCO"
+    },
+    {
+        "NUSEQOBJETO": 151,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "CPU"
+    },
+    {
+        "NUSEQOBJETO": 152,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR"
+    },
+    {
+        "NUSEQOBJETO": 153,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO ELGIN QUENTE E FRIO 24000 BTUS"
+    },
+    {
+        "NUSEQOBJETO": 154,
+        "NUSEQTIPOPATR": 36,
+        "DEOBJETO": "RELOGIO PONTO"
+    },
+    {
+        "NUSEQOBJETO": 155,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "ROTEADOR ELSYS AMPLIMAX FIT 4G, EPRL18 BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 156,
+        "NUSEQTIPOPATR": 14,
+        "DEOBJETO": "PARAFUSADEIRA BRITÂNIA 4,8V COM 11 BITS E PROLONGADOR BPF01"
+    },
+    {
+        "NUSEQOBJETO": 157,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS BRANCO 20 LITROS 127V"
+    },
+    {
+        "NUSEQOBJETO": 158,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA DC 350 ECO COMPLETA - BIVOLT"
+    },
+    {
+        "NUSEQOBJETO": 159,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR LG  LED 19,5 HD"
+    },
+    {
+        "NUSEQOBJETO": 160,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO SPLIT HI WALL BRITÂNIA 9000 BTU\/H FRIO BAC9000TFM12 220 VOLTS"
+    },
+    {
+        "NUSEQOBJETO": 161,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO SPLIT HI WALL INVERTER PHILCO ECO 9000BTUS"
+    },
+    {
+        "NUSEQOBJETO": 162,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "COMPUTADOR FÁCIL INTEL CORE I5 10400F (DÉCIMA GERAÇÃO) 8GB DDR4 GEFORCE NVIDIA 1GB SSD 240GB"
+    },
+    {
+        "NUSEQOBJETO": 163,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "ROTEADOR AMPLIMAX FIT 4G ELSYS MODEM INTERNET"
+    },
+    {
+        "NUSEQOBJETO": 164,
+        "NUSEQTIPOPATR": 38,
+        "DEOBJETO": "MARTELETE ROMPEDOR"
+    },
+    {
+        "NUSEQOBJETO": 165,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA 6 METROS"
+    },
+    {
+        "NUSEQOBJETO": 166,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO PISO TETO 60.000 FR 220V INVERTER ELGIN - VERTICAL"
+    },
+    {
+        "NUSEQOBJETO": 168,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROCADEIRA GAS. 143RII 2,01CV\/41,5CC"
+    },
+    {
+        "NUSEQOBJETO": 169,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR GRAMA TRAMONT.79634 AP1000T 110V"
+    },
+    {
+        "NUSEQOBJETO": 170,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO"
+    },
+    {
+        "NUSEQOBJETO": 171,
+        "NUSEQTIPOPATR": 40,
+        "DEOBJETO": "MOTOPODADOR DE GALHOS 33CC 2T 1,3HP COM EXTENSOR VP3300L VULCAN"
+    },
+    {
+        "NUSEQOBJETO": 172,
+        "NUSEQTIPOPATR": 10,
+        "DEOBJETO": "FURADEIRA DE IMPACTO BLACK*DECKER"
+    },
+    {
+        "NUSEQOBJETO": 173,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK ACER"
+    },
+    {
+        "NUSEQOBJETO": 174,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS"
+    },
+    {
+        "NUSEQOBJETO": 175,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "ROTEADOR WIFI"
+    },
+    {
+        "NUSEQOBJETO": 176,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE DE AÇO 6 PRATELEIRAS"
+    },
+    {
+        "NUSEQOBJETO": 177,
+        "NUSEQTIPOPATR": 41,
+        "DEOBJETO": "MAQUINA DE LAVAR"
+    },
+    {
+        "NUSEQOBJETO": 178,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DE FIBRA DE VIDRO 8 DEGRAUS 2,40 M MODELO AMERICANA DUPLA"
+    },
+    {
+        "NUSEQOBJETO": 179,
+        "NUSEQTIPOPATR": 14,
+        "DEOBJETO": "PARAFUSADEIRA DE IMPACTO 1\/2\" A BATERIA 20V COM MALETA V20"
+    },
+    {
+        "NUSEQOBJETO": 180,
+        "NUSEQTIPOPATR": 43,
+        "DEOBJETO": "LIXADEIRA ANGULAR 7 1400W"
+    },
+    {
+        "NUSEQOBJETO": 181,
+        "NUSEQTIPOPATR": 44,
+        "DEOBJETO": "PARAFUSADEIRA\/FURADEIRA DE IMPACTO A BATERIA 20V 1\/2 POL."
+    },
+    {
+        "NUSEQOBJETO": 182,
+        "NUSEQTIPOPATR": 38,
+        "DEOBJETO": "MARTELETE BOSCH PROFESSIONAL"
+    },
+    {
+        "NUSEQOBJETO": 183,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DE FIBRA DE VIDRO 19 DEGRAUS EXTENSÍVEL 6,0 M SÍNTESE"
+    },
+    {
+        "NUSEQOBJETO": 184,
+        "NUSEQTIPOPATR": 3,
+        "DEOBJETO": "BALDE C\/ESPREM.DOBLO-AM-BRALIMPIA"
+    },
+    {
+        "NUSEQOBJETO": 185,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "MINI DELL"
+    },
+    {
+        "NUSEQOBJETO": 186,
+        "NUSEQTIPOPATR": 45,
+        "DEOBJETO": "TRANSFORMADOR"
+    },
+    {
+        "NUSEQOBJETO": 187,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "ARMARIO DE AÇO COM 20 GAVETAS 4X5 CINZA ESCURO"
+    },
+    {
+        "NUSEQOBJETO": 188,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "ARMARIO DE AÇO COM GAVETAS PARA ARQUIVO - SUPREME"
+    },
+    {
+        "NUSEQOBJETO": 190,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS 21 LITROS 127V"
+    },
+    {
+        "NUSEQOBJETO": 191,
+        "NUSEQTIPOPATR": 46,
+        "DEOBJETO": "PRESSURIZADOR 110V"
+    },
+    {
+        "NUSEQOBJETO": 192,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CLEANER"
+    },
+    {
+        "NUSEQOBJETO": 193,
+        "NUSEQTIPOPATR": 47,
+        "DEOBJETO": "CARRO COLETOR DE LIXO DE 240 LITROS"
+    },
+    {
+        "NUSEQOBJETO": 194,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "ROTEADOR, REPETIDOR, SISTEMA WI-FI MESH, ACCESS POINT, WISP D-LINK DIR-842 PRETO 100V\/240V"
+    },
+    {
+        "NUSEQOBJETO": 195,
+        "NUSEQTIPOPATR": 48,
+        "DEOBJETO": "IMPRESSORA MULTIFUNCIONAL"
+    },
+    {
+        "NUSEQOBJETO": 196,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK 15.6POL LENOVO V15 GEN2 CORE I5 1135G7, 8GB DDR4, SSD 256GB NVME, WIN 10"
+    },
+    {
+        "NUSEQOBJETO": 197,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK ACER ASPIRE INTEL CORE"
+    },
+    {
+        "NUSEQOBJETO": 198,
+        "NUSEQTIPOPATR": 36,
+        "DEOBJETO": "RELOGIO PONTO BIOMETRICO CONTROL ID CLASS"
+    },
+    {
+        "NUSEQOBJETO": 199,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO SPLIT 12000 BTUS"
+    },
+    {
+        "NUSEQOBJETO": 200,
+        "NUSEQTIPOPATR": 33,
+        "DEOBJETO": "TELEVISÃO SMART 50\""
+    },
+    {
+        "NUSEQOBJETO": 201,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS ELECTROLUX MTO30 BRANCO 20L - 110V"
+    },
+    {
+        "NUSEQOBJETO": 202,
+        "NUSEQTIPOPATR": 49,
+        "DEOBJETO": "PURIFICADOR DE ÁGUA CONSUL REFRIGERADO ANTIBACTÉRIAS BRANCO BIVOLT CPB34AS"
+    },
+    {
+        "NUSEQOBJETO": 203,
+        "NUSEQTIPOPATR": 50,
+        "DEOBJETO": "SCANNER DETECTOR DE METAIS"
+    },
+    {
+        "NUSEQOBJETO": 204,
+        "NUSEQTIPOPATR": 49,
+        "DEOBJETO": "PURIFICADOR DE ÁGUA CONSUL CPB34AS ÁGUA NATURAL E GELADA"
+    },
+    {
+        "NUSEQOBJETO": 205,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "ROTEADOR WIRELESS D-LINK AC1200 DIR-842 DUAL BAND GIGABIT"
+    },
+    {
+        "NUSEQOBJETO": 206,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "ARMARIO PARA ARQUIVO"
+    },
+    {
+        "NUSEQOBJETO": 207,
+        "NUSEQTIPOPATR": 49,
+        "DEOBJETO": "PURIFICADOR DE ÁGUA EOS PREMIUM BRANCO EPE01B BIVOLT"
+    },
+    {
+        "NUSEQOBJETO": 208,
+        "NUSEQTIPOPATR": 51,
+        "DEOBJETO": "FRIGOBAR EOS ICE COMPACT 71L"
+    },
+    {
+        "NUSEQOBJETO": 209,
+        "NUSEQTIPOPATR": 51,
+        "DEOBJETO": "FRIGOBAR MIDEA BRANCO 93L 110V - MRC10B1"
+    },
+    {
+        "NUSEQOBJETO": 210,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS PANASONIC 127V"
+    },
+    {
+        "NUSEQOBJETO": 211,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "ARMARIO DE AÇO PARA ARQUIVO 4 GAVETAS CINZA"
+    },
+    {
+        "NUSEQOBJETO": 212,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "ARMARIO DE AÇO PARA ARQUIVO"
+    },
+    {
+        "NUSEQOBJETO": 213,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE DE AÇO 192X90X40"
+    },
+    {
+        "NUSEQOBJETO": 214,
+        "NUSEQTIPOPATR": 33,
+        "DEOBJETO": "TELEVISÃO 50 POLEGADAS 4K"
+    },
+    {
+        "NUSEQOBJETO": 215,
+        "NUSEQTIPOPATR": 33,
+        "DEOBJETO": "TELEVISÃO SMART TCL 50'' UHD 4K LED"
+    },
+    {
+        "NUSEQOBJETO": 216,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO 60.000 BTUS"
+    },
+    {
+        "NUSEQOBJETO": 217,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "GUARDA VOLUME"
+    },
+    {
+        "NUSEQOBJETO": 218,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "FORNO MICROONDAS"
+    },
+    {
+        "NUSEQOBJETO": 219,
+        "NUSEQTIPOPATR": 29,
+        "DEOBJETO": "CLIMATIZADOR"
+    },
+    {
+        "NUSEQOBJETO": 220,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA INDUSTRIAL 350MM"
+    },
+    {
+        "NUSEQOBJETO": 221,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA 350MM 127V"
+    },
+    {
+        "NUSEQOBJETO": 222,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO GT3000 127V"
+    },
+    {
+        "NUSEQOBJETO": 223,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA TRENT VR430S"
+    },
+    {
+        "NUSEQOBJETO": 224,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA PROFISSIONAL GT3000 1300W 110V"
+    },
+    {
+        "NUSEQOBJETO": 226,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA 350MM BIVOLT"
+    },
+    {
+        "NUSEQOBJETO": 227,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSAO KARCHER HD 6\/15"
+    },
+    {
+        "NUSEQOBJETO": 228,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ELECTROLUX GT30N 127V"
+    },
+    {
+        "NUSEQOBJETO": 229,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA 127V"
+    },
+    {
+        "NUSEQOBJETO": 230,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR PO E AGUA KARCHER NT 585"
+    },
+    {
+        "NUSEQOBJETO": 231,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA ALTA PRESSÃO KÄRCHER K1"
+    },
+    {
+        "NUSEQOBJETO": 232,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO KÄRCHER PROFESSIONAL HD 6\/15 CAGE PLUS"
+    },
+    {
+        "NUSEQOBJETO": 233,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DOBRAVEL EM ALUMINIO 6 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 234,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DE ALUMÍNIO TESOURA REAL 6 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 235,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ELETROLUX GT30"
+    },
+    {
+        "NUSEQOBJETO": 237,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR INDUSTRIAL TAMBOR KÄRCHER NT 2000 20L CINZA 127V"
+    },
+    {
+        "NUSEQOBJETO": 239,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA"
+    },
+    {
+        "NUSEQOBJETO": 240,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E LIQUIDO"
+    },
+    {
+        "NUSEQOBJETO": 241,
+        "NUSEQTIPOPATR": 52,
+        "DEOBJETO": "LAVADORA E SECADORA KARCHER"
+    },
+    {
+        "NUSEQOBJETO": 242,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO DE CARGA 145KG"
+    },
+    {
+        "NUSEQOBJETO": 243,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS ELECTROLUX"
+    },
+    {
+        "NUSEQOBJETO": 244,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA ESTUDANTIL COM APOIO"
+    },
+    {
+        "NUSEQOBJETO": 245,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO"
+    },
+    {
+        "NUSEQOBJETO": 246,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO COM GAVETA"
+    },
+    {
+        "NUSEQOBJETO": 247,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO SEM GAVETA"
+    },
+    {
+        "NUSEQOBJETO": 248,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA PEQUENA"
+    },
+    {
+        "NUSEQOBJETO": 249,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA REDONDA"
+    },
+    {
+        "NUSEQOBJETO": 250,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "ARMARIO ALTO 2  PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 251,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "ARMARIO BAIXO 2 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 252,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "GAVETEIRO 3 GAVETAS COM CHAVE"
+    },
+    {
+        "NUSEQOBJETO": 253,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "GAVETEIRO 4 GAVETAS COM CHAVE"
+    },
+    {
+        "NUSEQOBJETO": 254,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE DE FERRO"
+    },
+    {
+        "NUSEQOBJETO": 255,
+        "NUSEQTIPOPATR": 5,
+        "DEOBJETO": "CARRO FUNCIONAL"
+    },
+    {
+        "NUSEQOBJETO": 256,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA INDUSTRIAL 350MM"
+    },
+    {
+        "NUSEQOBJETO": 257,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO IDEAPAD 3I I7 12GB 256GB W11"
+    },
+    {
+        "NUSEQOBJETO": 258,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO IDEAPAD 3I I7 16GB 512GB W11"
+    },
+    {
+        "NUSEQOBJETO": 259,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO IDEAPAD 3I I7 24GB 512GB UBUNTU"
+    },
+    {
+        "NUSEQOBJETO": 260,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK VAIO I3 4GB 240GB W10"
+    },
+    {
+        "NUSEQOBJETO": 261,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "COMPUTADOR I5 12GB 256GB"
+    },
+    {
+        "NUSEQOBJETO": 262,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SAMBA"
+    },
+    {
+        "NUSEQOBJETO": 263,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "TRUENASS BACKUP SAMBA"
+    },
+    {
+        "NUSEQOBJETO": 264,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "TRUENASS BACKUP SHAREPOINT"
+    },
+    {
+        "NUSEQOBJETO": 265,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR PST"
+    },
+    {
+        "NUSEQOBJETO": 266,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR SISFIN"
+    },
+    {
+        "NUSEQOBJETO": 267,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR FIREWALL"
+    },
+    {
+        "NUSEQOBJETO": 268,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR FIREWALL WIFI"
+    },
+    {
+        "NUSEQOBJETO": 269,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR FIREWALL BACKUP"
+    },
+    {
+        "NUSEQOBJETO": 270,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR FIREWALL WIFI BACKUP"
+    },
+    {
+        "NUSEQOBJETO": 271,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR CONECTIVIDADE SOCIAL E GPS"
+    },
+    {
+        "NUSEQOBJETO": 272,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR FIREWALL"
+    },
+    {
+        "NUSEQOBJETO": 273,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "COMPUTADOR MIGRAÇÃO SHAREPOINT"
+    },
+    {
+        "NUSEQOBJETO": 274,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "COMPUTADOR ANDRÉ SISFIN"
+    },
+    {
+        "NUSEQOBJETO": 275,
+        "NUSEQTIPOPATR": 55,
+        "DEOBJETO": "SCANNER CANON IMAGEFORMULA DR-C230 PRETO"
+    },
+    {
+        "NUSEQOBJETO": 276,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "LONGARINA 3 LUGARES"
+    },
+    {
+        "NUSEQOBJETO": 277,
+        "NUSEQTIPOPATR": 56,
+        "DEOBJETO": "QUADRO BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 278,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA"
+    },
+    {
+        "NUSEQOBJETO": 279,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR (SERVIDOR)"
+    },
+    {
+        "NUSEQOBJETO": 280,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "GABINETE DE METAL (C\/ E SEM PEÇAS OBSOLETAS)"
+    },
+    {
+        "NUSEQOBJETO": 281,
+        "NUSEQTIPOPATR": 38,
+        "DEOBJETO": "MARTELETE ROMPEDOR DEWALT D25133K 800W + ACESSÓRIOS"
+    },
+    {
+        "NUSEQOBJETO": 282,
+        "NUSEQTIPOPATR": 38,
+        "DEOBJETO": "MARTELETE PERFURADOR ROMPEDOR 800W 220V DEWALT D25133K-B2"
+    },
+    {
+        "NUSEQOBJETO": 283,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR GAMER LG 23.8 FULL HD, IPS, HDMI, VESA"
+    },
+    {
+        "NUSEQOBJETO": 284,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK IDEAPAD 1I 15\", I5-1235U, 12GB, 512SSD LINUX"
+    },
+    {
+        "NUSEQOBJETO": 285,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR 29'' LED FULL HD ULTRAWIDE 29WL500"
+    },
+    {
+        "NUSEQOBJETO": 286,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR 29'' ULTRAWIDE 29WK600-W IPS FHD IPS LG"
+    },
+    {
+        "NUSEQOBJETO": 287,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO 12000 BTUS TCL"
+    },
+    {
+        "NUSEQOBJETO": 288,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONAD TCL 12000BTUS QF 220V"
+    },
+    {
+        "NUSEQOBJETO": 289,
+        "NUSEQTIPOPATR": 33,
+        "DEOBJETO": "TELEVISÃO SMART LG AI THINQ 43LM631C0SB LED WEBOS FULL HD 43  100V\/240V"
+    },
+    {
+        "NUSEQOBJETO": 290,
+        "NUSEQTIPOPATR": 48,
+        "DEOBJETO": "IMPRESSORA ETIQUETA ELGIN L42 PRO + LEITOR FLASH USB"
+    },
+    {
+        "NUSEQOBJETO": 291,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR 18.5  E970SWHNL - AOC"
+    },
+    {
+        "NUSEQOBJETO": 292,
+        "NUSEQTIPOPATR": 57,
+        "DEOBJETO": "BEBEDOURO ELETRONICO POLAR PRATA - NATURAL E GELADA COR PRATEADO 220V"
+    },
+    {
+        "NUSEQOBJETO": 293,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A05 128GB PRETO"
+    },
+    {
+        "NUSEQOBJETO": 294,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DUPLA 8 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 295,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A14"
+    },
+    {
+        "NUSEQOBJETO": 297,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS LG 30 LITROS"
+    },
+    {
+        "NUSEQOBJETO": 298,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMÁRIO BAIXO PARA IMPRESSORA"
+    },
+    {
+        "NUSEQOBJETO": 299,
+        "NUSEQTIPOPATR": 60,
+        "DEOBJETO": "BANDEIJA DE ACRÍLICO TRANSPARENTE PARA DOCUMENTOS"
+    },
+    {
+        "NUSEQOBJETO": 300,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "MODEM USB ZTEMF79S"
+    },
+    {
+        "NUSEQOBJETO": 301,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK A315-53-57 G3"
+    },
+    {
+        "NUSEQOBJETO": 302,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO IDEAPAD 3 151TL6"
+    },
+    {
+        "NUSEQOBJETO": 303,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK ACER ASPIRE A515"
+    },
+    {
+        "NUSEQOBJETO": 305,
+        "NUSEQTIPOPATR": 32,
+        "DEOBJETO": "CORTADOR DE GRAMA ELETRICO GARTHEN GSM-200G"
+    },
+    {
+        "NUSEQOBJETO": 306,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "MODEM ZTE MF 79U"
+    },
+    {
+        "NUSEQOBJETO": 307,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "DESKTOP C3 TECH"
+    },
+    {
+        "NUSEQOBJETO": 308,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR OAC"
+    },
+    {
+        "NUSEQOBJETO": 309,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE LG K9 TV"
+    },
+    {
+        "NUSEQOBJETO": 310,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK SAMSUNG BA 68-1309A"
+    },
+    {
+        "NUSEQOBJETO": 311,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK ACER ASPIRE A515-54-57CS"
+    },
+    {
+        "NUSEQOBJETO": 312,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO PHILCO"
+    },
+    {
+        "NUSEQOBJETO": 313,
+        "NUSEQTIPOPATR": 48,
+        "DEOBJETO": "IMPRESSORA HP DESK JET 2136"
+    },
+    {
+        "NUSEQOBJETO": 314,
+        "NUSEQTIPOPATR": 48,
+        "DEOBJETO": "IMPRESSORA HP DESK JET 2774"
+    },
+    {
+        "NUSEQOBJETO": 315,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO 2 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 316,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE DE AÇO PARA ARQUIVOS"
+    },
+    {
+        "NUSEQOBJETO": 317,
+        "NUSEQTIPOPATR": 62,
+        "DEOBJETO": "SANDUICHEIRA BRITANIA BELLO PANE INOX"
+    },
+    {
+        "NUSEQOBJETO": 318,
+        "NUSEQTIPOPATR": 63,
+        "DEOBJETO": "CAFETEIRA ELÉTRICA DOLCE AROME PRETO C-30-18X-FB MONDIAL 110V"
+    },
+    {
+        "NUSEQOBJETO": 320,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO GIRATORIA"
+    },
+    {
+        "NUSEQOBJETO": 321,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO"
+    },
+    {
+        "NUSEQOBJETO": 322,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A15"
+    },
+    {
+        "NUSEQOBJETO": 323,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A03 CORE"
+    },
+    {
+        "NUSEQOBJETO": 324,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO V14 G3 IAP"
+    },
+    {
+        "NUSEQOBJETO": 325,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR LG LED 27\" IPS FULL HD HDMI VGA AMD FREESYNC 27MP400-B"
+    },
+    {
+        "NUSEQOBJETO": 327,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG A02S"
+    },
+    {
+        "NUSEQOBJETO": 328,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE LG K22"
+    },
+    {
+        "NUSEQOBJETO": 329,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG A02S"
+    },
+    {
+        "NUSEQOBJETO": 330,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITÓRIO INDIVIDUAL EM L"
+    },
+    {
+        "NUSEQOBJETO": 331,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO 2 PORTAS PARA ARQUIVOS 160CM"
+    },
+    {
+        "NUSEQOBJETO": 332,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO PEQUENO PARA ARQUIVOS"
+    },
+    {
+        "NUSEQOBJETO": 333,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK ACER ASPIRE 3"
+    },
+    {
+        "NUSEQOBJETO": 334,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE MOTOROLA MOTO E7 POWER"
+    },
+    {
+        "NUSEQOBJETO": 335,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A05"
+    },
+    {
+        "NUSEQOBJETO": 336,
+        "NUSEQTIPOPATR": 64,
+        "DEOBJETO": "TELEFONE FIXO GRANDSTREAM"
+    },
+    {
+        "NUSEQOBJETO": 337,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO ELETROLUX"
+    },
+    {
+        "NUSEQOBJETO": 339,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR 29'' LED FULL HD ULTRAWIDE 29WL500 HDMI HDR IPS LG COR PRETO"
+    },
+    {
+        "NUSEQOBJETO": 340,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO PARA ARQUIVO 4 GRAVETAS MDF"
+    },
+    {
+        "NUSEQOBJETO": 341,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO AZUL"
+    },
+    {
+        "NUSEQOBJETO": 343,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CLEANER 300 110V"
+    },
+    {
+        "NUSEQOBJETO": 344,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CLEANER 350 110V"
+    },
+    {
+        "NUSEQOBJETO": 345,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CLEANER 400 110V"
+    },
+    {
+        "NUSEQOBJETO": 346,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO PRETA COM BRACOS DE MADEIRA"
+    },
+    {
+        "NUSEQOBJETO": 347,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO VERDE"
+    },
+    {
+        "NUSEQOBJETO": 348,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO CINZA (FIXA)"
+    },
+    {
+        "NUSEQOBJETO": 349,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR AOC 27\""
+    },
+    {
+        "NUSEQOBJETO": 350,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ACQUA POWER ELECTROLUX AQP20 18L 127V"
+    },
+    {
+        "NUSEQOBJETO": 351,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA SCHUELER"
+    },
+    {
+        "NUSEQOBJETO": 352,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DE ALUMINIO 4 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 355,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO ELECTROLUX ELECTRA 1600W EAS"
+    },
+    {
+        "NUSEQOBJETO": 356,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO BLACK DECKER PW1400"
+    },
+    {
+        "NUSEQOBJETO": 357,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO LAVOR NEW MAX T80"
+    },
+    {
+        "NUSEQOBJETO": 358,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO LAVOR LV1900"
+    },
+    {
+        "NUSEQOBJETO": 359,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO KARCHER K2"
+    },
+    {
+        "NUSEQOBJETO": 360,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO LAVOR PRO MAX 1600"
+    },
+    {
+        "NUSEQOBJETO": 361,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO LAVOR PRO"
+    },
+    {
+        "NUSEQOBJETO": 362,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO POWER 19L"
+    },
+    {
+        "NUSEQOBJETO": 363,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO WAP BRAVO 2550"
+    },
+    {
+        "NUSEQOBJETO": 364,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO ELETROLUX ULTRA PRO 2200PSI"
+    },
+    {
+        "NUSEQOBJETO": 365,
+        "NUSEQTIPOPATR": 65,
+        "DEOBJETO": "CARRO CORTADOR DE GRAMA TRAMONTINA GARDEN LINE"
+    },
+    {
+        "NUSEQOBJETO": 366,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO HD 6\/15 KARCHER"
+    },
+    {
+        "NUSEQOBJETO": 367,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA ELECTROLUX RE28"
+    },
+    {
+        "NUSEQOBJETO": 368,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS CONSUL 25L"
+    },
+    {
+        "NUSEQOBJETO": 369,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO SUSPENSO COR BRANCA"
+    },
+    {
+        "NUSEQOBJETO": 370,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA ESTOFADA PRETA (FIXA)"
+    },
+    {
+        "NUSEQOBJETO": 371,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA ESTOFADA CINZA (FIXA)"
+    },
+    {
+        "NUSEQOBJETO": 372,
+        "NUSEQTIPOPATR": 7,
+        "DEOBJETO": "CORTADOR DE GRAMA ROBUSTA GSF 3800-2T"
+    },
+    {
+        "NUSEQOBJETO": 373,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA TOYAMA"
+    },
+    {
+        "NUSEQOBJETO": 374,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA FS 220 STIHL"
+    },
+    {
+        "NUSEQOBJETO": 375,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO ELECTROLUX AQUA HOME SINGLE"
+    },
+    {
+        "NUSEQOBJETO": 376,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO KARCHER 340"
+    },
+    {
+        "NUSEQOBJETO": 377,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ELECTROLUX GT3000 PRO"
+    },
+    {
+        "NUSEQOBJETO": 378,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA KRONOS 20"
+    },
+    {
+        "NUSEQOBJETO": 379,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO FLOOR VAC 1500 WAP"
+    },
+    {
+        "NUSEQOBJETO": 380,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ELECTROLUX FLEX 1400"
+    },
+    {
+        "NUSEQOBJETO": 381,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO ELECTROLUX EQUIPT 180W"
+    },
+    {
+        "NUSEQOBJETO": 383,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO HIDRO LAV SCHULZ 2600W"
+    },
+    {
+        "NUSEQOBJETO": 384,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO ELECTROLUX GT 30"
+    },
+    {
+        "NUSEQOBJETO": 385,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO VAC A20"
+    },
+    {
+        "NUSEQOBJETO": 386,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO ELECTROLUX PEQUENO"
+    },
+    {
+        "NUSEQOBJETO": 387,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO ELECTROLUX A20L"
+    },
+    {
+        "NUSEQOBJETO": 388,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO VONDER INDUSTRIAL"
+    },
+    {
+        "NUSEQOBJETO": 389,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO PRETA (GIRATORIA)"
+    },
+    {
+        "NUSEQOBJETO": 390,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO AZUL (GIRATORIA)"
+    },
+    {
+        "NUSEQOBJETO": 391,
+        "NUSEQTIPOPATR": 21,
+        "DEOBJETO": "MONITOR 19.5 LED, WIDESCREEN, 75HZ"
+    },
+    {
+        "NUSEQOBJETO": 392,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CLEANER BANDEIRANTE"
+    },
+    {
+        "NUSEQOBJETO": 393,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CLEANER 1500 220V"
+    },
+    {
+        "NUSEQOBJETO": 394,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA EMBASSATOR MINUTE MAN 110V"
+    },
+    {
+        "NUSEQOBJETO": 395,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA KARCHER"
+    },
+    {
+        "NUSEQOBJETO": 396,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO PRETA (FIXA)"
+    },
+    {
+        "NUSEQOBJETO": 397,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "CPU PC TORRE CORE I5 3.20GHZ 8GB SSD 240GB"
+    },
+    {
+        "NUSEQOBJETO": 398,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA BRAVER LIGHT 110V"
+    },
+    {
+        "NUSEQOBJETO": 399,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA MASTER 1000 TRAPP 100V"
+    },
+    {
+        "NUSEQOBJETO": 400,
+        "NUSEQTIPOPATR": 13,
+        "DEOBJETO": "MAQUINA A VAPOR LAVOR SKY VAP MAX 110V"
+    },
+    {
+        "NUSEQOBJETO": 401,
+        "NUSEQTIPOPATR": 13,
+        "DEOBJETO": "LAVADORA A VAPOR MOD SKY VAP 220V"
+    },
+    {
+        "NUSEQOBJETO": 402,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR DELL"
+    },
+    {
+        "NUSEQOBJETO": 403,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO INDIVIDUAL 2 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 404,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BAIXO 2 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 405,
+        "NUSEQTIPOPATR": 48,
+        "DEOBJETO": "IMPRESSORA BROTHER HL-5250DN"
+    },
+    {
+        "NUSEQOBJETO": 406,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO GRANDE MARMORE 6 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 407,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO GRANDE DE METAL 2 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 408,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO GRANDE DE MADEIRA 2 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 409,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO INDIVIDUAL REGULAVEL"
+    },
+    {
+        "NUSEQOBJETO": 410,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO 4 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 411,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO DE MADEIRA 2 PORTAS DE VIDRO"
+    },
+    {
+        "NUSEQOBJETO": 412,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA INDIVIDUAL PEQUENA CURVADA"
+    },
+    {
+        "NUSEQOBJETO": 413,
+        "NUSEQTIPOPATR": 66,
+        "DEOBJETO": "COFRE"
+    },
+    {
+        "NUSEQOBJETO": 414,
+        "NUSEQTIPOPATR": 28,
+        "DEOBJETO": "SUPORTE DE VIDRO PARA MONITOR"
+    },
+    {
+        "NUSEQOBJETO": 415,
+        "NUSEQTIPOPATR": 28,
+        "DEOBJETO": "SUPORTE 2 GAVETAS PARA MONITOR"
+    },
+    {
+        "NUSEQOBJETO": 416,
+        "NUSEQTIPOPATR": 28,
+        "DEOBJETO": "SUPORTE 3 GAVETAS PARA MONITOR"
+    },
+    {
+        "NUSEQOBJETO": 417,
+        "NUSEQTIPOPATR": 64,
+        "DEOBJETO": "TELEFONE FIXO INTELBRAS TIP 120I"
+    },
+    {
+        "NUSEQOBJETO": 418,
+        "NUSEQTIPOPATR": 50,
+        "DEOBJETO": "SCANNER SCANSNAP IX500"
+    },
+    {
+        "NUSEQOBJETO": 419,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO DE MDF CINZA 3 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 420,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO DE MDF CINZA 4 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 421,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR SAMSUNG"
+    },
+    {
+        "NUSEQOBJETO": 422,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO DE METAL PEQUENO PRETO 1 PORTA DE VIDRO"
+    },
+    {
+        "NUSEQOBJETO": 423,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "BALCÃO PRETO 2 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 424,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG A22"
+    },
+    {
+        "NUSEQOBJETO": 425,
+        "NUSEQTIPOPATR": 67,
+        "DEOBJETO": "BANQUETA PEQUENA"
+    },
+    {
+        "NUSEQOBJETO": 426,
+        "NUSEQTIPOPATR": 68,
+        "DEOBJETO": "LIQUIDIFICADOR FAST SHAKE"
+    },
+    {
+        "NUSEQOBJETO": 427,
+        "NUSEQTIPOPATR": 62,
+        "DEOBJETO": "SANDUICHEIRA MAIS VOCE"
+    },
+    {
+        "NUSEQOBJETO": 428,
+        "NUSEQTIPOPATR": 62,
+        "DEOBJETO": "SANDUICHEIRA PHILCO"
+    },
+    {
+        "NUSEQOBJETO": 429,
+        "NUSEQTIPOPATR": 48,
+        "DEOBJETO": "IMPRESSORA RICOH MINOLSUL SP5200S"
+    },
+    {
+        "NUSEQOBJETO": 430,
+        "NUSEQTIPOPATR": 69,
+        "DEOBJETO": "ESTUFA DE PAPEL"
+    },
+    {
+        "NUSEQOBJETO": 431,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO LG DUAL INVERTER"
+    },
+    {
+        "NUSEQOBJETO": 432,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BAIXO MADEIRA CINZA 3 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 433,
+        "NUSEQTIPOPATR": 48,
+        "DEOBJETO": "IMPRESSORA MINOLSUL DCP 8085DN"
+    },
+    {
+        "NUSEQOBJETO": 434,
+        "NUSEQTIPOPATR": 70,
+        "DEOBJETO": "LONGARINA ESTOFADA CINZA 2 LUGARES"
+    },
+    {
+        "NUSEQOBJETO": 435,
+        "NUSEQTIPOPATR": 70,
+        "DEOBJETO": "LONGARINA ESTOFADA CINZA 3 LUGARES"
+    },
+    {
+        "NUSEQOBJETO": 436,
+        "NUSEQTIPOPATR": 70,
+        "DEOBJETO": "LONGARINA PRETA 3 LUGARES"
+    },
+    {
+        "NUSEQOBJETO": 437,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO KOMECO KOP50FC"
+    },
+    {
+        "NUSEQOBJETO": 438,
+        "NUSEQTIPOPATR": 57,
+        "DEOBJETO": "BEBEDOURO MASTERFRIO"
+    },
+    {
+        "NUSEQOBJETO": 439,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BALCAO 3 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 440,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR AOC"
+    },
+    {
+        "NUSEQOBJETO": 441,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BAIXO DE MADEIRA AMARELO 3 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 442,
+        "NUSEQTIPOPATR": 71,
+        "DEOBJETO": "VENTILADOR MELLORY"
+    },
+    {
+        "NUSEQOBJETO": 443,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO LONGO 2 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 444,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO LONGO DE MADEIRA 4 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 445,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR AOC LED 21.5''"
+    },
+    {
+        "NUSEQOBJETO": 446,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO DE CARGA 250KG"
+    },
+    {
+        "NUSEQOBJETO": 447,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO DE MADEIRA 4 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 448,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO GRANDE DE MARMORE 5 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 449,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO PARA ARQUIVO 4 GAVETAS DE METAL"
+    },
+    {
+        "NUSEQOBJETO": 450,
+        "NUSEQTIPOPATR": 71,
+        "DEOBJETO": "VENTILADOR VENTISOL"
+    },
+    {
+        "NUSEQOBJETO": 451,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMÁRIO DE MADEIRA 3 PORTAS 4 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 452,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG"
+    },
+    {
+        "NUSEQOBJETO": 453,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMÁRIO DE METAL PRETO 1 PORTA DE VIDRO"
+    },
+    {
+        "NUSEQOBJETO": 454,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA CONSUL COMPACTA"
+    },
+    {
+        "NUSEQOBJETO": 455,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO 3 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 456,
+        "NUSEQTIPOPATR": 30,
+        "DEOBJETO": "BALANÇA DIGITAL OMRON PREMIUM HN-289 SILKY GREY"
+    },
+    {
+        "NUSEQOBJETO": 457,
+        "NUSEQTIPOPATR": 63,
+        "DEOBJETO": "CAFETEIRA MARCHSONI"
+    },
+    {
+        "NUSEQOBJETO": 458,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA CONSUL"
+    },
+    {
+        "NUSEQOBJETO": 459,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE MADEIRA CINZA 6 LUGARES"
+    },
+    {
+        "NUSEQOBJETO": 460,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS MO-01-21-W 21 LITROS 1200W BRANCO MONDIAL 110V"
+    },
+    {
+        "NUSEQOBJETO": 461,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE MADEIRA CINZA 4 LUGARES"
+    },
+    {
+        "NUSEQOBJETO": 462,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS CONSUL"
+    },
+    {
+        "NUSEQOBJETO": 463,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS BRASTEMP"
+    },
+    {
+        "NUSEQOBJETO": 464,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS PHILCO"
+    },
+    {
+        "NUSEQOBJETO": 465,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA CONSUL 334L CRD37EB CYCLE DEFROST BRANCA 127V"
+    },
+    {
+        "NUSEQOBJETO": 466,
+        "NUSEQTIPOPATR": 63,
+        "DEOBJETO": "CAFETEIRA PHILCO"
+    },
+    {
+        "NUSEQOBJETO": 467,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA ESCOLAR"
+    },
+    {
+        "NUSEQOBJETO": 468,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E ÁGUA 14L POWER DUO NEW 1250W"
+    },
+    {
+        "NUSEQOBJETO": 469,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA HD 6\/15 KARCHER C CAGE PLUS 220V"
+    },
+    {
+        "NUSEQOBJETO": 470,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA WAP GTW 20 INOX 1600W 20L 127V"
+    },
+    {
+        "NUSEQOBJETO": 472,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARQUIVO DE ACO 4 GAVETAS TRILHO DE NYLON"
+    },
+    {
+        "NUSEQOBJETO": 473,
+        "NUSEQTIPOPATR": 57,
+        "DEOBJETO": "BEBEDOURO DE ÁGUA 25 LITROS DE COLUNA"
+    },
+    {
+        "NUSEQOBJETO": 474,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO AZUL (FIXA)"
+    },
+    {
+        "NUSEQOBJETO": 475,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA GERENTE MARROM (GIRATORIA)"
+    },
+    {
+        "NUSEQOBJETO": 476,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO CINZA (GIRATORIA)"
+    },
+    {
+        "NUSEQOBJETO": 477,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA GERENTE COURO MARROM (GIRATORIA)"
+    },
+    {
+        "NUSEQOBJETO": 478,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO ILHA 4 LUGARES"
+    },
+    {
+        "NUSEQOBJETO": 479,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "CPU DELL"
+    },
+    {
+        "NUSEQOBJETO": 480,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE PRETA COM PARTELEIRAS 4 GAVETAS 2 GAVETOES"
+    },
+    {
+        "NUSEQOBJETO": 481,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE PRETA COM PARTELEIRAS 4 GAVETOES"
+    },
+    {
+        "NUSEQOBJETO": 482,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "CPU OPTIPLEX 3010"
+    },
+    {
+        "NUSEQOBJETO": 483,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR POSITIVO"
+    },
+    {
+        "NUSEQOBJETO": 484,
+        "NUSEQTIPOPATR": 71,
+        "DEOBJETO": "VENTILADOR TYF 6 PAS"
+    },
+    {
+        "NUSEQOBJETO": 485,
+        "NUSEQTIPOPATR": 64,
+        "DEOBJETO": "TELEFONE FIXO INTELBRAS PLENO"
+    },
+    {
+        "NUSEQOBJETO": 486,
+        "NUSEQTIPOPATR": 72,
+        "DEOBJETO": "PRATELEIRA DE AÇO 6 BANDEIJAS"
+    },
+    {
+        "NUSEQOBJETO": 487,
+        "NUSEQTIPOPATR": 64,
+        "DEOBJETO": "TELEFONE SEM FIO"
+    },
+    {
+        "NUSEQOBJETO": 488,
+        "NUSEQTIPOPATR": 57,
+        "DEOBJETO": "BEBEDOURO"
+    },
+    {
+        "NUSEQOBJETO": 489,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BAIXO 4 GAVETAS PRETO"
+    },
+    {
+        "NUSEQOBJETO": 490,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BAIXO 5 GAVETAS PRETO"
+    },
+    {
+        "NUSEQOBJETO": 491,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO 2 PORTAS E 2 GAVETAS PRETO"
+    },
+    {
+        "NUSEQOBJETO": 492,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "CPU LENOVO"
+    },
+    {
+        "NUSEQOBJETO": 493,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE VIDRO 6 LUGARES"
+    },
+    {
+        "NUSEQOBJETO": 494,
+        "NUSEQTIPOPATR": 72,
+        "DEOBJETO": "PRATELEIRA DE AÇO 5 BANDEIJAS"
+    },
+    {
+        "NUSEQOBJETO": 495,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK ACER ASPIRE ES1-5723562"
+    },
+    {
+        "NUSEQOBJETO": 496,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO PRETA GIRATORIA SEM BRAÇOS"
+    },
+    {
+        "NUSEQOBJETO": 497,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE REUNIÃO GRANDE"
+    },
+    {
+        "NUSEQOBJETO": 498,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO DE METAL 9 PRATELEIRAS"
+    },
+    {
+        "NUSEQOBJETO": 499,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO GRANDE"
+    },
+    {
+        "NUSEQOBJETO": 500,
+        "NUSEQTIPOPATR": 73,
+        "DEOBJETO": "PAINEL DE VIDRO COM LOGO PLANSUL"
+    },
+    {
+        "NUSEQOBJETO": 501,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BAIXO DE METAL E VIDRO BRANCO 2 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 502,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO CONSUL"
+    },
+    {
+        "NUSEQOBJETO": 503,
+        "NUSEQTIPOPATR": 74,
+        "DEOBJETO": "TABUA DE PASSAR ROUPA"
+    },
+    {
+        "NUSEQOBJETO": 504,
+        "NUSEQTIPOPATR": 30,
+        "DEOBJETO": "BALANÇA SONAKI SK-80"
+    },
+    {
+        "NUSEQOBJETO": 505,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA BALCAO DE MARMORE PRETO CURVADO"
+    },
+    {
+        "NUSEQOBJETO": 506,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO VERMELHA FIXA"
+    },
+    {
+        "NUSEQOBJETO": 507,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO DE MADEIRA 6 PRATELEIRAS"
+    },
+    {
+        "NUSEQOBJETO": 508,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK SAMSUNG"
+    },
+    {
+        "NUSEQOBJETO": 509,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO IDEAPAD"
+    },
+    {
+        "NUSEQOBJETO": 510,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK ACER ASPIRE 5"
+    },
+    {
+        "NUSEQOBJETO": 511,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO IDEAPAD I3"
+    },
+    {
+        "NUSEQOBJETO": 512,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO IDEAPAD I5"
+    },
+    {
+        "NUSEQOBJETO": 513,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A04E"
+    },
+    {
+        "NUSEQOBJETO": 514,
+        "NUSEQTIPOPATR": 75,
+        "DEOBJETO": "CORTADOR DE PAREDE 1500W 125MM CPW1500 WBR"
+    },
+    {
+        "NUSEQOBJETO": 515,
+        "NUSEQTIPOPATR": 76,
+        "DEOBJETO": "NO BREAK"
+    },
+    {
+        "NUSEQOBJETO": 516,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK VAIO"
+    },
+    {
+        "NUSEQOBJETO": 517,
+        "NUSEQTIPOPATR": 48,
+        "DEOBJETO": "IMPRESSORA HP"
+    },
+    {
+        "NUSEQOBJETO": 518,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO AZUL SEM BRAÇO (GIRATORIA)"
+    },
+    {
+        "NUSEQOBJETO": 519,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BAIXO 3 PORTAS CINZA"
+    },
+    {
+        "NUSEQOBJETO": 520,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR ARQUIVOS"
+    },
+    {
+        "NUSEQOBJETO": 521,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR PABX"
+    },
+    {
+        "NUSEQOBJETO": 523,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH WIFI"
+    },
+    {
+        "NUSEQOBJETO": 524,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH LAN"
+    },
+    {
+        "NUSEQOBJETO": 525,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH BACKUP"
+    },
+    {
+        "NUSEQOBJETO": 526,
+        "NUSEQTIPOPATR": 76,
+        "DEOBJETO": "NO BREAK ESTAÇÕES"
+    },
+    {
+        "NUSEQOBJETO": 527,
+        "NUSEQTIPOPATR": 78,
+        "DEOBJETO": "FIREWALL CONECTIVIDADE"
+    },
+    {
+        "NUSEQOBJETO": 528,
+        "NUSEQTIPOPATR": 78,
+        "DEOBJETO": "FIREWALL MIKROTIC"
+    },
+    {
+        "NUSEQOBJETO": 529,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "ROTEADOR TP LINK"
+    },
+    {
+        "NUSEQOBJETO": 530,
+        "NUSEQTIPOPATR": 76,
+        "DEOBJETO": "NO BREAK LABORATORIO"
+    },
+    {
+        "NUSEQOBJETO": 531,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR PHILLIPS"
+    },
+    {
+        "NUSEQOBJETO": 532,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO 3 PRATELEIRAS PRETO"
+    },
+    {
+        "NUSEQOBJETO": 533,
+        "NUSEQTIPOPATR": 79,
+        "DEOBJETO": "RACK SERVIDORES"
+    },
+    {
+        "NUSEQOBJETO": 534,
+        "NUSEQTIPOPATR": 76,
+        "DEOBJETO": "NO BREAK SERVIDORES"
+    },
+    {
+        "NUSEQOBJETO": 535,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO DE METAL PRETO 2 PORTAS DE VIDRO"
+    },
+    {
+        "NUSEQOBJETO": 536,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH 24 PORTAS D-LINK"
+    },
+    {
+        "NUSEQOBJETO": 537,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH 48 PORTAS TP-LINK"
+    },
+    {
+        "NUSEQOBJETO": 538,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH 20 PORTAS D-NET"
+    },
+    {
+        "NUSEQOBJETO": 539,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH 16 PORTAS INTELBRAS"
+    },
+    {
+        "NUSEQOBJETO": 540,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH 8 PORTAS D-NET"
+    },
+    {
+        "NUSEQOBJETO": 541,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO AGRATO"
+    },
+    {
+        "NUSEQOBJETO": 542,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO SAMSUNG DIGITAL INVERTER"
+    },
+    {
+        "NUSEQOBJETO": 543,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR BENQ"
+    },
+    {
+        "NUSEQOBJETO": 544,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO 9 CHAVES"
+    },
+    {
+        "NUSEQOBJETO": 545,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A32"
+    },
+    {
+        "NUSEQOBJETO": 546,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE LG K8"
+    },
+    {
+        "NUSEQOBJETO": 547,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO MDF 4 GAVETAS 1,50M"
+    },
+    {
+        "NUSEQOBJETO": 548,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO MDF 2 PORTAS 1,50M"
+    },
+    {
+        "NUSEQOBJETO": 549,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMÁRIO MDF 2 PORTAS 90 CM"
+    },
+    {
+        "NUSEQOBJETO": 550,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO AÇO 2 PORTAS 1,90M"
+    },
+    {
+        "NUSEQOBJETO": 551,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO MDF 2 PORTAS 90 CM"
+    },
+    {
+        "NUSEQOBJETO": 552,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH EDGECORE"
+    },
+    {
+        "NUSEQOBJETO": 553,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "RACK 9 US"
+    },
+    {
+        "NUSEQOBJETO": 554,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "MINI DELL OPTFLEX 3020 CORE I3"
+    },
+    {
+        "NUSEQOBJETO": 555,
+        "NUSEQTIPOPATR": 79,
+        "DEOBJETO": "RACK"
+    },
+    {
+        "NUSEQOBJETO": 556,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO MDF 2 PORTAS C\/CHAVE 90 CM"
+    },
+    {
+        "NUSEQOBJETO": 558,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "WIRELESS ACCESS POINT"
+    },
+    {
+        "NUSEQOBJETO": 559,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE RODAS"
+    },
+    {
+        "NUSEQOBJETO": 560,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA 2 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 561,
+        "NUSEQTIPOPATR": 57,
+        "DEOBJETO": "BEBEDOURO 3 TORNEIRAS"
+    },
+    {
+        "NUSEQOBJETO": 562,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO LG"
+    },
+    {
+        "NUSEQOBJETO": 563,
+        "NUSEQTIPOPATR": 79,
+        "DEOBJETO": "RACK 50U'S"
+    },
+    {
+        "NUSEQOBJETO": 564,
+        "NUSEQTIPOPATR": 79,
+        "DEOBJETO": "RACK 40U'S"
+    },
+    {
+        "NUSEQOBJETO": 565,
+        "NUSEQTIPOPATR": 80,
+        "DEOBJETO": "DVR HIKVISION"
+    },
+    {
+        "NUSEQOBJETO": 566,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR DELL POWER EDGE R720"
+    },
+    {
+        "NUSEQOBJETO": 567,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH CISCO SG500-52"
+    },
+    {
+        "NUSEQOBJETO": 568,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO ELGIN"
+    },
+    {
+        "NUSEQOBJETO": 569,
+        "NUSEQTIPOPATR": 81,
+        "DEOBJETO": "PROJETOR TOMATE"
+    },
+    {
+        "NUSEQOBJETO": 570,
+        "NUSEQTIPOPATR": 29,
+        "DEOBJETO": "CLIMATIZADOR PHILCO"
+    },
+    {
+        "NUSEQOBJETO": 571,
+        "NUSEQTIPOPATR": 29,
+        "DEOBJETO": "CLIMATIZADOR SPRINGER MIDEA"
+    },
+    {
+        "NUSEQOBJETO": 572,
+        "NUSEQTIPOPATR": 81,
+        "DEOBJETO": "PROJETOR EPSON POWER LITE K17"
+    },
+    {
+        "NUSEQOBJETO": 573,
+        "NUSEQTIPOPATR": 81,
+        "DEOBJETO": "PROJETOR EPSON"
+    },
+    {
+        "NUSEQOBJETO": 574,
+        "NUSEQTIPOPATR": 33,
+        "DEOBJETO": "TELEVISÃO LG 30''"
+    },
+    {
+        "NUSEQOBJETO": 575,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA"
+    },
+    {
+        "NUSEQOBJETO": 576,
+        "NUSEQTIPOPATR": 79,
+        "DEOBJETO": "RACK 5U'S"
+    },
+    {
+        "NUSEQOBJETO": 577,
+        "NUSEQTIPOPATR": 82,
+        "DEOBJETO": "POWER BALUN INTELBRAS VB1016 WP"
+    },
+    {
+        "NUSEQOBJETO": 578,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH TPLINK-TLSG108E"
+    },
+    {
+        "NUSEQOBJETO": 579,
+        "NUSEQTIPOPATR": 83,
+        "DEOBJETO": "PONTO DE ACESSO AUTOMATIZA RFID"
+    },
+    {
+        "NUSEQOBJETO": 580,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO WAP GTW10 110V"
+    },
+    {
+        "NUSEQOBJETO": 581,
+        "NUSEQTIPOPATR": 84,
+        "DEOBJETO": "CONTROLE DE ACESSO INTELBRAS"
+    },
+    {
+        "NUSEQOBJETO": 582,
+        "NUSEQTIPOPATR": 85,
+        "DEOBJETO": "CAIXA DE SOM COM MICROFONE"
+    },
+    {
+        "NUSEQOBJETO": 583,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA MASSAGEADORA"
+    },
+    {
+        "NUSEQOBJETO": 584,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO MDF COM 18 PORTAS 6X3 CINZA CLARO"
+    },
+    {
+        "NUSEQOBJETO": 585,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO DE AÇO COM 20 PORTAS 4X5 CINZA CLARO"
+    },
+    {
+        "NUSEQOBJETO": 586,
+        "NUSEQTIPOPATR": 86,
+        "DEOBJETO": "CORTINA DE AR SPLIT ELGIN AR"
+    },
+    {
+        "NUSEQOBJETO": 587,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO ELECTROLUX"
+    },
+    {
+        "NUSEQOBJETO": 588,
+        "NUSEQTIPOPATR": 87,
+        "DEOBJETO": "ETIQUETADORA BROTHER"
+    },
+    {
+        "NUSEQOBJETO": 589,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH INTELBRAS SG800Q+ 8P"
+    },
+    {
+        "NUSEQOBJETO": 590,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH TPLINK TL-SF1008D"
+    },
+    {
+        "NUSEQOBJETO": 591,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH INTELBRAS 8P"
+    },
+    {
+        "NUSEQOBJETO": 592,
+        "NUSEQTIPOPATR": 88,
+        "DEOBJETO": "XBOX SERIES S 512GB"
+    },
+    {
+        "NUSEQOBJETO": 593,
+        "NUSEQTIPOPATR": 88,
+        "DEOBJETO": "FLIPERAMA"
+    },
+    {
+        "NUSEQOBJETO": 594,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE PEBOLIM"
+    },
+    {
+        "NUSEQOBJETO": 595,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE PING PONG"
+    },
+    {
+        "NUSEQOBJETO": 596,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE SINUCA"
+    },
+    {
+        "NUSEQOBJETO": 597,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO WAP BRAVO"
+    },
+    {
+        "NUSEQOBJETO": 598,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BAIXO MDF"
+    },
+    {
+        "NUSEQOBJETO": 599,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO"
+    },
+    {
+        "NUSEQOBJETO": 600,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE CANTO"
+    },
+    {
+        "NUSEQOBJETO": 601,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG 27 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 602,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR SAMSUNG 24 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 603,
+        "NUSEQTIPOPATR": 89,
+        "DEOBJETO": "APOIO ERGONÔMICO PARA PÉS"
+    },
+    {
+        "NUSEQOBJETO": 604,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "GAVETEIRO"
+    },
+    {
+        "NUSEQOBJETO": 605,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "CPU PEGASUS"
+    },
+    {
+        "NUSEQOBJETO": 606,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "CPU AVUS"
+    },
+    {
+        "NUSEQOBJETO": 607,
+        "NUSEQTIPOPATR": 90,
+        "DEOBJETO": "ESTABILIZADOR ENERMAX"
+    },
+    {
+        "NUSEQOBJETO": 608,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR BLUECASE"
+    },
+    {
+        "NUSEQOBJETO": 609,
+        "NUSEQTIPOPATR": 90,
+        "DEOBJETO": "ESTABILIZADOR CELOTEK"
+    },
+    {
+        "NUSEQOBJETO": 610,
+        "NUSEQTIPOPATR": 51,
+        "DEOBJETO": "FRIGOBAR CONSUL"
+    },
+    {
+        "NUSEQOBJETO": 611,
+        "NUSEQTIPOPATR": 64,
+        "DEOBJETO": "TELEFONE FIXO SEM FIO INTELBRAS"
+    },
+    {
+        "NUSEQOBJETO": 612,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ESCRIVANINHA MDP DE 120CM X 74CM X 60CM BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 613,
+        "NUSEQTIPOPATR": 90,
+        "DEOBJETO": "ESTABILIZADOR FORCELINE"
+    },
+    {
+        "NUSEQOBJETO": 614,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A02"
+    },
+    {
+        "NUSEQOBJETO": 615,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO CONSUL 12000 BTUS"
+    },
+    {
+        "NUSEQOBJETO": 616,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA ELECTROLUX"
+    },
+    {
+        "NUSEQOBJETO": 617,
+        "NUSEQTIPOPATR": 90,
+        "DEOBJETO": "ESTABILIZADOR ERROMAX"
+    },
+    {
+        "NUSEQOBJETO": 618,
+        "NUSEQTIPOPATR": 90,
+        "DEOBJETO": "ESTABILIZADOR SMS"
+    },
+    {
+        "NUSEQOBJETO": 619,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA CONTINENTAL"
+    },
+    {
+        "NUSEQOBJETO": 620,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS MIDEA"
+    },
+    {
+        "NUSEQOBJETO": 621,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA GRANDE"
+    },
+    {
+        "NUSEQOBJETO": 622,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA AZUL FIXA"
+    },
+    {
+        "NUSEQOBJETO": 623,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA PRETA FIXA"
+    },
+    {
+        "NUSEQOBJETO": 624,
+        "NUSEQTIPOPATR": 43,
+        "DEOBJETO": "LIXEIRA GRANDE AZUL"
+    },
+    {
+        "NUSEQOBJETO": 625,
+        "NUSEQTIPOPATR": 57,
+        "DEOBJETO": "BEBEDOURO LIBEL"
+    },
+    {
+        "NUSEQOBJETO": 626,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO AEREO"
+    },
+    {
+        "NUSEQOBJETO": 627,
+        "NUSEQTIPOPATR": 76,
+        "DEOBJETO": "NO BREAK RAGTER"
+    },
+    {
+        "NUSEQOBJETO": 628,
+        "NUSEQTIPOPATR": 72,
+        "DEOBJETO": "PRATELEIRA"
+    },
+    {
+        "NUSEQOBJETO": 630,
+        "NUSEQTIPOPATR": 64,
+        "DEOBJETO": "TELEFONE FIXO INTELBRAS TL20 PRETO"
+    },
+    {
+        "NUSEQOBJETO": 631,
+        "NUSEQTIPOPATR": 64,
+        "DEOBJETO": "INTERFONE HDL BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 632,
+        "NUSEQTIPOPATR": 18,
+        "DEOBJETO": "SOPRADOR DE FOLHAS A GASOLINA TVB26X"
+    },
+    {
+        "NUSEQOBJETO": 633,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO LAVOR"
+    },
+    {
+        "NUSEQOBJETO": 634,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR GAMER AOC 27'' FULL HD"
+    },
+    {
+        "NUSEQOBJETO": 635,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO KARCHER"
+    },
+    {
+        "NUSEQOBJETO": 636,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA HUSQVARNA 143R-11"
+    },
+    {
+        "NUSEQOBJETO": 637,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA ELETRICA VULCAN TRENT VP-3300L"
+    },
+    {
+        "NUSEQOBJETO": 638,
+        "NUSEQTIPOPATR": 41,
+        "DEOBJETO": "MAQUINA DE LAVAR ELECTROLUX"
+    },
+    {
+        "NUSEQOBJETO": 639,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA STIHL FS 55"
+    },
+    {
+        "NUSEQOBJETO": 640,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE DE AÇO 6 PRATELEIRAS 30CM CINZA"
+    },
+    {
+        "NUSEQOBJETO": 641,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA STHIL CLEAN 500 PLUS"
+    },
+    {
+        "NUSEQOBJETO": 642,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA STHIL CLEAN 400 PLUS"
+    },
+    {
+        "NUSEQOBJETO": 643,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE PRATELEIRA DE AÇO 6 BANDEJAS"
+    },
+    {
+        "NUSEQOBJETO": 644,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR 19 5 LED 3GREEN 75HZ HD GAMER"
+    },
+    {
+        "NUSEQOBJETO": 645,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR 20 POLEGADAS PRETO"
+    },
+    {
+        "NUSEQOBJETO": 646,
+        "NUSEQTIPOPATR": 30,
+        "DEOBJETO": "BALANÇA DIGITAL MAX. 180 KG"
+    },
+    {
+        "NUSEQOBJETO": 647,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG ULTRAWIDE"
+    },
+    {
+        "NUSEQOBJETO": 648,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMÁRIO AEREO MDF 2 DIVISÓRIAS"
+    },
+    {
+        "NUSEQOBJETO": 649,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMÁRIO AEREO MDF 3 DIVISÓRIAS"
+    },
+    {
+        "NUSEQOBJETO": 650,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMÁRIO AEREO MDF PEQUENO 2 DIVISÓRIAS"
+    },
+    {
+        "NUSEQOBJETO": 651,
+        "NUSEQTIPOPATR": 48,
+        "DEOBJETO": "IMPRESSORA BROTHER MINOSUL"
+    },
+    {
+        "NUSEQOBJETO": 652,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA PRETA GIRATÓRIA SEM BRAÇO"
+    },
+    {
+        "NUSEQOBJETO": 653,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA 7 DEGRAUS EXTENSIVA"
+    },
+    {
+        "NUSEQOBJETO": 654,
+        "NUSEQTIPOPATR": 64,
+        "DEOBJETO": "TELEFONE FIXO INTELBRAS TIP 235G"
+    },
+    {
+        "NUSEQOBJETO": 655,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO WAP 5100 TURBO"
+    },
+    {
+        "NUSEQOBJETO": 656,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BAIXO 3 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 657,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BAIXO 1 PORTA MDF"
+    },
+    {
+        "NUSEQOBJETO": 658,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A34"
+    },
+    {
+        "NUSEQOBJETO": 659,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "ESCRIVANINHA EM L 2 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 660,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITÓRIO SECRETARIA COM BRAÇO REGULÁVEL"
+    },
+    {
+        "NUSEQOBJETO": 661,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DIGITADOR COM BRAÇOS"
+    },
+    {
+        "NUSEQOBJETO": 662,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO EM L 2 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 663,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "REFRIGERADOR CONSUL DEGELO SECO 261 LITROS"
+    },
+    {
+        "NUSEQOBJETO": 664,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR SAMSUNG 18,5 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 665,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG 19,5 POLEGAS LED HD"
+    },
+    {
+        "NUSEQOBJETO": 667,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR DELL 18,5 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 668,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR AOC 18,5 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 670,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG FLATRON 17 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 671,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "CPU DELL OPTIPLEX CORE 2 DUO 4GB SSD 240 GB"
+    },
+    {
+        "NUSEQOBJETO": 672,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "CPU MINI DELL OPTIPLEX 3020 I5 8GB SSD 240GB"
+    },
+    {
+        "NUSEQOBJETO": 673,
+        "NUSEQTIPOPATR": 56,
+        "DEOBJETO": "QUADRO BRANCO NÃO MAGNÉTICO MOLDURA MADEIRA 150 X 120 CM"
+    },
+    {
+        "NUSEQOBJETO": 674,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS MIDEA 20L MINUTO FACIL"
+    },
+    {
+        "NUSEQOBJETO": 675,
+        "NUSEQTIPOPATR": 51,
+        "DEOBJETO": "FRIGOBAR ELETROLUX R130 110 V  BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 677,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA EM MDP CINZA\/BRANCO 120CMX60CMX75CM"
+    },
+    {
+        "NUSEQOBJETO": 678,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA EM MDP AZUL 120CMX60CMX75CM 2 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 679,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA EM MDP CINZA\/AZUL 120CMX60CMX75CM"
+    },
+    {
+        "NUSEQOBJETO": 680,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA EM MDP CINZA\/AZUL 120CMX60CMX75CM"
+    },
+    {
+        "NUSEQOBJETO": 681,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH GIGABIT GERENCIÁVEL DE 16 PORTAS TP-LINK TL-SG116E"
+    },
+    {
+        "NUSEQOBJETO": 682,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA EM MDP CINZA\/AZUL 120CMX60CMX75CM 2 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 683,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA EM MDP CINZA\/AZUL REDONDA"
+    },
+    {
+        "NUSEQOBJETO": 684,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO 2 PORTAS E 4 PRATELEIRAS"
+    },
+    {
+        "NUSEQOBJETO": 685,
+        "NUSEQTIPOPATR": 33,
+        "DEOBJETO": "TELEVISÃO SEMP 40 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 686,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITÓRIO GIRATÓRIA EXECUTIVA ERGONÔMICA AZUL MARINHO"
+    },
+    {
+        "NUSEQOBJETO": 687,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITÓRIO GIRATÓRIA ASSENTO E ENCOSTO EM COMPENSADO MULTILAMINADO COR PRETO"
+    },
+    {
+        "NUSEQOBJETO": 688,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITÓRIO PRESIDENTE GIRATÓRIA COR PRETO"
+    },
+    {
+        "NUSEQOBJETO": 689,
+        "NUSEQTIPOPATR": 70,
+        "DEOBJETO": "LONGARINA 3 LUGARES FERRO COM ASSENTO E ENCOSTO MADEIRA E ESPUMA INJETADA COR PRETA"
+    },
+    {
+        "NUSEQOBJETO": 690,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "ESCRIVANINHA EM L 2 GAVETAS COR BRANCA"
+    },
+    {
+        "NUSEQOBJETO": 691,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR GAMER AOC LED 27\" PRETO"
+    },
+    {
+        "NUSEQOBJETO": 692,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO LAVOR MAX"
+    },
+    {
+        "NUSEQOBJETO": 693,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA SUPER LUXO DOMESTICA ELECTROLUX"
+    },
+    {
+        "NUSEQOBJETO": 694,
+        "NUSEQTIPOPATR": 81,
+        "DEOBJETO": "PROJETOR"
+    },
+    {
+        "NUSEQOBJETO": 695,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE TAMANCOBOL EM MADEIRA MACIÇA TAMANHO OFICIAL"
+    },
+    {
+        "NUSEQOBJETO": 696,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "ROTEADOR MODEM VIVO BOX"
+    },
+    {
+        "NUSEQOBJETO": 697,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE MARMORE BRANCO CURVADO"
+    },
+    {
+        "NUSEQOBJETO": 698,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITÓRIO EM MDF INDIVIDUAL"
+    },
+    {
+        "NUSEQOBJETO": 699,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO EM L MDF CINZA"
+    },
+    {
+        "NUSEQOBJETO": 700,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "TELEVISÃO SAMSUNG 46'' FULL HD PRETO"
+    },
+    {
+        "NUSEQOBJETO": 701,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "GUARDA VOLUME 3 GAVETAS DE MADEIRA MARROM COM RODAS"
+    },
+    {
+        "NUSEQOBJETO": 702,
+        "NUSEQTIPOPATR": 71,
+        "DEOBJETO": "VENTILADOR VENTISOL 6 PÁS"
+    },
+    {
+        "NUSEQOBJETO": 703,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "BANCO ESTOFADO PRETO"
+    },
+    {
+        "NUSEQOBJETO": 704,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO LG SPLIT HI-WALL FRIO 22000 BTUS 220V"
+    },
+    {
+        "NUSEQOBJETO": 705,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE REUNIÃO 5 LUGARES DE VIDRO E SUPORTES DE METAL"
+    },
+    {
+        "NUSEQOBJETO": 706,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE REUNIÃO COURO MARROM FIXA"
+    },
+    {
+        "NUSEQOBJETO": 707,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "ESCRIVANINHA DE VIDRO PEQUENA"
+    },
+    {
+        "NUSEQOBJETO": 708,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARQUIVO DE AÇO JUNIOR COM 4 GAVETAS PATIM CINZA"
+    },
+    {
+        "NUSEQOBJETO": 709,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG"
+    },
+    {
+        "NUSEQOBJETO": 710,
+        "NUSEQTIPOPATR": 49,
+        "DEOBJETO": "PURIFICADOR DE ÁGUA IBBL"
+    },
+    {
+        "NUSEQOBJETO": 711,
+        "NUSEQTIPOPATR": 94,
+        "DEOBJETO": "MONITOR DE PRESSÃO ARTERIAL"
+    },
+    {
+        "NUSEQOBJETO": 712,
+        "NUSEQTIPOPATR": 93,
+        "DEOBJETO": "OXIMETRO INTELBRAS"
+    },
+    {
+        "NUSEQOBJETO": 713,
+        "NUSEQTIPOPATR": 91,
+        "DEOBJETO": "MACA COR PRETA"
+    },
+    {
+        "NUSEQOBJETO": 714,
+        "NUSEQTIPOPATR": 92,
+        "DEOBJETO": "TRITURADOR DE PAPEL"
+    },
+    {
+        "NUSEQOBJETO": 715,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO EM L 3 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 716,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE LG K11"
+    },
+    {
+        "NUSEQOBJETO": 717,
+        "NUSEQTIPOPATR": 51,
+        "DEOBJETO": "REFRIGERADOR CONSUL COMPACTO 120"
+    },
+    {
+        "NUSEQOBJETO": 718,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE SUSPENSA MDF 4 PRATELEIRAS"
+    },
+    {
+        "NUSEQOBJETO": 719,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO SPLIT HI WALL BRITÂNIA 9000 BTU\/H FRIO 220 VOLTS"
+    },
+    {
+        "NUSEQOBJETO": 720,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR 17 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 721,
+        "NUSEQTIPOPATR": 28,
+        "DEOBJETO": "SUPORTE PARA MONITOR"
+    },
+    {
+        "NUSEQOBJETO": 722,
+        "NUSEQTIPOPATR": 70,
+        "DEOBJETO": "LONGARINA 5 LUGARES"
+    },
+    {
+        "NUSEQOBJETO": 723,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO HIDROLUX AWD01 5L PRETO E AZUL ELECTROLUX"
+    },
+    {
+        "NUSEQOBJETO": 724,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ELECTROLUX A10N1 1400W 11L 110V"
+    },
+    {
+        "NUSEQOBJETO": 725,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO LAVOR VAC 14"
+    },
+    {
+        "NUSEQOBJETO": 726,
+        "NUSEQTIPOPATR": 3,
+        "DEOBJETO": "BALDE ESPREMEDOR DUO SHELBY"
+    },
+    {
+        "NUSEQOBJETO": 727,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA INDUSTRIAL"
+    },
+    {
+        "NUSEQOBJETO": 728,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR 22 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 729,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR 15 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 730,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR 16 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 731,
+        "NUSEQTIPOPATR": 70,
+        "DEOBJETO": "LONGARINA 2 LUGARES"
+    },
+    {
+        "NUSEQOBJETO": 732,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO BRITANIA 9000 BTUS"
+    },
+    {
+        "NUSEQOBJETO": 733,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA DC 350 BIVOLT"
+    },
+    {
+        "NUSEQOBJETO": 734,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR 19,5 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 735,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA QUADRADA"
+    },
+    {
+        "NUSEQOBJETO": 736,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA COURINO"
+    },
+    {
+        "NUSEQOBJETO": 737,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA COURINO MAIOR"
+    },
+    {
+        "NUSEQOBJETO": 738,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO"
+    },
+    {
+        "NUSEQOBJETO": 739,
+        "NUSEQTIPOPATR": 7,
+        "DEOBJETO": "CORTADOR DE GRAMA ELETRICO"
+    },
+    {
+        "NUSEQOBJETO": 740,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO S145"
+    },
+    {
+        "NUSEQOBJETO": 741,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK ACER A515-51 SERIES"
+    },
+    {
+        "NUSEQOBJETO": 742,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK POSITIVO S1991"
+    },
+    {
+        "NUSEQOBJETO": 743,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK ACER A315-23 SERIES"
+    },
+    {
+        "NUSEQOBJETO": 744,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK SONY VJF155F11X"
+    },
+    {
+        "NUSEQOBJETO": 745,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE MOTOROLA MOTO G5"
+    },
+    {
+        "NUSEQOBJETO": 746,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE MOTOROLA MOTO E40"
+    },
+    {
+        "NUSEQOBJETO": 747,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE MOTOROLA MOTO E7"
+    },
+    {
+        "NUSEQOBJETO": 748,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO PRESIDENTE ESTOFADO"
+    },
+    {
+        "NUSEQOBJETO": 749,
+        "NUSEQTIPOPATR": 95,
+        "DEOBJETO": "LEITOR DE CODIGO DE BARRAS"
+    },
+    {
+        "NUSEQOBJETO": 750,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E LIQUIDO LAVOR POWER DUO NEW 127V"
+    },
+    {
+        "NUSEQOBJETO": 751,
+        "NUSEQTIPOPATR": 50,
+        "DEOBJETO": "SCANNER FUJITSU 8170"
+    },
+    {
+        "NUSEQOBJETO": 752,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO CARRIER SPLIT"
+    },
+    {
+        "NUSEQOBJETO": 753,
+        "NUSEQTIPOPATR": 50,
+        "DEOBJETO": "SCANNER FUJITSU FI-7160"
+    },
+    {
+        "NUSEQOBJETO": 754,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO PHILCO SPLIT HIGH WALL 12000BTUS"
+    },
+    {
+        "NUSEQOBJETO": 755,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO PHILCO SPLIT SYSTEM 12000BTUS"
+    },
+    {
+        "NUSEQOBJETO": 756,
+        "NUSEQTIPOPATR": 47,
+        "DEOBJETO": "CARRO COLETOR DE LIXO 240 LITROS AZUL"
+    },
+    {
+        "NUSEQOBJETO": 757,
+        "NUSEQTIPOPATR": 43,
+        "DEOBJETO": "CESTO DE LIXO SELETIVO 100 LITROS"
+    },
+    {
+        "NUSEQOBJETO": 758,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DE CORRER ALTURA MAX"
+    },
+    {
+        "NUSEQOBJETO": 759,
+        "NUSEQTIPOPATR": 96,
+        "DEOBJETO": "PULVERIZADOR PALISAD 20 LITROS"
+    },
+    {
+        "NUSEQOBJETO": 760,
+        "NUSEQTIPOPATR": 6,
+        "DEOBJETO": "CONTENTOR DE LIXO COM RODAS 200 LITROS BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 761,
+        "NUSEQTIPOPATR": 76,
+        "DEOBJETO": "NOBREAK INTERATIVO MONOVOLT INTELBRAS XNB 1800VA 220V COR PRETO"
+    },
+    {
+        "NUSEQOBJETO": 762,
+        "NUSEQTIPOPATR": 18,
+        "DEOBJETO": "SOPRADOR DE FOLHAS LATERAL CARBON FAK260S"
+    },
+    {
+        "NUSEQOBJETO": 763,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR HQ"
+    },
+    {
+        "NUSEQOBJETO": 764,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO V15 15\" INTEL I5-1235U 8GB 256SSD WINDOWS 11 PRO"
+    },
+    {
+        "NUSEQOBJETO": 765,
+        "NUSEQTIPOPATR": 98,
+        "DEOBJETO": "CESTO COM TAMPA 200 LITROS COR PRETO"
+    },
+    {
+        "NUSEQOBJETO": 766,
+        "NUSEQTIPOPATR": 98,
+        "DEOBJETO": "CESTO COM TAMPA 200 LITROS COR VERDE"
+    },
+    {
+        "NUSEQOBJETO": 767,
+        "NUSEQTIPOPATR": 5,
+        "DEOBJETO": "CARRO FUNCIONAL COR PRETO"
+    },
+    {
+        "NUSEQOBJETO": 768,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR GAMER LG 27 FULL HD, IPS, HDMI E VESA 27MP400-B"
+    },
+    {
+        "NUSEQOBJETO": 769,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR ACER 27 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 771,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA ESTOFADA GIRATÓRIA"
+    },
+    {
+        "NUSEQOBJETO": 772,
+        "NUSEQTIPOPATR": 3,
+        "DEOBJETO": "BALDE DUE SHELBY 30L COM ESPREMEDOR AMARELO"
+    },
+    {
+        "NUSEQOBJETO": 773,
+        "NUSEQTIPOPATR": 50,
+        "DEOBJETO": "SCANNER"
+    },
+    {
+        "NUSEQOBJETO": 774,
+        "NUSEQTIPOPATR": 99,
+        "DEOBJETO": "IMPRESSORA DE CARTÃO SMART CX"
+    },
+    {
+        "NUSEQOBJETO": 775,
+        "NUSEQTIPOPATR": 57,
+        "DEOBJETO": "BEBEDOURO ESMALTEC"
+    },
+    {
+        "NUSEQOBJETO": 776,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO SPRINGER MIDEA 220V"
+    },
+    {
+        "NUSEQOBJETO": 777,
+        "NUSEQTIPOPATR": 51,
+        "DEOBJETO": "REFRIGERADOR COMPACTO"
+    },
+    {
+        "NUSEQOBJETO": 778,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO DE MÃO 45 LITROS"
+    },
+    {
+        "NUSEQOBJETO": 779,
+        "NUSEQTIPOPATR": 18,
+        "DEOBJETO": "SOPRADOR DE FOLHAS A GASOLINA 26CC 2 TEMPOS TEKNA S260TKY"
+    },
+    {
+        "NUSEQOBJETO": 781,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA INDUSTRIAL MAX CLEAN 350MM H350 COMPLETA"
+    },
+    {
+        "NUSEQOBJETO": 782,
+        "NUSEQTIPOPATR": 99,
+        "DEOBJETO": "IMPRESSORA PARA CARTÃO\/CRACHÁ PVC FARGO DTC 1250E DUAL SIDE"
+    },
+    {
+        "NUSEQOBJETO": 783,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR BRX LED 20 POLEGADAS HDMI\/VGA 60HZ"
+    },
+    {
+        "NUSEQOBJETO": 784,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "COMPUTADOR INSPIRON 5430 ALL IN ONE"
+    },
+    {
+        "NUSEQOBJETO": 785,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "GAVETEIRO VOLANTE 04 GAVETAS COR CINZA INCOFLEX"
+    },
+    {
+        "NUSEQOBJETO": 786,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "ROTEADOR VIVO 4G"
+    },
+    {
+        "NUSEQOBJETO": 787,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO DE MÃO 55 LITROS"
+    },
+    {
+        "NUSEQOBJETO": 788,
+        "NUSEQTIPOPATR": 18,
+        "DEOBJETO": "SOPRADOR DE FOLHAS VULCAN SV260-S A GASOLINA 2T 26CC"
+    },
+    {
+        "NUSEQOBJETO": 789,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LED SOYO 19 POL WIDESCREEN HD HDMI\/VGA"
+    },
+    {
+        "NUSEQOBJETO": 790,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E LIQUIDO LAVOR COMPACT 12 LITROS 127V"
+    },
+    {
+        "NUSEQOBJETO": 791,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA ARTICULADA 12 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 792,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO DE ARMAZÉM PARA CARGAS 250KG"
+    },
+    {
+        "NUSEQOBJETO": 793,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA SECRETARIA COM REGULAGEM DE ALTURA A GÁS COM BRAÇO"
+    },
+    {
+        "NUSEQOBJETO": 794,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "GAVETEIRO 4 GAVETAS BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 795,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO 2 GAVETAS COM CHAVE"
+    },
+    {
+        "NUSEQOBJETO": 796,
+        "NUSEQTIPOPATR": 48,
+        "DEOBJETO": "IMPRESSORA MULTIFUNCIONAL COR HP MULTIFUNCIONAL DESKJET INK ADVANTAGE 2874 BIVOLT"
+    },
+    {
+        "NUSEQOBJETO": 797,
+        "NUSEQTIPOPATR": 100,
+        "DEOBJETO": "LAVADORA E SECADORA DE PISO TRIPULADA ALFA TENNANT A670"
+    },
+    {
+        "NUSEQOBJETO": 798,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "LAVADORA E EXTRATORA DE CARPETE A 135 IPC 220V"
+    },
+    {
+        "NUSEQOBJETO": 799,
+        "NUSEQTIPOPATR": 5,
+        "DEOBJETO": "CARRO FUNCIONAL BLACK"
+    },
+    {
+        "NUSEQOBJETO": 800,
+        "NUSEQTIPOPATR": 3,
+        "DEOBJETO": "CARRINHO BALDE ESPREMEDOR WET SYSTEM COM BALDE 30L"
+    },
+    {
+        "NUSEQOBJETO": 801,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO 1300W 220V"
+    },
+    {
+        "NUSEQOBJETO": 804,
+        "NUSEQTIPOPATR": 101,
+        "DEOBJETO": "GARRAFA TERMICA"
+    },
+    {
+        "NUSEQOBJETO": 805,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "ROTEADOR ARCHER C80 WI-FI GIGABIT DUAL BAND AC1900 TP-LINK BIVOLT"
+    },
+    {
+        "NUSEQOBJETO": 806,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA KA 85R STIHL 220V"
+    },
+    {
+        "NUSEQOBJETO": 807,
+        "NUSEQTIPOPATR": 36,
+        "DEOBJETO": "RELOGIO PONTO HENRY SUPER FÁCIL"
+    },
+    {
+        "NUSEQOBJETO": 808,
+        "NUSEQTIPOPATR": 18,
+        "DEOBJETO": "SOPRADOR DE FOLHAS A GASOLINA"
+    },
+    {
+        "NUSEQOBJETO": 809,
+        "NUSEQTIPOPATR": 81,
+        "DEOBJETO": "PROJETOR EPSON H981A"
+    },
+    {
+        "NUSEQOBJETO": 810,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA INDUSTRIAL DEEP CLEAN 300MM PLUS"
+    },
+    {
+        "NUSEQOBJETO": 811,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO ELECTROLUX FLEX 220V"
+    },
+    {
+        "NUSEQOBJETO": 812,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO LAVOR NEW MAXX 127V"
+    },
+    {
+        "NUSEQOBJETO": 813,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO SPLIT SPRINGER INVERTER"
+    },
+    {
+        "NUSEQOBJETO": 814,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO DE AÇO ALTO 4 PRATELEIRAS"
+    },
+    {
+        "NUSEQOBJETO": 815,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO DE AÇO 3 PRATELEIRAS"
+    },
+    {
+        "NUSEQOBJETO": 816,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS PANASONIC BRANCO 21L"
+    },
+    {
+        "NUSEQOBJETO": 817,
+        "NUSEQTIPOPATR": 63,
+        "DEOBJETO": "CAFETEIRA MONDIAL PRETA"
+    },
+    {
+        "NUSEQOBJETO": 818,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO SEM BRAÇO FIXO"
+    },
+    {
+        "NUSEQOBJETO": 819,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BAIXO DE MADEIRA 3 PRATELEIRAS"
+    },
+    {
+        "NUSEQOBJETO": 820,
+        "NUSEQTIPOPATR": 49,
+        "DEOBJETO": "PURIFICADOR DE AGUA COLORMAQ BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 821,
+        "NUSEQTIPOPATR": 99,
+        "DEOBJETO": "IMPRESSORA DE CARTÃO\/CRACHÁ FARGO HID"
+    },
+    {
+        "NUSEQOBJETO": 822,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA EXTENSIVA MOR 2X8"
+    },
+    {
+        "NUSEQOBJETO": 823,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA EXTENSIVA 9 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 824,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG FLATRON 29 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 825,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG ULTRAWIDE 29 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 826,
+        "NUSEQTIPOPATR": 76,
+        "DEOBJETO": "NO BREAK NHS MINI III"
+    },
+    {
+        "NUSEQOBJETO": 827,
+        "NUSEQTIPOPATR": 99,
+        "DEOBJETO": "IMPRESSORA DE CRACHÁ P-280"
+    },
+    {
+        "NUSEQOBJETO": 828,
+        "NUSEQTIPOPATR": 71,
+        "DEOBJETO": "VENTILADOR"
+    },
+    {
+        "NUSEQOBJETO": 829,
+        "NUSEQTIPOPATR": 99,
+        "DEOBJETO": "IMPRESSORA DE CRACHÁ SMART CH SINGLE SIDE 51S"
+    },
+    {
+        "NUSEQOBJETO": 830,
+        "NUSEQTIPOPATR": 76,
+        "DEOBJETO": "NO BREAK TS SHARA UPS COMPACT PRO UNIVERSAL 1400VA 6X TOMADAS 10A BIVOLT"
+    },
+    {
+        "NUSEQOBJETO": 831,
+        "NUSEQTIPOPATR": 28,
+        "DEOBJETO": "SUPORTE PARA MONITOR ELEVADO 20X60X20CM MDF PRETO"
+    },
+    {
+        "NUSEQOBJETO": 832,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 833,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "COMPUTADOR DELL ALL IN ONE"
+    },
+    {
+        "NUSEQOBJETO": 834,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "COMPUTADOR ALL IN ONE COMPAQ"
+    },
+    {
+        "NUSEQOBJETO": 835,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE LG K11+"
+    },
+    {
+        "NUSEQOBJETO": 836,
+        "NUSEQTIPOPATR": 63,
+        "DEOBJETO": "CAFETEIRA"
+    },
+    {
+        "NUSEQOBJETO": 837,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BALCÃO 8 GAVETAS E 4 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 838,
+        "NUSEQTIPOPATR": 64,
+        "DEOBJETO": "TELEFONE FIXO INTELBRAS TIP 125I"
+    },
+    {
+        "NUSEQOBJETO": 839,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR DELL 24 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 840,
+        "NUSEQTIPOPATR": 50,
+        "DEOBJETO": "SCANNER FUJITSU FI-7140"
+    },
+    {
+        "NUSEQOBJETO": 841,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ELECTROLUX 1400W 12L AWD01 110V"
+    },
+    {
+        "NUSEQOBJETO": 842,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO VONDER LEVE LAV 1300 90BAR 127V"
+    },
+    {
+        "NUSEQOBJETO": 843,
+        "NUSEQTIPOPATR": 103,
+        "DEOBJETO": "CAIXA DE FERRAMENTAS FERCAR 07 DE METAL 20CM X 50CM X 21CM AZUL"
+    },
+    {
+        "NUSEQOBJETO": 844,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO DE MÃO CARRIOLA 55 LITROS GALVANIZADA"
+    },
+    {
+        "NUSEQOBJETO": 845,
+        "NUSEQTIPOPATR": 10,
+        "DEOBJETO": "FURADEIRA DE IMPACTO BOSCH GSB 16 RE 220V"
+    },
+    {
+        "NUSEQOBJETO": 846,
+        "NUSEQTIPOPATR": 44,
+        "DEOBJETO": "PARAFUSADEIRA FURADEIRA GSR 120-LI 3\/8 POL COM BATERIA 12V"
+    },
+    {
+        "NUSEQOBJETO": 847,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO SPLIT GREE SPLIT 12000 BTUS FRIO"
+    },
+    {
+        "NUSEQOBJETO": 848,
+        "NUSEQTIPOPATR": 14,
+        "DEOBJETO": "PARAFUSADEIRA E FURADEIRA BLACK DECKER LD12SC 12V"
+    },
+    {
+        "NUSEQOBJETO": 849,
+        "NUSEQTIPOPATR": 103,
+        "DEOBJETO": "CAIXA DE FERRAMENTAS SANFONADA DE METAL"
+    },
+    {
+        "NUSEQOBJETO": 850,
+        "NUSEQTIPOPATR": 10,
+        "DEOBJETO": "FURADEIRA MAKITA"
+    },
+    {
+        "NUSEQOBJETO": 851,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO SAMSUNG VIRUS DOCTOR"
+    },
+    {
+        "NUSEQOBJETO": 852,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO ALTO 4 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 853,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR MIGRAÇÃO SHAREPOINT"
+    },
+    {
+        "NUSEQOBJETO": 854,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LED BRAZIL PC 20WR 75HZ 20 BIVOLT PRETO"
+    },
+    {
+        "NUSEQOBJETO": 855,
+        "NUSEQTIPOPATR": 104,
+        "DEOBJETO": "EXTRATORA DE ESTOFADO E CARPETE HOME CLEANER 1600W WAP COR AMARELO"
+    },
+    {
+        "NUSEQOBJETO": 856,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO DE MÃO PRETO COM RODA"
+    },
+    {
+        "NUSEQOBJETO": 857,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA COSTAL GARTHEN A GASOLINA 42,7 CC RC-4500"
+    },
+    {
+        "NUSEQOBJETO": 858,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO WAP TURBO 5100"
+    },
+    {
+        "NUSEQOBJETO": 859,
+        "NUSEQTIPOPATR": 105,
+        "DEOBJETO": "BALCÃO COM UMA GAVETA E UMA PORTA"
+    },
+    {
+        "NUSEQOBJETO": 860,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA PORTATIL"
+    },
+    {
+        "NUSEQOBJETO": 861,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG 19.5'' LED 20MK400H-B 1366 X 768 HD"
+    },
+    {
+        "NUSEQOBJETO": 862,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO I3 256SSD 4GB WIN 11 CINZA"
+    },
+    {
+        "NUSEQOBJETO": 863,
+        "NUSEQTIPOPATR": 106,
+        "DEOBJETO": "CABO EXTENSOR LIMPEZA DETALHADA ALTURA 6 METROS"
+    },
+    {
+        "NUSEQOBJETO": 864,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA 2X1 WB TEAF 6X10"
+    },
+    {
+        "NUSEQOBJETO": 865,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DUPLO ACESSO DE FIBRA"
+    },
+    {
+        "NUSEQOBJETO": 867,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA LATERAL A GASOLINA 2T VULCAN 52CC VR520HB"
+    },
+    {
+        "NUSEQOBJETO": 868,
+        "NUSEQTIPOPATR": 107,
+        "DEOBJETO": "SECADOR DE MÃOS PLANET CLEAN"
+    },
+    {
+        "NUSEQOBJETO": 869,
+        "NUSEQTIPOPATR": 5,
+        "DEOBJETO": "CARRO FUNCIONAL BRALIMPIA AMERICA BLACK BOLSA AMARELA"
+    },
+    {
+        "NUSEQOBJETO": 870,
+        "NUSEQTIPOPATR": 3,
+        "DEOBJETO": "BALDE ESPREMEDOR DUPLO BRALIMPIA B20FAMP AMARELO 20L"
+    },
+    {
+        "NUSEQOBJETO": 871,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO VONDER LAV1400 1450LB"
+    },
+    {
+        "NUSEQOBJETO": 872,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA ELETRICO VONDER AGV1000 1000W"
+    },
+    {
+        "NUSEQOBJETO": 873,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA EXTENSIVEL DE ALUMINIO 2X7 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 874,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO TRAMONTINA 1220W"
+    },
+    {
+        "NUSEQOBJETO": 875,
+        "NUSEQTIPOPATR": 96,
+        "DEOBJETO": "PULVERIZADOR AGRIC 12,0L PCV120 VONDER PLUS"
+    },
+    {
+        "NUSEQOBJETO": 876,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA À GASOLINA 32,6CC RGP3"
+    },
+    {
+        "NUSEQOBJETO": 877,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO JACTO J5000"
+    },
+    {
+        "NUSEQOBJETO": 878,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO ECOCLEAN 18L"
+    },
+    {
+        "NUSEQOBJETO": 879,
+        "NUSEQTIPOPATR": 104,
+        "DEOBJETO": "EXTRATORA DE CARPETE CERTEC AEP 1 MOTOR 27L"
+    },
+    {
+        "NUSEQOBJETO": 880,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CERTEC 350"
+    },
+    {
+        "NUSEQOBJETO": 881,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CERTEC 550"
+    },
+    {
+        "NUSEQOBJETO": 882,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO JACTO J5000 STOP TOTAL"
+    },
+    {
+        "NUSEQOBJETO": 883,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA TRAMONTINA"
+    },
+    {
+        "NUSEQOBJETO": 884,
+        "NUSEQTIPOPATR": 3,
+        "DEOBJETO": "BALDE ESPREMEDOR DUO"
+    },
+    {
+        "NUSEQOBJETO": 885,
+        "NUSEQTIPOPATR": 108,
+        "DEOBJETO": "LAVADORA AUTOMÁTICA ARTLAV PRATICARE 350B"
+    },
+    {
+        "NUSEQOBJETO": 886,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA LATERAL A GASOLINA BRUDDEN K430"
+    },
+    {
+        "NUSEQOBJETO": 887,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA WAP GTW INOX FW005042 12L"
+    },
+    {
+        "NUSEQOBJETO": 888,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO MAKITA 1.450 LIBRAS HW101"
+    },
+    {
+        "NUSEQOBJETO": 889,
+        "NUSEQTIPOPATR": 57,
+        "DEOBJETO": "BEBEDOURO KNOX IND 25L PRATA"
+    },
+    {
+        "NUSEQOBJETO": 890,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA CONSUL 365L BRANCA"
+    },
+    {
+        "NUSEQOBJETO": 891,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA CONSUL 275L BRANCA"
+    },
+    {
+        "NUSEQOBJETO": 892,
+        "NUSEQTIPOPATR": 29,
+        "DEOBJETO": "CLIMATIZADOR PHILCO PCLIQF"
+    },
+    {
+        "NUSEQOBJETO": 893,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA MINI"
+    },
+    {
+        "NUSEQOBJETO": 894,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS ELECTROLUX 20L"
+    },
+    {
+        "NUSEQOBJETO": 895,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS ELECTROLUX 23L"
+    },
+    {
+        "NUSEQOBJETO": 896,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS MIDEA 20L"
+    },
+    {
+        "NUSEQOBJETO": 897,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS PANASONIC 25L"
+    },
+    {
+        "NUSEQOBJETO": 898,
+        "NUSEQTIPOPATR": 57,
+        "DEOBJETO": "BEBEDOURO GIRA 25L"
+    },
+    {
+        "NUSEQOBJETO": 899,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS CONSUL 20L CMA20BBANA"
+    },
+    {
+        "NUSEQOBJETO": 900,
+        "NUSEQTIPOPATR": 71,
+        "DEOBJETO": "VENTILADOR PEDESTAL SEGMA SEG221"
+    },
+    {
+        "NUSEQOBJETO": 901,
+        "NUSEQTIPOPATR": 33,
+        "DEOBJETO": "TELEVISÃO SMART PHILLIPS 50''"
+    },
+    {
+        "NUSEQOBJETO": 902,
+        "NUSEQTIPOPATR": 33,
+        "DEOBJETO": "TELEVISÃO SMART SEMP TOSHIBA 40''"
+    },
+    {
+        "NUSEQOBJETO": 903,
+        "NUSEQTIPOPATR": 33,
+        "DEOBJETO": "TELEVISÃO AOC 40''"
+    },
+    {
+        "NUSEQOBJETO": 904,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH"
+    },
+    {
+        "NUSEQOBJETO": 905,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "ROTEADOR MULTILASER"
+    },
+    {
+        "NUSEQOBJETO": 906,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH L2 EDGE GIGABIT ETHERNET"
+    },
+    {
+        "NUSEQOBJETO": 907,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH EC62000-26T L2 EDGE GIGABIT ETHERNET"
+    },
+    {
+        "NUSEQOBJETO": 908,
+        "NUSEQTIPOPATR": 64,
+        "DEOBJETO": "TELEFONE FIXO INTELBRAS TIP 100"
+    },
+    {
+        "NUSEQOBJETO": 909,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA"
+    },
+    {
+        "NUSEQOBJETO": 910,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA ARTICULADA 13 EM 1 DE ALUMINIO 5X4 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 911,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO SCHULZ HIDROPO INOX 70L 2000W"
+    },
+    {
+        "NUSEQOBJETO": 912,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E LIQUIDO VONDER APV2475 PROFISSIONAL"
+    },
+    {
+        "NUSEQOBJETO": 913,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E LIQUIDO ELECTROLUX A10 SMART 10L"
+    },
+    {
+        "NUSEQOBJETO": 914,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO LAVOR 1600 LIBRAS ONE 120"
+    },
+    {
+        "NUSEQOBJETO": 915,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR DELL EMC POWEREDGE R540"
+    },
+    {
+        "NUSEQOBJETO": 916,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR DELL POWEREDGE T110 II"
+    },
+    {
+        "NUSEQOBJETO": 917,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR DELL POWEREDGE T430 100-240V"
+    },
+    {
+        "NUSEQOBJETO": 918,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR DELL POWEREDGE T320"
+    },
+    {
+        "NUSEQOBJETO": 919,
+        "NUSEQTIPOPATR": 54,
+        "DEOBJETO": "SERVIDOR DELL EMC POWEREDGE MD1400"
+    },
+    {
+        "NUSEQOBJETO": 920,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR DELL LCD 17''"
+    },
+    {
+        "NUSEQOBJETO": 921,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR SAMSUNG 15.6''"
+    },
+    {
+        "NUSEQOBJETO": 922,
+        "NUSEQTIPOPATR": 48,
+        "DEOBJETO": "IMPRESSORA RICOH SP3710SF"
+    },
+    {
+        "NUSEQOBJETO": 923,
+        "NUSEQTIPOPATR": 81,
+        "DEOBJETO": "PROJETOR EPSON POWERLITE S6+"
+    },
+    {
+        "NUSEQOBJETO": 924,
+        "NUSEQTIPOPATR": 81,
+        "DEOBJETO": "PROJETOR EPSON POWERLITE X17"
+    },
+    {
+        "NUSEQOBJETO": 925,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH D-LINK DES-1210-28"
+    },
+    {
+        "NUSEQOBJETO": 926,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH EDGECORE ECS2000-26T EU"
+    },
+    {
+        "NUSEQOBJETO": 927,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA PORTATIL BLACK DECKER APB3600-BR BIVOLT"
+    },
+    {
+        "NUSEQOBJETO": 928,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR SAMSUNG SYNCMASTER 540N 15''"
+    },
+    {
+        "NUSEQOBJETO": 929,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR POSITIVO 20'' POSITIVO E2011P"
+    },
+    {
+        "NUSEQOBJETO": 931,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA UNIVERSITÁRIA AZUL"
+    },
+    {
+        "NUSEQOBJETO": 932,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA\/REFRIGERADOR ELECTROLUX 240L RE31 BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 933,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA\/CARTEIRA UNIVERSITARIA AZUL E BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 934,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA\/CARTEIRA UNIVERSITARIA AZUL"
+    },
+    {
+        "NUSEQOBJETO": 935,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO ELGIN 9000 BTUS COR BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 936,
+        "NUSEQTIPOPATR": 49,
+        "DEOBJETO": "PURIFICADOR DE AGUA POLAR COR PRETO"
+    },
+    {
+        "NUSEQOBJETO": 937,
+        "NUSEQTIPOPATR": 48,
+        "DEOBJETO": "IMPRESSORA SAMSUNG M2070"
+    },
+    {
+        "NUSEQOBJETO": 938,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK POSITIVO"
+    },
+    {
+        "NUSEQOBJETO": 939,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO PARA PASTA SUSPENSA 30 GAVETAS BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 940,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BALCÃO COR MOGNO"
+    },
+    {
+        "NUSEQOBJETO": 941,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE EM MDF 2 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 942,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO COM LATERAL EM VIDRO"
+    },
+    {
+        "NUSEQOBJETO": 943,
+        "NUSEQTIPOPATR": 109,
+        "DEOBJETO": "BANCO DE MADEIRA RUSTICA COM VERNIZ"
+    },
+    {
+        "NUSEQOBJETO": 944,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO INTERNAUTA PRETA (GIRATORIA)"
+    },
+    {
+        "NUSEQOBJETO": 945,
+        "NUSEQTIPOPATR": 37,
+        "DEOBJETO": "ROTEADOR MIKROTIK"
+    },
+    {
+        "NUSEQOBJETO": 946,
+        "NUSEQTIPOPATR": 79,
+        "DEOBJETO": "RACK MINI 19X5UX350 PORTA ACRÍLICA PRETO"
+    },
+    {
+        "NUSEQOBJETO": 947,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE RODAS CDS"
+    },
+    {
+        "NUSEQOBJETO": 948,
+        "NUSEQTIPOPATR": 6,
+        "DEOBJETO": "CONTENTOR DE LIXO 120 LITROS COLETA SELETIVA COM RODA"
+    },
+    {
+        "NUSEQOBJETO": 949,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE PLASTICO BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 950,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE MADEIRA MARROM"
+    },
+    {
+        "NUSEQOBJETO": 951,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS PANASONIC NN-ST25LWRUN"
+    },
+    {
+        "NUSEQOBJETO": 952,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO CINZA"
+    },
+    {
+        "NUSEQOBJETO": 953,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA ERGONOMICA D TEC CINZA"
+    },
+    {
+        "NUSEQOBJETO": 954,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA ERGONOMICA D TEC CINZA\/BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 955,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA ERGONOMICA D TEC BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 956,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO 3 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 957,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "ARMARIO DE AÇO PARA ARQUIVO 4 GAVETAS CINZA\/PRETO"
+    },
+    {
+        "NUSEQOBJETO": 958,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "GAVETEIRO COM RODAS"
+    },
+    {
+        "NUSEQOBJETO": 959,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA ERGONOMICA D TEC BEGE"
+    },
+    {
+        "NUSEQOBJETO": 960,
+        "NUSEQTIPOPATR": 79,
+        "DEOBJETO": "RACK 26X55CM EM AÇO"
+    },
+    {
+        "NUSEQOBJETO": 961,
+        "NUSEQTIPOPATR": 79,
+        "DEOBJETO": "RACK 173X80X60CM EM AÇO"
+    },
+    {
+        "NUSEQOBJETO": 962,
+        "NUSEQTIPOPATR": 79,
+        "DEOBJETO": "RACK 173X80X60CM EM AÇO"
+    },
+    {
+        "NUSEQOBJETO": 963,
+        "NUSEQTIPOPATR": 79,
+        "DEOBJETO": "RACK 57X 55CM EM AÇO"
+    },
+    {
+        "NUSEQOBJETO": 964,
+        "NUSEQTIPOPATR": 79,
+        "DEOBJETO": "RACK DE FERRO"
+    },
+    {
+        "NUSEQOBJETO": 965,
+        "NUSEQTIPOPATR": 79,
+        "DEOBJETO": "RACK 213 X100X80CM EM AÇO"
+    },
+    {
+        "NUSEQOBJETO": 966,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE COM PRATELEIRAS CINZA"
+    },
+    {
+        "NUSEQOBJETO": 967,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA WAP GTW INOX FW005041 12L COR PRETO E AMARELO"
+    },
+    {
+        "NUSEQOBJETO": 968,
+        "NUSEQTIPOPATR": 110,
+        "DEOBJETO": "REGADOR DE PLANTAS GRANDE PLÁSTICO 10L"
+    },
+    {
+        "NUSEQOBJETO": 969,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA EXTENSIVEL AÇO REFORÇADO 5X08 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 970,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR DELL 22'' E2222HS"
+    },
+    {
+        "NUSEQOBJETO": 971,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "CPU DELL OPTIPLEX MICRO 7010"
+    },
+    {
+        "NUSEQOBJETO": 972,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA GT30N 1300W 110V"
+    },
+    {
+        "NUSEQOBJETO": 973,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA WAP GTW 10 COMPACTO 1400W"
+    },
+    {
+        "NUSEQOBJETO": 974,
+        "NUSEQTIPOPATR": 111,
+        "DEOBJETO": "WEBCAM FULL HD"
+    },
+    {
+        "NUSEQOBJETO": 975,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA\/CARTEIRA UNIVERSITARIA AZUL\/PRETO"
+    },
+    {
+        "NUSEQOBJETO": 976,
+        "NUSEQTIPOPATR": 71,
+        "DEOBJETO": "VENTILADOR PEDESTAL MONDIAL NV-61-6P-NP"
+    },
+    {
+        "NUSEQOBJETO": 977,
+        "NUSEQTIPOPATR": 33,
+        "DEOBJETO": "TELEVISÃO SEMP TOSHIBA 36''"
+    },
+    {
+        "NUSEQOBJETO": 978,
+        "NUSEQTIPOPATR": 5,
+        "DEOBJETO": "CARRO FUNCIONAL BLACK PARA LIMPEZA SUPER RESISTENTE"
+    },
+    {
+        "NUSEQOBJETO": 979,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA TELESCOPICA EXTENSIVA AÇO INOXIDÁVEL 11 DEGRAUS 3,2MT"
+    },
+    {
+        "NUSEQOBJETO": 980,
+        "NUSEQTIPOPATR": 112,
+        "DEOBJETO": "WALKIE TALKIE INTELBRAS UHF RC3002"
+    },
+    {
+        "NUSEQOBJETO": 981,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA LATERAL A GASOLINA VULCAN VR520H 52CC 2,5HP 2T VR6"
+    },
+    {
+        "NUSEQOBJETO": 982,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO DE MÃO 55 LITROS GALVANIZADO"
+    },
+    {
+        "NUSEQOBJETO": 983,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO KARCHER HD 6\/15C"
+    },
+    {
+        "NUSEQOBJETO": 984,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO KARCHER COMPACTA 1500PSI 1400W 110V"
+    },
+    {
+        "NUSEQOBJETO": 985,
+        "NUSEQTIPOPATR": 95,
+        "DEOBJETO": "LEITOR DE CODIGO DE BARRAS C3TECH LB-50BK USB 1D 127\/220V PRETO"
+    },
+    {
+        "NUSEQOBJETO": 986,
+        "NUSEQTIPOPATR": 112,
+        "DEOBJETO": "RÁDIO COMUNICADOR INTELBRAS UHF RC3002"
+    },
+    {
+        "NUSEQOBJETO": 987,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY S20 FE"
+    },
+    {
+        "NUSEQOBJETO": 988,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ELECTROLUX A20 SMART 220V"
+    },
+    {
+        "NUSEQOBJETO": 989,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO GHIBLI AS 35 INOX 220V"
+    },
+    {
+        "NUSEQOBJETO": 990,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ELECTROLUX ACQUA POWER 1400W 18L"
+    },
+    {
+        "NUSEQOBJETO": 991,
+        "NUSEQTIPOPATR": 113,
+        "DEOBJETO": "APARADOR PARA CERCAS"
+    },
+    {
+        "NUSEQOBJETO": 992,
+        "NUSEQTIPOPATR": 114,
+        "DEOBJETO": "PODADOR DE GALHOS"
+    },
+    {
+        "NUSEQOBJETO": 993,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO ELGIN SPLIT INVERTER PISO TETO 60000 BTUS ECO SÓ FRIO PVFI60B2NB"
+    },
+    {
+        "NUSEQOBJETO": 994,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO BUFFET 5 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 995,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO DE AÇO 12 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 996,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE MOTOROLA MOTO G22"
+    },
+    {
+        "NUSEQOBJETO": 997,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA STIHL FS 160 DM300-3 29,8CC 1,9HP"
+    },
+    {
+        "NUSEQOBJETO": 998,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO PARA ARQUIVO PASTA SUSPENSA 4 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 999,
+        "NUSEQTIPOPATR": 57,
+        "DEOBJETO": "BEBEDOURO GELAGUA ESMALTEC MODELO EGC35B"
+    },
+    {
+        "NUSEQOBJETO": 1000,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "CPU ATHLON"
+    },
+    {
+        "NUSEQOBJETO": 1001,
+        "NUSEQTIPOPATR": 27,
+        "DEOBJETO": "CPU DELL OPTIFLEX 3020"
+    },
+    {
+        "NUSEQOBJETO": 1002,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "REFRIGERADOR ELECTROLUX DEGELO AUTOLIMPANTE 240 LITROS BRANCO 1 PORTA RE31"
+    },
+    {
+        "NUSEQOBJETO": 1003,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA TOYAMA"
+    },
+    {
+        "NUSEQOBJETO": 1004,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "REFRIGERADOR PHILCO DEGELO PH115 220V"
+    },
+    {
+        "NUSEQOBJETO": 1005,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO MAKITA HW101 220V"
+    },
+    {
+        "NUSEQOBJETO": 1006,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO ELGIN SPLIT HVQ130B2IA 8790W 220V"
+    },
+    {
+        "NUSEQOBJETO": 1007,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO KARCHER NT 3000"
+    },
+    {
+        "NUSEQOBJETO": 1008,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE DE AÇO 4 PRATELEIRAS"
+    },
+    {
+        "NUSEQOBJETO": 1009,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "GAVETEIRO 4 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 1010,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR DELL 18,5'' E1914HC"
+    },
+    {
+        "NUSEQOBJETO": 1011,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR DELL 17\" E170SC"
+    },
+    {
+        "NUSEQOBJETO": 1012,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG FALTRON 18,5\" W1473CV"
+    },
+    {
+        "NUSEQOBJETO": 1013,
+        "NUSEQTIPOPATR": 105,
+        "DEOBJETO": "BALCÃO DE ATENDIMENTO COM 4 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 1014,
+        "NUSEQTIPOPATR": 64,
+        "DEOBJETO": "TELEFONE FIXO SEM FIO INTELBRAS TIS5010"
+    },
+    {
+        "NUSEQOBJETO": 1015,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR DELL 19\" P1914SF"
+    },
+    {
+        "NUSEQOBJETO": 1016,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA SECRETARIA FIXA PE PALITO ESTOFADA AZUL"
+    },
+    {
+        "NUSEQOBJETO": 1017,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE ESCRITORIO PEQUENA"
+    },
+    {
+        "NUSEQOBJETO": 1018,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA DE 4 LUGARES"
+    },
+    {
+        "NUSEQOBJETO": 1019,
+        "NUSEQTIPOPATR": 105,
+        "DEOBJETO": "BALCÃO DE COZINHA 2 PORTAS E 3 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 1020,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "REFRIGERADOR CONSUL 342L 220V"
+    },
+    {
+        "NUSEQOBJETO": 1021,
+        "NUSEQTIPOPATR": 96,
+        "DEOBJETO": "PULVERIZADOR VONDER PLUS AGRIC 12 OL PCV 120"
+    },
+    {
+        "NUSEQOBJETO": 1022,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO TRAMONTINA 1200W 220V"
+    },
+    {
+        "NUSEQOBJETO": 1023,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA EXTENSIVEL VAZADA EM FIBRA DE VIDRO 27 DEGRAUS 4,80X8,40M"
+    },
+    {
+        "NUSEQOBJETO": 1024,
+        "NUSEQTIPOPATR": 30,
+        "DEOBJETO": "BALANÇA DIGITAL TECHLINE TEC-SILVER"
+    },
+    {
+        "NUSEQOBJETO": 1025,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO TCL INVERTER 12000 BTUS"
+    },
+    {
+        "NUSEQOBJETO": 1026,
+        "NUSEQTIPOPATR": 28,
+        "DEOBJETO": "SUPORTE PARA MONITOR ELEVADO 60CM MDF PRETO"
+    },
+    {
+        "NUSEQOBJETO": 1027,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY J5 PRIME"
+    },
+    {
+        "NUSEQOBJETO": 1028,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA VULCAN TRENT VR430"
+    },
+    {
+        "NUSEQOBJETO": 1029,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DE ALUMINIO 2X9"
+    },
+    {
+        "NUSEQOBJETO": 1030,
+        "NUSEQTIPOPATR": 44,
+        "DEOBJETO": "PARAFUSADEIRA FURADEIRA BLACK DECKER"
+    },
+    {
+        "NUSEQOBJETO": 1031,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO DE MÃO 60 LITROS"
+    },
+    {
+        "NUSEQOBJETO": 1032,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS MIDEA 21 LITROS MTFE21 BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 1033,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CLEANER 510 220V"
+    },
+    {
+        "NUSEQOBJETO": 1034,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CLEANER 350 220V"
+    },
+    {
+        "NUSEQOBJETO": 1035,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA INDUSTRIAL MEBAL"
+    },
+    {
+        "NUSEQOBJETO": 1036,
+        "NUSEQTIPOPATR": 18,
+        "DEOBJETO": "SOPRADOR DE FOLHAS A GASOLINA TOYAMA 2T 1.0HP 25.4CC TB26X"
+    },
+    {
+        "NUSEQOBJETO": 1037,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO GIRATORIA N17"
+    },
+    {
+        "NUSEQOBJETO": 1038,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR ITAUTEC"
+    },
+    {
+        "NUSEQOBJETO": 1039,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO DE MÃO 60L FISCHER VERMELHO"
+    },
+    {
+        "NUSEQOBJETO": 1040,
+        "NUSEQTIPOPATR": 3,
+        "DEOBJETO": "BALDE DOBLO ESPREMEDOR 20FLEX"
+    },
+    {
+        "NUSEQOBJETO": 1041,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA WAP GTW INOX FW005041 12L COR PRETO E AMARELO 127V"
+    },
+    {
+        "NUSEQOBJETO": 1042,
+        "NUSEQTIPOPATR": 117,
+        "DEOBJETO": "MICROFONE LOGITECH 989-000405 MEETUP"
+    },
+    {
+        "NUSEQOBJETO": 1043,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO V15 I5-1235U 8GB 256GB W11 HOME 15.6 FHD"
+    },
+    {
+        "NUSEQOBJETO": 1044,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA VULCAN TRENT VR520H"
+    },
+    {
+        "NUSEQOBJETO": 1045,
+        "NUSEQTIPOPATR": 60,
+        "DEOBJETO": "BANDEJA REDONDA ARIENZO-SE 45CM ANTIDERRAPANTE BRINOX"
+    },
+    {
+        "NUSEQOBJETO": 1046,
+        "NUSEQTIPOPATR": 25,
+        "DEOBJETO": "SERRA MARMORE MAKITA 4100NH3ZX2 1300W 1MM 110V"
+    },
+    {
+        "NUSEQOBJETO": 1047,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A14 5G"
+    },
+    {
+        "NUSEQOBJETO": 1048,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LED 20 PCTOP HDMI MLP200HDMI PRETO"
+    },
+    {
+        "NUSEQOBJETO": 1049,
+        "NUSEQTIPOPATR": 14,
+        "DEOBJETO": "PARAFUSADEIRA BORSCH GSR1000 SMART 12V"
+    },
+    {
+        "NUSEQOBJETO": 1050,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR GAMER KOZZ 19 5MS 60HZ HDMI VGA GAMING AJUSTÁVEL"
+    },
+    {
+        "NUSEQOBJETO": 1051,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A01"
+    },
+    {
+        "NUSEQOBJETO": 1052,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A13"
+    },
+    {
+        "NUSEQOBJETO": 1053,
+        "NUSEQTIPOPATR": 79,
+        "DEOBJETO": "RACK 5U DVR CFTV SWITCH"
+    },
+    {
+        "NUSEQOBJETO": 1054,
+        "NUSEQTIPOPATR": 18,
+        "DEOBJETO": "SOPRADOR DE FOLHAS A GASOLINA GARTHEN EBV-260"
+    },
+    {
+        "NUSEQOBJETO": 1055,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG 29'' ULTRAWIDE 29WK600-W IPS FHD IPS 127\/220V"
+    },
+    {
+        "NUSEQOBJETO": 1056,
+        "NUSEQTIPOPATR": 35,
+        "DEOBJETO": "GAVETEIRO VOLANTE 04 GAVETAS 0,670,460,40M COR CINZA INCOFLEX"
+    },
+    {
+        "NUSEQOBJETO": 1057,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ELECTROLUX ACQUA POWER 10L 1250W 110V"
+    },
+    {
+        "NUSEQOBJETO": 1058,
+        "NUSEQTIPOPATR": 78,
+        "DEOBJETO": "FIREWALL MIKROTIK RB780GR3"
+    },
+    {
+        "NUSEQOBJETO": 1059,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DE ALUMINIO TELESCOPICA VONDER 8 DEGRAUS COM AMORTECEDOR"
+    },
+    {
+        "NUSEQOBJETO": 1060,
+        "NUSEQTIPOPATR": 120,
+        "DEOBJETO": "MANGUEIRA DE JARDIM TRAMONTINA 1\/2 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 1061,
+        "NUSEQTIPOPATR": 119,
+        "DEOBJETO": "RASTELO"
+    },
+    {
+        "NUSEQOBJETO": 1062,
+        "NUSEQTIPOPATR": 106,
+        "DEOBJETO": "CABO EXTENSOR TELESCOPICO BRALIMPIA 6 METROS"
+    },
+    {
+        "NUSEQOBJETO": 1063,
+        "NUSEQTIPOPATR": 118,
+        "DEOBJETO": "TELA MOSQUETEIRO LAHUMAN VERDE 1,20X50CM"
+    },
+    {
+        "NUSEQOBJETO": 1064,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR SOYO LED 18,5''"
+    },
+    {
+        "NUSEQOBJETO": 1065,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA CONSUL CRB39ABBNA FROST FREE 342L 220V"
+    },
+    {
+        "NUSEQOBJETO": 1066,
+        "NUSEQTIPOPATR": 31,
+        "DEOBJETO": "GELADEIRA CONSUL DEGELO SECO CRA30FBANA 261L BRANCA 127V"
+    },
+    {
+        "NUSEQOBJETO": 1067,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DOMESTICA EM ALUMINIO 5 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 1068,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR HYRAX LED 19 HDMI VGA VESA 60HZ 100V\/240V"
+    },
+    {
+        "NUSEQOBJETO": 1069,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ELECTROLUX AWD01 110V"
+    },
+    {
+        "NUSEQOBJETO": 1070,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DOMESTICA EM ALUMINIO 4 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 1071,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH GIGABIT TP-LINK 8 PORTAS LS1008G"
+    },
+    {
+        "NUSEQOBJETO": 1072,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR HAYOM LED WIDESCREEN HD 19,5 HDMI E VGA 60HZ"
+    },
+    {
+        "NUSEQOBJETO": 1073,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS MIDEA MRAS21 21L BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 1074,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS MIDEA MRAM21 21L BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 1075,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS MIDEA MTFE21 21L BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 1076,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS PANASONIC ST25LWRU BRANCO 21L 220V"
+    },
+    {
+        "NUSEQOBJETO": 1077,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO STIHL RE 110"
+    },
+    {
+        "NUSEQOBJETO": 1078,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO WAP BRAVO 2550"
+    },
+    {
+        "NUSEQOBJETO": 1079,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE DE AÇO INDUSTRIAL 6 PRATELEIRAS 90X198"
+    },
+    {
+        "NUSEQOBJETO": 1080,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA TERRA GR-260"
+    },
+    {
+        "NUSEQOBJETO": 1081,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA NAKASAKI NK 650 AT"
+    },
+    {
+        "NUSEQOBJETO": 1082,
+        "NUSEQTIPOPATR": 83,
+        "DEOBJETO": "ACCESS POINT GWN7660 COM FONTE POE 48V GWN GRANDSTREAM"
+    },
+    {
+        "NUSEQOBJETO": 1083,
+        "NUSEQTIPOPATR": 78,
+        "DEOBJETO": "FIREWALL FORTIGATE FG-60F"
+    },
+    {
+        "NUSEQOBJETO": 1084,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH GIGABIT CRS326 - 24G- 2S + RM \/ 24 PORTAS GIGABIT"
+    },
+    {
+        "NUSEQOBJETO": 1085,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH MIKROTIK CRS354-48G-2Q+RM"
+    },
+    {
+        "NUSEQOBJETO": 1086,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH TPLINK 8 PORTAS"
+    },
+    {
+        "NUSEQOBJETO": 1087,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG ULTRAWIDE 25,7 26WQ500"
+    },
+    {
+        "NUSEQOBJETO": 1088,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA TERRA GR-260XP"
+    },
+    {
+        "NUSEQOBJETO": 1089,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS CONSUL CMA20BB 20 LITROS COR BRANCO 110V"
+    },
+    {
+        "NUSEQOBJETO": 1090,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK SAMSUNG GALAXY BOOK 4"
+    },
+    {
+        "NUSEQOBJETO": 1091,
+        "NUSEQTIPOPATR": 50,
+        "DEOBJETO": "SCANNER DE MESA BROTHER ADS-3100 COR BRANCO"
+    },
+    {
+        "NUSEQOBJETO": 1092,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA WAP 20 INOX 220V"
+    },
+    {
+        "NUSEQOBJETO": 1093,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR MYMAX 19'' POLEGADAS HD LED 60HZ HDMI VGA 3.6MS PRETO"
+    },
+    {
+        "NUSEQOBJETO": 1094,
+        "NUSEQTIPOPATR": 40,
+        "DEOBJETO": "MOTOPODADOR DE GALHOS CARBON FAK 2T 33CC 1,3 HP C\/EXTENSOR"
+    },
+    {
+        "NUSEQOBJETO": 1096,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR GRAMA ELETRICO TRAPP MASTER 1000 PLUS COR VERDE\/PRETO 127V"
+    },
+    {
+        "NUSEQOBJETO": 1097,
+        "NUSEQTIPOPATR": 7,
+        "DEOBJETO": "CORTADOR DE GRAMA ELETRICO GARTHEN CG-34"
+    },
+    {
+        "NUSEQOBJETO": 1098,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO FAMASTIL POWER 1600W 1950PSI 220V"
+    },
+    {
+        "NUSEQOBJETO": 1099,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO ELECTROLUX UPR11 220V"
+    },
+    {
+        "NUSEQOBJETO": 1100,
+        "NUSEQTIPOPATR": 81,
+        "DEOBJETO": "PROJETOR EPSON H981A"
+    },
+    {
+        "NUSEQOBJETO": 1101,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO DE MÃO 60 LITROS METALOSA"
+    },
+    {
+        "NUSEQOBJETO": 1102,
+        "NUSEQTIPOPATR": 45,
+        "DEOBJETO": "TRANSFORMADOR 5000VA 110\/220"
+    },
+    {
+        "NUSEQOBJETO": 1103,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR GAMER LG 27'' 27MS500-B"
+    },
+    {
+        "NUSEQOBJETO": 1104,
+        "NUSEQTIPOPATR": 22,
+        "DEOBJETO": "AR CONDICIONADO ELGIN HI WALL 9000 BTUS ECO INVERTER II 220V"
+    },
+    {
+        "NUSEQOBJETO": 1105,
+        "NUSEQTIPOPATR": 20,
+        "DEOBJETO": "CADEIRA DE ESCRITORIO ECOFLEX 467 ERGONOMICA PRETA COM ESTOFADO DE TECIDO"
+    },
+    {
+        "NUSEQOBJETO": 1106,
+        "NUSEQTIPOPATR": 71,
+        "DEOBJETO": "VENTILADOR DE PAREDE VENTIDELTA 60CM PREMIUM PRETO BIV 170W COR DAS PAS NATURAL 110V\/220V"
+    },
+    {
+        "NUSEQOBJETO": 1107,
+        "NUSEQTIPOPATR": 90,
+        "DEOBJETO": "ESTABILIZADOR TS SHARA POWEREST HOME 1000 BIVOLT 1000VA 9007"
+    },
+    {
+        "NUSEQOBJETO": 1108,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO STIHL RE 900KM 220V"
+    },
+    {
+        "NUSEQOBJETO": 1109,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA TRAMONTINA AP1000T"
+    },
+    {
+        "NUSEQOBJETO": 1110,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA ECHO SRM-22GES"
+    },
+    {
+        "NUSEQOBJETO": 1111,
+        "NUSEQTIPOPATR": 18,
+        "DEOBJETO": "SOPRADOR DE FOLHAS COSTAL"
+    },
+    {
+        "NUSEQOBJETO": 1112,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA CLEANER 400 220V"
+    },
+    {
+        "NUSEQOBJETO": 1113,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO V15 G3 IAP"
+    },
+    {
+        "NUSEQOBJETO": 1114,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO KARCHER COMPACTA 1500PSI 1400W 220V"
+    },
+    {
+        "NUSEQOBJETO": 1115,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG 29'' LED FULL HD ULTRAWIDE 29WL500 HDMI HDR IPS COR PRETO 100V\/240V"
+    },
+    {
+        "NUSEQOBJETO": 1121,
+        "NUSEQTIPOPATR": 76,
+        "DEOBJETO": "NO BREAK PHD EA BR 6KVA E220 S220\/120V 192VDC"
+    },
+    {
+        "NUSEQOBJETO": 1122,
+        "NUSEQTIPOPATR": 76,
+        "DEOBJETO": "BATERIA PARA NOBREAK"
+    },
+    {
+        "NUSEQOBJETO": 1123,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH INTELBRAS SC 5525-24X-2QE S\/FAN\/FNT"
+    },
+    {
+        "NUSEQOBJETO": 1124,
+        "NUSEQTIPOPATR": 99,
+        "DEOBJETO": "IMPRESSORA DE CARTÃO SMART CH SINGLE SIDE 51S INT (8480)"
+    },
+    {
+        "NUSEQOBJETO": 1125,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR SAMSUNG GAMER 27'' T350 FHD"
+    },
+    {
+        "NUSEQOBJETO": 1126,
+        "NUSEQTIPOPATR": 83,
+        "DEOBJETO": "ACCESS POINT TP-LINK EAP650, WI-FI 6, 2.976 MBPS, DUAL BAND, AX3000, TETO"
+    },
+    {
+        "NUSEQOBJETO": 1127,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR FMAXX 19'' MQ19V LED COM HDMI VGA VESA COR PRETO"
+    },
+    {
+        "NUSEQOBJETO": 1128,
+        "NUSEQTIPOPATR": 105,
+        "DEOBJETO": "BALCÃO DE PIA COM CUBA INOX 1,50M"
+    },
+    {
+        "NUSEQOBJETO": 1129,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA REFEITORIO MG 4004 TAMPO 120X80 CADEIRAS GIRATORIAS 4 LUGARES"
+    },
+    {
+        "NUSEQOBJETO": 1130,
+        "NUSEQTIPOPATR": 5,
+        "DEOBJETO": "CARRO FUNCIONAL CAPACIDADE DE ATÉ 90 LITROS OU 50 KILOS"
+    },
+    {
+        "NUSEQOBJETO": 1131,
+        "NUSEQTIPOPATR": 121,
+        "DEOBJETO": "MISTURADOR ELÉTRICO MENEGOTTI DE ARGAMASSA\/TINTA 1800W 220V"
+    },
+    {
+        "NUSEQOBJETO": 1132,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO IDEAPAD 1I INTEL CORE I5 1235U 8GB RAM 512GB SSD WINDOWS 11 HOME TELA 15,6'' HD"
+    },
+    {
+        "NUSEQOBJETO": 1133,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO KARCHER HD 585 PROFI NEW 2200W 220V"
+    },
+    {
+        "NUSEQOBJETO": 1134,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO KARCHER HD 585 PROFI NEW 2200W 127V"
+    },
+    {
+        "NUSEQOBJETO": 1135,
+        "NUSEQTIPOPATR": 96,
+        "DEOBJETO": "PULVERIZADOR COSTAL 12L COMPRESSÃO MANUAL"
+    },
+    {
+        "NUSEQOBJETO": 1136,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA KARCHER NT 3000 127V"
+    },
+    {
+        "NUSEQOBJETO": 1137,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA TRAMONTINA AP1000T 127V"
+    },
+    {
+        "NUSEQOBJETO": 1138,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA TRAMONTINA AP1000T 220V"
+    },
+    {
+        "NUSEQOBJETO": 1139,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA TRAMONTINA AP1500T 110V"
+    },
+    {
+        "NUSEQOBJETO": 1140,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA KARCHER NT 3000 220V"
+    },
+    {
+        "NUSEQOBJETO": 1141,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA ELECTROLUX A20L 220V"
+    },
+    {
+        "NUSEQOBJETO": 1142,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO WAP PREMIUM 2600 220V"
+    },
+    {
+        "NUSEQOBJETO": 1143,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG 29\" 29WQ500-B FULL HD 100HZ"
+    },
+    {
+        "NUSEQOBJETO": 1144,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO KARCHER K4 POWER 220V"
+    },
+    {
+        "NUSEQOBJETO": 1145,
+        "NUSEQTIPOPATR": 122,
+        "DEOBJETO": "ESMERILHADEIRA ANGULAR STANLEY 4.1\/2 STGS9115-B2 220V"
+    },
+    {
+        "NUSEQOBJETO": 1146,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA LAVOR VAC 22 220V"
+    },
+    {
+        "NUSEQOBJETO": 1147,
+        "NUSEQTIPOPATR": 18,
+        "DEOBJETO": "SOPRADOR DE FOLHAS GARTHEN GSE260 "
+    },
+    {
+        "NUSEQOBJETO": 1148,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA POWNER 1400W IPX4 220V"
+    },
+    {
+        "NUSEQOBJETO": 1149,
+        "NUSEQTIPOPATR": 15,
+        "DEOBJETO": "MICROONDAS PHILCO 33L PMO38E ESPELHADO 220V"
+    },
+    {
+        "NUSEQOBJETO": 1152,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE AÇO 7 PRATELEIRAS DE 58CM LINHA PESADA 500KG L2"
+    },
+    {
+        "NUSEQOBJETO": 1153,
+        "NUSEQTIPOPATR": 39,
+        "DEOBJETO": "ESTANTE AÇO 4 PRATELEIRAS DE 58CM LINHA PESADA 500KG L2"
+    },
+    {
+        "NUSEQOBJETO": 1154,
+        "NUSEQTIPOPATR": 123,
+        "DEOBJETO": "CARRINHO DE CARGA SUPORTE 200KG"
+    },
+    {
+        "NUSEQOBJETO": 1155,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA LAVOR VAC 22 110V"
+    },
+    {
+        "NUSEQOBJETO": 1156,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO IPC PRO 1600"
+    },
+    {
+        "NUSEQOBJETO": 1157,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA STIHL FS290"
+    },
+    {
+        "NUSEQOBJETO": 1158,
+        "NUSEQTIPOPATR": 124,
+        "DEOBJETO": "HD EXTERNO ADATA HV320 1TB"
+    },
+    {
+        "NUSEQOBJETO": 1159,
+        "NUSEQTIPOPATR": 59,
+        "DEOBJETO": "ARMARIO MULTIUSO PARA QUARTO 2 PORTAS COM 6 PRATELEIRAS 1,90"
+    },
+    {
+        "NUSEQOBJETO": 1160,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR BLUECASE 19'' BM19K4HVW LED PRETO"
+    },
+    {
+        "NUSEQOBJETO": 1161,
+        "NUSEQTIPOPATR": 11,
+        "DEOBJETO": "LAVADORA DE ALTA PRESSÃO KARCHER HD 6\/15C 220V"
+    },
+    {
+        "NUSEQOBJETO": 1162,
+        "NUSEQTIPOPATR": 125,
+        "DEOBJETO": "DOCK STATION DUAL HD SATA 2.5 E 3.5 USB 3.0 BOTÃO CLONE"
+    },
+    {
+        "NUSEQOBJETO": 1163,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR E SOPRADOR DE FOLHAS E SUJEIRAS BOMDER [21V] 127\/220V AMARELO\/PRETO"
+    },
+    {
+        "NUSEQOBJETO": 1164,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA POWNER 1400W IPX4 220V"
+    },
+    {
+        "NUSEQOBJETO": 1165,
+        "NUSEQTIPOPATR": 63,
+        "DEOBJETO": "CAFETEIRA ELETRICA DESPERTA CONTRAST CAF338 CADENCE"
+    },
+    {
+        "NUSEQOBJETO": 1166,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK LENOVO V15 I5-13420H 15.6\" FHD"
+    },
+    {
+        "NUSEQOBJETO": 1167,
+        "NUSEQTIPOPATR": 126,
+        "DEOBJETO": "RELOGIO DIGITAL DE PAREDE LED 46CM"
+    },
+    {
+        "NUSEQOBJETO": 1168,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR ACER 27\" FHD LED IPS 100HZ AMD FREESYNC EK271"
+    },
+    {
+        "NUSEQOBJETO": 1169,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA VULCAN TRENT VR630H"
+    },
+    {
+        "NUSEQOBJETO": 1170,
+        "NUSEQTIPOPATR": 34,
+        "DEOBJETO": "MONITOR LG 19 POLEGADAS"
+    },
+    {
+        "NUSEQOBJETO": 1171,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA A GASOLINA TERRA GRH430-BLACK"
+    },
+    {
+        "NUSEQOBJETO": 1172,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA TRAMONTINA 127V AP1500T"
+    },
+    {
+        "NUSEQOBJETO": 1173,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA INDUSTRIAL CL350 AUTOVOLT PLUS"
+    },
+    {
+        "NUSEQOBJETO": 1174,
+        "NUSEQTIPOPATR": 77,
+        "DEOBJETO": "SWITCH GERENCIAVEL BASE X 48P + 4P SFP 10000 S3352G-B"
+    },
+    {
+        "NUSEQOBJETO": 1175,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DE ALUMINIO 8 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 1176,
+        "NUSEQTIPOPATR": 9,
+        "DEOBJETO": "ESCADA DE ALUMINIO 8 DEGRAUS"
+    },
+    {
+        "NUSEQOBJETO": 1177,
+        "NUSEQTIPOPATR": 127,
+        "DEOBJETO": "FRAGMENTADORA DE PAPEL 6 FLS 220V"
+    },
+    {
+        "NUSEQOBJETO": 1178,
+        "NUSEQTIPOPATR": 53,
+        "DEOBJETO": "MESA SECRETARIA MAXXI 120X60 CINZA 2 GAVETAS"
+    },
+    {
+        "NUSEQOBJETO": 1179,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA LATERAL VR430P 2T 43CC 1,7HP PROFISSIONAL VULCAN"
+    },
+    {
+        "NUSEQOBJETO": 1180,
+        "NUSEQTIPOPATR": 17,
+        "DEOBJETO": "ROÇADEIRA NAKASHI L 431-M"
+    },
+    {
+        "NUSEQOBJETO": 1181,
+        "NUSEQTIPOPATR": 8,
+        "DEOBJETO": "ENCERADEIRA DEEP CLEAN 350 BIVOLT"
+    },
+    {
+        "NUSEQOBJETO": 1182,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A22 5G"
+    },
+    {
+        "NUSEQOBJETO": 1183,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE SAMSUNG GALAXY A15 5G"
+    },
+    {
+        "NUSEQOBJETO": 1184,
+        "NUSEQTIPOPATR": 58,
+        "DEOBJETO": "SMARTPHONE"
+    },
+    {
+        "NUSEQOBJETO": 1185,
+        "NUSEQTIPOPATR": 104,
+        "DEOBJETO": "EXTRATORA PARA CARPETE R3 TENNANT READYSPACE"
+    },
+    {
+        "NUSEQOBJETO": 1186,
+        "NUSEQTIPOPATR": 7,
+        "DEOBJETO": "CORTADOR DE GRAMA A GASOLINA TRAPP MC-650G"
+    },
+    {
+        "NUSEQOBJETO": 1187,
+        "NUSEQTIPOPATR": 7,
+        "DEOBJETO": "CORTADOR DE GRAMA A GASOLINA TRAPP MC-550G"
+    },
+    {
+        "NUSEQOBJETO": 1188,
+        "NUSEQTIPOPATR": 7,
+        "DEOBJETO": "CORTADOR DE GRAMA ELETRICO VONDER MGV 1100 COM RECOLHEDOR 1,5HP 3360MM 60HZ 127V"
+    },
+    {
+        "NUSEQOBJETO": 1189,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO BLACK+DECKER COMPACT A3 VERDE 1600W 220V"
+    },
+    {
+        "NUSEQOBJETO": 1190,
+        "NUSEQTIPOPATR": 128,
+        "DEOBJETO": "PLACA DE PATRIMONIO INUTILIZAVEL"
+    },
+    {
+        "NUSEQOBJETO": 1191,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PO E AGUA"
+    },
+    {
+        "NUSEQOBJETO": 1192,
+        "NUSEQTIPOPATR": 3,
+        "DEOBJETO": "BALDE DOBLO"
+    },
+    {
+        "NUSEQOBJETO": 1193,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "APARADOR DE GRAMA"
+    },
+    {
+        "NUSEQOBJETO": 1194,
+        "NUSEQTIPOPATR": 104,
+        "DEOBJETO": "EXTRATORA DE ESTOFADO E CARPETE"
+    },
+    {
+        "NUSEQOBJETO": 1195,
+        "NUSEQTIPOPATR": 130,
+        "DEOBJETO": "MAQUINA DE ASSENTAR PISO"
+    },
+    {
+        "NUSEQOBJETO": 1196,
+        "NUSEQTIPOPATR": 96,
+        "DEOBJETO": "PULVERIZADOR COSTAL"
+    },
+    {
+        "NUSEQOBJETO": 1197,
+        "NUSEQTIPOPATR": 96,
+        "DEOBJETO": "PULVERIZADOR 20L NOVE54 VERMELHO"
+    },
+    {
+        "NUSEQOBJETO": 1198,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK"
+    },
+    {
+        "NUSEQOBJETO": 1199,
+        "NUSEQTIPOPATR": 5,
+        "DEOBJETO": "CARRO FUNCIONAL BRALIMPIA AZUL"
+    },
+    {
+        "NUSEQOBJETO": 1200,
+        "NUSEQTIPOPATR": 14,
+        "DEOBJETO": "PARAFUSADEIRA GSB 550 RE BOSCH 220V"
+    },
+    {
+        "NUSEQOBJETO": 1201,
+        "NUSEQTIPOPATR": 131,
+        "DEOBJETO": "PLACA SINALIZADORA"
+    },
+    {
+        "NUSEQOBJETO": 1202,
+        "NUSEQTIPOPATR": 120,
+        "DEOBJETO": "MANGUEIRA"
+    },
+    {
+        "NUSEQOBJETO": 1203,
+        "NUSEQTIPOPATR": 133,
+        "DEOBJETO": "ENXADA"
+    },
+    {
+        "NUSEQOBJETO": 1204,
+        "NUSEQTIPOPATR": 134,
+        "DEOBJETO": "PÁ DE BICO"
+    },
+    {
+        "NUSEQOBJETO": 1205,
+        "NUSEQTIPOPATR": 135,
+        "DEOBJETO": "ANCINHO"
+    },
+    {
+        "NUSEQOBJETO": 1206,
+        "NUSEQTIPOPATR": 110,
+        "DEOBJETO": "REGADOR"
+    },
+    {
+        "NUSEQOBJETO": 1207,
+        "NUSEQTIPOPATR": 137,
+        "DEOBJETO": "KIT LIMPA VIDROS"
+    },
+    {
+        "NUSEQOBJETO": 1208,
+        "NUSEQTIPOPATR": 138,
+        "DEOBJETO": "DILUIDOR PARA PRODUTO DE LIMPEZA"
+    },
+    {
+        "NUSEQOBJETO": 1209,
+        "NUSEQTIPOPATR": 14,
+        "DEOBJETO": "PARAFUSADEIRA GSB 120-LI 220V COM BAT"
+    },
+    {
+        "NUSEQOBJETO": 1210,
+        "NUSEQTIPOPATR": 25,
+        "DEOBJETO": "SERRA MARMORE"
+    },
+    {
+        "NUSEQOBJETO": 1211,
+        "NUSEQTIPOPATR": 25,
+        "DEOBJETO": "SERRA CIRCULAR"
+    },
+    {
+        "NUSEQOBJETO": 1212,
+        "NUSEQTIPOPATR": 43,
+        "DEOBJETO": "LIXADEIRA ORBITAL"
+    },
+    {
+        "NUSEQOBJETO": 1213,
+        "NUSEQTIPOPATR": 139,
+        "DEOBJETO": "TESTADOR DE CABO DE REDE"
+    },
+    {
+        "NUSEQOBJETO": 1214,
+        "NUSEQTIPOPATR": 140,
+        "DEOBJETO": "KIT LOCALIZADOR DE CABOS"
+    },
+    {
+        "NUSEQOBJETO": 1215,
+        "NUSEQTIPOPATR": 141,
+        "DEOBJETO": "CHAVE DE FENDA"
+    },
+    {
+        "NUSEQOBJETO": 1216,
+        "NUSEQTIPOPATR": 142,
+        "DEOBJETO": "ALICATE DE CRIMPAGEM"
+    },
+    {
+        "NUSEQOBJETO": 1217,
+        "NUSEQTIPOPATR": 141,
+        "DEOBJETO": "CHAVE PHILIPS"
+    },
+    {
+        "NUSEQOBJETO": 1218,
+        "NUSEQTIPOPATR": 142,
+        "DEOBJETO": "ALICATE DE CORTE"
+    },
+    {
+        "NUSEQOBJETO": 1219,
+        "NUSEQTIPOPATR": 7,
+        "DEOBJETO": "CORTADOR DE GRAMA A GASOLINA"
+    },
+    {
+        "NUSEQOBJETO": 1220,
+        "NUSEQTIPOPATR": 142,
+        "DEOBJETO": "ALICATE PUNCH DOWN"
+    },
+    {
+        "NUSEQOBJETO": 1221,
+        "NUSEQTIPOPATR": 143,
+        "DEOBJETO": "RADIO TRANSCEPTOR"
+    },
+    {
+        "NUSEQOBJETO": 1222,
+        "NUSEQTIPOPATR": 122,
+        "DEOBJETO": "ESMERILHADEIRA ANGULAR"
+    },
+    {
+        "NUSEQOBJETO": 1223,
+        "NUSEQTIPOPATR": 145,
+        "DEOBJETO": "BETONEIRA"
+    },
+    {
+        "NUSEQOBJETO": 1224,
+        "NUSEQTIPOPATR": 42,
+        "DEOBJETO": "MAQUINA DE SOLDA"
+    },
+    {
+        "NUSEQOBJETO": 1225,
+        "NUSEQTIPOPATR": 10,
+        "DEOBJETO": "MAKITA HP 1640"
+    },
+    {
+        "NUSEQOBJETO": 1226,
+        "NUSEQTIPOPATR": 143,
+        "DEOBJETO": "RADIO"
+    },
+    {
+        "NUSEQOBJETO": 1227,
+        "NUSEQTIPOPATR": 40,
+        "DEOBJETO": "MOTOSSERRA"
+    },
+    {
+        "NUSEQOBJETO": 1228,
+        "NUSEQTIPOPATR": 148,
+        "DEOBJETO": "MAÇARICO"
+    },
+    {
+        "NUSEQOBJETO": 1229,
+        "NUSEQTIPOPATR": 149,
+        "DEOBJETO": "BOMBA DE LIMPEZA"
+    },
+    {
+        "NUSEQOBJETO": 1230,
+        "NUSEQTIPOPATR": 150,
+        "DEOBJETO": "MOTO HONDA BIZ"
+    },
+    {
+        "NUSEQOBJETO": 1231,
+        "NUSEQTIPOPATR": 150,
+        "DEOBJETO": "FIAT FIORINO"
+    },
+    {
+        "NUSEQOBJETO": 1232,
+        "NUSEQTIPOPATR": 150,
+        "DEOBJETO": "FIAT STILO"
+    },
+    {
+        "NUSEQOBJETO": 1233,
+        "NUSEQTIPOPATR": 150,
+        "DEOBJETO": "KIA BONGO"
+    },
+    {
+        "NUSEQOBJETO": 1234,
+        "NUSEQTIPOPATR": 150,
+        "DEOBJETO": "RENAULT LOGAN"
+    },
+    {
+        "NUSEQOBJETO": 1235,
+        "NUSEQTIPOPATR": 150,
+        "DEOBJETO": "FIAT SIENA"
+    },
+    {
+        "NUSEQOBJETO": 1236,
+        "NUSEQTIPOPATR": 150,
+        "DEOBJETO": "FIAT UNO"
+    },
+    {
+        "NUSEQOBJETO": 1237,
+        "NUSEQTIPOPATR": 150,
+        "DEOBJETO": "FIAT DOBLO"
+    },
+    {
+        "NUSEQOBJETO": 1238,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO DE CARGA"
+    },
+    {
+        "NUSEQOBJETO": 1239,
+        "NUSEQTIPOPATR": 4,
+        "DEOBJETO": "CARRINHO GARI COLETOR"
+    },
+    {
+        "NUSEQOBJETO": 1240,
+        "NUSEQTIPOPATR": 149,
+        "DEOBJETO": "BOMBA DE VACUO"
+    },
+    {
+        "NUSEQOBJETO": 1241,
+        "NUSEQTIPOPATR": 40,
+        "DEOBJETO": "MOTO PODA A GASOLINA"
+    },
+    {
+        "NUSEQOBJETO": 1242,
+        "NUSEQTIPOPATR": 24,
+        "DEOBJETO": "ARQUIVO DE AÇO"
+    },
+    {
+        "NUSEQOBJETO": 1243,
+        "NUSEQTIPOPATR": 2,
+        "DEOBJETO": "ASPIRADOR DE PÓ E AGUA A10 SMART ELECTROLUX"
+    },
+    {
+        "NUSEQOBJETO": 1244,
+        "NUSEQTIPOPATR": 23,
+        "DEOBJETO": "NOTEBOOK VAIO"
+    },
+    {
+        "NUSEQOBJETO": 1245,
+        "NUSEQTIPOPATR": 116,
+        "DEOBJETO": "PORTA SABONETE"
+    },
+    {
+        "NUSEQOBJETO": 1246,
+        "NUSEQTIPOPATR": 115,
+        "DEOBJETO": "PORTA PAPEL"
+    },
+    {
+        "NUSEQOBJETO": 1247,
+        "NUSEQTIPOPATR": 151,
+        "DEOBJETO": "AUTO TRANSFORMADOR"
+    },
+    {
+        "NUSEQOBJETO": 1248,
+        "NUSEQTIPOPATR": 152,
+        "DEOBJETO": "MODEM"
+    },
+    {
+        "NUSEQOBJETO": 1249,
+        "NUSEQTIPOPATR": 153,
+        "DEOBJETO": "CAPACIMETRO"
+    },
+    {
+        "NUSEQOBJETO": 1250,
+        "NUSEQTIPOPATR": 1,
+        "DEOBJETO": "TESTE"
+    },
+    {
+        "NUSEQOBJETO": 1251,
+        "NUSEQTIPOPATR": 100,
+        "DEOBJETO": "TESTE ANDRé"
+    },
+    {
+        "NUSEQOBJETO": 1252,
+        "NUSEQTIPOPATR": 154,
+        "DEOBJETO": "PORTÃO ELETRÔNICO FAST GATTER 1\/4 HP COMPLETO"
+    },
+    {
+        "NUSEQOBJETO": 1253,
+        "NUSEQTIPOPATR": 8241,
+        "DEOBJETO": "CAIXA DE SOM"
+    }
+]

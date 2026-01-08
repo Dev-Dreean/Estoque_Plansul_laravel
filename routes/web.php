@@ -14,6 +14,7 @@ use App\Http\Controllers\PatrimonioController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjetoController;
 use App\Http\Controllers\RemovidosController;
+use App\Http\Controllers\SolicitacaoBemController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -227,6 +228,12 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // APIs auxiliares do formulário de usuário
     Route::get('/api/usuarios/sugerir-login', [UserController::class, 'sugerirLogin'])->name('api.usuarios.sugerirLogin')->middleware('tela.access:1003');
     Route::get('/api/usuarios/login-disponivel', [UserController::class, 'loginDisponivel'])->name('api.usuarios.loginDisponivel')->middleware('tela.access:1003');
+
+    // Solicitacoes de Bens (T:1010)
+    Route::resource('solicitacoes-bens', SolicitacaoBemController::class)
+        ->only(['index', 'create', 'store', 'show', 'update'])
+        ->middleware('tela.access:1010');
+
 
     // Rotas de Relatórios
     Route::prefix('relatorios')->name('relatorios.')->middleware('tela.access:1006')->group(function () {

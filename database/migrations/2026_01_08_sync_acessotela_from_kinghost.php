@@ -55,12 +55,10 @@ return new class extends Migration
 
             \Log::info("📥 [SYNC] Sincronizando " . count($telasKinghost) . " telas do KingHost");
 
-            // Limpar tabela local (manter apenas as telas do KingHost)
-            DB::table('acessotela')->truncate();
-
+            // ⚠️ NÃO truncar! Usar insertOrIgnore para não destruir dados críticos em produção
             // Inserir telas do KingHost
             foreach ($telasKinghost as $tela) {
-                DB::table('acessotela')->insert([
+                DB::table('acessotela')->insertOrIgnore([
                     'NUSEQTELA' => $tela['NUSEQTELA'] ?? null,
                     'DESTELA' => $tela['DESTELA'] ?? null,
                     'FLACESSO' => $tela['FLACESSO'] ?? 'S',
@@ -68,7 +66,7 @@ return new class extends Migration
                 ]);
             }
 
-            \Log::info("✅ [SYNC] Sincronização de telas concluída com sucesso! " . count($telasKinghost) . " telas importadas.");
+            \Log::info("✅ [SYNC] Sincronização de telas concluída com sucesso! " . count($telasKinghost) . " telas sincronizadas.");
 
         } catch (\Exception $e) {
             \Log::error("❌ [SYNC] Erro ao sincronizar telas do KingHost: " . $e->getMessage());

@@ -219,6 +219,7 @@ class CadastroTelaController extends Controller
             ['codigo' => 1006, 'nome' => 'Relatórios', 'rota' => '/relatorios'],
             ['codigo' => 1007, 'nome' => 'Histórico', 'rota' => '/historico'],
             ['codigo' => 1008, 'nome' => 'Configurações de Tema', 'rota' => '/settings/theme'],
+            ['codigo' => 1010, 'nome' => 'Solicitacoes de Bens', 'rota' => '/solicitacoes-bens'],
         ];
     }
 }
