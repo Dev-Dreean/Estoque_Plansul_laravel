@@ -15,27 +15,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('patr', function (Blueprint $table) {
-            // Índices para otimizar queries frequentes
-            // KingHost MySQL antigo: criar sem verificação de schema (que falha)
-            try {
-                $table->index('NUPATRIMONIO', 'idx_patr_nupatrimonio');
-            } catch (\Exception $e) {
-                // Índice já existe ou erro MySQL antigo
-            }
-            
-            try {
-                $table->index(['SITUACAO', 'CDPROJETO'], 'idx_patr_situacao_cdprojeto');
-            } catch (\Exception $e) {
-                // Índice já existe ou erro MySQL antigo
-            }
-            
-            try {
-                $table->index('CDLOCAL', 'idx_patr_cdlocal');
-            } catch (\Exception $e) {
-                // Índice já existe ou erro MySQL antigo
-            }
-        });
+        // Usar SQL direto para evitar geração_expression do MySQL antigo
+        try {
+            \DB::statement('ALTER TABLE patr ADD INDEX idx_patr_nupatrimonio (NUPATRIMONIO)');
+        } catch (\Exception $e) {
+            // Índice já existe
+        }
+        
+        try {
+            \DB::statement('ALTER TABLE patr ADD INDEX idx_patr_situacao_cdprojeto (SITUACAO, CDPROJETO)');
+        } catch (\Exception $e) {
+            // Índice já existe
+        }
+        
+        try {
+            \DB::statement('ALTER TABLE patr ADD INDEX idx_patr_cdlocal (CDLOCAL)');
+        } catch (\Exception $e) {
+            // Índice já existe
+        }
     }
 
     /**
