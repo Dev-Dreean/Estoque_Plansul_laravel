@@ -110,37 +110,25 @@
     @endif
 
     @if($canGrantTelas)
-    <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 flex flex-col max-h-[calc(100vh-200px)]">
-        <div class="flex items-start justify-between gap-3">
-            <div>
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Permissoes de Tela</h3>
-                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    Controle de Patrimonio, Histórico, Gráficos e Relatórios.
-                </p>
-            </div>
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
-                Admin
-            </span>
-        </div>
-
+    <x-permissions-section title="Permissões de Tela" description="Controle de Patrimônio, Histórico, Gráficos e Relatórios." badge="Admin">
         @if(isset($usuario) && ($usuario->PERFIL ?? '') === 'ADM')
-        <p class="mt-2 text-xs text-gray-600 dark:text-gray-400">
-            Perfil ADM tem acesso total. A selecao abaixo nao altera esse acesso.
+        <p class="mt-2 text-xs text-gray-400">
+            Perfil ADM tem acesso total. A seleção abaixo não altera esse acesso.
         </p>
         @endif
 
         <div class="mt-3 flex flex-wrap gap-2 flex-shrink-0">
-            <button type="button" @click.prevent="marcarTodas()" class="text-xs px-3 py-1 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
+            <button type="button" @click.prevent="marcarTodas()" class="text-xs px-3 py-1 rounded bg-gray-700 dark:bg-gray-700 border border-gray-600 dark:border-gray-600 text-gray-200 dark:text-gray-200 hover:bg-gray-600">
                 Marcar todas
             </button>
-            <button type="button" @click.prevent="desmarcarTodas()" class="text-xs px-3 py-1 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
+            <button type="button" @click.prevent="desmarcarTodas()" class="text-xs px-3 py-1 rounded bg-gray-700 dark:bg-gray-700 border border-gray-600 dark:border-gray-600 text-gray-200 dark:text-gray-200 hover:bg-gray-600">
                 Desmarcar todas
             </button>
         </div>
 
         <div class="mt-3 flex-1 overflow-y-auto">
             @if($telasPrincipais->isEmpty())
-            <p class="text-xs text-gray-500 dark:text-gray-400">
+            <p class="text-xs text-gray-400">
                 Nenhuma tela cadastrada em acessotela.
             </p>
             @else
@@ -148,53 +136,25 @@
                 @if($telaPatrimonio)
                 @php
                     $selecionada = in_array($telaObrigatoria, $telasSelecionadas, true);
-                    $nomePatrimonio = $telaPatrimonio->DETELA ?? 'Controle de Patrimonio';
+                    $nomePatrimonio = $telaPatrimonio->DETELA ?? 'Controle de Patrimônio';
                 @endphp
-                <label class="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer transition-colors">
-                    <input
-                        type="checkbox"
-                        name="telas[]"
-                        value="{{ $telaObrigatoria }}"
-                        class="mt-1 rounded border-gray-300 text-plansul-blue focus:ring-plansul-blue focus:ring-offset-0"
-                        {{ $selecionada ? 'checked' : '' }}
-                        {{ $telaObrigatoria ? 'disabled' : '' }}>
-                    <input type="hidden" name="telas[]" value="1006">
-                    <div class="ml-3 flex-1">
-                        <span class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-                            {{ $nomePatrimonio }}
-                        </span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">
-                            Codigos: 1000 e 1006
-                            @if($telaObrigatoria)
-                            | Obrigatoria
-                            @endif
-                        </span>
-                    </div>
-                </label>
+                <x-permission-checkbox 
+                    :checked="$selecionada" 
+                    :disabled="$telaObrigatoria"
+                    value="{{ $telaObrigatoria }}"
+                    title="{{ $nomePatrimonio }}"
+                    subtitle="Códigos: 1000 e 1006{{ $telaObrigatoria ? ' | Obrigatória' : '' }}" />
+                <input type="hidden" name="telas[]" value="1006">
                 @endif
                 @foreach($telasPrincipais as $tela)
                 @php
                     $selecionada = in_array((int) $tela->NUSEQTELA, $telasSelecionadas, true);
                 @endphp
-                <label class="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer transition-colors">
-                    <input
-                        type="checkbox"
-                        name="telas[]"
-                        value="{{ $tela->NUSEQTELA }}"
-                        class="mt-1 rounded border-gray-300 text-plansul-blue focus:ring-plansul-blue focus:ring-offset-0"
-                        {{ $selecionada ? 'checked' : '' }}>
-                    <div class="ml-3 flex-1">
-                        <span class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-                            {{ $tela->DETELA }}
-                        </span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">
-                            Codigo: {{ $tela->NUSEQTELA }}
-                            @if(!empty($tela->NMSISTEMA))
-                            | Sistema: {{ $tela->NMSISTEMA }}
-                            @endif
-                        </span>
-                    </div>
-                </label>
+                <x-permission-checkbox 
+                    :checked="$selecionada"
+                    value="{{ $tela->NUSEQTELA }}"
+                    title="{{ $tela->DETELA }}"
+                    subtitle="Código: {{ $tela->NUSEQTELA }}{{ !empty($tela->NMSISTEMA) ? ' | Sistema: ' . $tela->NMSISTEMA : '' }}" />
                 @endforeach
             </div>
             @endif
@@ -203,58 +163,27 @@
             <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
             @enderror
         </div>
-    </div>
-    @endif
-        <div class="flex items-start justify-between gap-3">
-            <div>
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Permissoes Especiais</h3>
-                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    Telas administrativas e operacionais adicionais.
-                </p>
-            </div>
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
-                Admin
-            </span>
-        </div>
-
-        <div class="mt-3">
-            @if($telasEspeciais->isEmpty())
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-                Nenhuma tela especial cadastrada.
-            </p>
-            @else
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-72 overflow-y-auto p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-                @foreach($telasEspeciais as $tela)
-                @php
-                    $selecionada = in_array((int) $tela->NUSEQTELA, $telasSelecionadas, true);
-                @endphp
-                <label class="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer transition-colors">
-                    <input
-                        type="checkbox"
-                        name="telas[]"
-                        value="{{ $tela->NUSEQTELA }}"
-                        class="mt-1 rounded border-gray-300 text-plansul-blue focus:ring-plansul-blue focus:ring-offset-0"
-                        {{ $selecionada ? 'checked' : '' }}>
-                    <div class="ml-3 flex-1">
-                        <span class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-                            {{ $tela->DETELA }}
-                        </span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">
-                            Codigo: {{ $tela->NUSEQTELA }}
-                            @if(!empty($tela->NMSISTEMA))
-                            | Sistema: {{ $tela->NMSISTEMA }}
-                            @endif
-                        </span>
-                    </div>
-                </label>
-                @endforeach
-            </div>
-            @endif
-        </div>
-    </div>
+    </x-permissions-section>
     @endif
 
-    <div>
+    @if($telasEspeciais->isNotEmpty())
+    <x-permissions-section title="Permissões Especiais" description="Telas administrativas e operacionais adicionais." badge="Admin">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+            @foreach($telasEspeciais as $tela)
+            @php
+                $selecionada = in_array((int) $tela->NUSEQTELA, $telasSelecionadas, true);
+            @endphp
+            <x-permission-checkbox 
+                :checked="$selecionada"
+                value="{{ $tela->NUSEQTELA }}"
+                title="{{ $tela->DETELA }}"
+                subtitle="Código: {{ $tela->NUSEQTELA }}{{ !empty($tela->NMSISTEMA) ? ' | Sistema: ' . $tela->NMSISTEMA : '' }}" />
+            @endforeach
+        </div>
+    </x-permissions-section>
+    @endif
+
+    <div class="mt-4">
         @if(isset($usuario))
         <x-input-label for="SENHA" value="Senha" />
         <span class="text-xs text-gray-500">Deixe em branco para não alterar</span>
