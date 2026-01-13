@@ -292,9 +292,9 @@
 
             <div class="flex flex-wrap items-center gap-4">
               <a
-                href="{{ asset('templates/patrimonios_bulk_update_template.xlsx') }}"
+                href="{{ route('patrimonios.bulk-update.template', ['tipo' => 'import']) }}"
                 class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold"
-                download
+                @click.prevent="downloadBulkTemplate('import')"
               >
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M12 3a1 1 0 0 1 1 1v9.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42L11 13.59V4a1 1 0 0 1 1-1z"></path>
@@ -411,9 +411,9 @@
               </div>
               <div class="flex flex-wrap items-center gap-4">
                 <a
-                  href="{{ asset('templates/patrimonios_lista_template.xlsx') }}"
+                  href="{{ route('patrimonios.bulk-update.template', ['tipo' => 'lista']) }}"
                   class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold"
-                  download
+                  @click.prevent="downloadBulkTemplate('lista')"
                 >
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M12 3a1 1 0 0 1 1 1v9.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42L11 13.59V4a1 1 0 0 1 1-1z"></path>
@@ -449,6 +449,9 @@
                   <button type="submit" class="px-4 py-2 rounded-md text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white transition">Gerar planilha completa</button>
                 </div>
               </form>
+              <template x-if="bulkListError">
+                <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg p-3 text-sm text-red-700 dark:text-red-200" x-text="bulkListError"></div>
+              </template>
             </div>
           </div>
         </div>
@@ -1341,6 +1344,7 @@
           bulkImportFileName: '',
           bulkListDragging: false,
           bulkListFileName: '',
+          bulkListError: '',
           atribuirTermoModalOpen: false,
           desatribuirTermoModalOpen: false,
           resultadosModalOpen: false,
@@ -1403,6 +1407,7 @@
                 this.bulkImportDragging = false;
                 this.bulkListDragging = false;
                 this.bulkListFileName = '';
+                this.bulkListError = '';
               }
             });
             window.addEventListener('patrimonio-modal-create', () => {
@@ -1429,6 +1434,7 @@
             this.bulkImportDragging = false;
             this.bulkListDragging = false;
             this.bulkListFileName = '';
+            this.bulkListError = '';
           },
           openBulkImportModal() {
             this.openBulkModal('import');
@@ -1442,6 +1448,7 @@
             this.bulkImportFileName = '';
             this.bulkListDragging = false;
             this.bulkListFileName = '';
+            this.bulkListError = '';
           },
           handleBulkListDrop(event) {
             this.bulkListDragging = false;
@@ -1456,6 +1463,53 @@
             const files = event?.target?.files || event?.dataTransfer?.files;
             if (!files || files.length === 0) return;
             this.bulkListFileName = files[0]?.name || '';
+          },
+          async downloadBulkTemplate(tipo) {
+            const type = tipo === 'lista' ? 'lista' : 'import';
+            this.bulkImportError = '';
+            this.bulkListError = '';
+            const templateUrl = "{{ route('patrimonios.bulk-update.template', ['tipo' => '__TIPO__']) }}".replace('__TIPO__', encodeURIComponent(type));
+            try {
+              const resp = await fetch(templateUrl, {
+                headers: {
+                  'X-CSRF-TOKEN': this.csrf(),
+                  'Accept': 'application/json, application/octet-stream',
+                },
+              });
+              if (!resp.ok) {
+                let message = 'Falha ao baixar o modelo.';
+                const contentType = resp.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                  const data = await resp.json().catch(() => ({}));
+                  message = data.message || message;
+                }
+                if (type === 'lista') {
+                  this.bulkListError = message;
+                } else {
+                  this.bulkImportError = message;
+                }
+                return;
+              }
+              const blob = await resp.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              const disposition = resp.headers.get('content-disposition') || '';
+              const match = disposition.match(/filename="?([^"]+)"?/);
+              a.download = match ? match[1] : (type === 'lista' ? 'patrimonios_lista_template.xlsx' : 'patrimonios_bulk_update_template.xlsx');
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+            } catch (err) {
+              console.error('[PATRI] Template download error', err);
+              const message = 'Falha ao baixar o modelo.';
+              if (type === 'lista') {
+                this.bulkListError = message;
+              } else {
+                this.bulkImportError = message;
+              }
+            }
           },
           async submitBulkExportList(event) {
             const form = event?.target;

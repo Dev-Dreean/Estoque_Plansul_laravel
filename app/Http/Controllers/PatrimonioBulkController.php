@@ -10,6 +10,11 @@ use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class PatrimonioBulkController extends Controller
 {
+    private const TEMPLATE_MAP = [
+        'import' => 'patrimonios_bulk_update_template.xlsx',
+        'lista' => 'patrimonios_lista_template.xlsx',
+    ];
+
     public function import(Request $request)
     {
         $validated = $request->validate([
@@ -108,6 +113,21 @@ class PatrimonioBulkController extends Controller
         return response()->download($path, $fileName)->deleteFileAfterSend(true);
     }
 
+    public function downloadTemplate(string $tipo, Request $request)
+    {
+        $fileName = self::TEMPLATE_MAP[$tipo] ?? null;
+        if (!$fileName) {
+            return $this->templateErrorResponse($request, 'Tipo de template invalido.', 404);
+        }
+
+        $path = public_path('templates/' . $fileName);
+        if (!file_exists($path)) {
+            return $this->templateErrorResponse($request, 'Template nao encontrado.', 404);
+        }
+
+        return response()->download($path, $fileName);
+    }
+
     private function parseListaPatrimonios(string $lista, $arquivo = null): array
     {
         $numeros = [];
@@ -152,5 +172,17 @@ class PatrimonioBulkController extends Controller
             }
         }
         return $result;
+    }
+
+    private function templateErrorResponse(Request $request, string $message, int $status)
+    {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => false,
+                'message' => $message,
+            ], $status);
+        }
+
+        abort($status, $message);
     }
 }
