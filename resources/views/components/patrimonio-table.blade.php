@@ -81,7 +81,7 @@
 
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0 min-w-0">
   <table class="w-full text-[11px] sm:text-xs md:text-[13px] lg:text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-    <thead class="text-[11px] sm:text-xs md:text-[13px] lg:text-sm uppercase bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-bold shadow-sm">
+    <thead class="text-[11px] sm:text-xs md:text-[13px] lg:text-sm uppercase bg-blue-900 dark:bg-blue-900 text-white font-bold shadow-sm">
       <tr class="divide-x divide-gray-200 dark:divide-gray-700">
         @if($showCheckbox)
           <th class="{{ $headerPadding }} w-12">
@@ -136,7 +136,7 @@
           $rowConferido = in_array($rowConferidoRaw, ['S', '1', 'T', 'Y'], true) ? 'S' : 'N';
           $isConsultor = auth()->user()->PERFIL === 'C';
         @endphp
-        <tr data-row-id="{{ $item->NUSEQPATR ?? $item->id }}" data-situacao="{{ $rowSituacao }}" data-conferido="{{ $rowConferido }}" data-patrimonio="{{ $rowPatrimonio }}" class="tr-hover {{ $clickable ? 'cursor-pointer' : '' }}"
+        <tr data-row-id="{{ $item->NUSEQPATR ?? $item->id }}" data-situacao="{{ $rowSituacao }}" data-conferido="{{ $rowConferido }}" data-patrimonio="{{ $rowPatrimonio }}" class="{{ $loop->even ? 'bg-blue-50 dark:bg-gray-900' : 'bg-blue-100 dark:bg-gray-800' }} border-b-2 border-blue-200 dark:border-gray-600 hover:bg-blue-150 dark:hover:bg-gray-700 {{ $clickable ? 'cursor-pointer' : '' }}"
           @if($clickable && $onRowClick && !$isConsultor)
             @click="window.location.href='{{ str_replace(':id', $item->NUSEQPATR ?? $item->id, $onRowClick) }}'"
           @elseif($clickable && !$isConsultor)

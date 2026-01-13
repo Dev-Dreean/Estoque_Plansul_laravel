@@ -1,9 +1,9 @@
-﻿@php
+@php
   use Carbon\Carbon;
   $filterKeys = ['nupatrimonio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','conferido','matr_responsavel','cadastrado_por','numof','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate','uf'];
   $badgeColors = [
     'nupatrimonio' => 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700',
-    'cdprojeto' => 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-blue-200 dark:border-blue-700',
+    'cdprojeto' => 'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-blue-200 border-gray-400 dark:border-blue-700',
     'cdlocal' => 'bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700',
     'modelo' => 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700',
     'marca' => 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700',
@@ -84,7 +84,7 @@
   }"
   @click.outside="open = false"
   @keydown.window="handleKey($event)"
-  class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg mb-3"
+  class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg mb-3"
   x-id="['filtro-patrimonios']"
   :aria-expanded="open.toString()"
   :aria-controls="$id('filtro-patrimonios')"
@@ -101,16 +101,16 @@
               'cdlocal' => 'Local Físico',
               'modelo' => 'Modelo',
               'marca' => 'Marca',
-              'descricao' => 'Descricao',
-              'situacao' => 'Situacao',
-              'conferido' => 'Conferido',
-              'matr_responsavel' => 'Responsavel',
-              'cadastrado_por' => 'Cadastrador',
+              'descricao' => 'Descrição',
+              'situacao' => 'Situação',
+              'conferido' => 'Conferido (todos)',
+              'matr_responsavel' => 'Responsável',
+              'cadastrado_por' => 'Cadastrado Por',
               'numof' => 'O.C',
-              'dtaquisicao_de' => 'Aquisicao de',
-              'dtaquisicao_ate' => 'Aquisicao ate',
-              'dtcadastro_de' => 'Cadastro de',
-              'dtcadastro_ate' => 'Cadastro ate',
+              'dtaquisicao_de' => 'Aquisição De',
+              'dtaquisicao_ate' => 'Aquisição Até',
+              'dtcadastro_de' => 'Cadastro De',
+              'dtcadastro_ate' => 'Cadastro Até',
               'uf' => 'UF',
             ];
             $raw = request($k);
@@ -127,7 +127,7 @@
               }
               if ($k === 'conferido') {
                 $u = strtoupper(trim((string) $display));
-                $display = in_array($u, ['S','1','SIM','TRUE','T','Y','YES','ON'], true) ? 'Verificado' : 'Não verificado';
+                $display = in_array($u, ['S','1','SIM','TRUE','T','Y','YES','ON'], true) ? 'Verificado' : 'N�o verificado';
               }
               if (in_array($k, ['dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate'], true) && $display) {
                 try { $display = Carbon::parse($display)->format('d/m/Y'); } catch (\Throwable $e) {}
@@ -163,21 +163,21 @@
         </template>
       </div>
     </div>
-    <button type="button" @click="open = !open" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimonios')" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <button type="button" @click="open = !open" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimonios')" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-600 dark:border-gray-600 bg-gray-600 dark:bg-gray-800 hover:bg-gray-700 dark:hover:bg-gray-700 text-white transition focus:outline-none focus:ring-2 focus:ring-gray-500">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
       </svg>
       <span class="sr-only">Expandir filtros</span>
     </button>
   </div>
-  <div x-cloak x-show="open" x-transition class="mt-4" :id="$id('filtro-patrimonios')">
+  <div x-cloak x-show="open" x-transition class="mt-4 bg-gray-200 dark:bg-gray-800 rounded-lg p-4" :id="$id('filtro-patrimonios')">
     <form id="patrimonio-filter-form" method="GET" action="{{ route('patrimonios.index') }}" @submit="open=false">
       @if($isBruno)
         <input type="hidden" name="bruno_skip_default" value="{{ $brunoSkipDefault }}">
       @endif
       <div class="flex flex-wrap gap-3 lg:gap-4 overflow-visible pb-2 w-full mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
         <div class="flex-1 min-w-[100px] max-w-[140px] basis-[110px]">
-          <input type="text" name="nupatrimonio" placeholder="N. Patr." value="{{ request('nupatrimonio') }}" x-ref="firstFilterInput" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+          <input type="text" name="nupatrimonio" placeholder="N. Patr." value="{{ request('nupatrimonio') }}" x-ref="firstFilterInput" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
         </div>
         <div class="flex-1 min-w-[120px] max-w-[170px] basis-[130px]">
           <div
@@ -227,7 +227,7 @@
               init() {
                 const current = this.options.find(o => o.code === this.value);
                 if (current) this.search = current.label;
-                // Se já vier com projeto selecionado, notificar locais
+                // Se j� vier com projeto selecionado, notificar locais
                 if (this.value) {
                   window.dispatchEvent(new CustomEvent('patrimonio-projeto-selecionado', { detail: this.value }));
                 }
@@ -243,21 +243,21 @@
               @keydown.enter.prevent="handleManual()"
               @blur="syncValue()"
               placeholder="Projeto"
-              class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md"
+              class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md"
             />
             <input type="hidden" name="cdprojeto" :value="value">
             <div
               x-show="open"
               x-transition
-              class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-56 overflow-y-auto"
+              class="absolute z-40 mt-1 w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg max-h-56 overflow-y-auto"
             >
               <template x-for="opt in filtered()" :key="opt.code">
-                <button type="button" class="flex justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                <button type="button" class="flex justify-between w-full px-3 py-2 text-sm hover:bg-gray-600 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-200"
                   @click="select(opt)">
                   <span x-text="opt.label"></span>
                 </button>
               </template>
-              <div x-show="filtered().length === 0" class="px-3 py-2 text-xs text-gray-500">Nenhum resultado</div>
+              <div x-show="filtered().length === 0" class="px-3 py-2 text-xs text-blue-600 dark:text-gray-400">Nenhum resultado</div>
             </div>
           </div>
         </div>
@@ -333,7 +333,7 @@
                 if (initialProj) {
                   this.fetchLocais(initialProj, true);
                 }
-                // Ouvir mudanças no projeto
+                // Ouvir mudan�as no projeto
                 window.addEventListener('patrimonio-projeto-selecionado', (e) => {
                   const proj = (e.detail || '').toString();
                   this.value = '';
@@ -341,7 +341,7 @@
                   this.fetchLocais(proj, false);
                 });
 
-                // Se já veio com local preenchido e opções carregadas via servidor, sincronizar o nome
+                // Se j� veio com local preenchido e op��es carregadas via servidor, sincronizar o nome
                 const current = this.options.find(o => o.code === this.value);
                 if (current) this.search = current.label;
               }
@@ -354,13 +354,13 @@
               x-model="search"
               @input="open=search.length>0"
               placeholder="Local Físico"
-              class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md"
+              class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md"
             />
             <input type="hidden" name="cdlocal" :value="value">
             <div
               x-show="open"
               x-transition
-              class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-56 overflow-y-auto"
+              class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-50 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-56 overflow-y-auto"
             >
               <template x-for="opt in filtered()" :key="opt.code">
                 <button type="button" class="flex justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -401,15 +401,15 @@
             class="relative"
             @click.outside="open=false"
           >
-            <input type="text" x-model="search" @input="open=search.length>0" placeholder="Modelo" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+            <input type="text" x-model="search" @input="open=search.length>0" placeholder="Modelo" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
             <input type="hidden" name="modelo" :value="value">
-            <div x-show="open" x-transition class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-56 overflow-y-auto">
+            <div x-show="open" x-transition class="absolute z-40 mt-1 w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg max-h-56 overflow-y-auto">
               <template x-for="opt in filtered()" :key="opt.code">
-                <button type="button" class="flex justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700" @click="select(opt)">
+                <button type="button" class="flex justify-between w-full px-3 py-2 text-sm hover:bg-gray-600 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-200" @click="select(opt)">
                   <span x-text="opt.label"></span>
                 </button>
               </template>
-              <div x-show="filtered().length === 0" class="px-3 py-2 text-xs text-gray-500">Nenhum resultado</div>
+              <div x-show="filtered().length === 0" class="px-3 py-2 text-xs text-blue-600 dark:text-gray-400">Nenhum resultado</div>
             </div>
           </div>
         </div>
@@ -442,20 +442,20 @@
             class="relative"
             @click.outside="open=false"
           >
-            <input type="text" x-model="search" @input="open=search.length>0" placeholder="Marca" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+            <input type="text" x-model="search" @input="open=search.length>0" placeholder="Marca" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
             <input type="hidden" name="marca" :value="value">
-            <div x-show="open" x-transition class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-56 overflow-y-auto">
+            <div x-show="open" x-transition class="absolute z-40 mt-1 w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg max-h-56 overflow-y-auto">
               <template x-for="opt in filtered()" :key="opt.code">
-                <button type="button" class="flex justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700" @click="select(opt)">
+                <button type="button" class="flex justify-between w-full px-3 py-2 text-sm hover:bg-gray-600 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-200" @click="select(opt)">
                   <span x-text="opt.label"></span>
                 </button>
               </template>
-              <div x-show="filtered().length === 0" class="px-3 py-2 text-xs text-gray-500">Nenhum resultado</div>
+              <div x-show="filtered().length === 0" class="px-3 py-2 text-xs text-blue-600 dark:text-gray-400">Nenhum resultado</div>
             </div>
           </div>
         </div>
         <div class="flex-1 min-w-[130px] max-w-[170px] basis-[140px]">
-          <input type="text" name="descricao" placeholder="Descricao" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+          <input type="text" name="descricao" placeholder="Descrição" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
         </div>
         <div class="flex-1 min-w-[130px] max-w-[170px] basis-[140px]">
           <div
@@ -474,15 +474,15 @@
             class="relative"
             @click.outside="open=false"
           >
-            <button type="button" @click="open=!open" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md flex items-center justify-between">
-              <span x-text="selected.length ? selected.join(', ') : 'Situacao'"></span>
-              <svg class="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+            <button type="button" @click="open=!open" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md flex items-center justify-between">
+              <span x-text="selected.length ? selected.join(', ') : 'Situação'"></span>
+              <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
             </button>
-            <div x-show="open" x-transition class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg">
+            <div x-show="open" x-transition class="absolute z-40 mt-1 w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg">
               <template x-for="opt in options" :key="opt">
-                <label class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                <label class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-600 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-gray-200">
                   <input type="checkbox" :value="opt" x-model="selected" class="rounded text-indigo-600 border-gray-300">
-                  <span x-text="opt === 'A DISPOSICAO' ? 'DISPONIVEL' : opt"></span>
+                  <span x-text="opt === 'A DISPOSICAO' ? 'DISPONÍVEL' : opt"></span>
                 </label>
               </template>
             </div>
@@ -492,22 +492,22 @@
           </div>
         </div>
         <div class="flex-1 min-w-[130px] max-w-[170px] basis-[140px]">
-          <select name="conferido" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
+          <select name="conferido" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md">
             <option value="">Conferido (todos)</option>
             <option value="S" @selected(request('conferido') === 'S')>Verificados</option>
-            <option value="N" @selected(request('conferido') === 'N')>Não verificados</option>
+            <option value="N" @selected(request('conferido') === 'N')>Não Verificados</option>
           </select>
         </div>
         <div class="flex-1 min-w-[150px] max-w-[210px] basis-[170px]">
           <x-employee-autocomplete 
             id="matr_responsavel_search"
             name="matr_responsavel"
-            placeholder="Responsavel (matricula ou nome)"
+            placeholder="Responsável (matrícula ou nome)"
             value="{{ request('matr_responsavel') }}"
           />
         </div>
         <div class="flex-1 min-w-[100px] max-w-[140px] basis-[110px]">
-          <input type="text" name="numof" placeholder="O.C" value="{{ request('numof') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+          <input type="text" name="numof" placeholder="O.C" value="{{ request('numof') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
         </div>
         <div class="flex-1 min-w-[140px] max-w-[170px] basis-[150px]">
           <div
@@ -519,13 +519,13 @@
             class="relative"
             @click.outside="open=false"
           >
-            <button type="button" @click="open=!open" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md flex items-center justify-between">
+            <button type="button" @click="open=!open" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md flex items-center justify-between">
               <span x-text="selected.length ? selected.join(', ') : 'UF'"></span>
-              <svg class="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+              <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 011.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
             </button>
-            <div x-show="open" x-transition class="absolute z-40 mt-1 w-full max-h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg">
+            <div x-show="open" x-transition class="absolute z-40 mt-1 w-full max-h-48 overflow-y-auto bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg">
               <template x-for="opt in options" :key="opt">
-                <label class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                <label class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-600 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-gray-200">
                   <input type="checkbox" :value="opt" x-model="selected" class="rounded text-indigo-600 border-gray-300">
                   <span x-text="opt"></span>
                 </label>
@@ -576,8 +576,8 @@
             @input="open=true"
             @keydown.enter.prevent="selectFirst()"
             @keydown.backspace="if(!search && selected.length){ $event.preventDefault(); remove(selected[selected.length-1].login) }"
-            placeholder="Usuario (multiplos)"
-            class="h-10 px-2 sm:px-3 w-full min-w-0 text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md"
+            placeholder="Usuário (múltiplos)"
+            class="h-10 px-2 sm:px-3 w-full min-w-0 text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md"
           />
           <div
             x-show="open"
@@ -614,11 +614,11 @@
             </label>
           </div>
           <div class="flex items-center gap-2">
-            <input type="date" name="dtaquisicao_de" value="{{ request('dtaquisicao_de') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de aquisicao" />
+            <input type="date" name="dtaquisicao_de" value="{{ request('dtaquisicao_de') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de Aquisição" />
             <template x-if="range">
-              <span class="text-xs text-gray-500 dark:text-gray-300">até</span>
+              <span class="text-xs text-gray-500 dark:text-gray-300">at�</span>
             </template>
-            <input x-show="range" x-cloak type="date" name="dtaquisicao_ate" value="{{ request('dtaquisicao_ate') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de aquisicao ate" />
+            <input x-show="range" x-cloak type="date" name="dtaquisicao_ate" value="{{ request('dtaquisicao_ate') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de Aquisição Até" />
           </div>
         </div>
         <div
@@ -635,11 +635,11 @@
             </label>
           </div>
           <div class="flex items-center gap-2">
-            <input type="date" name="dtcadastro_de" value="{{ request('dtcadastro_de') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de cadastro" />
+            <input type="date" name="dtcadastro_de" value="{{ request('dtcadastro_de') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de Cadastro" />
             <template x-if="range">
-              <span class="text-xs text-gray-500 dark:text-gray-300">até</span>
+              <span class="text-xs text-gray-500 dark:text-gray-300">at�</span>
             </template>
-            <input x-show="range" x-cloak type="date" name="dtcadastro_ate" value="{{ request('dtcadastro_ate') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de cadastro ate" />
+            <input x-show="range" x-cloak type="date" name="dtcadastro_ate" value="{{ request('dtcadastro_ate') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de Cadastro Até" />
           </div>
         </div>
       </div>
@@ -656,7 +656,7 @@
 
         <label class="flex items-center gap-2 ml-auto shrink-0">
           <span class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Itens por pagina</span>
-          <select name="per_page" class="h-10 px-2 sm:px-3 w-24 text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
+          <select name="per_page" class="h-10 px-2 sm:px-3 w-24 text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md">
             @foreach([10,30,50,100,200] as $opt)
               <option value="{{ $opt }}" @selected(request('per_page', 30)==$opt)>{{ $opt }}</option>
             @endforeach

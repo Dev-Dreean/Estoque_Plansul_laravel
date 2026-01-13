@@ -278,7 +278,7 @@
         <div class="flex-grow overflow-y-auto">
           <table class="w-full table-fixed text-[11px] text-left text-gray-500 dark:text-gray-400">
             <thead
-                  class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0">
+                  class="text-xs text-white uppercase bg-blue-900 dark:bg-blue-900 sticky top-0 font-bold shadow-sm">
               <tr>
                 <!-- Coluna dinâmica em primeiro lugar (conforme o tipo de filtro) -->
                   <template x-if="tipoRelatorio === 'numero'">
@@ -323,9 +323,9 @@
                   </td>
                 </tr>
               </template>
-              <template x-for="patrimonio in reportData" :key="patrimonio.NUSEQPATR">
+              <template x-for="(patrimonio, idx) in reportData" :key="patrimonio.NUSEQPATR">
                 <tr
-                  class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                  :class="(idx % 2 === 0 ? 'bg-blue-50 dark:bg-gray-900' : 'bg-blue-100 dark:bg-gray-800') + ' border-b-2 border-blue-200 dark:border-gray-600 hover:bg-blue-300 dark:hover:bg-gray-700 cursor-pointer'">
                   <!-- Coluna dinâmica em primeiro lugar (conforme o tipo de filtro) -->
                   <template x-if="tipoRelatorio === 'numero'">
                     <td :class="'px-6 py-4 font-bold ' + getColumnColor().replace('bg-', 'text-').replace(/dark:bg-/, 'dark:text-')">

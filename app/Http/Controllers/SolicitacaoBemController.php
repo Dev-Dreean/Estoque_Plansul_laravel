@@ -48,10 +48,12 @@ class SolicitacaoBemController extends Controller
         return view('solicitacoes.index', compact('solicitacoes', 'statusOptions'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
+        $isModal = $request->input('modal') === '1';
         return view('solicitacoes.create', [
             'user' => Auth::user(),
+            'isModal' => $isModal,
         ]);
     }
 
@@ -110,6 +112,15 @@ class SolicitacaoBemController extends Controller
 
         if ($solicitacao) {
             $this->sendConfirmacaoEmail($solicitacao);
+        }
+
+        // Se foi aberto como modal, retornar JSON
+        if ($request->input('modal') === '1') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitacao registrada com sucesso.',
+                'redirect' => route('solicitacoes-bens.show', $solicitacao),
+            ]);
         }
 
         return redirect()

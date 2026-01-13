@@ -11,10 +11,12 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PatrimonioController;
+use App\Http\Controllers\PatrimonioBulkController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjetoController;
 use App\Http\Controllers\RemovidosController;
 use App\Http\Controllers\SolicitacaoBemController;
+use App\Http\Controllers\SolicitacaoBemPatrimonioController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -165,6 +167,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::post('/patrimonios/bulk-situacao', [PatrimonioController::class, 'bulkSituacao'])->name('patrimonios.bulk-situacao');
     Route::post('/patrimonios/bulk-verificar', [PatrimonioController::class, 'bulkVerificar'])->name('patrimonios.bulk-verificar');
     Route::post('/patrimonios/bulk-delete', [PatrimonioController::class, 'bulkDelete'])->name('patrimonios.bulk-delete');
+    Route::post('/patrimonios/bulk-update/import', [PatrimonioBulkController::class, 'import'])->name('patrimonios.bulk-update.import');
+    Route::post('/patrimonios/bulk-update/export', [PatrimonioBulkController::class, 'exportTemplate'])->name('patrimonios.bulk-update.export');
     Route::get('/api/patrimonios/disponiveis', [PatrimonioController::class, 'getPatrimoniosDisponiveis'])->name('api.patrimonios.disponiveis');
     Route::get('/api/patrimonios/buscar/{numero}', [PatrimonioController::class, 'buscarPorNumero'])->name('api.patrimonios.buscar');
     Route::get('/api/patrimonios/id/{id}', [PatrimonioController::class, 'buscarPorId'])->name('api.patrimonios.buscarId');
@@ -233,6 +237,11 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::resource('solicitacoes-bens', SolicitacaoBemController::class)
         ->only(['index', 'create', 'store', 'show', 'update'])
         ->middleware('tela.access:1010');
+
+    // API para buscar patrimônios disponíveis (autocomplete)
+    Route::get('/api/solicitacoes-bens/patrimonio-disponivel', 
+        [App\Http\Controllers\SolicitacaoBemPatrimonioController::class, 'buscarDisponivel']
+    )->name('solicitacoes-bens.patrimonio-disponivel')->middleware('tela.access:1010');
 
 
     // Rotas de Relatórios

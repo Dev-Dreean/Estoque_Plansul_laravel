@@ -1,0 +1,332 @@
+[
+    {
+        "NUSEQPATR": 1,
+        "NUPATRIMONIO": 5640,
+        "before": {
+            "SITUACAO": "EM USO",
+            "CDLOCAL": 1,
+            "CDPROJETO": 522,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "CDPROJETO": 8,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 2,
+        "NUPATRIMONIO": 5679,
+        "before": {
+            "SITUACAO": "EM USO",
+            "CDLOCAL": 1,
+            "CDPROJETO": 522,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "CDPROJETO": 8,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 3,
+        "NUPATRIMONIO": 5746,
+        "before": {
+            "SITUACAO": "EM USO",
+            "CDLOCAL": 1,
+            "CDPROJETO": 522,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "CDPROJETO": 8,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 4,
+        "NUPATRIMONIO": 5747,
+        "before": {
+            "SITUACAO": "EM USO",
+            "CDLOCAL": 1,
+            "CDPROJETO": 523,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "CDPROJETO": 8,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 5,
+        "NUPATRIMONIO": 456,
+        "before": {
+            "SITUACAO": "BAIXA",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 6,
+        "NUPATRIMONIO": 1,
+        "before": {
+            "SITUACAO": "BAIXA",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 7,
+        "NUPATRIMONIO": 2,
+        "before": {
+            "SITUACAO": "EM USO",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 8,
+        "NUPATRIMONIO": 3,
+        "before": {
+            "SITUACAO": "EM USO",
+            "CDLOCAL": 109,
+            "CDPROJETO": 100001,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "CDPROJETO": 8,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 9,
+        "NUPATRIMONIO": 4,
+        "before": {
+            "SITUACAO": "BAIXA",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 10,
+        "NUPATRIMONIO": 5,
+        "before": {
+            "SITUACAO": "BAIXA",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 11,
+        "NUPATRIMONIO": 6,
+        "before": {
+            "SITUACAO": "EM USO",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 12,
+        "NUPATRIMONIO": 7,
+        "before": {
+            "SITUACAO": "BAIXA",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 13,
+        "NUPATRIMONIO": 8,
+        "before": {
+            "SITUACAO": "BAIXA",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 14,
+        "NUPATRIMONIO": 9,
+        "before": {
+            "SITUACAO": "BAIXA",
+            "CDLOCAL": 2035,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 15,
+        "NUPATRIMONIO": 10,
+        "before": {
+            "SITUACAO": "BAIXA",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 16,
+        "NUPATRIMONIO": 11,
+        "before": {
+            "SITUACAO": "BAIXA",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 17,
+        "NUPATRIMONIO": 12,
+        "before": {
+            "SITUACAO": "BAIXA",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 18,
+        "NUPATRIMONIO": 14,
+        "before": {
+            "SITUACAO": "EM USO",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 19,
+        "NUPATRIMONIO": 15,
+        "before": {
+            "SITUACAO": "EM USO",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    },
+    {
+        "NUSEQPATR": 20,
+        "NUPATRIMONIO": 16,
+        "before": {
+            "SITUACAO": "BAIXA",
+            "CDLOCAL": 70,
+            "USUARIO": "BEA.SC",
+            "FLCONFERIDO": "N"
+        },
+        "after": {
+            "SITUACAO": "À DISPOSIÇÃO",
+            "CDLOCAL": 530,
+            "USUARIO": "BEATRIZ.SC",
+            "FLCONFERIDO": "S"
+        }
+    }
+]

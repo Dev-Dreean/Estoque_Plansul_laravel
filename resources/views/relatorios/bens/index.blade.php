@@ -8,44 +8,29 @@
                     cadBemOpen: {{ (old('modal') === 'cadBem' || request('open') === 'cadBem') ? 'true' : 'false' }}
                 }"
         @open-cad-bem.window="cadBemOpen = true"
-        class="py-12">
-        <div class="w-full sm:px-6 lg:px-8">
+        class="py-4">
+        <div class="py-3">
+            <div class="w-full px-2 sm:px-4 lg:px-6">
+                <div class="bg-white dark:bg-gray-900 shadow-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="p-4 sm:p-5 space-y-4">
 
-            {{-- FLASHES --}}
-            @if(session('success'))
-            <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                <strong class="font-bold">Sucesso!</strong>
-                <span class="block sm:inline">{{ session('success') }}</span>
-            </div>
-            @endif
-            @if(session('error'))
-            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                <strong class="font-bold">Erro!</strong>
-                <span class="block sm:inline">{{ session('error') }}</span>
-            </div>
-            @endif
-            @if($errors->any())
-            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                <strong class="font-bold">Erro de Validação!</strong>
-                <span class="block sm:inline">{{ $errors->first() }}</span>
-            </div>
-            @endif
+            @include('patrimonios.partials.flash-messages')
 
-            <div class="section">
-                <div class="section-body">
+                        <div class="section">
+                            <div class="section-body">
 
                     {{-- AÇÕES: o botão principal será exibido junto ao cabeçalho de filtros (aba abaixo) --}}
 
                     {{-- FILTRO (sempre fechado por padrão) --}}
                     <div x-data="{ open: false }"
-                        class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6"
+                        class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg mb-3"
                         x-id="['filtro-bens']"
                         :aria-expanded="open.toString()"
                         :aria-controls="$id('filtro-bens')">
 
                         <div class="flex justify-between items-center">
                             <h3 class="font-semibold text-lg">Filtros de Busca</h3>
-                            <button type="button" @click="open = !open" aria-expanded="open" aria-controls="$id('filtro-bens')" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <button type="button" @click="open = !open" aria-expanded="open" aria-controls="$id('filtro-bens')" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-600 dark:border-gray-600 bg-gray-600 dark:bg-gray-800 hover:bg-gray-700 dark:hover:bg-gray-700 text-white transition focus:outline-none focus:ring-2 focus:ring-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
@@ -53,27 +38,27 @@
                             </button>
                         </div>
 
-                        <div x-show="open" x-transition class="mt-4" style="display: none;" :id="$id('filtro-bens')">
+                        <div x-show="open" x-transition class="mt-4 bg-gray-200 dark:bg-gray-800 rounded-lg p-4" style="display: none;" :id="$id('filtro-bens')">
                             <form method="GET" action="{{ route('relatorios.bens.index') }}" @submit="open=false">
                                 <div class="grid gap-3 sm:gap-4" style="grid-template-columns: repeat(auto-fit,minmax(180px,1fr));">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Descrição</label>
                                         <input type="text" name="descricao" placeholder="Parte da descrição"
                                             value="{{ request('descricao') }}"
-                                            class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                            class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                     </div>
 
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Tipo (nome)</label>
                                         <input type="text" name="tipo" placeholder="Ex.: APARADOR"
                                             value="{{ request('tipo') }}"
-                                            class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                                            class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                     </div>
 
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Cód. Tipo</label>
                                         <select name="codigo_tipo"
-                                            class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
+                                            class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md">
                                             <option value="">Todos</option>
                                             @foreach($tipos as $t)
                                             <option value="{{ $t->NUSEQTIPOPATR }}" @selected(request('codigo_tipo')==$t->NUSEQTIPOPATR)>
@@ -86,7 +71,7 @@
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Itens por página</label>
                                         <select name="per_page"
-                                            class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md">
+                                            class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md">
                                             @foreach([10,30,50,100,200] as $opt)
                                             <option value="{{ $opt }}" @selected(request('per_page', 30)==$opt)>{{ $opt }}</option>
                                             @endforeach
@@ -111,15 +96,15 @@
                     </div>
 
                     {{-- AÇÕES: botão Cadastrar Bem abaixo dos filtros --}}
-                    <div class="flex items-start mb-4 mt-2">
-                        <button type="button" @click="cadBemOpen = true" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+                    <div class="flex flex-wrap items-center gap-3 mb-3">
+                        <button type="button" @click="cadBemOpen = true" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center shadow">
                             <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
                             <span>Cadastrar Bem</span>
                         </button>
                     </div>
 
                     {{-- TABELA (reutilizável com colunas customizadas) --}}
-                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0 min-w-0">
+                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg border border-gray-200 dark:border-gray-700 z-0 min-w-0">
                         <table class="w-full table-fixed text-[11px] text-left rtl:text-right text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr class="divide-x divide-gray-200 dark:divide-gray-700">
@@ -164,13 +149,14 @@
                         </table>
                     </div>
 
-                    <div class="mt-4">
+                    <div class="mt-3">
                         {{ $bens->withQueryString()->links() }}
                     </div>
-
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
 
 
@@ -245,3 +231,7 @@
 
     </div>
 </x-app-layout>
+
+
+
+

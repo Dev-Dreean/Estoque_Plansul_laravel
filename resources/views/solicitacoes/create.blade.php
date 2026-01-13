@@ -1,9 +1,12 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-2xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Nova Solicitacao de Bens') }}
-        </h2>
-    </x-slot>
+    {{-- Mostrar header apenas se NÃO for modal --}}
+    @unless(request('modal'))
+        <x-slot name="header">
+            <h2 class="font-semibold text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+                {{ __('Nova Solicitacao de Bens') }}
+            </h2>
+        </x-slot>
+    @endunless
 
     @php
         $defaultNome = old('solicitante_nome', $user?->NOMEUSER ?? '');
@@ -15,21 +18,24 @@
                 ['descricao' => '', 'quantidade' => 1, 'unidade' => '', 'observacao' => ''],
             ];
         }
+        $isModal = request('modal') === '1';
     @endphp
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+    {{-- Container ajustado para modal vs página normal --}}
+    <div class="{{ $isModal ? 'h-full overflow-y-auto' : 'py-12' }}">
+        <div class="{{ $isModal ? 'w-full' : 'max-w-4xl mx-auto sm:px-6 lg:px-8' }}">
             @if($errors->any())
                 <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert">
                     <span class="font-semibold">Erro:</span> {{ $errors->first() }}
                 </div>
             @endif
 
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <form method="POST" action="{{ route('solicitacoes-bens.store') }}" x-data="solicitacaoForm({ itensOld: @js($oldItens) })">
-                        @csrf
-
+            <div class="{{ $isModal ? 'w-full h-full' : 'bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg' }}">
+                <div class="{{ $isModal ? 'p-4 sm:p-6' : 'p-6' }} text-gray-900 dark:text-gray-100">
+                    <form method="POST" action="{{ route('solicitacoes-bens.store') }}" x-data="solicitacaoForm({ itensOld: @js($oldItens) })" data-modal-form="{{ $isModal ? '1' : '0' }}" x-cloak>>
+                        @csrf                        @if($isModal)
+                            <input type="hidden" name="modal" value="1" />
+                        @endif
                         <div class="grid gap-4 md:grid-cols-2">
                             <div>
                                 <x-input-label for="solicitante_nome" value="Solicitante *" />
@@ -69,34 +75,46 @@
                                 <button type="button" class="text-sm text-indigo-600 hover:text-indigo-800" @click="addItem">Adicionar item</button>
                             </div>
 
-                            <template x-for="(item, idx) in itens" :key="idx">
-                                <div class="grid gap-3 md:grid-cols-6 items-end mb-4">
+                            <template x-for="(item, idx) in itens" :key="idx" x-cloak>
+                                <div class="grid gap-3 md:grid-cols-6 items-end mb-4 border-b dark:border-gray-700 pb-4" x-show="item">
                                     <div class="md:col-span-2">
-                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Descricao *</label>
-                                        <input type="text" class="input-base mt-1 block w-full" :name="`itens[${idx}][descricao]`" x-model="item.descricao" required />
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Patrimonio / Descricao *</label>
+                                        <div class="relative">
+                                            <input 
+                                                type="text" 
+                                                class="input-base mt-1 block w-full" 
+                                                :name="`itens[${idx}][patrimonio_busca]`"
+                                                :value="item?.patrimonio_busca || ''"
+                                                @input="item.patrimonio_busca = $el.value"
+                                                placeholder="Digite numero ou descrição..."
+                                                autocomplete="off"
+                                            />
+                                            <input type="hidden" :name="`itens[${idx}][descricao]`" :value="item?.descricao || ''" />
+                                        </div>
+                                        <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">Busca em estoque disponível</small>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantidade *</label>
-                                        <input type="number" min="1" class="input-base mt-1 block w-full" :name="`itens[${idx}][quantidade]`" x-model.number="item.quantidade" required />
+                                        <input type="number" min="1" class="input-base mt-1 block w-full" :name="`itens[${idx}][quantidade]`" :value="item?.quantidade || 1" @input="item.quantidade = parseInt($el.value) || 1" required />
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Unidade</label>
-                                        <input type="text" class="input-base mt-1 block w-full" :name="`itens[${idx}][unidade]`" x-model="item.unidade" />
+                                        <input type="text" class="input-base mt-1 block w-full" :name="`itens[${idx}][unidade]`" :value="item?.unidade || ''" @input="item.unidade = $el.value" />
                                     </div>
                                     <div class="md:col-span-2">
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Observacao</label>
-                                        <input type="text" class="input-base mt-1 block w-full" :name="`itens[${idx}][observacao]`" x-model="item.observacao" />
+                                        <input type="text" class="input-base mt-1 block w-full" :name="`itens[${idx}][observacao]`" :value="item?.observacao || ''" @input="item.observacao = $el.value" />
                                     </div>
                                     <div>
-                                        <button type="button" class="text-red-600 hover:text-red-800 text-sm" @click="removeItem(idx)" x-show="itens.length > 1">Remover</button>
+                                        <button type="button" class="text-red-600 hover:text-red-800 text-sm font-medium" @click="removeItem(idx)" x-show="itens.length > 1">Remover</button>
                                     </div>
                                 </div>
                             </template>
                         </div>
 
                         <div class="mt-6 flex items-center gap-3">
-                            <x-primary-button>Salvar solicitacao</x-primary-button>
-                            <a href="{{ route('solicitacoes-bens.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">Cancelar</a>
+                            <x-primary-button data-modal-close="false">Salvar solicitacao</x-primary-button>
+                            <button type="button" data-modal-close="true" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">Cancelar</button>
                         </div>
                     </form>
                 </div>
@@ -110,11 +128,41 @@
                 return {
                     itens: itensOld || [],
                     addItem() {
-                        this.itens.push({ descricao: '', quantidade: 1, unidade: '', observacao: '' });
+                        this.itens.push({ descricao: '', quantidade: 1, unidade: '', observacao: '', patrimonio_busca: '' });
                     },
                     removeItem(idx) {
                         if (this.itens.length <= 1) return;
                         this.itens.splice(idx, 1);
+                    }
+                };
+            }
+
+            function patrimonioSearch(idx) {
+                return {
+                    busca: '',
+                    resultados: [],
+                    item: null,
+                    
+                    buscarPatrimonios() {
+                        if (this.busca.length < 2) {
+                            this.resultados = [];
+                            return;
+                        }
+
+                        fetch(`{{ route('solicitacoes-bens.patrimonio-disponivel') }}?q=${encodeURIComponent(this.busca)}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                this.resultados = data;
+                            })
+                            .catch(err => console.error('Erro ao buscar patrimônios:', err));
+                    },
+
+                    selecionarPatrimonio(patrimonio) {
+                        // Encontrar o item no formulário principal (parent alpine)
+                        const parentForm = document.querySelector('[x-data*="solicitacaoForm"]').__x.$data;
+                        parentForm.itens[idx].descricao = patrimonio.text;
+                        this.busca = patrimonio.text;
+                        this.resultados = [];
                     }
                 };
             }

@@ -1,0 +1,26 @@
+[
+    {
+        "NUSEQPATR": 95534,
+        "NUPATRIMONIO": 1000000,
+        "before": {
+            "PESO": null,
+            "TAMANHO": null
+        },
+        "after": {
+            "PESO": 10,
+            "TAMANHO": 10
+        }
+    },
+    {
+        "NUSEQPATR": 95535,
+        "NUPATRIMONIO": 1000001,
+        "before": {
+            "PESO": null,
+            "TAMANHO": null
+        },
+        "after": {
+            "PESO": 10,
+            "TAMANHO": 10
+        }
+    }
+]

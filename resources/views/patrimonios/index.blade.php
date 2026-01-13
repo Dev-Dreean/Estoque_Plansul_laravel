@@ -158,6 +158,331 @@
     @include('patrimonios.partials.modals.relatorio')
     @include('patrimonios.partials.modals.termo')
 
+    @unless($isConsultor)
+      <style>
+        /* Bulk modal isolated theme (safe to remove) */
+        html[data-theme='light'] .bulk-modal-theme {
+          --bulk-modal-bg-list: #fffaf5;
+          --bulk-modal-bg-import: #f4fff9;
+          --bulk-guide-bg: #ffffff;
+        }
+        html[data-theme='dark'] .bulk-modal-theme {
+          --bulk-modal-bg-list: #111827;
+          --bulk-modal-bg-import: #111827;
+          --bulk-guide-bg: #111827;
+        }
+        .bulk-modal-theme.bulk-modal--list {
+          background-color: var(--bulk-modal-bg-list);
+        }
+        .bulk-modal-theme.bulk-modal--import {
+          background-color: var(--bulk-modal-bg-import);
+        }
+        .bulk-guide-theme {
+          background-color: var(--bulk-guide-bg);
+        }
+      </style>
+      <div
+        x-show="bulkImportModalOpen"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        x-cloak
+        class="fixed inset-0 z-[65] bg-black/60 dark:bg-black/80 backdrop-blur-sm p-3 sm:p-6"
+        @click="closeBulkImportModal()"
+      ></div>
+
+      <div
+        x-show="bulkImportModalOpen"
+        x-cloak
+        class="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-6 pointer-events-none"
+      >
+          <div
+          x-show="bulkImportModalOpen"
+          x-transition:enter="transition ease-out duration-300"
+          x-transition:enter-start="opacity-0 scale-95 translate-y-3"
+          x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+          x-transition:leave="transition ease-in duration-200"
+          x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+          x-transition:leave-end="opacity-0 scale-95 translate-y-3"
+          class="bulk-modal-theme rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col pointer-events-auto p-6 transition-colors duration-200 opacity-100"
+          :class="bulkModalMode === 'list' ? 'bulk-modal--list' : 'bulk-modal--import'"
+          @click.stop
+        >
+          <div class="flex flex-col gap-3 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white" x-text="bulkModalMode === 'list' ? 'Buscar patrimonios' : 'Atualizacao em massa'"></h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400" x-text="bulkModalMode === 'list' ? 'Envie apenas os numeros e receba a planilha completa pronta para editar.' : 'Envie a planilha preenchida para atualizar varios patrimonios de uma vez.'"></p>
+              </div>
+              <button type="button" @click="closeBulkImportModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">x</button>
+            </div>
+            <div class="flex items-center justify-center">
+              <div class="inline-flex rounded-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <button type="button" @click="bulkModalMode = 'list'" class="px-3 py-1.5 text-xs font-semibold transition-colors duration-200" :class="bulkModalMode === 'list' ? 'bg-orange-500 text-white' : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-orange-50 dark:hover:bg-gray-800'">Buscar patrimonios</button>
+                <button type="button" @click="bulkModalMode = 'import'" class="px-3 py-1.5 text-xs font-semibold transition-colors duration-200" :class="bulkModalMode === 'import' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-gray-800'">Atualizacao em massa</button>
+              </div>
+            </div>
+
+          </div>
+          <div class="pt-6 space-y-7 overflow-y-auto">
+            <div
+              x-show="bulkModalMode === 'import'"
+              x-transition:enter="transition ease-out duration-300"
+              x-transition:enter-start="opacity-0 translate-y-2"
+              x-transition:enter-end="opacity-100 translate-y-0"
+              x-transition:leave="transition ease-in duration-200"
+              x-transition:leave-start="opacity-100 translate-y-0"
+              x-transition:leave-end="opacity-0 translate-y-2"
+              class="space-y-6"
+              :class="bulkModalMode === 'import' ? '' : 'hidden'"
+            >
+            <div x-data="{ open: false }" class="bulk-guide-theme border border-emerald-200 dark:border-emerald-700 rounded-lg p-4">
+              <button
+                type="button"
+                class="w-full flex items-center justify-between text-sm font-semibold text-emerald-800 dark:text-emerald-200"
+                @click="open = !open"
+                :aria-expanded="open.toString()"
+              >
+                <span>Guia de como usar (clique aqui)</span>
+                <svg class="w-4 h-4 transition-transform" :class="open ? 'rotate-180' : 'rotate-0'" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.7a.75.75 0 1 1 1.06 1.06l-4.24 4.25a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08z" clip-rule="evenodd" />
+                </svg>
+              </button>
+              <div
+                x-show="open"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 -translate-y-1"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 -translate-y-1"
+                class="mt-3"
+              >
+                <p class="text-sm text-emerald-900 dark:text-emerald-100">
+                  A <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">atualizacao em massa</span> permite mudar varios patrimonios de uma vez.
+                </p>
+                <div class="mt-4 grid grid-cols-3 gap-4 min-w-[720px]" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;">
+                  <div class="rounded-lg border border-emerald-200 dark:border-emerald-700 bg-transparent p-4">
+                    <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
+                      <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">1</span>
+                      <p class="text-sm font-semibold">Baixe o modelo</p>
+                    </div>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Use <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Baixar modelo</span>.</p>
+                  </div>
+                  <div class="rounded-lg border border-emerald-200 dark:border-emerald-700 bg-transparent p-4">
+                    <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
+                      <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">2</span>
+                      <p class="text-sm font-semibold">Preencha o que quiser</p>
+                    </div>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Coloque o <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">numero do patrimonio</span> e altere so o necessario.</p>
+                  </div>
+                  <div class="rounded-lg border border-emerald-200 dark:border-emerald-700 bg-transparent p-4">
+                    <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
+                      <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">3</span>
+                      <p class="text-sm font-semibold">Envie e simule</p>
+                    </div>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Envie a planilha e use <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Simular</span> se quiser testar.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-4">
+              <a
+                href="{{ asset('templates/patrimonios_bulk_update_template.xlsx') }}"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold"
+                download
+              >
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 3a1 1 0 0 1 1 1v9.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42L11 13.59V4a1 1 0 0 1 1-1z"></path>
+                  <path d="M5 19a1 1 0 0 1 1-1h12a1 1 0 0 1 0 2H6a1 1 0 0 1-1-1z"></path>
+                </svg>
+                Baixar modelo
+              </a>
+              <span class="text-xs text-gray-500 dark:text-gray-400">Formato: XLSX</span>
+            </div>
+
+            <form class="space-y-5" @submit.prevent="submitBulkImport($event)" enctype="multipart/form-data">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Planilha</label>
+                <div
+                  class="relative border-2 border-dashed rounded-lg p-4 text-center transition
+                    border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800
+                    hover:border-emerald-400 dark:hover:border-emerald-500"
+                  @dragover.prevent="bulkImportDragging = true"
+                  @dragleave.prevent="bulkImportDragging = false"
+                  @drop.prevent="handleBulkDrop($event)"
+                  :class="bulkImportDragging ? 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-900/20' : ''"
+                >
+                  <input id="bulk-import-file" type="file" name="arquivo" accept=".xlsx" class="absolute inset-0 opacity-0 cursor-pointer" @change="onBulkFileSelected($event)" required>
+                  <div class="space-y-1 pointer-events-none">
+                    <p class="text-sm text-gray-700 dark:text-gray-200 font-medium">Clique para selecionar ou arraste o arquivo aqui</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">XLSX</p>
+                    <p class="text-xs text-gray-600 dark:text-gray-300" x-show="bulkImportFileName" x-text="`Arquivo: ${bulkImportFileName}`"></p>
+                  </div>
+                </div>
+              </div>
+              <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <input type="checkbox" name="dry_run" value="1" class="rounded border-gray-300 dark:border-gray-600 text-emerald-600 focus:ring-emerald-500">
+                Simular (nao grava no banco)
+              </label>
+              <div class="flex justify-end gap-3 pt-1">
+                <button type="button" @click="closeBulkImportModal()" class="px-4 py-2 rounded-md text-sm font-semibold border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Cancelar</button>
+                <button type="submit" :disabled="bulkImportLoading" class="px-4 py-2 rounded-md text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition disabled:opacity-70">
+                  <span x-show="!bulkImportLoading">Enviar e processar</span>
+                  <span x-show="bulkImportLoading">Processando...</span>
+                </button>
+              </div>
+            </form>
+
+            <template x-if="bulkImportOutput">
+              <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                <p class="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-2">Resultado</p>
+                <pre class="text-xs whitespace-pre-wrap text-gray-800 dark:text-gray-100" x-text="bulkImportOutput"></pre>
+              </div>
+            </template>
+
+            <template x-if="bulkImportError">
+              <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg p-3 text-sm text-red-700 dark:text-red-200" x-text="bulkImportError"></div>
+            </template>
+            </div>
+            <div
+              x-show="bulkModalMode === 'list'"
+              x-transition:enter="transition ease-out duration-300"
+              x-transition:enter-start="opacity-0 translate-y-2"
+              x-transition:enter-end="opacity-100 translate-y-0"
+              x-transition:leave="transition ease-in duration-200"
+              x-transition:leave-start="opacity-100 translate-y-0"
+              x-transition:leave-end="opacity-0 translate-y-2"
+              class="space-y-6"
+              :class="bulkModalMode === 'list' ? '' : 'hidden'"
+            >
+              <div x-data="{ open: false }" class="bulk-guide-theme border border-orange-200 dark:border-orange-700 rounded-lg p-4 space-y-4">
+                <button
+                  type="button"
+                  class="w-full flex items-center justify-between text-sm font-semibold text-orange-700 dark:text-orange-200"
+                  @click="open = !open"
+                  :aria-expanded="open.toString()"
+                >
+                  <span>Guia de como usar (clique aqui)</span>
+                  <svg class="w-4 h-4 transition-transform" :class="open ? 'rotate-180' : 'rotate-0'" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.7a.75.75 0 1 1 1.06 1.06l-4.24 4.25a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <div
+                  x-show="open"
+                  x-transition:enter="transition ease-out duration-200"
+                  x-transition:enter-start="opacity-0 -translate-y-1"
+                  x-transition:enter-end="opacity-100 translate-y-0"
+                  x-transition:leave="transition ease-in duration-150"
+                  x-transition:leave-start="opacity-100 translate-y-0"
+                  x-transition:leave-end="opacity-0 -translate-y-1"
+                >
+                  <p class="text-sm text-orange-900 dark:text-orange-100">
+                    <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Buscar patrimonios</span> preenche os dados para voce. Assim, voce so edita o que precisar.
+                  </p>
+                  <div class="mt-4 grid grid-cols-3 gap-4 min-w-[720px]" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;">
+                  <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-4">
+                    <div class="flex items-center gap-2 text-orange-600 dark:text-orange-300">
+                      <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">1</span>
+                      <p class="text-sm font-semibold">Baixe a planilha</p>
+                    </div>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Clique em <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Baixar planilha de numeros</span>.</p>
+                  </div>
+                  <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-4">
+                    <div class="flex items-center gap-2 text-orange-600 dark:text-orange-300">
+                      <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">2</span>
+                      <p class="text-sm font-semibold">Preencha os numeros</p>
+                    </div>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Coloque um <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">numero de patrimonio</span> por linha.</p>
+                  </div>
+                  <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-4">
+                    <div class="flex items-center gap-2 text-orange-600 dark:text-orange-300">
+                      <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">3</span>
+                      <p class="text-sm font-semibold">Envie aqui</p>
+                    </div>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Anexe a planilha no campo abaixo e clique em <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Gerar planilha completa</span>.</p>
+                  </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-4">
+                <a
+                  href="{{ asset('templates/patrimonios_lista_template.xlsx') }}"
+                  class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold"
+                  download
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 3a1 1 0 0 1 1 1v9.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42L11 13.59V4a1 1 0 0 1 1-1z"></path>
+                    <path d="M5 19a1 1 0 0 1 1-1h12a1 1 0 0 1 0 2H6a1 1 0 0 1-1-1z"></path>
+                  </svg>
+                  Baixar planilha de numeros
+                </a>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Formato: XLSX</span>
+              </div>
+
+              <form class="space-y-5" @submit.prevent="submitBulkExportList($event)" enctype="multipart/form-data">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Planilha com numeros</label>
+                  <div
+                    class="relative border-2 border-dashed rounded-lg p-4 text-center transition
+                      border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800
+                      hover:border-orange-400 dark:hover:border-orange-500"
+                    @dragover.prevent="bulkListDragging = true"
+                    @dragleave.prevent="bulkListDragging = false"
+                    @drop.prevent="handleBulkListDrop($event)"
+                    :class="bulkListDragging ? 'border-orange-500 bg-orange-50/40 dark:bg-orange-900/20' : ''"
+                  >
+                    <input id="bulk-list-file" type="file" name="arquivo_lista" accept=".xlsx" class="absolute inset-0 opacity-0 cursor-pointer" @change="onBulkListSelected($event)" required>
+                    <div class="space-y-1 pointer-events-none">
+                      <p class="text-sm text-gray-700 dark:text-gray-200 font-medium">Clique para selecionar ou arraste o arquivo aqui</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">XLSX</p>
+                      <p class="text-xs text-gray-600 dark:text-gray-300" x-show="bulkListFileName" x-text="`Arquivo: ${bulkListFileName}`"></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-1">
+                  <button type="button" @click="closeBulkImportModal()" class="px-4 py-2 rounded-md text-sm font-semibold border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Cancelar</button>
+                  <button type="submit" class="px-4 py-2 rounded-md text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white transition">Gerar planilha completa</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        x-show="bulkImportLoading"
+        x-transition:leave="transition ease-out duration-300"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        x-cloak
+        class="fixed inset-0 z-[80] flex items-center justify-center pointer-events-none"
+      >
+        <div class="flex flex-col items-center gap-6">
+          <div class="relative w-20 h-20">
+            <svg class="w-full h-full animate-spin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" style="color: rgb(209, 213, 219);"></circle>
+              <path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 0 0-4 4H4z" style="color: rgb(99, 102, 241);"></path>
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500/20 to-blue-500/20"></div>
+            </div>
+          </div>
+          <div class="text-center">
+            <h3 class="text-xl font-semibold text-white mb-2">Processando...</h3>
+            <p class="text-gray-300 text-sm">Estamos aplicando as alteracoes.</p>
+          </div>
+          <div class="w-48 h-1 bg-gray-700 rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-indigo-500 via-blue-500 to-indigo-500 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    @endunless
+
     {{-- Modal de create/edit --}}
     <!-- Overlay Background -->
     <div
@@ -1007,6 +1332,15 @@
         return {
           relatorioModalOpen: false,
           termoModalOpen: false,
+          bulkImportModalOpen: false,
+          bulkModalMode: 'import',
+          bulkImportLoading: false,
+          bulkImportOutput: '',
+          bulkImportError: '',
+          bulkImportDragging: false,
+          bulkImportFileName: '',
+          bulkListDragging: false,
+          bulkListFileName: '',
           atribuirTermoModalOpen: false,
           desatribuirTermoModalOpen: false,
           resultadosModalOpen: false,
@@ -1059,6 +1393,18 @@
               document.documentElement.classList.toggle('overflow-hidden', open);
               document.body.classList.toggle('overflow-hidden', open);
             });
+            this.$watch('bulkImportModalOpen', (open) => {
+              document.documentElement.classList.toggle('overflow-hidden', open);
+              document.body.classList.toggle('overflow-hidden', open);
+              if (!open) {
+                this.bulkImportLoading = false;
+                this.bulkImportError = '';
+                this.bulkImportFileName = '';
+                this.bulkImportDragging = false;
+                this.bulkListDragging = false;
+                this.bulkListFileName = '';
+              }
+            });
             window.addEventListener('patrimonio-modal-create', () => {
               this.openCreateModal();
             });
@@ -1072,6 +1418,128 @@
           },
           abrirTermo() {
             this.termoModalOpen = true;
+          },
+          openBulkModal(mode = 'import') {
+            this.bulkModalMode = mode;
+            this.bulkImportModalOpen = true;
+            this.bulkImportOutput = '';
+            this.bulkImportError = '';
+            this.bulkImportLoading = false;
+            this.bulkImportFileName = '';
+            this.bulkImportDragging = false;
+            this.bulkListDragging = false;
+            this.bulkListFileName = '';
+          },
+          openBulkImportModal() {
+            this.openBulkModal('import');
+          },
+          closeBulkImportModal() {
+            this.bulkImportModalOpen = false;
+            this.bulkModalMode = 'import';
+            this.bulkImportOutput = '';
+            this.bulkImportError = '';
+            this.bulkImportDragging = false;
+            this.bulkImportFileName = '';
+            this.bulkListDragging = false;
+            this.bulkListFileName = '';
+          },
+          handleBulkListDrop(event) {
+            this.bulkListDragging = false;
+            const fileInput = document.getElementById('bulk-list-file');
+            const files = event?.dataTransfer?.files;
+            if (fileInput && files && files.length > 0) {
+              fileInput.files = files;
+              this.onBulkListSelected({ target: fileInput });
+            }
+          },
+          onBulkListSelected(event) {
+            const files = event?.target?.files || event?.dataTransfer?.files;
+            if (!files || files.length === 0) return;
+            this.bulkListFileName = files[0]?.name || '';
+          },
+          async submitBulkExportList(event) {
+            const form = event?.target;
+            if (!form) return;
+            const formData = new FormData(form);
+            try {
+              const resp = await fetch("{{ route('patrimonios.bulk-update.export') }}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                  'X-CSRF-TOKEN': this.csrf(),
+                },
+              });
+              if (!resp.ok) {
+                const data = await resp.json().catch(() => ({}));
+                alert(data.message || 'Falha ao gerar planilha.');
+                return;
+              }
+              const blob = await resp.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              const filename = resp.headers.get('content-disposition')?.split('filename=')[1]?.replace(/\"/g, '') || 'planilha.csv';
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+            } catch (err) {
+              console.error('[PATRI] Export list error', err);
+              alert('Falha ao gerar planilha.');
+            }
+          },
+          handleBulkDrop(event) {
+            this.bulkImportDragging = false;
+            const fileInput = document.getElementById('bulk-import-file');
+            const files = event?.dataTransfer?.files;
+            if (fileInput && files && files.length > 0) {
+              fileInput.files = files;
+              this.onBulkFileSelected({ target: fileInput });
+            }
+          },
+          onBulkFileSelected(event) {
+            const files = event?.target?.files || event?.dataTransfer?.files;
+            if (!files || files.length === 0) return;
+            this.bulkImportFileName = files[0]?.name || '';
+          },
+          async submitBulkImport(event) {
+            const form = event?.target;
+            if (!form) return;
+            this.bulkImportLoading = true;
+            this.bulkImportError = '';
+            this.bulkImportOutput = '';
+
+            const formData = new FormData(form);
+
+            try {
+              const resp = await fetch("{{ route('patrimonios.bulk-update.import') }}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                  'X-CSRF-TOKEN': this.csrf(),
+                  'Accept': 'application/json',
+                },
+              });
+              const data = await resp.json().catch(() => ({}));
+              if (!resp.ok) {
+                if (resp.status === 422 && data.errors) {
+                  this.bulkImportError = Object.values(data.errors).flat().join(' ');
+                } else {
+                  this.bulkImportError = data.message || 'Falha ao processar planilha.';
+                }
+                return;
+              }
+              this.bulkImportOutput = data.output || 'Processamento concluido.';
+              if (window.ajaxFetchPatrimonios) {
+                window.ajaxFetchPatrimonios();
+              }
+            } catch (err) {
+              console.error('[PATRI] Bulk import error', err);
+              this.bulkImportError = 'Falha ao enviar planilha.';
+            } finally {
+              this.bulkImportLoading = false;
+            }
           },
           abrirAtribuir() {
             this.atribuirTermoModalOpen = true;
@@ -1532,6 +2000,7 @@
     </style>
   @endpush
 </x-app-layout>
+
 
 
 

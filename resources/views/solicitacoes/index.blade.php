@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12" x-data="solicitacaoBemsIndex()">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             @if(session('success'))
                 <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert">
@@ -59,10 +59,10 @@
                         </form>
 
                         <div>
-                            <a href="{{ route('solicitacoes-bens.create') }}" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+                            <button type="button" @click="openCreateModal" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
                                 <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
                                 <span>Nova solicitacao</span>
-                            </a>
+                            </button>
                         </div>
                     </div>
 
@@ -126,4 +126,258 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal para criar solicitacao -->
+    <div
+        x-data="solicitacaoBemsIndex()"
+        class="w-full"
+    >
+        <!-- Overlay Background -->
+        <div
+            x-show="formModalOpen"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            x-cloak
+            class="fixed inset-0 z-[60] bg-black/60 dark:bg-black/80 p-3 sm:p-6"
+            @click="if(!formModalLoading) closeFormModal()"
+        ></div>
+
+        <!-- Loading Screen -->
+        <div
+            x-show="formModalOpen && formModalLoading"
+            x-transition:leave="transition ease-out duration-300"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            x-cloak
+            class="fixed inset-0 z-[70] flex items-center justify-center pointer-events-none"
+        >
+            <div class="flex flex-col items-center gap-6">
+                <div class="relative w-20 h-20">
+                    <svg class="w-full h-full animate-spin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" style="color: rgb(209, 213, 219);"></circle>
+                        <path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" style="color: rgb(99, 102, 241);"></path>
+                    </svg>
+                </div>
+                <div class="text-center">
+                    <h3 class="text-xl font-semibold text-white mb-2">Carregando...</h3>
+                    <p class="text-gray-300 text-sm">Preparando o formulário</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Principal -->
+        <div
+            x-show="formModalOpen && !formModalLoading"
+            x-cloak
+            class="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-6 pointer-events-none"
+        >
+            <div
+                x-show="formModalOpen && !formModalLoading"
+                x-transition:enter="transition ease-out duration-500 delay-300"
+                x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+                class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl h-auto max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col min-h-0 pointer-events-auto"
+                @click.self="closeFormModal"
+            >
+                <div class="flex items-center justify-between px-4 sm:px-6 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white" x-text="formModalTitle"></h3>
+                        <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400" x-text="formModalSubtitle" x-show="formModalSubtitle"></p>
+                    </div>
+                    <button type="button" @click="closeFormModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">×</button>
+                </div>
+                <div class="relative flex-1 min-h-0 overflow-hidden">
+                    <div id="solicitacao-form-modal-body" class="h-full min-h-0 overflow-y-auto overscroll-contain"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+        <script>
+            function renderSolicitacaoModalContent(html, target) {
+                if (!target) return;
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const scripts = Array.from(doc.querySelectorAll('script'));
+                scripts.forEach((script) => script.remove());
+                target.innerHTML = doc.body.innerHTML;
+                scripts.forEach((original) => {
+                    const script = document.createElement('script');
+                    if (original.type) {
+                        script.type = original.type;
+                    }
+                    if (original.src) {
+                        script.src = original.src;
+                        script.async = false;
+                    } else {
+                        script.text = original.textContent || '';
+                    }
+                    document.body.appendChild(script);
+                });
+            }
+
+            function bindSolicitacaoModalHandlers(root, onClose, onSubmit) {
+                if (!root) return;
+                root.querySelectorAll('[data-modal-close]').forEach((btn) => {
+                    btn.addEventListener('click', () => onClose());
+                });
+                root.querySelectorAll('form[data-modal-form]').forEach((form) => {
+                    if (form.dataset.modalBound === 'true') return;
+                    form.dataset.modalBound = 'true';
+                    form.addEventListener('submit', (event) => {
+                        event.preventDefault();
+                        onSubmit(form);
+                    });
+                });
+            }
+
+            function solicitacaoBemsIndex() {
+                return {
+                    formModalOpen: false,
+                    formModalLoading: false,
+                    formModalTitle: '',
+                    formModalSubtitle: '',
+                    formModalMode: null,
+                    formModalId: null,
+
+                    csrf() {
+                        return document.querySelector('meta[name=csrf-token]')?.content || '';
+                    },
+
+                    openCreateModal() {
+                        this.openFormModal('create');
+                    },
+
+                    openFormModal(mode, id = null) {
+                        const modalBody = document.getElementById('solicitacao-form-modal-body');
+                        if (!modalBody) return;
+                        if (mode === 'edit' && !id) return;
+
+                        this.formModalMode = mode;
+                        this.formModalId = id;
+                        this.formModalTitle = mode === 'create' ? 'Nova Solicitacao de Bens' : 'Editar Solicitacao';
+                        this.formModalSubtitle = mode === 'create'
+                            ? 'Crie uma nova solicitacao de bens.'
+                            : 'Atualize os dados da solicitacao.';
+                        this.formModalOpen = true;
+                        this.formModalLoading = true;
+
+                        const baseUrl = mode === 'create'
+                            ? "{{ route('solicitacoes-bens.create') }}"
+                            : "{{ url('solicitacoes-bens') }}/" + encodeURIComponent(id) + "/edit";
+                        const url = baseUrl + (baseUrl.includes('?') ? '&' : '?') + 'modal=1';
+
+                        fetch(url, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'text/html',
+                            },
+                        })
+                            .then((resp) => {
+                                if (!resp.ok) {
+                                    throw new Error(`HTTP ${resp.status}`);
+                                }
+                                return resp.text();
+                            })
+                            .then((html) => {
+                                this.applyFormModalHtml(html);
+                            })
+                            .catch((err) => {
+                                console.error('[SOLICITACAO] Modal fetch error', err);
+                                modalBody.innerHTML = '<div class="p-6 text-sm text-red-600">Falha ao carregar formulario.</div>';
+                            })
+                            .finally(() => {
+                                this.formModalLoading = false;
+                            });
+                    },
+
+                    closeFormModal() {
+                        this.formModalOpen = false;
+                        this.formModalLoading = false;
+                        this.formModalTitle = '';
+                        this.formModalSubtitle = '';
+                        this.formModalMode = null;
+                        this.formModalId = null;
+                        const modalBody = document.getElementById('solicitacao-form-modal-body');
+                        if (modalBody) {
+                            modalBody.innerHTML = '';
+                        }
+                    },
+
+                    applyFormModalHtml(html) {
+                        const modalBody = document.getElementById('solicitacao-form-modal-body');
+                        if (!modalBody) return;
+                        renderSolicitacaoModalContent(html, modalBody);
+                        if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+                            window.Alpine.initTree(modalBody);
+                        }
+                        bindSolicitacaoModalHandlers(
+                            modalBody,
+                            () => this.closeFormModal(),
+                            (form) => this.submitModalForm(form)
+                        );
+                    },
+
+                    async submitModalForm(form) {
+                        if (!form) return;
+                        this.formModalLoading = true;
+                        const formData = new FormData(form);
+                        const method = (form.getAttribute('method') || 'POST').toUpperCase();
+
+                        try {
+                            const resp = await fetch(form.action, {
+                                method,
+                                body: formData,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'text/html',
+                                },
+                            });
+                            const contentType = resp.headers.get('content-type') || '';
+                            if (resp.status === 422) {
+                                const html = await resp.text();
+                                this.applyFormModalHtml(html);
+                                return;
+                            }
+                            if (contentType.includes('application/json')) {
+                                const data = await resp.json().catch(() => ({}));
+                                if (data.redirect) {
+                                    window.location.href = data.redirect;
+                                    return;
+                                }
+                            }
+                            // ✅ SUCESSO: Fechar modal e recarregar página
+                            this.closeFormModal();
+                            window.location.reload();
+                        } catch (err) {
+                            console.error('[SOLICITACAO] Modal submit error', err);
+                            alert('Falha ao salvar solicitacao.');
+                        } finally {
+                            this.formModalLoading = false;
+                        }
+                    }
+                };
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                // Habilitar escape para fechar o modal
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        const alpine = document.querySelector('[x-data*="solicitacaoBemsIndex"]')?.__x?.$.data;
+                        if (alpine && alpine.formModalOpen) {
+                            alpine.closeFormModal();
+                        }
+                    }
+                });
+            });
+        </script>
+    @endpush
 </x-app-layout>
