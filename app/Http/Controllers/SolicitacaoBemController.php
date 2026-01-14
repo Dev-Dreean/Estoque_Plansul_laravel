@@ -82,7 +82,7 @@ class SolicitacaoBemController extends Controller
 
         $solicitacao = null;
 
-        DB::transaction(function () use ($validated, $user, $uf, &$solicitacao) {
+        DB::transaction(function () use ($validated, $user, $uf, $matricula, $observacao, &$solicitacao) {
             $solicitacao = SolicitacaoBem::create([
                 'solicitante_id' => $user?->getAuthIdentifier(),
                 'solicitante_nome' => trim((string) $validated['solicitante_nome']),

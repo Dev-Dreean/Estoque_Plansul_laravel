@@ -80,24 +80,23 @@ class PatrimonioBulkController extends Controller
 
         $rows = $patrimonios->map(function ($p) {
             return [
-                'NUPATRIMONIO' => $p->NUPATRIMONIO,
-                'CDLOCAL' => $p->CDLOCAL,
-                'CDPROJETO' => $p->CDPROJETO,
-                'DEPATRIMONIO' => $p->DEPATRIMONIO,
-                'SITUACAO' => $p->SITUACAO,
+                'Nº PATRIMONIO' => $p->NUPATRIMONIO,
+                'CONF.' => $p->FLCONFERIDO,
+                'Nº OS' => $p->NUMOF,
+                'DESC.' => $p->DEPATRIMONIO,
+                'COD. OBJ.' => $p->CODOBJETO,
+                'OBS.' => $p->DEHISTORICO,
+                'PESO' => $p->PESO,
+                'DIM.' => $p->TAMANHO,
+                'PROJ.' => $p->CDPROJETO,
+                'LOCAL FIS.' => $p->CDLOCAL,
+                'COD. TERMO' => $p->NMPLANTA,
                 'MARCA' => $p->MARCA,
                 'MODELO' => $p->MODELO,
-                'NUSERIE' => $p->NUSERIE,
-                'CDLOCALINTERNO' => $p->CDLOCALINTERNO,
-                'DTAQUISICAO' => $p->DTAQUISICAO,
-                'DTBAIXA' => $p->DTBAIXA,
-                'DTGARANTIA' => $p->DTGARANTIA,
-                'DEHISTORICO' => $p->DEHISTORICO,
-                'NUMOF' => $p->NUMOF,
-                'CODOBJETO' => $p->CODOBJETO,
-                'NMPLANTA' => $p->NMPLANTA,
-                'PESO' => $p->PESO,
-                'TAMANHO' => $p->TAMANHO,
+                'SIT.' => $p->SITUACAO,
+                'MAT. RESP.' => $p->CDMATRFUNCIONARIO,
+                'DT AQUIS.' => $p->DTAQUISICAO,
+                'DT BAIXA' => $p->DTBAIXA,
             ];
         })->values()->all();
 
@@ -105,7 +104,7 @@ class PatrimonioBulkController extends Controller
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
-        $fileName = 'patrimonios_para_alteracao_' . now()->format('Ymd_His') . '.xlsx';
+        $fileName = 'Modelo_gerado_patrimonio_' . now()->format('d_m_y') . '.xlsx';
         $path = $dir . DIRECTORY_SEPARATOR . $fileName;
 
         SimpleExcelWriter::create($path)->addRows($rows);
@@ -115,6 +114,26 @@ class PatrimonioBulkController extends Controller
 
     public function downloadTemplate(string $tipo, Request $request)
     {
+        if ($tipo === 'lista') {
+            $dir = storage_path('app/temp');
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+
+            $fileName = 'modelo_Patrimonio_' . now()->format('d_m_y') . '.xlsx';
+            $path = $dir . DIRECTORY_SEPARATOR . $fileName;
+
+            SimpleExcelWriter::create($path)->addRows([
+                ["N\xC2\xBA PATRIMONIO" => '', ' ' => '<- PREENCHA A COLUNA A COM OS Nº PARA BUSCAR MAIS ITENS'],
+            ]);
+
+            return response()->download($path, $fileName, [
+                'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+                'Pragma' => 'no-cache',
+                'Expires' => '0',
+            ])->deleteFileAfterSend(true);
+        }
+
         $fileName = self::TEMPLATE_MAP[$tipo] ?? null;
         if (!$fileName) {
             return $this->templateErrorResponse($request, 'Tipo de template invalido.', 404);
@@ -125,7 +144,13 @@ class PatrimonioBulkController extends Controller
             return $this->templateErrorResponse($request, 'Template nao encontrado.', 404);
         }
 
-        return response()->download($path, $fileName);
+        $downloadName = 'modelo_Patrimonio_' . now()->format('d_m_y') . '.xlsx';
+
+        return response()->download($path, $downloadName, [
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
     }
 
     private function parseListaPatrimonios(string $lista, $arquivo = null): array

@@ -264,22 +264,22 @@
                 <p class="text-sm text-emerald-900 dark:text-emerald-100">
                   A <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">atualizacao em massa</span> permite mudar varios patrimonios de uma vez.
                 </p>
-                <div class="mt-4 grid grid-cols-3 gap-4 min-w-[720px]" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;">
-                  <div class="rounded-lg border border-emerald-200 dark:border-emerald-700 bg-transparent p-4">
+                <div class="mt-4 grid grid-cols-3 gap-3 min-w-[520px]" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.75rem;">
+                  <div class="rounded-lg border border-emerald-200 dark:border-emerald-700 bg-transparent p-3">
                     <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
                       <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">1</span>
-                      <p class="text-sm font-semibold">Baixe o modelo</p>
+                      <p class="text-sm font-semibold">Gere a planilha</p>
                     </div>
-                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Use <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Baixar modelo</span>.</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Use <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Buscar patrimonios</span> para gerar a planilha.</p>
                   </div>
-                  <div class="rounded-lg border border-emerald-200 dark:border-emerald-700 bg-transparent p-4">
+                  <div class="rounded-lg border border-emerald-200 dark:border-emerald-700 bg-transparent p-3">
                     <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
                       <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">2</span>
                       <p class="text-sm font-semibold">Preencha o que quiser</p>
                     </div>
-                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Coloque o <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">numero do patrimonio</span> e altere so o necessario.</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Coloque o <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">numero do patrimonio</span> e altere so o necessario. Em <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Conferido</span> use <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">S</span> ou <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">N</span>.</p>
                   </div>
-                  <div class="rounded-lg border border-emerald-200 dark:border-emerald-700 bg-transparent p-4">
+                  <div class="rounded-lg border border-emerald-200 dark:border-emerald-700 bg-transparent p-3">
                     <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
                       <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">3</span>
                       <p class="text-sm font-semibold">Envie e simule</p>
@@ -288,21 +288,6 @@
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-4">
-              <a
-                href="{{ route('patrimonios.bulk-update.template', ['tipo' => 'import']) }}"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold"
-                @click.prevent="downloadBulkTemplate('import')"
-              >
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M12 3a1 1 0 0 1 1 1v9.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42L11 13.59V4a1 1 0 0 1 1-1z"></path>
-                  <path d="M5 19a1 1 0 0 1 1-1h12a1 1 0 0 1 0 2H6a1 1 0 0 1-1-1z"></path>
-                </svg>
-                Baixar modelo
-              </a>
-              <span class="text-xs text-gray-500 dark:text-gray-400">Formato: XLSX</span>
             </div>
 
             <form class="space-y-5" @submit.prevent="submitBulkImport($event)" enctype="multipart/form-data">
@@ -339,10 +324,7 @@
             </form>
 
             <template x-if="bulkImportOutput">
-              <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-                <p class="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-2">Resultado</p>
-                <pre class="text-xs whitespace-pre-wrap text-gray-800 dark:text-gray-100" x-text="bulkImportOutput"></pre>
-              </div>
+              <div class="hidden"></div>
             </template>
 
             <template x-if="bulkImportError">
@@ -384,27 +366,27 @@
                   <p class="text-sm text-orange-900 dark:text-orange-100">
                     <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Buscar patrimonios</span> preenche os dados para voce. Assim, voce so edita o que precisar.
                   </p>
-                  <div class="mt-4 grid grid-cols-3 gap-4 min-w-[720px]" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;">
-                  <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-4">
+                  <div class="mt-4 grid grid-cols-3 gap-3 min-w-[520px]" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.75rem;">
+                  <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-3">
                     <div class="flex items-center gap-2 text-orange-600 dark:text-orange-300">
                       <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">1</span>
                       <p class="text-sm font-semibold">Baixe a planilha</p>
                     </div>
                     <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Clique em <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Baixar planilha de numeros</span>.</p>
                   </div>
-                  <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-4">
+                  <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-3">
                     <div class="flex items-center gap-2 text-orange-600 dark:text-orange-300">
                       <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">2</span>
                       <p class="text-sm font-semibold">Preencha os numeros</p>
                     </div>
                     <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Coloque um <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">numero de patrimonio</span> por linha.</p>
                   </div>
-                  <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-4">
+                  <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-3">
                     <div class="flex items-center gap-2 text-orange-600 dark:text-orange-300">
                       <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">3</span>
                       <p class="text-sm font-semibold">Envie aqui</p>
                     </div>
-                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Anexe a planilha no campo abaixo e clique em <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Gerar planilha completa</span>.</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Anexe a planilha no campo abaixo e clique em <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Gerar planilha completa</span>. Na planilha final, ajuste <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Conferido</span> com <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">S</span> ou <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">N</span>.</p>
                   </div>
                   </div>
                 </div>
@@ -481,6 +463,66 @@
           </div>
           <div class="w-48 h-1 bg-gray-700 rounded-full overflow-hidden">
             <div class="h-full bg-gradient-to-r from-indigo-500 via-blue-500 to-indigo-500 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        x-show="bulkImportResultOpen"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        x-cloak
+        class="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+        @click="bulkImportResultOpen = false"
+      >
+        <div class="w-full max-w-3xl max-h-[85vh] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-5 space-y-4 overflow-hidden" @click.stop>
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Processamento concluido</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Resumo do que foi alterado.</p>
+            </div>
+            <button type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none" @click="bulkImportResultOpen = false">x</button>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm" x-show="!bulkImportError">
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
+              <p class="text-xs text-gray-500 dark:text-gray-400">Processados</p>
+              <p class="text-base font-semibold text-gray-900 dark:text-gray-100" x-text="bulkImportResult?.processed ?? '-'"></p>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
+              <p class="text-xs text-gray-500 dark:text-gray-400">Atualizados</p>
+              <p class="text-base font-semibold text-gray-900 dark:text-gray-100" x-text="bulkImportResult?.updated ?? '-'"></p>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
+              <p class="text-xs text-gray-500 dark:text-gray-400">Ignorados</p>
+              <p class="text-base font-semibold text-gray-900 dark:text-gray-100" x-text="bulkImportResult?.skipped ?? '-'"></p>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
+              <p class="text-xs text-gray-500 dark:text-gray-400">Erros</p>
+              <p class="text-base font-semibold text-gray-900 dark:text-gray-100" x-text="bulkImportResult?.errors ?? '-'"></p>
+            </div>
+          </div>
+          <div class="text-sm text-gray-700 dark:text-gray-200" x-show="bulkImportResult?.dryRun && !bulkImportError">
+            Modo <span class="font-semibold">Simular</span> ativo: nenhuma alteracao foi salva.
+          </div>
+          <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg p-3 text-sm text-red-700 dark:text-red-200" x-show="bulkImportError" x-text="bulkImportError"></div>
+          <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
+            <p class="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-2">Linhas</p>
+            <div class="max-h-[45vh] overflow-y-auto space-y-2 text-sm">
+              <template x-for="(line, idx) in (bulkImportResult?.lines || [])" :key="idx">
+                <div class="flex items-start gap-2">
+                  <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-[11px] font-semibold text-gray-600 dark:text-gray-300" x-text="idx + 1"></span>
+                  <p class="text-gray-800 dark:text-gray-100" x-text="line"></p>
+                </div>
+              </template>
+              <p class="text-gray-500 dark:text-gray-400" x-show="!bulkImportResult?.lines?.length">Nenhum detalhe adicional.</p>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" class="px-4 py-2 rounded-md text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white" @click="bulkImportResultOpen = false">Fechar</button>
           </div>
         </div>
       </div>
@@ -1339,6 +1381,8 @@
           bulkModalMode: 'import',
           bulkImportLoading: false,
           bulkImportOutput: '',
+          bulkImportResult: null,
+          bulkImportResultOpen: false,
           bulkImportError: '',
           bulkImportDragging: false,
           bulkImportFileName: '',
@@ -1428,6 +1472,8 @@
             this.bulkModalMode = mode;
             this.bulkImportModalOpen = true;
             this.bulkImportOutput = '';
+            this.bulkImportResult = null;
+            this.bulkImportResultOpen = false;
             this.bulkImportError = '';
             this.bulkImportLoading = false;
             this.bulkImportFileName = '';
@@ -1443,6 +1489,8 @@
             this.bulkImportModalOpen = false;
             this.bulkModalMode = 'import';
             this.bulkImportOutput = '';
+            this.bulkImportResult = null;
+            this.bulkImportResultOpen = false;
             this.bulkImportError = '';
             this.bulkImportDragging = false;
             this.bulkImportFileName = '';
@@ -1468,9 +1516,14 @@
             const type = tipo === 'lista' ? 'lista' : 'import';
             this.bulkImportError = '';
             this.bulkListError = '';
-            const templateUrl = "{{ route('patrimonios.bulk-update.template', ['tipo' => '__TIPO__']) }}".replace('__TIPO__', encodeURIComponent(type));
+            const baseUrl = "{{ route('patrimonios.bulk-update.template', ['tipo' => '__TIPO__']) }}".replace('__TIPO__', encodeURIComponent(type));
+            const templateUrl = `${baseUrl}?t=${Date.now()}`;
+            const now = new Date();
+            const pad = (v) => String(v).padStart(2, '0');
+            const stamp = `${pad(now.getDate())}_${pad(now.getMonth() + 1)}_${String(now.getFullYear()).slice(-2)}`;
             try {
               const resp = await fetch(templateUrl, {
+                cache: 'no-store',
                 headers: {
                   'X-CSRF-TOKEN': this.csrf(),
                   'Accept': 'application/json, application/octet-stream',
@@ -1496,7 +1549,7 @@
               a.href = url;
               const disposition = resp.headers.get('content-disposition') || '';
               const match = disposition.match(/filename="?([^"]+)"?/);
-              a.download = match ? match[1] : (type === 'lista' ? 'patrimonios_lista_template.xlsx' : 'patrimonios_bulk_update_template.xlsx');
+              a.download = match ? match[1] : `modelo_Patrimonio_${stamp}.xlsx`;
               document.body.appendChild(a);
               a.click();
               a.remove();
@@ -1532,7 +1585,10 @@
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              const filename = resp.headers.get('content-disposition')?.split('filename=')[1]?.replace(/\"/g, '') || 'planilha.csv';
+              const now = new Date();
+              const pad = (v) => String(v).padStart(2, '0');
+              const stamp = `${pad(now.getDate())}_${pad(now.getMonth() + 1)}_${String(now.getFullYear()).slice(-2)}`;
+              const filename = resp.headers.get('content-disposition')?.split('filename=')[1]?.replace(/\"/g, '') || `Modelo_gerado_patrimonio_${stamp}.xlsx`;
               a.download = filename;
               document.body.appendChild(a);
               a.click();
@@ -1563,6 +1619,9 @@
             this.bulkImportLoading = true;
             this.bulkImportError = '';
             this.bulkImportOutput = '';
+            this.bulkImportResult = null;
+            this.bulkImportResultOpen = false;
+            this.bulkImportModalOpen = false;
 
             const formData = new FormData(form);
 
@@ -1582,18 +1641,72 @@
                 } else {
                   this.bulkImportError = data.message || 'Falha ao processar planilha.';
                 }
+                this.bulkImportResultOpen = true;
                 return;
               }
               this.bulkImportOutput = data.output || 'Processamento concluido.';
+              this.bulkImportResult = this.parseBulkImportOutput(this.bulkImportOutput);
+              this.bulkImportResultOpen = true;
               if (window.ajaxFetchPatrimonios) {
                 window.ajaxFetchPatrimonios();
               }
             } catch (err) {
               console.error('[PATRI] Bulk import error', err);
               this.bulkImportError = 'Falha ao enviar planilha.';
+              this.bulkImportResultOpen = true;
             } finally {
               this.bulkImportLoading = false;
             }
+          },
+          parseBulkImportOutput(text) {
+            if (!text) {
+              return { processed: 0, updated: 0, skipped: 0, errors: 0, dryRun: false, backup: '', lines: [] };
+            }
+            const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+            const result = {
+              processed: 0,
+              updated: 0,
+              skipped: 0,
+              errors: 0,
+              dryRun: false,
+              backup: '',
+              lines: [],
+            };
+            lines.forEach((line) => {
+              if (line.startsWith('Processados:')) {
+                result.processed = Number(line.replace('Processados:', '').trim()) || 0;
+                return;
+              }
+              if (line.startsWith('Atualizados:')) {
+                result.updated = Number(line.replace('Atualizados:', '').trim()) || 0;
+                return;
+              }
+              if (line.startsWith('Ignorados:')) {
+                result.skipped = Number(line.replace('Ignorados:', '').trim()) || 0;
+                return;
+              }
+              if (line.startsWith('Erros:')) {
+                result.errors = Number(line.replace('Erros:', '').trim()) || 0;
+                return;
+              }
+              if (line.startsWith('Backup:')) {
+                result.backup = line.replace('Backup:', '').trim();
+                return;
+              }
+              if (line.toLowerCase().includes('dry-run')) {
+                result.dryRun = true;
+                result.lines.push(line);
+                return;
+              }
+              if (line.startsWith('Linha') || line.startsWith('Linha')) {
+                result.lines.push(line);
+                return;
+              }
+              if (line) {
+                result.lines.push(line);
+              }
+            });
+            return result;
           },
           abrirAtribuir() {
             this.atribuirTermoModalOpen = true;

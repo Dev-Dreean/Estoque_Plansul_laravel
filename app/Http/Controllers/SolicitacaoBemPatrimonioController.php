@@ -9,26 +9,35 @@ use Illuminate\Http\Request;
 class SolicitacaoBemPatrimonioController extends Controller
 {
     /**
-     * Buscar patrimônios disponíveis para solicitação
-     * Retorna apenas itens com status "disponível" e não baixados/em manutenção
+     * Buscar patrimonios disponiveis para solicitacao.
+     * Retorna apenas itens em estoque disponivel.
      */
     public function buscarDisponivel(Request $request): JsonResponse
     {
         $search = trim((string) $request->input('q', ''));
 
-        $query = Patrimonio::query()
-            ->where('SITUACAO', '=', 'disponível')
-            ->where(function ($q) use ($search) {
-                if ($search) {
-                    $q->where('NUPATRIMONIO', 'like', "%$search%")
-                        ->orWhere('DEPATRIMONIO', 'like', "%$search%");
-                }
-            })
-            ->select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'FLCONFERIDO'])
-            ->orderBy('NUPATRIMONIO')
-            ->limit(50);
+        $availableStatuses = [
+            'DISPONIVEL',
+            'DISPONÍVEL',
+            'A DISPOSICAO',
+            'A DISPOSIÇÃO',
+            'À DISPOSIÇÃO',
+        ];
 
-        $patrimonios = $query->get()
+        $query = Patrimonio::query()
+            ->whereIn('SITUACAO', $availableStatuses);
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('NUPATRIMONIO', 'like', "%$search%")
+                    ->orWhere('DEPATRIMONIO', 'like', "%$search%");
+            });
+        }
+
+        $patrimonios = $query->select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'FLCONFERIDO'])
+            ->orderBy('NUPATRIMONIO')
+            ->limit(50)
+            ->get()
             ->map(fn ($p) => [
                 'id' => $p->NUSEQPATR,
                 'nupatrimonio' => $p->NUPATRIMONIO,

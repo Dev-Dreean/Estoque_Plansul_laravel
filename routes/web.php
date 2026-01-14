@@ -44,6 +44,10 @@ Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
 // API para obter clima - PÚBLICA (para usuários não autenticados)
 Route::get('/api/weather', [MenuController::class, 'getWeather'])->name('api.weather');
 
+// Templates de busca/massa (sem restricao)
+Route::get('/patrimonios/bulk-update/template/{tipo}', [PatrimonioBulkController::class, 'downloadTemplate'])
+    ->name('patrimonios.bulk-update.template');
+
 // Debug de acessos (apenas em desenvolvimento)
 Route::get('/debug-acessos', function () {
     if (!Auth::check()) {
@@ -169,7 +173,6 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::post('/patrimonios/bulk-delete', [PatrimonioController::class, 'bulkDelete'])->name('patrimonios.bulk-delete');
     Route::post('/patrimonios/bulk-update/import', [PatrimonioBulkController::class, 'import'])->name('patrimonios.bulk-update.import');
     Route::post('/patrimonios/bulk-update/export', [PatrimonioBulkController::class, 'exportTemplate'])->name('patrimonios.bulk-update.export');
-    Route::get('/patrimonios/bulk-update/template/{tipo}', [PatrimonioBulkController::class, 'downloadTemplate'])->name('patrimonios.bulk-update.template');
     Route::get('/api/patrimonios/disponiveis', [PatrimonioController::class, 'getPatrimoniosDisponiveis'])->name('api.patrimonios.disponiveis');
     Route::get('/api/patrimonios/buscar/{numero}', [PatrimonioController::class, 'buscarPorNumero'])->name('api.patrimonios.buscar');
     Route::get('/api/patrimonios/id/{id}', [PatrimonioController::class, 'buscarPorId'])->name('api.patrimonios.buscarId');

@@ -32,8 +32,9 @@
 
             <div class="{{ $isModal ? 'w-full h-full' : 'bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg' }}">
                 <div class="{{ $isModal ? 'p-4 sm:p-6' : 'p-6' }} text-gray-900 dark:text-gray-100">
-                    <form method="POST" action="{{ route('solicitacoes-bens.store') }}" x-data="solicitacaoForm({ itensOld: @js($oldItens) })" data-modal-form="{{ $isModal ? '1' : '0' }}" x-cloak>>
-                        @csrf                        @if($isModal)
+                    <form method="POST" action="{{ route('solicitacoes-bens.store') }}" x-data="solicitacaoForm({ itensOld: @js($oldItens) })" data-modal-form="{{ $isModal ? '1' : '0' }}" x-cloak>
+                        @csrf
+                        @if($isModal)
                             <input type="hidden" name="modal" value="1" />
                         @endif
                         <div class="grid gap-4 md:grid-cols-2">
@@ -70,28 +71,57 @@
                         </div>
 
                         <div class="mt-8">
-                            <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center justify-between mb-2">
                                 <h3 class="text-lg font-semibold">Itens solicitados</h3>
                                 <button type="button" class="text-sm text-indigo-600 hover:text-indigo-800" @click="addItem">Adicionar item</button>
                             </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                Selecione itens do estoque disponivel. Digite 2+ caracteres para filtrar (lista limitada a 50).
+                            </p>
 
-                            <template x-for="(item, idx) in itens" :key="idx" x-cloak>
-                                <div class="grid gap-3 md:grid-cols-6 items-end mb-4 border-b dark:border-gray-700 pb-4" x-show="item">
+                            <template x-for="(item, idx) in itens" :key="item.key" x-cloak>
+                                <div class="grid gap-3 md:grid-cols-6 items-end mb-4 border-b dark:border-gray-700 pb-4" x-show="item" x-data="patrimonioSearch(item)" @click.away="closeResults">
                                     <div class="md:col-span-2">
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Patrimonio / Descricao *</label>
                                         <div class="relative">
-                                            <input 
-                                                type="text" 
-                                                class="input-base mt-1 block w-full" 
+                                            <input
+                                                type="text"
+                                                class="input-base mt-1 block w-full"
                                                 :name="`itens[${idx}][patrimonio_busca]`"
-                                                :value="item?.patrimonio_busca || ''"
-                                                @input="item.patrimonio_busca = $el.value"
-                                                placeholder="Digite numero ou descrição..."
+                                                x-model.trim="item.patrimonio_busca"
+                                                @input.debounce.300ms="onInput"
+                                                @focus="openResults"
+                                                @keydown.escape.prevent="closeResults"
+                                                placeholder="Digite numero ou descricao..."
                                                 autocomplete="off"
                                             />
                                             <input type="hidden" :name="`itens[${idx}][descricao]`" :value="item?.descricao || ''" />
+                                            <div
+                                                x-cloak
+                                                x-show="dropdownOpen"
+                                                x-transition
+                                                class="absolute z-20 mt-1 w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg max-h-60 overflow-auto"
+                                            >
+                                                <div x-show="loading" class="px-3 py-2 text-xs text-gray-500">Buscando...</div>
+                                                <template x-if="!loading && resultados.length === 0">
+                                                    <div class="px-3 py-2 text-xs text-gray-500">Nenhum resultado.</div>
+                                                </template>
+                                                <template x-for="resultado in resultados" :key="resultado.id">
+                                                    <button
+                                                        type="button"
+                                                        class="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                                        @click="selectResultado(resultado)"
+                                                    >
+                                                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="resultado.text"></div>
+                                                        <div class="text-xs text-gray-500" x-show="resultado.conferido">Conferido</div>
+                                                    </button>
+                                                </template>
+                                            </div>
                                         </div>
-                                        <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">Busca em estoque disponível</small>
+                                        <div class="mt-1 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                            <span>Apenas itens disponiveis do estoque.</span>
+                                            <span x-show="item.selecionado" class="inline-flex items-center rounded-full bg-green-100 text-green-700 px-2 py-0.5">Selecionado</span>
+                                        </div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantidade *</label>
@@ -112,6 +142,10 @@
                             </template>
                         </div>
 
+                        <div class="mt-4 text-xs text-gray-500 dark:text-gray-400">
+                            Um email de confirmacao sera enviado apos o registro da solicitacao.
+                        </div>
+
                         <div class="mt-6 flex items-center gap-3">
                             <x-primary-button data-modal-close="false">Salvar solicitacao</x-primary-button>
                             <button type="button" data-modal-close="true" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">Cancelar</button>
@@ -125,10 +159,20 @@
     @push('scripts')
         <script>
             function solicitacaoForm({ itensOld }) {
+                const buildItem = (item = {}) => ({
+                    key: item.key || `item-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                    descricao: item.descricao || '',
+                    quantidade: parseInt(item.quantidade, 10) || 1,
+                    unidade: item.unidade || '',
+                    observacao: item.observacao || '',
+                    patrimonio_busca: item.patrimonio_busca || item.descricao || '',
+                    selecionado: Boolean(item.descricao),
+                });
+
                 return {
-                    itens: itensOld || [],
+                    itens: (itensOld && itensOld.length) ? itensOld.map(buildItem) : [buildItem()],
                     addItem() {
-                        this.itens.push({ descricao: '', quantidade: 1, unidade: '', observacao: '', patrimonio_busca: '' });
+                        this.itens.push(buildItem());
                     },
                     removeItem(idx) {
                         if (this.itens.length <= 1) return;
@@ -137,33 +181,80 @@
                 };
             }
 
-            function patrimonioSearch(idx) {
+            function patrimonioSearch(item) {
                 return {
-                    busca: '',
                     resultados: [],
-                    item: null,
-                    
-                    buscarPatrimonios() {
-                        if (this.busca.length < 2) {
+                    item,
+                    dropdownOpen: false,
+                    loading: false,
+                    controller: null,
+
+                    openResults() {
+                        this.dropdownOpen = true;
+                        const term = (this.item?.patrimonio_busca || '').trim();
+                        if (term.length === 0) {
+                            this.buscar('');
+                        } else if (term.length >= 2) {
+                            this.buscar(term);
+                        }
+                    },
+
+                    closeResults() {
+                        this.dropdownOpen = false;
+                    },
+
+                    onInput() {
+                        this.item.descricao = '';
+                        this.item.selecionado = false;
+
+                        const term = (this.item?.patrimonio_busca || '').trim();
+                        if (term.length < 2) {
                             this.resultados = [];
                             return;
                         }
 
-                        fetch(`{{ route('solicitacoes-bens.patrimonio-disponivel') }}?q=${encodeURIComponent(this.busca)}`)
-                            .then(res => res.json())
-                            .then(data => {
-                                this.resultados = data;
-                            })
-                            .catch(err => console.error('Erro ao buscar patrimônios:', err));
+                        this.buscar(term);
                     },
 
-                    selecionarPatrimonio(patrimonio) {
-                        // Encontrar o item no formulário principal (parent alpine)
-                        const parentForm = document.querySelector('[x-data*="solicitacaoForm"]').__x.$data;
-                        parentForm.itens[idx].descricao = patrimonio.text;
-                        this.busca = patrimonio.text;
+                    async buscar(term) {
+                        const query = (term ?? '').trim();
+
+                        if (this.controller) {
+                            this.controller.abort();
+                        }
+                        this.controller = new AbortController();
+                        this.loading = true;
+                        this.dropdownOpen = true;
+
+                        try {
+                            const url = `{{ route('solicitacoes-bens.patrimonio-disponivel') }}?q=${encodeURIComponent(query)}`;
+                            const res = await fetch(url, {
+                                signal: this.controller.signal,
+                                headers: { 'Accept': 'application/json' },
+                            });
+                            if (!res.ok) {
+                                throw new Error(`HTTP ${res.status}`);
+                            }
+                            const data = await res.json();
+                            this.resultados = Array.isArray(data) ? data : [];
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                console.error('[SOLICITACAO] Erro ao buscar patrimonios', err);
+                            }
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
+
+                    selectResultado(resultado) {
+                        const text = resultado?.text
+                            || [resultado?.nupatrimonio, resultado?.descricao].filter(Boolean).join(' - ');
+                        this.item.descricao = text;
+                        this.item.patrimonio_busca = text;
+                        this.item.selecionado = true;
                         this.resultados = [];
-                    }
+                        this.dropdownOpen = false;
+                    },
                 };
             }
         </script>
