@@ -6078,9 +6078,9 @@ class PatrimonioController extends Controller
 
 
 
-            // Usar o MESMO códigodigo do local base (nãoo incrementar)
+            // Usar o MESMO codigo do local base (nao incrementar)
 
-            // MÃºltiplos locais podem ter o mesmo CDLOCAL mas nomes diferentes
+            // Multiplos locais podem ter o mesmo CDLOCAL mas nomes diferentes
 
             $novoCdlocal = $cdlocalBase;
 
@@ -6090,39 +6090,15 @@ class PatrimonioController extends Controller
 
             try {
 
-                // 1. Criar na tabela tabfant (cadastro de projetos/nomes de locais)
-
-                // Nota: tabfant nãoo tem CDLOCAL, apenas LOCAL (nome do local)
-
-                // IMPORTANTE: Como tabfant tem incrementing=false, precisamos gerar o ID manualmente
-
-                $proximoId = (Tabfant::max('id') ?? 10000000) + 1;
-
-
-
-                $novoTabfant = Tabfant::create([
-
-                    'id' => $proximoId,  // â CRÃTICO: Especificar ID manualmente!
-
-                    'LOCAL' => $nomeLocal,  // Nome do local
-
-                    'CDPROJETO' => $cdprojeto,
-
-                    'NOMEPROJETO' => $projeto->NOMEPROJETO,
-
-                ]);
-
-
-
-                // 2. Criar na tabela locais_projeto (vÃ­nculo entre códigodigo local e projeto)
+                // Criar na tabela locais_projeto vinculando ao projeto existente
 
                 $localProjeto = LocalProjeto::create([
 
-                    'cdlocal' => $novoCdlocal,  // Código do local
+                    'cdlocal' => $novoCdlocal,
 
                     'delocal' => $nomeLocal,
 
-                    'tabfant_id' => $novoTabfant->id,
+                    'tabfant_id' => $projeto->id,
 
                     'flativo' => true,
 
@@ -6136,7 +6112,7 @@ class PatrimonioController extends Controller
 
                 Log::info('Local criado com sucesso', [
 
-                    'tabfant_id' => $novoTabfant->id,
+                    'tabfant_id' => $projeto->id,
 
                     'local_projeto_id' => $localProjeto->id,
 
@@ -6152,9 +6128,11 @@ class PatrimonioController extends Controller
 
                     'cdlocal' => $novoCdlocal,
 
-                    'local' => [
+                    'id' => $localProjeto->id,
 
-                        'id' => $novoTabfant->id,
+                    'data' => [
+
+                        'id' => $localProjeto->id,
 
                         'cdlocal' => $novoCdlocal,
 
@@ -6162,9 +6140,29 @@ class PatrimonioController extends Controller
 
                         'delocal' => $nomeLocal,
 
-                        'CDPROJETO' => $cdprojeto,
+                        'CDPROJETO' => $projeto->CDPROJETO,
 
                         'NOMEPROJETO' => $projeto->NOMEPROJETO,
+
+                        'tabfant_id' => $projeto->id,
+
+                    ],
+
+                    'local' => [
+
+                        'id' => $localProjeto->id,
+
+                        'cdlocal' => $novoCdlocal,
+
+                        'LOCAL' => $nomeLocal,
+
+                        'delocal' => $nomeLocal,
+
+                        'CDPROJETO' => $projeto->CDPROJETO,
+
+                        'NOMEPROJETO' => $projeto->NOMEPROJETO,
+
+                        'tabfant_id' => $projeto->id,
 
                     ]
 
