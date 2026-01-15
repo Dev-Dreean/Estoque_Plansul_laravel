@@ -50,6 +50,37 @@
                     class="text-gray-700 dark:text-gray-300">Por Situação</span></label>
               </div>
               <!-- Campo de busca de descrição quando tipo descricao -->
+              <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-300 mb-3">Filtros adicionais</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label for="relatorio_cdprojeto" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Projeto (codigo)</label>
+                    <input type="text" id="relatorio_cdprojeto" name="cdprojeto" list="relatorio_projetos" placeholder="Ex: 101" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
+                  </div>
+                  <div>
+                    <label for="relatorio_cdlocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Local fisico (codigo)</label>
+                    <input type="text" id="relatorio_cdlocal" name="cdlocal" list="relatorio_locais" placeholder="Ex: 2002" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
+                  </div>
+                  <div>
+                    <label for="relatorio_conferido" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Conferido</label>
+                    <select id="relatorio_conferido" name="conferido" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                      <option value="">Todos</option>
+                      <option value="S">Verificado</option>
+                      <option value="N">Nao verificado</option>
+                    </select>
+                  </div>
+                </div>
+                <datalist id="relatorio_projetos">
+                  @foreach(($projetos ?? collect()) as $p)
+                    <option value="{{ $p->codigo }}">{{ $p->codigo }} - {{ $p->descricao }}</option>
+                  @endforeach
+                </datalist>
+                <datalist id="relatorio_locais">
+                  @foreach(($locais ?? collect()) as $l)
+                    <option value="{{ $l->codigo }}">{{ $l->codigo }} - {{ $l->descricao }}</option>
+                  @endforeach
+                </datalist>
+              </div>
               <div x-show="tipoRelatorio === 'descricao'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div class="md:col-span-2">
@@ -275,6 +306,26 @@
             <span> → <strong x-text="(reportFilters.data_inicio_aquisicao || reportFilters.data_inicio_cadastro) + ' a ' + (reportFilters.data_fim_aquisicao || reportFilters.data_fim_cadastro)"></strong></span>
           </template>
         </p>
+        <div class="mt-2 flex flex-wrap gap-2 text-xs">
+          <template x-if="reportFilters.cdprojeto">
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-slate-200 dark:border-gray-600">
+              <span class="font-semibold">Projeto</span>
+              <span x-text="reportFilters.cdprojeto"></span>
+            </span>
+          </template>
+          <template x-if="reportFilters.cdlocal">
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-slate-200 dark:border-gray-600">
+              <span class="font-semibold">Local</span>
+              <span x-text="reportFilters.cdlocal"></span>
+            </span>
+          </template>
+          <template x-if="reportFilters.conferido">
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-slate-200 dark:border-gray-600">
+              <span class="font-semibold">Conferido</span>
+              <span x-text="formatConferido(reportFilters.conferido)"></span>
+            </span>
+          </template>
+        </div>
         <div class="flex-grow overflow-y-auto">
           <table class="w-full table-fixed text-[11px] text-left text-gray-500 dark:text-gray-400">
             <thead
@@ -307,18 +358,21 @@
                 </template>
 
                 <!-- Colunas fixas (sempre aparecem depois) -->
-                <th scope="col" class="px-6 py-3">Nº Patrimônio</th>
-                <th scope="col" class="px-6 py-3">Descrição</th>
+                <th scope="col" class="px-6 py-3">N? Patrim?nio</th>
+                <th scope="col" class="px-6 py-3">Descri??o</th>
+                {{-- Colunas extras para contexto do relatorio --}}
+                <th scope="col" class="px-6 py-3">Projeto</th>
                 <th scope="col" class="px-6 py-3">Modelo</th>
-                <th scope="col" class="px-6 py-3 text-xs">Situação</th>
-                <th scope="col" class="px-6 py-3">Local Físico</th>
+                <th scope="col" class="px-6 py-3 text-xs">Situa??o</th>
+                <th scope="col" class="px-6 py-3">Conferido</th>
+                <th scope="col" class="px-6 py-3">Local F?sico</th>
                 <th scope="col" class="px-6 py-3">Cadastrador</th>
               </tr>
             </thead>
             <tbody>
               <template x-if="reportData.length === 0">
                 <tr>
-                  <td colspan="10" class="px-6 py-4 text-center text-lg">
+                  <td colspan="9" class="px-6 py-4 text-center text-lg">
                     Nenhum patrimônio encontrado para os filtros aplicados.
                   </td>
                 </tr>
@@ -372,10 +426,15 @@
                   <td class="px-6 py-4" x-text="patrimonio.NUPATRIMONIO || 'N/A'"></td>
                   <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                     x-text="patrimonio.DEPATRIMONIO"></td>
+                  <td class="px-6 py-4" x-text="formatProjeto(patrimonio)"></td>
                   <td class="px-6 py-4" x-text="patrimonio.MODELO || 'N/A'"></td>
                   <td class="px-6 py-4" x-text="patrimonio.SITUACAO"></td>
+                  <td class="px-6 py-4" x-text="formatConferido(patrimonio.FLCONFERIDO)"></td>
                   <td class="px-6 py-4"
                     x-text="patrimonio.local ? patrimonio.local.LOCAL : 'SISTEMA'"></td>
+                  <td class="px-6 py-4"
+                    x-text="patrimonio.creator ? patrimonio.creator.NOMEUSER : 'SISTEMA'">
+                  </td>
                   <td class="px-6 py-4"
                     x-text="patrimonio.creator ? patrimonio.creator.NOMEUSER : 'SISTEMA'">
                   </td>

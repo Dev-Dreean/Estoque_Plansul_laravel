@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\Patrimonio;
 use App\Models\Tabfant;
 use App\Models\Funcionario;
+use App\Models\LocalProjeto;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Spatie\SimpleExcel\SimpleExcelWriter;
@@ -50,6 +51,9 @@ class RelatorioController extends Controller
                 'oc_busca' => 'nullable|string',
                 'uf_busca' => 'nullable|string|size:2', // UF com 2 caracteres
                 'situacao_busca' => 'nullable|string',
+                'cdprojeto' => 'nullable|string',
+                'cdlocal' => 'nullable|string',
+                'conferido' => 'nullable|string|in:S,N,1,0',
                 'data_inicio_aquisicao' => 'nullable|date',
                 'data_fim_aquisicao' => 'nullable|date',
                 'data_inicio_cadastro' => 'nullable|date',
@@ -152,6 +156,8 @@ class RelatorioController extends Controller
                     break;
             }
 
+            $this->applyExtraFilters($query, $request);
+
             $resultados = $query->get();
             return response()->json([
                 'resultados' => $resultados,
@@ -178,6 +184,9 @@ class RelatorioController extends Controller
             'data_fim_cadastro' => 'nullable|date',
             'projeto_busca' => 'nullable|string',
             'local_id' => 'nullable|integer|exists:tabfant,id',
+            'cdprojeto' => 'nullable|string',
+            'cdlocal' => 'nullable|string',
+            'conferido' => 'nullable|string|in:S,N,1,0',
             'oc_busca' => 'nullable|string',
             'uf_busca' => 'nullable|string|size:2',
             'situacao_busca' => 'nullable|string',
@@ -249,7 +258,54 @@ class RelatorioController extends Controller
                 $query->where('SITUACAO', $situacao)->orderBy('NUPATRIMONIO');
                 break;
         }
+        $this->applyExtraFilters($query, $request);
         return $query;
+    }
+
+    private function applyExtraFilters($query, Request $request): void
+    {
+        if ($request->filled('cdprojeto')) {
+            $val = trim((string) $request->input('cdprojeto'));
+            if ($val !== '') {
+                $locaisProjeto = collect();
+                try {
+                    $projeto = Tabfant::where('CDPROJETO', $val)->first(['id']);
+                    if ($projeto) {
+                        $locaisProjeto = LocalProjeto::where('tabfant_id', $projeto->id)
+                            ->pluck('cdlocal');
+                    }
+                } catch (\Throwable $e) {
+                    // Silencia falhas de lookup de locais sem quebrar o relatorio
+                }
+
+                $query->where(function ($q) use ($val, $locaisProjeto) {
+                    $q->where('patr.CDPROJETO', $val);
+                    if ($locaisProjeto->isNotEmpty()) {
+                        $q->orWhereIn('patr.CDLOCAL', $locaisProjeto->all());
+                    }
+                });
+            }
+        }
+
+        if ($request->filled('cdlocal')) {
+            $val = trim((string) $request->input('cdlocal'));
+            if ($val !== '') {
+                $query->where('patr.CDLOCAL', $val);
+            }
+        }
+
+        if ($request->filled('conferido')) {
+            $val = strtoupper(trim((string) $request->input('conferido')));
+            if ($val !== '') {
+                $expr = "UPPER(COALESCE(NULLIF(TRIM(FLCONFERIDO), ''), 'N'))";
+                $truthyDb = "('S','1','T','Y')";
+                if (in_array($val, ['S', '1'], true)) {
+                    $query->whereRaw("{$expr} IN {$truthyDb}");
+                } elseif (in_array($val, ['N', '0'], true)) {
+                    $query->whereRaw("{$expr} NOT IN {$truthyDb}");
+                }
+            }
+        }
     }
 
     public function exportarExcel(Request $request)

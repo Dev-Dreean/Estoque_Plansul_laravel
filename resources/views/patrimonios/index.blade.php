@@ -1934,6 +1934,28 @@
             };
             return colors[tipo || this.tipoRelatorio] || 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300';
           },
+          formatConferido(value) {
+            const val = String(value ?? '').trim().toUpperCase();
+            if (['S', '1', 'SIM', 'TRUE', 'T', 'Y', 'YES', 'ON'].includes(val)) {
+              return 'Verificado';
+            }
+            return 'Nao verificado';
+          },
+          formatProjeto(patrimonio) {
+            if (!patrimonio) return 'N/A';
+            const direto = patrimonio.CDPROJETO || null;
+            const viaProjeto = patrimonio.projeto ? (patrimonio.projeto.CDPROJETO || null) : null;
+            const viaLocal = patrimonio.local && patrimonio.local.projeto ? (patrimonio.local.projeto.CDPROJETO || null) : null;
+            const codigo = direto || viaProjeto || viaLocal;
+            const nomeProjeto = patrimonio.projeto
+              ? (patrimonio.projeto.NOMEPROJETO || patrimonio.projeto.NMPROJETO || null)
+              : (patrimonio.local && patrimonio.local.projeto
+                ? (patrimonio.local.projeto.NOMEPROJETO || patrimonio.local.projeto.NMPROJETO || null)
+                : null);
+            if (!codigo && !nomeProjeto) return 'N/A';
+            if (codigo && nomeProjeto) return `${codigo} - ${nomeProjeto}`;
+            return codigo || nomeProjeto;
+          },
           openDelete(id, name) {
             this.deleteItemId = id;
             this.deleteItemName = name || 'este patrimonio';
