@@ -23,7 +23,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\RelatorioBensController;
 use App\Http\Controllers\DuplicatePatrimonioController;
 use App\Http\Controllers\RelatorioDownloadController;
-use App\Http\Controllers\BenchmarkController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,9 +44,6 @@ Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
 
 // API para obter clima - PÚBLICA (para usuários não autenticados)
 Route::get('/api/weather', [MenuController::class, 'getWeather'])->name('api.weather');
-
-// Rota de benchmark/teste de performance
-Route::get('/api/benchmark/performance', [BenchmarkController::class, 'test'])->name('api.benchmark.performance');
 
 // Templates de busca/massa (sem restricao)
 Route::get('/patrimonios/bulk-update/template/{tipo}', [PatrimonioBulkController::class, 'downloadTemplate'])
