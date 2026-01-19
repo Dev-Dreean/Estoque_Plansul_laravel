@@ -525,7 +525,7 @@
           x-model="userSearch"
           @focus="abrirDropdownUsuarios()"
           @blur.debounce.150ms="showUserDropdown=false"
-          @input.debounce.300ms="(function(){ const t=String(userSearch||'').trim(); if(t.length>0){ showUserDropdown=true; buscarUsuarios(); } else { showUserDropdown=false; usuarios=[]; highlightedUserIndex=-1; } })()"
+          @input.debounce.600ms="(function(){ const t=String(userSearch||'').trim(); if(t.length>0){ showUserDropdown=true; buscarUsuarios(); } else { showUserDropdown=false; usuarios=[]; highlightedUserIndex=-1; } })()"
           @keydown.down.prevent="navegarUsuarios(1)"
           @keydown.up.prevent="navegarUsuarios(-1)"
           @keydown.enter.prevent="selecionarUsuarioEnter()"
@@ -927,6 +927,7 @@
       loadingUsers: false,
       showUserDropdown: false,
       userSelectedName: '',
+      userFetchController: null, // ⚡ AbortController para cancelar requisições anteriores
       // Autocomplete Descrição (antes chamado de Código)
       descricaoSearch: (config.old?.DEOBJETO ?? (config.patrimonio?.DEOBJETO || config.patrimonio?.DEPATRIMONIO)) || '',
       codigosLista: [],
@@ -1350,9 +1351,25 @@
           this.highlightedUserIndex = -1;
           return;
         }
+        
+        // ⚡ Cancelar requisição anterior se existir
+        if (this.userFetchController) {
+          this.userFetchController.abort();
+        }
+        
+        // ⚡ Criar novo AbortController
+        this.userFetchController = new AbortController();
         this.loadingUsers = true;
+        
         try {
-          const resp = await fetch(`/api/funcionarios/pesquisar?q=${encodeURIComponent(termo)}`, { credentials: 'same-origin' });
+          const resp = await fetch(
+            `/api/funcionarios/pesquisar?q=${encodeURIComponent(termo)}`, 
+            { 
+              credentials: 'same-origin',
+              signal: this.userFetchController.signal
+            }
+          );
+          
           if (resp.ok) {
             this.usuarios = await resp.json();
             this.highlightedUserIndex = this.usuarios.length > 0 ? 0 : -1;
@@ -1361,11 +1378,17 @@
             this.highlightedUserIndex = -1;
           }
         } catch (e) {
+          // ⚡ Ignorar erros de abort (requisição cancelada propositalmente)
+          if (e.name === 'AbortError') {
+            console.log('🚫 Busca cancelada (nova requisição iniciada)');
+            return;
+          }
           console.error('Erro ao buscar usuarios:', e);
           this.usuarios = [];
           this.highlightedUserIndex = -1;
         } finally {
           this.loadingUsers = false;
+          this.userFetchController = null;
         }
       },
 
