@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\RelatorioBensController;
 use App\Http\Controllers\DuplicatePatrimonioController;
+use App\Http\Controllers\RelatorioDownloadController;
 
 /*
 |--------------------------------------------------------------------------
@@ -239,6 +240,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
 
     // Solicitacoes de Bens (T:1010)
     Route::resource('solicitacoes-bens', SolicitacaoBemController::class)
+        ->parameters(['solicitacoes-bens' => 'solicitacao'])
         ->only(['index', 'create', 'store', 'show', 'update'])
         ->middleware('tela.access:1010');
 
@@ -310,6 +312,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         Route::post('/cadastro-tela/show-form/{nome}', [\App\Http\Controllers\CadastroTelaController::class, 'showForm'])->name('cadastro-tela.showForm');
         Route::post('/cadastro-tela/gerar-vincular/{nome}', [\App\Http\Controllers\CadastroTelaController::class, 'gerarVincular'])->name('cadastro-tela.gerarVincular');
         Route::post('/cadastro-tela/vincular-todas', [\App\Http\Controllers\CadastroTelaController::class, 'vincularTodas'])->name('cadastro-tela.vincularTodas');
+
+        // 🚀 Relatório de Funcionários (streaming em tempo real)
+        Route::get('/relatorio/funcionarios/download', [\App\Http\Controllers\RelatorioDownloadController::class, 'download'])->name('relatorio.funcionarios.download');
     });
 
     // Navegador lateral beta (projeto paralelo)
