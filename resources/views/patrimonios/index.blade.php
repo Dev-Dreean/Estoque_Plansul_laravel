@@ -1262,9 +1262,7 @@
           pendingConferido = pendingConferido === 'S' ? null : 'S';
           updateConferidoToggle();
         });
-        bulkConferidoNo?.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
+        bulkConferidoNo?.addEventListener('click', () => {
           if (selectedIds.size === 0) return;
           pendingConferido = pendingConferido === 'N' ? null : 'N';
           updateConferidoToggle();
@@ -1335,17 +1333,11 @@
           });
         };
         
-        bulkDelete?.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          applyBulkDelete();
-        });
+        bulkDelete?.addEventListener('click', applyBulkDelete);
         
         // ✅ Modificar o listener do botão YES para detectar operação
         const originalConfirmYes = bulkConfirmYes?.onclick;
-                bulkConfirmYes?.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
+                bulkConfirmYes?.addEventListener('click', () => {
           if (pendingDeleteIds.size > 0) {
             closeConfirmModal();
             runBulkDelete();
@@ -1356,21 +1348,9 @@
           }
         });
         
-        bulkClear?.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          clearSelection();
-        });
-        bulkConfirmCancel?.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          closeConfirmModal();
-        });
-        bulkConfirmClose?.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          closeConfirmModal();
-        });
+        bulkClear?.addEventListener('click', clearSelection);
+        bulkConfirmCancel?.addEventListener('click', closeConfirmModal);
+        bulkConfirmClose?.addEventListener('click', closeConfirmModal);
         logTags('initial');
       });
       function patrimoniosIndex() {
@@ -1392,6 +1372,7 @@
           atribuirTermoModalOpen: false,
           desatribuirTermoModalOpen: false,
           resultadosModalOpen: false,
+          reportLoading: false,
           deleteModalOpen: false,
           deleteItemId: null,
           deleteItemName: '',
@@ -1837,6 +1818,7 @@
           gerarRelatorio(event) {
             event?.preventDefault?.();
             this.isLoading = true;
+            this.reportLoading = true;
             this.relatorioErrors = {};
             this.relatorioGlobalError = null;
             const formData = new FormData(event.target);
@@ -1866,12 +1848,16 @@
                 this.reportData = data.resultados || [];
                 this.reportFilters = data.filtros || {};
                 this.relatorioModalOpen = false;
-                this.$nextTick(() => { this.resultadosModalOpen = true; });
+                this.$nextTick(() => { 
+                  this.resultadosModalOpen = true;
+                  this.reportLoading = false;
+                });
               })
               .catch((err) => {
                 if (err.message !== 'validation') {
                   console.error('Erro ao gerar relatorio', err);
                 }
+                this.reportLoading = false;
               })
               .finally(() => { this.isLoading = false; });
           },

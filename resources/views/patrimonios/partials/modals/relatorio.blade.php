@@ -50,9 +50,18 @@
                     class="text-gray-700 dark:text-gray-300">Por Situação</span></label>
               </div>
               <!-- Campo de busca de descrição quando tipo descricao -->
-              <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-300 mb-3">Filtros adicionais</p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div x-data="{ open: false }" @click.outside="open = false" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div class="flex items-center justify-between gap-3">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-300">Filtros adicionais</p>
+                  <button type="button" @click="open = !open" :aria-expanded="open.toString()" class="inline-flex items-center justify-center w-7 h-7 rounded-md border border-gray-600 dark:border-gray-600 bg-gray-600 dark:bg-gray-800 hover:bg-gray-700 dark:hover:bg-gray-700 text-white transition focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                    <span class="sr-only">Expandir filtros adicionais</span>
+                  </button>
+                </div>
+                <div x-cloak x-show="open" x-transition class="mt-3">
+                  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
                   <div>
                     <label for="relatorio_cdprojeto" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Projeto (codigo)</label>
                     <input type="text" id="relatorio_cdprojeto" name="cdprojeto" list="relatorio_projetos" placeholder="Ex: 101" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
@@ -68,6 +77,27 @@
                       <option value="S">Verificado</option>
                       <option value="N">Nao verificado</option>
                     </select>
+                  </div>
+                  <div>
+                    <label for="situacao_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Situacao</label>
+                    <select id="situacao_busca" name="situacao_busca" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                      <option value="">Todas</option>
+                      <option value="A DISPOSICAO">A disposicao</option>
+                      <option value="BAIXA">Baixa</option>
+                      <option value="MANUTENCAO">Manutencao</option>
+                      <option value="CONSERTO">Conserto</option>
+                      <option value="EM USO">Em uso</option>
+                      <option value="EMPRESTADO">Emprestado</option>
+                      <option value="DANIFICADO">Danificado</option>
+                      <option value="INATIVO">Inativo</option>
+                      <option value="DESAPARECIDO">Desaparecido</option>
+                    </select>
+                    <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.situacao_busca" x-text="relatorioErrors.situacao_busca"></p>
+                  </div>
+                  <div>
+                    <label for="relatorio_voltagem" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Voltagem</label>
+                    <input type="text" id="relatorio_voltagem" name="voltagem" placeholder="Ex: 110V, 220V" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
+                  </div>
                   </div>
                 </div>
                 <datalist id="relatorio_projetos">
@@ -100,7 +130,7 @@
               <div x-show="tipoRelatorio === 'projeto'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div class="md:col-span-2">
-                    <label for="projeto_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Códigos de Projeto (separar por vírgula)</label>
+                    <label for="projeto_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Codigos de Projeto (separar por virgula, opcional)</label>
                     <input type="text" id="projeto_busca" name="projeto_busca" placeholder="Ex: 101, 202, 303" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
                   </div>
                   <div>
@@ -224,23 +254,6 @@
                   <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.uf_busca" x-text="relatorioErrors.uf_busca"></p>
                 </div>
               </div>
-              <!-- Campo Situação quando tipo situacao -->
-              <div x-show="tipoRelatorio === 'situacao'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
-                <div>
-                  <label for="situacao_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Situação do Patrimônio</label>
-                  <select id="situacao_busca" name="situacao_busca" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                    <option value="">-- Selecione uma Situação --</option>
-                    <option value="EM USO">Em Uso</option>
-                    <option value="CONSERTO">Conserto</option>
-                    <option value="BAIXADO">Baixado</option>
-                    <option value="EMPRESTADO">Emprestado</option>
-                    <option value="DANIFICADO">Danificado</option>
-                    <option value="INATIVO">Inativo</option>
-                    <option value="DESAPARECIDO">Desaparecido</option>
-                  </select>
-                  <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.situacao_busca" x-text="relatorioErrors.situacao_busca"></p>
-                </div>
-              </div>
             </div>
             <div class="mt-6 flex justify-end space-x-4">
               <div class="mr-auto flex items-center">
@@ -280,7 +293,24 @@
     {{-- INÍCIO DO NOVO MODAL DE RESULTADOS --}}
     <div x-show="resultadosModalOpen" x-transition
       class="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center" style="display: none;">
-      <div @click.outside="resultadosModalOpen = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-7xl p-6 max-h-[90vh] flex flex-col">
+      <div @click.outside="resultadosModalOpen = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-7xl p-6 max-h-[90vh] flex flex-col relative">
+        
+        {{-- OVERLAY DE LOADING --}}
+        <div x-show="reportLoading" class="absolute inset-0 bg-white/70 dark:bg-gray-800/70 rounded-lg backdrop-blur-sm flex items-center justify-center z-40" style="display: none;">
+          <div class="flex flex-col items-center gap-4">
+            {{-- Spinner --}}
+            <svg class="animate-spin h-12 w-12 text-indigo-600 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            {{-- Texto --}}
+            <div class="text-center">
+              <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">Carregando Relatório</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Por favor, aguarde...</p>
+            </div>
+          </div>
+        </div>
+
         <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Resultado do Relatório</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
           <strong>Filtro:</strong> <span x-text="getFilterLabel(tipoRelatorio)"></span>
@@ -323,6 +353,18 @@
             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-slate-200 dark:border-gray-600">
               <span class="font-semibold">Conferido</span>
               <span x-text="formatConferido(reportFilters.conferido)"></span>
+            </span>
+          </template>
+          <template x-if="reportFilters.situacao_busca && tipoRelatorio !== 'situacao'">
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-slate-200 dark:border-gray-600">
+              <span class="font-semibold">Situacao</span>
+              <span x-text="reportFilters.situacao_busca"></span>
+            </span>
+          </template>
+          <template x-if="reportFilters.voltagem">
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-slate-200 dark:border-gray-600">
+              <span class="font-semibold">Voltagem</span>
+              <span x-text="reportFilters.voltagem"></span>
             </span>
           </template>
         </div>
