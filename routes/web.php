@@ -264,6 +264,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
 
         // Relatório de Funcionários (Excel)
         Route::get('/funcionarios/exportar/excel', [\App\Http\Controllers\RelatorioController::class, 'exportarFuncionariosExcel'])->name('funcionarios.exportar.excel');
+        Route::get('/funcionarios/exportar/excel', [\App\Http\Controllers\RelatorioController::class, 'exportarFuncionariosExcel'])->name('relatorios.funcionarios.exportar.excel');
     });
 
     // Rotas de Termos
