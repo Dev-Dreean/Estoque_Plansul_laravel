@@ -896,7 +896,7 @@ class PatrimonioController extends Controller
 
             'SITUACAO' => $validated['SITUACAO'],
 
-            'FLCONFERIDO' => 'S', // Novo patrimônio sempre marcado como verificado
+            'FLCONFERIDO' => $this->normalizeConferidoFlag($validated['FLCONFERIDO'] ?? null),
 
             'CDMATRFUNCIONARIO' => isset($validated['CDMATRFUNCIONARIO']) ? (int) $validated['CDMATRFUNCIONARIO'] : null,
 
@@ -1039,18 +1039,6 @@ class PatrimonioController extends Controller
         $isModal = $request->boolean('modal');
         $validatedData = [];
         $localSelecionado = null;
-
-        // 🔍 DEBUG COMPLETO: Log de todos os dados recebidos para diagnóstico 422
-        Log::info('🔍 [UPDATE START] Patrimônio 7966 - Dados completos recebidos', [
-            'patrimonio_id' => $patrimonio->NUSEQPATR,
-            'request_all' => $request->except(['_token']),
-            'patrimonio_atual' => [
-                'CDPROJETO' => $patrimonio->CDPROJETO,
-                'CDLOCAL' => $patrimonio->CDLOCAL,
-                'CDMATRFUNCIONARIO' => $patrimonio->CDMATRFUNCIONARIO,
-                'SITUACAO' => $patrimonio->SITUACAO,
-            ],
-        ]);
 
         try {
             $validatedData = $this->validatePatrimonio($request, $patrimonio);
@@ -2076,137 +2064,165 @@ class PatrimonioController extends Controller
         }
 
     }
+
+
+
     public function bulkSituacao(Request $request): JsonResponse
+
     {
+
         $request->validate([
+
             'ids' => 'required|array|min:1',
+
             'ids.*' => 'integer',
-            'situacao' => 'nullable|string|in:EM USO,CONSERTO,BAIXA,A DISPOSICAO',
-            'conferido' => 'nullable|string|in:S,N,1,0',
+
+            'situacao' => 'required|string|in:EM USO,CONSERTO,BAIXA,A DISPOSICAO'
+
         ]);
 
+
+
         $ids = collect($request->input('ids', []))
+
             ->map(fn($v) => (int) $v)
+
             ->filter()
+
             ->unique()
+
             ->values();
 
+
+
         if ($ids->isEmpty()) {
-            return response()->json(['error' => 'Nenhum patrimonio selecionado.'], 422);
+
+            return response()->json(['error' => 'Nenhum patrim?nio selecionado.'], 422);
+
         }
 
-        $situacao = $request->filled('situacao') ? strtoupper((string) $request->input('situacao')) : null;
-        $conferido = $this->normalizeConferidoFlag($request->input('conferido'));
 
-        if ($situacao === null && $conferido === null) {
-            return response()->json(['error' => 'Informe situacao ou verificacao.'], 422);
-        }
+
+        $situacao = strtoupper($request->input('situacao'));
 
         /** @var User|null $user */
+
         $user = Auth::user();
+
         if ($user && ($user->PERFIL ?? null) === User::PERFIL_CONSULTOR) {
-            return response()->json(['error' => 'Voce nao tem permissao para alterar patrimonios.'], 403);
+
+            return response()->json(['error' => 'Você não tem permissão para alterar patrimônios.'], 403);
+
         }
+
+
 
         $isAdmin = $user && $user->isAdmin();
 
-        // Usuarios com permissao total para alteracao em massa
+        
+
+        // Usuários com permissão total para alteração em massa
+
         $superUsers = ['BEATRIZ.SC', 'TIAGOP', 'BRUNO'];
+
         $isSuperUser = $user && in_array(strtoupper($user->NMLOGIN ?? ''), $superUsers, true);
 
+
+
         $patrimonios = Patrimonio::whereIn('NUSEQPATR', $ids)->get();
+
         if ($patrimonios->isEmpty()) {
-            return response()->json(['error' => 'Patrimonios nao encontrados.'], 404);
+
+            return response()->json(['error' => 'Patrim?nios n?o encontrados.'], 404);
+
         }
+
+
 
         $unauthorized = [];
+
         if (!$isAdmin && !$isSuperUser) {
+
             foreach ($patrimonios as $p) {
+
                 $isResp = (string)($user->CDMATRFUNCIONARIO ?? '') === (string)($p->CDMATRFUNCIONARIO ?? '');
+
                 $usuario = trim((string)($p->USUARIO ?? ''));
+
                 $nmLogin = trim((string)($user->NMLOGIN ?? ''));
+
                 $nmUser  = trim((string)($user->NOMEUSER ?? ''));
+
                 $isCreator = $usuario !== '' && (
+
                     strcasecmp($usuario, $nmLogin) === 0 ||
+
                     strcasecmp($usuario, $nmUser) === 0
+
                 );
+
                 if (!($isResp || $isCreator)) {
+
                     $unauthorized[] = $p->NUSEQPATR;
+
                 }
+
             }
+
         }
+
+
 
         if (!empty($unauthorized)) {
+
             return response()->json([
-                'error' => 'Voce nao tem permissao para alterar todos os itens selecionados.',
+
+                'error' => 'Voc? n?o tem permiss?o para alterar todos os itens selecionados.',
+
                 'ids_negados' => $unauthorized,
+
             ], 403);
+
         }
 
-        $updatedSituacao = 0;
-        if ($situacao !== null) {
-            $updatedSituacao = Patrimonio::whereIn('NUSEQPATR', $ids)->update([
-                'SITUACAO' => $situacao,
-                'DTOPERACAO' => now(),
-            ]);
-        }
 
-        $updatedConferido = 0;
-        if ($conferido !== null) {
-            foreach ($patrimonios as $patrimonio) {
-                $oldConferido = $this->normalizeConferidoFlag($patrimonio->FLCONFERIDO) ?? 'N';
-                if ($oldConferido === $conferido) {
-                    continue;
-                }
 
-                $patrimonio->FLCONFERIDO = $conferido;
-                $patrimonio->DTOPERACAO = now();
-                $patrimonio->save();
-                $updatedConferido++;
+        $updated = Patrimonio::whereIn('NUSEQPATR', $ids)->update([
 
-                try {
-                    $coAutor = null;
-                    $actorMat = Auth::user()->CDMATRFUNCIONARIO ?? null;
-                    $ownerMat = $patrimonio->CDMATRFUNCIONARIO;
-                    if (!empty($actorMat) && !empty($ownerMat) && $actorMat != $ownerMat) {
-                        $coAutor = User::where('CDMATRFUNCIONARIO', $ownerMat)->value('NMLOGIN');
-                    }
+            'SITUACAO' => $situacao,
 
-                    HistoricoMovimentacao::create([
-                        'TIPO' => 'conferido',
-                        'CAMPO' => 'FLCONFERIDO',
-                        'VALOR_ANTIGO' => $oldConferido,
-                        'VALOR_NOVO' => $conferido,
-                        'NUPATR' => $patrimonio->NUPATRIMONIO,
-                        'CODPROJ' => $patrimonio->CDPROJETO,
-                        'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
-                        'CO_AUTOR' => $coAutor,
-                        'DTOPERACAO' => now(),
-                    ]);
-                } catch (\Throwable $e) {
-                    Log::warning('Falha ao gravar historico (conferido em massa)', [
-                        'patrimonio' => $patrimonio->NUSEQPATR,
-                        'erro' => $e->getMessage(),
-                    ]);
-                }
-            }
-        }
+            'DTOPERACAO' => now(),
 
-        Log::info('Bulk atualizacao em massa', [
-            'user' => $user->NMLOGIN ?? null,
-            'situacao' => $situacao,
-            'conferido' => $conferido,
-            'ids_count' => $ids->count(),
-            'atualizados_situacao' => $updatedSituacao,
-            'atualizados_conferido' => $updatedConferido,
         ]);
+
+
+
+        Log::info('✏️ Bulk atualização de situação', [
+
+            'user' => $user->NMLOGIN ?? null,
+
+            'situacao' => $situacao,
+
+            'ids_count' => $ids->count(),
+
+            'atualizados' => $updated,
+
+        ]);
+
+
 
         return response()->json([
+
             'success' => true,
-            'atualizados_situacao' => $updatedSituacao,
-            'atualizados_conferido' => $updatedConferido,
+
+            'atualizados' => $updated,
+
         ]);
+
     }
+
+
+
     /**
 
      * ✅ Deletar patrimonios em massa
@@ -5451,41 +5467,34 @@ class PatrimonioController extends Controller
 
 
 
-        // 3) Garantir existência do registro em OBJETOPATR (se código informado)
-        // ⚠️ TOLERÂNCIA LEGADO: Permitir que patrimônios mantenham códigos inexistentes
-        //    se o código NÃO foi alterado (dados legados do KingHost)
+        // 3) Garantir existÃªncia do registro em OBJETOPATR (se código informado)
+
         $objeto = null;
         if ($codigo !== null) {
             $objeto = ObjetoPatr::find($codigo);
 
             if (!$objeto) {
-                // Verificar se o código já existia no patrimônio (dado legado)
-                $patrimonioExistente = $patrimonio ?? null;
-                $codigoOriginal = $patrimonioExistente?->CODOBJETO ?? null;
-                
-                // Se código não mudou OU não tem patrimônio referência: tolerar dado legado
-                if ($codigoOriginal !== null && (int)$codigoOriginal === $codigo) {
-                    Log::warning('⚠️ [LEGACY TOLERÂNCIA] Objeto inexistente mantido', [
-                        'CODOBJETO' => $codigo,
-                        'patrimonio_id' => $patrimonioExistente?->NUSEQPATR,
-                        'motivo' => 'Código não foi alterado - mantendo dado legado do KingHost',
-                    ]);
-                    // Permitir continuar com objeto NULL (será validado depois)
-                } else {
-                    // Código NOVO ou ALTERADO: exigir descrição para criar objeto
-                    $descricao = trim((string) $request->input('DEOBJETO', ''));
 
-                    if ($descricao === '') {
-                        throw ValidationException::withMessages([
-                            'DEOBJETO' => 'Informe a descrição do novo código de objeto. (Código não encontrado: ' . $codigo . ')',
-                        ]);
-                    }
+                $descricao = trim((string) $request->input('DEOBJETO', ''));
 
-                    $objeto = ObjetoPatr::create([
-                        'NUSEQOBJ' => $codigo,
-                        'DEOBJETO' => $descricao,
+                if ($descricao === '') {
+
+                    throw ValidationException::withMessages([
+
+                        'DEOBJETO' => 'Informe a descrição do novo código.'
+
                     ]);
+
                 }
+
+                $objeto = ObjetoPatr::create([
+
+                    'NUSEQOBJ' => $codigo,
+
+                    'DEOBJETO' => $descricao,
+
+                ]);
+
             }
         }
 
@@ -6911,6 +6920,4 @@ class PatrimonioController extends Controller
 
 
 }
-
-
 

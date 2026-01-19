@@ -51,6 +51,7 @@ class RelatorioController extends Controller
                 'oc_busca' => 'nullable|string',
                 'uf_busca' => 'nullable|string|size:2', // UF com 2 caracteres
                 'situacao_busca' => 'nullable|string',
+                'voltagem' => 'nullable|string|max:50',
                 'cdprojeto' => 'nullable|string',
                 'cdlocal' => 'nullable|string',
                 'conferido' => 'nullable|string|in:S,N,1,0',
@@ -81,8 +82,8 @@ class RelatorioController extends Controller
             if ($tipo === 'oc' && !$request->filled('oc_busca')) {
                 $erros['oc_busca'] = 'Informe o número da OC.';
             }
-            if ($tipo === 'projeto' && !$request->filled('projeto_busca')) {
-                $erros['projeto_busca'] = 'Informe ao menos um código de projeto.';
+            if ($tipo === 'projeto' && !$request->filled('projeto_busca') && !$request->filled('cdprojeto')) {
+                $erros['projeto_busca'] = 'Informe ao menos um código de projeto (lista ou filtro adicional).';
             }
             if ($tipo === 'numero' && $request->filled('numero_busca') && !is_numeric($request->input('numero_busca'))) {
                 $erros['numero_busca'] = 'Número inválido.';
@@ -150,9 +151,8 @@ class RelatorioController extends Controller
                         ->orderBy('patr.NUPATRIMONIO');
                     break;
                 case 'situacao':
-                    // Filtra por situação do patrimônio
-                    $situacao = strtoupper($request->input('situacao_busca'));
-                    $query->where('SITUACAO', $situacao)->orderBy('NUPATRIMONIO');
+                    $this->applySituacaoFilter($query, $request->input('situacao_busca'));
+                    $query->orderBy('NUPATRIMONIO');
                     break;
             }
 
@@ -190,6 +190,7 @@ class RelatorioController extends Controller
             'oc_busca' => 'nullable|string',
             'uf_busca' => 'nullable|string|size:2',
             'situacao_busca' => 'nullable|string',
+            'voltagem' => 'nullable|string|max:50',
             'numero_busca' => 'nullable|integer',
             'descricao_busca' => 'nullable|string',
             'sort_direction' => 'nullable|in:asc,desc'
@@ -236,7 +237,7 @@ class RelatorioController extends Controller
                     if ($codes) {
                         $query->whereIn('CDPROJETO', $codes);
                     }
-                } else {
+                } elseif ($request->filled('local_id')) {
                     $query->where('CDLOCAL', $validated['local_id']);
                 }
                 break;
@@ -253,9 +254,8 @@ class RelatorioController extends Controller
                     ->orderBy('patr.NUPATRIMONIO');
                 break;
             case 'situacao':
-                // Filtra por situação do patrimônio
-                $situacao = strtoupper($request->input('situacao_busca'));
-                $query->where('SITUACAO', $situacao)->orderBy('NUPATRIMONIO');
+                $this->applySituacaoFilter($query, $request->input('situacao_busca'));
+                $query->orderBy('NUPATRIMONIO');
                 break;
         }
         $this->applyExtraFilters($query, $request);
@@ -306,6 +306,56 @@ class RelatorioController extends Controller
                 }
             }
         }
+
+        if ($request->filled('situacao_busca') && $request->input('tipo_relatorio') !== 'situacao') {
+            $this->applySituacaoFilter($query, $request->input('situacao_busca'));
+        }
+
+        if ($request->filled('voltagem')) {
+            $val = strtoupper(trim((string) $request->input('voltagem')));
+            if ($val !== '') {
+                $like = '%' . $val . '%';
+                $query->where(function ($q) use ($like) {
+                    $q->whereRaw("UPPER(COALESCE(MODELO, '')) LIKE ?", [$like])
+                        ->orWhereRaw("UPPER(COALESCE(CARACTERISTICAS, '')) LIKE ?", [$like])
+                        ->orWhereRaw("UPPER(COALESCE(DEPATRIMONIO, '')) LIKE ?", [$like]);
+                });
+            }
+        }
+    }
+
+    private function applySituacaoFilter($query, ?string $raw): void
+    {
+        $situacoes = $this->normalizeSituacoes($raw);
+        if (!$situacoes) {
+            return;
+        }
+
+        $query->whereIn('SITUACAO', $situacoes);
+    }
+
+    private function normalizeSituacoes(?string $raw): array
+    {
+        if (!$raw) {
+            return [];
+        }
+
+        $map = [
+            'A DISPOSICAO' => ['A DISPOSICAO', 'DISPONIVEL'],
+            'DISPONIVEL' => ['A DISPOSICAO', 'DISPONIVEL'],
+            'BAIXA' => ['BAIXA', 'BAIXADO'],
+            'BAIXADO' => ['BAIXA', 'BAIXADO'],
+            'MANUTENCAO' => ['MANUTENCAO', 'CONSERTO'],
+            'CONSERTO' => ['MANUTENCAO', 'CONSERTO'],
+        ];
+
+        return collect(explode(',', $raw))
+            ->map(fn($value) => strtoupper(trim((string) $value)))
+            ->filter()
+            ->flatMap(fn($value) => $map[$value] ?? [$value])
+            ->unique()
+            ->values()
+            ->all();
     }
 
     public function exportarExcel(Request $request)

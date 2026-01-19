@@ -1,3 +1,10 @@
+@php
+    $isModal = request('modal') === '1';
+    $containerClass = $isModal ? 'p-4 sm:p-5' : 'py-12';
+    $wrapperClass = $isModal ? 'w-full' : 'max-w-6xl mx-auto sm:px-6 lg:px-8';
+@endphp
+
+@unless($isModal)
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
@@ -7,6 +14,7 @@
             <a href="{{ route('solicitacoes-bens.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">Voltar</a>
         </div>
     </x-slot>
+@endunless
 
     @php
         $statusColors = [
@@ -20,8 +28,8 @@
         $lookupOnInit = trim((string) $nomeOld) === '' && trim((string) $matriculaOld) !== '';
     @endphp
 
-    <div class="py-12">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+    <div class="{{ $containerClass }}">
+        <div class="{{ $wrapperClass }}">
             @if(session('success'))
                 <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert">
                     <span class="font-semibold">Sucesso:</span> {{ session('success') }}
@@ -55,6 +63,10 @@
                                 <div>
                                     <div class="text-xs text-gray-500">Setor</div>
                                     <div class="font-medium">{{ $solicitacao->setor ?? '-' }}</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500">Projeto</div>
+                                    <div class="font-medium">{{ $solicitacao->projeto?->NOMEPROJETO ?? '-' }}</div>
                                 </div>
                                 <div>
                                     <div class="text-xs text-gray-500">Local destino</div>
@@ -178,7 +190,7 @@
         </div>
     </div>
 
-    @push('scripts')
+    @if($isModal)
         <script>
             function matriculaLookup({ matriculaOld, nomeOld, lookupOnInit }) {
                 return {
@@ -225,5 +237,56 @@
                 };
             }
         </script>
-    @endpush
+    @else
+        @push('scripts')
+            <script>
+                function matriculaLookup({ matriculaOld, nomeOld, lookupOnInit }) {
+                    return {
+                        matricula: matriculaOld || '',
+                        nome: nomeOld || '',
+                        lookupOnInit: !!lookupOnInit,
+                        matriculaExiste: false,
+                        nomeBloqueado: false,
+                        initLookup() {
+                            if (this.lookupOnInit && this.matricula) {
+                                this.lookupMatricula(this.matricula);
+                            }
+                        },
+                        onMatriculaInput(e) {
+                            const val = (e?.target?.value ?? '').trim();
+                            if (val === '') {
+                                this.matriculaExiste = false;
+                                this.nomeBloqueado = false;
+                                this.nome = '';
+                            }
+                        },
+                        async onMatriculaBlur() {
+                            const mat = (this.matricula || '').trim();
+                            if (!mat) return;
+                            await this.lookupMatricula(mat);
+                        },
+                        async lookupMatricula(mat) {
+                            try {
+                                const url = `{{ route('api.usuarios.porMatricula') }}?matricula=${encodeURIComponent(mat)}`;
+                                const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                                if (!res.ok) throw new Error('Falha busca matricula');
+                                const data = await res.json();
+                                this.matriculaExiste = !!data?.exists;
+                                if (data?.exists && data?.nome) {
+                                    this.nome = data.nome;
+                                    this.nomeBloqueado = true;
+                                } else {
+                                    this.nomeBloqueado = false;
+                                }
+                            } catch (e) {
+                                console.warn('Lookup matricula falhou', e);
+                            }
+                        }
+                    };
+                }
+            </script>
+        @endpush
+    @endif
+@unless($isModal)
 </x-app-layout>
+@endunless

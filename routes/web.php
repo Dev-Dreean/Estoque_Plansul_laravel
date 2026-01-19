@@ -261,11 +261,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         Route::post('/patrimonios/exportar/csv', [\App\Http\Controllers\RelatorioController::class, 'exportarCsv'])->name('patrimonios.exportar.csv');
         Route::post('/patrimonios/exportar/pdf', [\App\Http\Controllers\RelatorioController::class, 'exportarPdf'])->name('patrimonios.exportar.pdf');
         Route::post('/patrimonios/exportar/ods', [\App\Http\Controllers\RelatorioController::class, 'exportarOds'])->name('patrimonios.exportar.ods');
-
-        // Relatório de Funcionários (Excel)
-        Route::get('/funcionarios/exportar/excel', [\App\Http\Controllers\RelatorioController::class, 'exportarFuncionariosExcel'])->name('funcionarios.exportar.excel');
-        Route::get('/funcionarios/exportar/excel', [\App\Http\Controllers\RelatorioController::class, 'exportarFuncionariosExcel'])->name('relatorios.funcionarios.exportar.excel');
     });
+
+    // Relatório de Funcionários (Excel) - FORA do grupo relatorios para manter nome exato
+    Route::get('/relatorios/funcionarios/exportar/excel', [\App\Http\Controllers\RelatorioController::class, 'exportarFuncionariosExcel'])->name('funcionarios.exportar.excel')->middleware(['auth', 'tela.access:1006']);
 
     // Rotas de Termos
     Route::prefix('termos')->name('termos.')->middleware(['can:create,App\\Models\\Patrimonio'])->group(function () {

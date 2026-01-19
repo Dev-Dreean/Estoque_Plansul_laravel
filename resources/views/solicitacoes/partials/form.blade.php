@@ -1,8 +1,9 @@
 @php
-    $containerClass = $isModal ? 'h-full overflow-y-auto bg-white dark:bg-gray-800' : 'py-12';
+    $containerClass = $isModal ? 'bg-transparent' : 'py-12';
     $innerClass = $isModal ? 'w-full' : 'max-w-5xl mx-auto px-4 sm:px-6 lg:px-8';
-    $cardClass = $isModal ? 'w-full border border-gray-200 dark:border-gray-700 rounded-lg' : 'bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg';
-    $padClass = $isModal ? 'p-4 sm:p-5' : 'p-6';
+    $cardClass = $isModal ? 'w-full border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 shadow-sm' : 'bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg';
+    $padClass = $isModal ? 'p-3 sm:p-4' : 'p-6';
+    $showStep2 = $errors->has('itens') || $errors->has('itens.0.descricao') || $errors->has('itens.0.quantidade') || $errors->has('itens.0.unidade') || $errors->has('itens.0.observacao');
 @endphp
 
 <div class="{{ $containerClass }}">
@@ -15,72 +16,70 @@
 
         <div class="{{ $cardClass }}">
             <div class="{{ $padClass }} text-gray-900 dark:text-gray-100">
-                <form method="POST" action="{{ route('solicitacoes-bens.store') }}" x-data="solicitacaoForm({ itensOld: @js($oldItens) })" data-modal-form="{{ $isModal ? '1' : '0' }}" x-cloak>
+                <form method="POST" action="{{ route('solicitacoes-bens.store') }}" x-data="solicitacaoForm({ itensOld: @js($oldItens), showStep2: @js($showStep2) })" data-modal-form="{{ $isModal ? '1' : '0' }}" x-cloak>
                     @csrf
                     @if($isModal)
                         <input type="hidden" name="modal" value="1" />
                     @endif
+                    <input type="hidden" name="solicitante_nome" value="{{ $defaultNome }}" />
+                    <input type="hidden" name="solicitante_matricula" value="{{ $defaultMatricula }}" />
+                    <input type="hidden" name="uf" value="{{ $defaultUf }}" />
                     
-<!-- SECAO 1: Solicitante -->
-                    <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
-                        <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Dados do Solicitante</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+<!-- SECAO 1: Dados da solicitacao -->
+                    <div x-show="step === 1" class="border-b border-gray-200 dark:border-gray-700 pb-3 mb-3">
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Dados da Solicitacao</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                             <div>
-                                <x-input-label for="solicitante_nome" value="Solicitante *" />
-                                <x-text-input id="solicitante_nome" name="solicitante_nome" type="text" class="mt-1 block w-full h-9 text-sm" value="{{ $defaultNome }}" required />
-                                <x-input-error :messages="$errors->get('solicitante_nome')" class="mt-1" />
+                                <x-input-label class="text-xs" for="projeto_id" value="Projeto *" />
+                                <select id="projeto_id" name="projeto_id" class="mt-1 block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" required>
+                                    <option value="">-- Selecione um projeto --</option>
+                                    @foreach($projetos as $projeto)
+                                        <option value="{{ $projeto->id }}" @selected(old('projeto_id') == $projeto->id)>
+                                            {{ $projeto->CDPROJETO }} - {{ $projeto->NOMEPROJETO }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('projeto_id')" class="mt-1" />
                             </div>
                             <div>
-                                <x-input-label for="solicitante_matricula" value="Matricula" />
-                                <x-text-input id="solicitante_matricula" name="solicitante_matricula" type="text" class="mt-1 block w-full h-9 text-sm" value="{{ $defaultMatricula }}" />
-                                <x-input-error :messages="$errors->get('solicitante_matricula')" class="mt-1" />
-                            </div>
-                            <div>
-                                <x-input-label for="uf" value="UF" />
-                                <x-text-input id="uf" name="uf" type="text" class="mt-1 block w-full h-9 text-sm uppercase" maxlength="2" value="{{ $defaultUf }}" />
-                                <x-input-error :messages="$errors->get('uf')" class="mt-1" />
-                            </div>
-                        </div>
-                    </div>
-
-<!-- SECAO 2: Destino -->
-                    <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
-                        <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Destino da Solicitacao</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                                <x-input-label for="setor" value="Setor *" />
-                                <x-text-input id="setor" name="setor" type="text" class="mt-1 block w-full h-9 text-sm" value="{{ old('setor') }}" required />
+                                <x-input-label class="text-xs" for="setor" value="Setor *" />
+                                <x-text-input id="setor" name="setor" type="text" class="mt-1 block w-full h-8 text-xs" value="{{ old('setor') }}" required />
                                 <x-input-error :messages="$errors->get('setor')" class="mt-1" />
                             </div>
                             <div>
-                                <x-input-label for="local_destino" value="Local destino *" />
-                                <x-text-input id="local_destino" name="local_destino" type="text" class="mt-1 block w-full h-9 text-sm" value="{{ old('local_destino') }}" required />
+                                <x-input-label class="text-xs" for="local_destino" value="Local destino *" />
+                                <x-text-input id="local_destino" name="local_destino" type="text" class="mt-1 block w-full h-8 text-xs" value="{{ old('local_destino') }}" required />
                                 <x-input-error :messages="$errors->get('local_destino')" class="mt-1" />
                             </div>
                         </div>
-                        <div class="mt-1">
-                            <x-input-label for="observacao" value="Observacao" />
-                            <textarea id="observacao" name="observacao" class="mt-1 block w-full border border-gray-300 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="2">{{ old('observacao') }}</textarea>
+                        <div class="mt-2">
+                            <x-input-label class="text-xs" for="observacao" value="Observacao" />
+                            <textarea id="observacao" name="observacao" class="mt-1 block w-full border border-gray-300 text-xs dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="2">{{ old('observacao') }}</textarea>
                             <x-input-error :messages="$errors->get('observacao')" class="mt-1" />
+                        </div>
+                        <div class="mt-3 flex items-center gap-3">
+                            <button type="button" class="px-4 py-2 text-xs font-semibold bg-plansul-blue hover:bg-opacity-90 text-white rounded-md" @click="nextStep()">
+                                Proxima etapa
+                            </button>
                         </div>
                     </div>
 
 <!-- SECAO 3: Item Solicitado -->
-                    <div class="pb-4 mb-4">
+                    <div x-show="step === 2" class="pb-3 mb-3">
                         <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Item Solicitado</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">
                             Selecione um item do estoque disponivel. Digite 2+ caracteres para filtrar (lista limitada a 50).
                         </p>
 
-                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-900/50" x-data="patrimonioSearch(item)" @click.away="closeResults">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-2 bg-gray-50 dark:bg-gray-900" x-data="patrimonioSearch(item)" @click.away="closeResults">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
 <!-- Campo Patrimonio/Descricao -->
                                 <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Patrimonio / Descricao *</label>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Patrimonio / Descricao *</label>
                                     <div class="relative">
                                         <input
                                             type="text"
-                                            class="w-full h-9 text-sm px-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            class="w-full h-8 text-xs px-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                             name="itens[0][patrimonio_busca]"
                                             x-model.trim="item.patrimonio_busca"
                                             @input.debounce.300ms="onInput"
@@ -108,13 +107,13 @@
                                                     class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition"
                                                     @click="selectResultado(resultado)"
                                                 >
-                                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="resultado.text"></div>
+                                                    <div class="text-xs font-medium text-gray-900 dark:text-gray-100" x-text="resultado.text"></div>
                                                     <div class="text-xs text-green-600 dark:text-green-400" x-show="resultado.conferido">Conferido</div>
                                                 </button>
                                             </template>
                                         </div>
                                     </div>
-                                    <div class="mt-1 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                                    <div class="mt-1 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                                         <span>Apenas itens disponiveis do estoque</span>
                                         <span x-show="item.selecionado" class="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2.5 py-0.5 text-xs font-medium">Selecionado</span>
                                     </div>
@@ -122,11 +121,11 @@
 
 <!-- Quantidade, Unidade, Observacao -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantidade *</label>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Quantidade *</label>
                                     <input 
                                         type="number" 
                                         min="1" 
-                                        class="w-full h-9 text-sm px-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                                        class="w-full h-8 text-xs px-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
                                         name="itens[0][quantidade]" 
                                         :value="item?.quantidade || 1" 
                                         @input="item.quantidade = parseInt($el.value) || 1" 
@@ -134,10 +133,10 @@
                                     />
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unidade</label>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Unidade</label>
                                     <input 
                                         type="text" 
-                                        class="w-full h-9 text-sm px-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                                        class="w-full h-8 text-xs px-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
                                         name="itens[0][unidade]" 
                                         :value="item?.unidade || ''" 
                                         @input="item.unidade = $el.value" 
@@ -145,10 +144,10 @@
                                     />
                                 </div>
                                 <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observação</label>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observacao</label>
                                     <input 
                                         type="text" 
-                                        class="w-full h-9 text-sm px-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                                        class="w-full h-8 text-xs px-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
                                         name="itens[0][observacao]" 
                                         :value="item?.observacao || ''" 
                                         @input="item.observacao = $el.value" 
@@ -160,9 +159,7 @@
                     </div>
 
 <!-- SECAO 4: Confirmacao e Acoes -->
-                    <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-3">Um email de confirmacao sera enviado apos o registro da solicitacao.</div>
-
+                    <div x-show="step === 2" class="border-t border-gray-200 dark:border-gray-700 pt-3">
                         <div class="flex items-center justify-start gap-3">
                             <x-primary-button data-modal-close="false">
                                 <span>Salvar Solicitacao</span>
@@ -170,7 +167,7 @@
                             <button 
                                 type="button" 
                                 data-modal-close="true" 
-                                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0 dark:focus:ring-offset-0 transition"
+                                class="px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0 dark:focus:ring-offset-0 transition"
                             >
                                 Cancelar
                             </button>
@@ -184,7 +181,7 @@
 
 @if($isModal)
     <script>
-        function solicitacaoForm({ itensOld }) {
+        function solicitacaoForm({ itensOld, showStep2 }) {
             const buildItem = (item = {}) => ({
                 key: item.key || `item-${Date.now()}-${Math.random().toString(16).slice(2)}`,
                 descricao: item.descricao || '',
@@ -196,7 +193,23 @@
             });
 
             return {
+                step: showStep2 ? 2 : 1,
                 item: (itensOld && itensOld.length) ? buildItem(itensOld[0]) : buildItem(),
+                nextStep() {
+                    const fields = ['projeto_id', 'setor', 'local_destino'];
+                    for (const id of fields) {
+                        const el = document.getElementById(id);
+                        if (!el) continue;
+                        if (!String(el.value || '').trim()) {
+                            if (typeof el.reportValidity === 'function') {
+                                el.reportValidity();
+                            }
+                            el.focus();
+                            return;
+                        }
+                    }
+                    this.step = 2;
+                },
             };
         }
 
@@ -280,7 +293,7 @@
 @else
     @push('scripts')
         <script>
-            function solicitacaoForm({ itensOld }) {
+            function solicitacaoForm({ itensOld, showStep2 }) {
                 const buildItem = (item = {}) => ({
                     key: item.key || `item-${Date.now()}-${Math.random().toString(16).slice(2)}`,
                     descricao: item.descricao || '',
@@ -292,7 +305,23 @@
                 });
 
                 return {
+                    step: showStep2 ? 2 : 1,
                     item: (itensOld && itensOld.length) ? buildItem(itensOld[0]) : buildItem(),
+                    nextStep() {
+                        const fields = ['projeto_id', 'setor', 'local_destino'];
+                        for (const id of fields) {
+                            const el = document.getElementById(id);
+                            if (!el) continue;
+                            if (!String(el.value || '').trim()) {
+                                if (typeof el.reportValidity === 'function') {
+                                    el.reportValidity();
+                                }
+                                el.focus();
+                                return;
+                            }
+                        }
+                        this.step = 2;
+                    },
                 };
             }
 

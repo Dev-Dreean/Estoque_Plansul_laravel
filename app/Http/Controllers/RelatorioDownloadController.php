@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Models\Funcionario;
 
 class RelatorioDownloadController extends Controller
@@ -13,7 +14,7 @@ class RelatorioDownloadController extends Controller
      */
     public function download()
     {
-        \Log::info("📋 [RELATORIO_STREAM] Iniciando geração com streaming...");
+        Log::info("📋 [RELATORIO_STREAM] Iniciando geração com streaming...");
         
         $inicio = microtime(true);
         $count = 0;
@@ -66,7 +67,7 @@ class RelatorioDownloadController extends Controller
         };
 
         $tempo = microtime(true) - $inicio;
-        \Log::info("✅ [RELATORIO_STREAM] Relatório enviado", [
+        Log::info("✅ [RELATORIO_STREAM] Relatório enviado", [
             'registros' => $count,
             'tempo_segundos' => number_format($tempo, 2)
         ]);

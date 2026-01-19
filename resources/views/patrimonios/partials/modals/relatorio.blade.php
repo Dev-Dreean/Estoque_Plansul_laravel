@@ -1,7 +1,19 @@
 <div x-show="relatorioModalOpen" x-transition
       class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">
       <div @click.outside="relatorioModalOpen = false"
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl p-6">
+        class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl p-6">
+        <div x-show="reportLoading" class="absolute inset-0 bg-white/80 dark:bg-gray-900/80 rounded-lg backdrop-blur-sm flex items-center justify-center z-50" style="display: none;">
+          <div class="flex flex-col items-center gap-3">
+            <svg class="animate-spin h-10 w-10 text-indigo-600 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <div class="text-center">
+              <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">Gerando relatório</p>
+              <p class="text-sm text-gray-600 dark:text-gray-300">Aguarde enquanto preparamos a lista</p>
+            </div>
+          </div>
+        </div>
         <div>
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Relatório Geral de Bens
           </h3>
@@ -257,13 +269,13 @@
             </div>
             <div class="mt-6 flex justify-end space-x-4">
               <div class="mr-auto flex items-center">
-                <a href="{{ route('relatorios.funcionarios.exportar.excel') }}" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center" title="Exportar lista completa de funcionários">
+                <button @click="exportarRelatorioFuncionarios()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded inline-flex items-center transition-colors" title="Exportar lista completa de funcionários" :disabled="reportLoading">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
                     <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
                   </svg>
                   <span>Relatório de Funcionários</span>
-                </a>
+                </button>
               </div>
               <button type="button" @click="relatorioModalOpen = false"
                 class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500"

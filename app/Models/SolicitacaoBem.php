@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SolicitacaoBem extends Model
 {
@@ -18,6 +19,7 @@ class SolicitacaoBem extends Model
         'solicitante_id',
         'solicitante_nome',
         'solicitante_matricula',
+        'projeto_id',
         'uf',
         'setor',
         'local_destino',
@@ -52,5 +54,10 @@ class SolicitacaoBem extends Model
     public function itens(): HasMany
     {
         return $this->hasMany(SolicitacaoBemItem::class, 'solicitacao_id');
+    }
+
+    public function projeto(): BelongsTo
+    {
+        return $this->belongsTo(Tabfant::class, 'projeto_id', 'id');
     }
 }

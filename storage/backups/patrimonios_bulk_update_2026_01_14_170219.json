@@ -1,0 +1,16 @@
+[
+    {
+        "NUSEQPATR": 6,
+        "NUPATRIMONIO": 1,
+        "before": {
+            "DTAQUISICAO": "2011-12-11T02:00:00.000000Z",
+            "PESO": null,
+            "TAMANHO": null
+        },
+        "after": {
+            "DTAQUISICAO": "1970-01-01",
+            "PESO": 10,
+            "TAMANHO": 10
+        }
+    }
+]

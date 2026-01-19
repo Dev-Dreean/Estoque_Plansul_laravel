@@ -26,40 +26,53 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="flex flex-col gap-4 mb-6">
-                        <form method="GET" action="{{ route('solicitacoes-bens.index') }}" class="grid gap-4 md:grid-cols-5 items-end">
-                            <div class="md:col-span-2">
-                                <x-input-label for="search" value="Buscar" />
-                                <x-text-input id="search" name="search" type="text" class="mt-1 block w-full" value="{{ request('search') }}" placeholder="Nome, matricula, setor, local" />
+                        <div x-data="{ open: false }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-semibold text-lg">Filtros de Busca</h3>
+                                <button type="button" @click="open = !open" aria-expanded="open" aria-controls="filtros-solicitacoes-bens" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                    <span class="sr-only">Expandir filtros</span>
+                                </button>
                             </div>
-                            <div>
-                                <x-input-label for="status" value="Status" />
-                                <select id="status" name="status" class="input-base mt-1 block w-full">
-                                    <option value="">Todos</option>
-                                    @foreach($statusOptions as $status)
-                                        <option value="{{ $status }}" @selected(request('status') === $status)>{{ $status }}</option>
-                                    @endforeach
-                                </select>
+                            <div x-show="open" x-transition class="mt-4" style="display: none;">
+                                <form method="GET" action="{{ route('solicitacoes-bens.index') }}" id="filtros-solicitacoes-bens" class="grid gap-4 md:grid-cols-5 items-end">
+                                    <div class="md:col-span-2">
+                                        <x-input-label for="search" value="Buscar" />
+                                        <x-text-input id="search" name="search" type="text" class="mt-1 block w-full" value="{{ request('search') }}" placeholder="Nome, matricula, setor, local" />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="status" value="Status" />
+                                        <select id="status" name="status" class="input-base mt-1 block w-full">
+                                            <option value="">Todos</option>
+                                            @foreach($statusOptions as $status)
+                                                <option value="{{ $status }}" @selected(request('status') === $status)>{{ $status }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <x-input-label for="uf" value="UF" />
+                                        <x-text-input id="uf" name="uf" type="text" maxlength="2" class="mt-1 block w-full uppercase" value="{{ request('uf') }}" placeholder="UF" />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="per_page" value="Itens por pagina" />
+                                        <select id="per_page" name="per_page" class="input-base mt-1 block w-full">
+                                            @foreach([10, 30, 50, 100, 200] as $opt)
+                                                <option value="{{ $opt }}" @selected((int) request('per_page', 30) === $opt)>{{ $opt }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="md:col-span-5 flex items-center gap-3">
+                                        <x-primary-button class="h-10 px-4">Filtrar</x-primary-button>
+                                        <a href="{{ route('solicitacoes-bens.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">Limpar</a>
+                                    </div>
+                                </form>
                             </div>
-                            <div>
-                                <x-input-label for="uf" value="UF" />
-                                <x-text-input id="uf" name="uf" type="text" maxlength="2" class="mt-1 block w-full uppercase" value="{{ request('uf') }}" placeholder="UF" />
-                            </div>
-                            <div>
-                                <x-input-label for="per_page" value="Itens por pagina" />
-                                <select id="per_page" name="per_page" class="input-base mt-1 block w-full">
-                                    @foreach([10, 30, 50, 100, 200] as $opt)
-                                        <option value="{{ $opt }}" @selected((int) request('per_page', 30) === $opt)>{{ $opt }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="md:col-span-5 flex items-center gap-3">
-                                <x-primary-button class="h-10 px-4">Filtrar</x-primary-button>
-                                <a href="{{ route('solicitacoes-bens.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">Limpar</a>
-                            </div>
-                        </form>
+                        </div>
 
                         <div>
-                            <button type="button" @click="openCreateModal" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+                            <button type="button" @click="openCreateModal()" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
                                 <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
                                 <span>Nova solicitacao</span>
                             </button>
@@ -107,7 +120,7 @@
                                         <td class="px-4 py-3">{{ $solicitacao->itens_count ?? 0 }}</td>
                                         <td class="px-4 py-3">{{ optional($solicitacao->created_at)->format('d/m/Y H:i') }}</td>
                                         <td class="px-4 py-3">
-                                            <a href="{{ route('solicitacoes-bens.show', $solicitacao) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">Ver</a>
+                                            <button type="button" @click="openShowModal({{ $solicitacao->id }})" class="text-indigo-600 dark:text-indigo-400 hover:underline">Ver</button>
                                         </td>
                                     </tr>
                                 @empty
@@ -125,13 +138,47 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Modal para criar solicitacao -->
-    <div
-        x-data="solicitacaoBemsIndex()"
-        class="w-full"
-    >
+        <!-- Modal para criar solicitacao -->
+        <style>
+            html[data-theme='light'] .solicitacao-modal-theme {
+                --solicitacao-modal-bg: #fcfdff;
+                --solicitacao-modal-border: #d6dde6;
+                --solicitacao-modal-input-bg: #f7f9fc;
+                --solicitacao-modal-input-border: #d1d9e2;
+                --solicitacao-modal-input-text: #111827;
+                --solicitacao-modal-input-placeholder: #6b7280;
+            }
+
+            html[data-theme='dark'] .solicitacao-modal-theme {
+                --solicitacao-modal-bg: #0b1220;
+                --solicitacao-modal-border: #2b3a55;
+                --solicitacao-modal-input-bg: #0f172a;
+                --solicitacao-modal-input-border: #334155;
+                --solicitacao-modal-input-text: #e2e8f0;
+                --solicitacao-modal-input-placeholder: #94a3b8;
+            }
+
+            .solicitacao-modal-theme {
+                background: var(--solicitacao-modal-bg);
+                border-color: var(--solicitacao-modal-border);
+            }
+
+            .solicitacao-modal-theme .input-base,
+            .solicitacao-modal-theme input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]),
+            .solicitacao-modal-theme select,
+            .solicitacao-modal-theme textarea {
+                background-color: var(--solicitacao-modal-input-bg) !important;
+                border-color: var(--solicitacao-modal-input-border) !important;
+                color: var(--solicitacao-modal-input-text) !important;
+            }
+
+            .solicitacao-modal-theme input::placeholder,
+            .solicitacao-modal-theme textarea::placeholder {
+                color: var(--solicitacao-modal-input-placeholder) !important;
+            }
+        </style>
+        <div class="w-full">
         <!-- Overlay Background -->
         <div
             x-show="formModalOpen"
@@ -183,10 +230,10 @@
                 x-transition:leave="transition ease-in duration-200"
                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                 x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-                class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl h-auto max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col min-h-0 pointer-events-auto"
+                class="solicitacao-modal-theme rounded-2xl shadow-2xl w-full max-w-2xl h-auto max-h-[90vh] overflow-hidden border flex flex-col min-h-0 pointer-events-auto"
                 @click.self="closeFormModal"
             >
-                <div class="flex items-center justify-between px-4 sm:px-6 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between px-4 sm:px-6 py-3 bg-[var(--solicitacao-modal-bg)] border-b border-gray-200 dark:border-gray-700">
                     <div>
                         <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white" x-text="formModalTitle"></h3>
                         <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400" x-text="formModalSubtitle" x-show="formModalSubtitle"></p>
@@ -198,6 +245,39 @@
                 </div>
             </div>
         </div>
+        <!-- Modal de detalhes da solicitacao -->
+        <div
+            x-show="showModalOpen"
+            x-cloak
+            class="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-6 pointer-events-none"
+        >
+            <div
+                x-show="showModalOpen"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+                class="solicitacao-modal-theme rounded-2xl shadow-2xl w-full max-w-5xl h-auto max-h-[90vh] overflow-hidden border flex flex-col min-h-0 pointer-events-auto"
+                @click.self="closeShowModal"
+            >
+                <div class="flex items-center justify-between px-4 sm:px-6 py-3 bg-[var(--solicitacao-modal-bg)] border-b border-gray-200 dark:border-gray-700">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white" x-text="showModalTitle"></h3>
+                    </div>
+                    <button type="button" @click="closeShowModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">×</button>
+                </div>
+                <div class="relative flex-1 min-h-0 overflow-hidden">
+                    <div x-show="showModalLoading" class="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div class="text-sm text-white">Carregando...</div>
+                    </div>
+                    <div id="solicitacao-show-modal-body" class="h-full min-h-0 overflow-y-auto overscroll-contain"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     </div>
 
     @push('scripts')
@@ -227,7 +307,13 @@
             function bindSolicitacaoModalHandlers(root, onClose, onSubmit) {
                 if (!root) return;
                 root.querySelectorAll('[data-modal-close]').forEach((btn) => {
-                    btn.addEventListener('click', () => onClose());
+                    btn.addEventListener('click', (event) => {
+                        if (btn.dataset.modalClose === 'false') {
+                            return;
+                        }
+                        event.preventDefault();
+                        onClose();
+                    });
                 });
                 root.querySelectorAll('form[data-modal-form]').forEach((form) => {
                     if (form.dataset.modalBound === 'true') return;
@@ -247,6 +333,9 @@
                     formModalSubtitle: '',
                     formModalMode: null,
                     formModalId: null,
+                    showModalOpen: false,
+                    showModalLoading: false,
+                    showModalTitle: '',
 
                     csrf() {
                         return document.querySelector('meta[name=csrf-token]')?.content || '';
@@ -254,6 +343,38 @@
 
                     openCreateModal() {
                         this.openFormModal('create');
+                    },
+                    openShowModal(id) {
+                        if (!id) return;
+                        const modalBody = document.getElementById('solicitacao-show-modal-body');
+                        if (!modalBody) return;
+                        this.showModalTitle = `Solicitacao #${id}`;
+                        this.showModalOpen = true;
+                        this.showModalLoading = true;
+
+                        const url = "{{ url('solicitacoes-bens') }}/" + encodeURIComponent(id) + "?modal=1";
+                        fetch(url, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'text/html',
+                            },
+                        })
+                            .then((resp) => {
+                                if (!resp.ok) {
+                                    throw new Error(`HTTP ${resp.status}`);
+                                }
+                                return resp.text();
+                            })
+                            .then((html) => {
+                                renderSolicitacaoModalContent(html, modalBody);
+                            })
+                            .catch((err) => {
+                                console.error('[SOLICITACAO] Show modal fetch error', err);
+                                modalBody.innerHTML = '<div class="p-6 text-sm text-red-600">Falha ao carregar detalhes.</div>';
+                            })
+                            .finally(() => {
+                                this.showModalLoading = false;
+                            });
                     },
 
                     openFormModal(mode, id = null) {
@@ -307,6 +428,15 @@
                         this.formModalMode = null;
                         this.formModalId = null;
                         const modalBody = document.getElementById('solicitacao-form-modal-body');
+                        if (modalBody) {
+                            modalBody.innerHTML = '';
+                        }
+                    },
+                    closeShowModal() {
+                        this.showModalOpen = false;
+                        this.showModalLoading = false;
+                        this.showModalTitle = '';
+                        const modalBody = document.getElementById('solicitacao-show-modal-body');
                         if (modalBody) {
                             modalBody.innerHTML = '';
                         }
@@ -374,6 +504,9 @@
                         const alpine = document.querySelector('[x-data*="solicitacaoBemsIndex"]')?.__x?.$.data;
                         if (alpine && alpine.formModalOpen) {
                             alpine.closeFormModal();
+                        }
+                        if (alpine && alpine.showModalOpen) {
+                            alpine.closeShowModal();
                         }
                     }
                 });

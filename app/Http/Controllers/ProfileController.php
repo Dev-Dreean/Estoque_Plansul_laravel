@@ -207,23 +207,16 @@ class ProfileController extends Controller
                 return;
             }
 
-            // Primeiro, deletar acessos antigos do usuário temporário
             AcessoUsuario::query()
                 ->where('CDMATRFUNCIONARIO', $from)
                 ->delete();
 
-            // Depois, migrar para o novo usuário usando updateOrInsert
-            // para evitar violação de constraint se o acesso já existir
             foreach ($rows as $row) {
-                AcessoUsuario::updateOrInsert(
-                    [
-                        'CDMATRFUNCIONARIO' => $to,
-                        'NUSEQTELA' => (int) $row->NUSEQTELA,
-                    ],
-                    [
-                        'INACESSO' => $row->INACESSO ? 'S' : 'N',
-                    ]
-                );
+                AcessoUsuario::create([
+                    'CDMATRFUNCIONARIO' => $to,
+                    'NUSEQTELA' => (int) $row->NUSEQTELA,
+                    'INACESSO' => (bool) $row->INACESSO,
+                ]);
             }
         });
     }

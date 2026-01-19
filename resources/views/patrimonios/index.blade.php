@@ -1861,6 +1861,45 @@
               })
               .finally(() => { this.isLoading = false; });
           },
+          exportarRelatorioFuncionarios() {
+            if (this.reportLoading) return;
+            this.reportLoading = true;
+            const url = "{{ route('funcionarios.exportar.excel') }}";
+
+            fetch(url, {
+              method: 'GET',
+              headers: {
+                'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'X-CSRF-TOKEN': this.csrf(),
+              },
+            })
+              .then(async (response) => {
+                if (!response.ok) {
+                  throw new Error('Falha ao baixar o relatório.');
+                }
+                const disposition = response.headers.get('Content-Disposition') || '';
+                const match = disposition.match(/filename\*?=(?:UTF-8'')?"?([^";]+)/i);
+                const filename = match ? decodeURIComponent(match[1]) : 'relatorio_funcionarios.xlsx';
+                const blob = await response.blob();
+                return { blob, filename };
+              })
+              .then(({ blob, filename }) => {
+                const objectUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = objectUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(objectUrl);
+              })
+              .catch((error) => {
+                console.error('Erro ao exportar relatório de funcionários', error);
+              })
+              .finally(() => {
+                this.reportLoading = false;
+              });
+          },
           exportarRelatorio(formato) {
             const actions = {
               excel: "{{ route('relatorios.patrimonios.exportar.excel') }}",

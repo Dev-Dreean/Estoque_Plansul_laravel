@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Tabfant;
 use App\Models\SolicitacaoBem;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -51,17 +53,20 @@ class SolicitacaoBemController extends Controller
     public function create(Request $request): View
     {
         $isModal = $request->input('modal') === '1';
+        $projetos = Tabfant::orderBy('NOMEPROJETO')->get();
         return view('solicitacoes.create', [
             'user' => Auth::user(),
             'isModal' => $isModal,
+            'projetos' => $projetos,
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $rules = [
             'solicitante_nome' => ['required', 'string', 'max:120'],
             'solicitante_matricula' => ['nullable', 'string', 'max:20'],
+            'projeto_id' => ['required', 'integer', 'exists:tabfant,id'],
             'uf' => ['nullable', 'string', 'max:2'],
             'setor' => ['required', 'string', 'max:120'],
             'local_destino' => ['required', 'string', 'max:150'],
@@ -87,6 +92,7 @@ class SolicitacaoBemController extends Controller
                 'solicitante_id' => $user?->getAuthIdentifier(),
                 'solicitante_nome' => trim((string) $validated['solicitante_nome']),
                 'solicitante_matricula' => $matricula !== '' ? $matricula : null,
+                'projeto_id' => $validated['projeto_id'],
                 'uf' => $uf !== '' ? $uf : null,
                 'setor' => trim((string) $validated['setor']),
                 'local_destino' => trim((string) $validated['local_destino']),
