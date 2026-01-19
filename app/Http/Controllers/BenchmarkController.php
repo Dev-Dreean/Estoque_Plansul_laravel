@@ -53,13 +53,13 @@ class BenchmarkController extends Controller
         // Teste 4: Streaming de 5000 registros (simular relatório)
         $inicio = microtime(true);
         $count = 0;
-        DB::cursor(
+        foreach (DB::cursor(
             DB::table('funcionarios')
                 ->select(['CDMATRFUNCIONARIO', 'NMFUNCIONARIO', 'NMCARGO', 'DESUF'])
                 ->limit(5000)
-        )->each(function ($record) use (&$count) {
+        ) as $record) {
             $count++;
-        });
+        }
         $tempo4 = (microtime(true) - $inicio) * 1000;
 
         $resultado['testes']['streaming_5k'] = [
