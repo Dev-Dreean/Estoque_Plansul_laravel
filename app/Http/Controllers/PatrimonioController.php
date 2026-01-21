@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 
 
@@ -122,7 +122,7 @@ class PatrimonioController extends Controller
 
             if ($val !== '') {
 
-                // aceitar busca exata por nÃºmero (garantir inteiro quando for numÃ©rico)
+                // aceitar busca exata por número (garantir inteiro quando for numérico)
 
                 if (is_numeric($val)) {
 
@@ -154,7 +154,7 @@ class PatrimonioController extends Controller
 
             if ($val !== '') {
 
-                // alguns registros guardam CDPROJETO no prÃ³prio patr, outros via relaÃ§Ã£o local
+                // alguns registros guardam CDPROJETO no próprio patr, outros via relação local
 
                 $query->where(function($q) use ($val) {
 
@@ -254,7 +254,7 @@ class PatrimonioController extends Controller
 
                     } else {
 
-                        // fallback: pesquisar por trecho no NOME do funcionÃ¡rio via relaÃ§Ã£o 'funcionario' se existir
+                        // fallback: pesquisar por trecho no NOME do funcionÃ¡rio via relação 'funcionario' se existir
 
                         $query->whereHas('funcionario', function($q) use ($val) {
 
@@ -708,7 +708,7 @@ class PatrimonioController extends Controller
 
      * - Se NUSEQOBJ (código) não existir em objetopatr, cria um novo registro com DEOBJETO.
 
-     * - Em seguida, cria o Patrimônio referenciando esse códigodigo.
+     * - Em seguida, cria o Patrimônio referenciando esse código.
 
      */
 
@@ -751,7 +751,7 @@ class PatrimonioController extends Controller
 
                 'FLCONFERIDO' => 'nullable|string|in:S,N,1,0',
 
-                'DEOBJETO' => 'nullable|string|max:350', // obrigatÃ³ria apenas quando códigodigo for novo
+                'DEOBJETO' => 'nullable|string|max:350', // obrigatória apenas quando código for novo
 
                 'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,À DISPOSIÇÃO',
 
@@ -763,7 +763,7 @@ class PatrimonioController extends Controller
 
                 'CDPROJETO' => 'nullable|integer',
 
-                // O Local deve ser o códigodigo numÃ©rico (cdlocal) do LocalProjeto dentro do projeto
+                // O Local deve ser o código numérico (cdlocal) do LocalProjeto dentro do projeto
 
                 'CDLOCAL' => 'nullable|integer',
 
@@ -813,7 +813,7 @@ class PatrimonioController extends Controller
 
 
 
-            // â     VERIFICAR DUPLICATAS: Impedir criar Patrimônionio com N° que jÃ¡ existe
+            //      VERIFICAR DUPLICATAS: Impedir criar Patrimônio com N° que jÃ¡ existe
 
             $nupatrimonio = (int) $validated['NUPATRIMONIO'];
 
@@ -844,7 +844,7 @@ class PatrimonioController extends Controller
                 $objeto = ObjetoPatr::find($codigo);
 
                 if (!$objeto) {
-                    // Se for novo códigodigo, exigir DEOBJETO
+                    // Se for novo código, exigir DEOBJETO
 
                     $request->validate([
                         'DEOBJETO' => 'required|string|max:350',
@@ -1024,9 +1024,9 @@ class PatrimonioController extends Controller
 
 
 
-        // ð Debug: Log de todos os dados recebidos
+        // Debug: Log de todos os dados recebidos
 
-        Log::info('ð [UPDATE] Dados recebidos do formulário', [
+        Log::info(' [UPDATE] Dados recebidos do formulário', [
 
             'request_all' => $request->all(),
 
@@ -1117,9 +1117,9 @@ class PatrimonioController extends Controller
 
 
 
-        // â Log dos dados antes da atualizaÃ§Ã£o
+        //  Log dos dados antes da Atualização
 
-        Log::info('Patrimônio UPDATE: Dados antes da atualizaÃ§Ã£o', [
+        Log::info('Patrimônio UPDATE: Dados antes da Atualização', [
 
             'NUSEQPATR' => $patrimonio->NUSEQPATR,
 
@@ -1163,9 +1163,9 @@ class PatrimonioController extends Controller
 
 
 
-        // ð Debug: Log antes do update
+        // Debug: Log antes do update
 
-        Log::info('ð [UPDATE] Chamando $patrimonio->update()', [
+        Log::info(' [UPDATE] Chamando $patrimonio->update()', [
 
             'validated_data' => $validatedData,
 
@@ -1177,7 +1177,7 @@ class PatrimonioController extends Controller
 
 
 
-        // ð Debug: Recarregar do banco para verificar se salvou
+        // Debug: Recarregar do banco para verificar se salvou
 
         $patrimonio->refresh();
 
@@ -1193,9 +1193,9 @@ class PatrimonioController extends Controller
 
 
 
-        // â Log dos dados apÃ³s a atualizaÃ§Ã£o
+        //  Log dos dados apÃ³s a Atualização
 
-        Log::info('Patrimônio UPDATE: Dados apÃ³s a atualizaÃ§Ã£o', [
+        Log::info('Patrimônio UPDATE: Dados apÃ³s a Atualização', [
 
             'NUSEQPATR' => $patrimonio->NUSEQPATR,
 
@@ -1495,7 +1495,7 @@ class PatrimonioController extends Controller
 
     {
 
-        \Illuminate\Support\Facades\Log::info('ðï¸ [DESTROY] Iniciando deleÃ§Ã£o', [
+        \Illuminate\Support\Facades\Log::info('¸ [DESTROY] Iniciando deleção', [
 
             'NUSEQPATR' => $patrimonio->NUSEQPATR,
 
@@ -1515,7 +1515,7 @@ class PatrimonioController extends Controller
 
             
 
-            \Illuminate\Support\Facades\Log::info('â [DESTROY] AutorizaÃ§Ã£o concedida', [
+            \Illuminate\Support\Facades\Log::info(' [DESTROY] AutorizaÃ§Ã£o concedida', [
 
                 'NUSEQPATR' => $patrimonio->NUSEQPATR,
 
@@ -1523,7 +1523,7 @@ class PatrimonioController extends Controller
 
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
 
-            \Illuminate\Support\Facades\Log::error('â [DESTROY] AutorizaÃ§Ã£o negada', [
+            \Illuminate\Support\Facades\Log::error(' [DESTROY] AutorizaÃ§Ã£o negada', [
 
                 'NUSEQPATR' => $patrimonio->NUSEQPATR,
 
@@ -1555,9 +1555,9 @@ class PatrimonioController extends Controller
 
         
 
-        // Log da deleÃ§Ã£o
+        // Log da deleção
 
-        \Illuminate\Support\Facades\Log::info('ð¾ [DESTROY] Deletando Patrimônionio', [
+        \Illuminate\Support\Facades\Log::info('¾ [DESTROY] Deletando Patrimônio', [
 
             'NUSEQPATR' => $patrimonio->NUSEQPATR,
 
@@ -1577,7 +1577,7 @@ class PatrimonioController extends Controller
 
         
 
-        \Illuminate\Support\Facades\Log::info('â [DESTROY] Patrimônio deletado com sucesso', [
+        \Illuminate\Support\Facades\Log::info(' [DESTROY] Patrimônio deletado com sucesso', [
 
             'NUSEQPATR' => $patrimonio->NUSEQPATR,
 
@@ -1603,9 +1603,9 @@ class PatrimonioController extends Controller
 
     /**
 
-     * ðï¸ NOVO MÃTODO DE DELEÃÃO SIMPLIFICADO
+     * ¸ NOVO MÃTODO DE DELEÃÃO SIMPLIFICADO
 
-     * MÃ©todo alternativo para deletar Patrimônionio por ID direto
+     * MÃ©todo alternativo para deletar Patrimônio por ID direto
 
      */
 
@@ -1613,7 +1613,7 @@ class PatrimonioController extends Controller
 
     {
 
-        \Illuminate\Support\Facades\Log::info('ðï¸ [DELETE] RequisiÃ§Ã£o recebida', [
+        \Illuminate\Support\Facades\Log::info('¸ [DELETE] Requisição recebida', [
 
             'id' => $id,
 
@@ -1639,13 +1639,13 @@ class PatrimonioController extends Controller
 
             if (!$patrimonio) {
 
-                \Illuminate\Support\Facades\Log::warning('â [DELETE] Patrimônio nãoo encontrado', ['id' => $id]);
+                \Illuminate\Support\Facades\Log::warning(' [DELETE] Patrimônio não encontrado', ['id' => $id]);
 
                 return response()->json([
 
                     'success' => false,
 
-                    'message' => 'Patrimônio nãoo encontrado'
+                    'message' => 'Patrimônio não encontrado'
 
                 ], 200);
 
@@ -1653,7 +1653,7 @@ class PatrimonioController extends Controller
 
 
 
-            \Illuminate\Support\Facades\Log::info('â [DELETE] Patrimônio encontrado', [
+            \Illuminate\Support\Facades\Log::info(' [DELETE] Patrimônio encontrado', [
 
                 'NUSEQPATR' => $patrimonio->NUSEQPATR,
 
@@ -1667,7 +1667,7 @@ class PatrimonioController extends Controller
 
             $this->authorize('delete', $patrimonio);
 
-            \Illuminate\Support\Facades\Log::info('â [DELETE] AutorizaÃ§Ã£o OK');
+            \Illuminate\Support\Facades\Log::info(' [DELETE] AutorizaÃ§Ã£o OK');
 
 
 
@@ -1691,7 +1691,7 @@ class PatrimonioController extends Controller
 
             
 
-            \Illuminate\Support\Facades\Log::info('â [DELETE] Patrimônio deletado!', [
+            \Illuminate\Support\Facades\Log::info(' [DELETE] Patrimônio deletado!', [
 
                 'resultado' => $deleted,
 
@@ -1715,7 +1715,7 @@ class PatrimonioController extends Controller
 
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
 
-            \Illuminate\Support\Facades\Log::warning('â [DELETE] AutorizaÃ§Ã£o negada', [
+            \Illuminate\Support\Facades\Log::warning(' [DELETE] AutorizaÃ§Ã£o negada', [
 
                 'id' => $id,
 
@@ -1729,13 +1729,13 @@ class PatrimonioController extends Controller
 
                 'success' => false,
 
-                'message' => 'VocÃª nãoo tem permissÃ£o para deletar este Patrimônionio.',
+                'message' => 'VocÃª não tem permissÃ£o para deletar este Patrimônio.',
 
             ], 403);
 
         } catch (\Exception $e) {
 
-            \Illuminate\Support\Facades\Log::error('â [DELETE] Erro ao deletar', [
+            \Illuminate\Support\Facades\Log::error(' [DELETE] Erro ao deletar', [
 
                 'id' => $id,
 
@@ -1763,7 +1763,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * ð Exibe tela de duplicatas - Patrimônionios com mesmo nÃºmero
+     *  Exibe tela de duplicatas - Patrimônios com mesmo número
 
      */
 
@@ -1789,7 +1789,7 @@ class PatrimonioController extends Controller
 
 
 
-        // Se nãoo hÃ¡ duplicatas, retornar mensagem
+        // Se não hÃ¡ duplicatas, retornar mensagem
 
         if (empty($duplicatas)) {
 
@@ -1837,7 +1837,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * ðï¸ Deleta um Patrimônionio (versÃ£o para duplicatas)
+     * ¸ Deleta um Patrimônio (versÃ£o para duplicatas)
 
      * Usado na tela de removiÃ§Ã£o de duplicatas
 
@@ -1853,7 +1853,7 @@ class PatrimonioController extends Controller
 
         $numero = $patrimonio->NUPATRIMONIO;
 
-        Log::info('Deletando duplicata de Patrimônionio', [
+        Log::info('Deletando duplicata de Patrimônio', [
 
             'NUSEQPATR' => $patrimonio->NUSEQPATR,
 
@@ -1907,15 +1907,15 @@ class PatrimonioController extends Controller
 
 
 
-            // ð VERIFICAR AUTORIZAÃÃO: O usuÃ¡rio pode ver este Patrimônionio?
+            //  VERIFICAR AUTORIZAÃÃO: O usuÃ¡rio pode ver este Patrimônio?
 
             $user = Auth::user();
 
             if (!$user) {
 
-                // nãoo autenticado
+                // não autenticado
 
-                return response()->json(['error' => 'nãoo autorizado'], 403);
+                return response()->json(['error' => 'não autorizado'], 403);
 
             }
 
@@ -1927,9 +1927,9 @@ class PatrimonioController extends Controller
 
         } catch (\Throwable $e) {
 
-            Log::error('Erro ao buscar Patrimônionio por nÃºmero: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Log::error('Erro ao buscar Patrimônio por número: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
 
-            return response()->json(['error' => 'Erro ao buscar Patrimônionio'], 500);
+            return response()->json(['error' => 'Erro ao buscar Patrimônio'], 500);
 
         }
 
@@ -2481,7 +2481,7 @@ class PatrimonioController extends Controller
 
             if (!$user) {
 
-                // nãoo autenticado
+                // não autenticado
 
                 return response()->json([], 403);
 
@@ -2507,7 +2507,7 @@ class PatrimonioController extends Controller
 
                 ['NUPATRIMONIO', 'DEPATRIMONIO'],  // campos de busca
 
-                ['NUPATRIMONIO' => 'nÃºmero', 'DEPATRIMONIO' => 'texto'],  // tipos de campo
+                ['NUPATRIMONIO' => 'número', 'DEPATRIMONIO' => 'texto'],  // tipos de campo
 
                 10  // limite
 
@@ -2547,7 +2547,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * Autocomplete de projetos. Busca por códigodigo numÃ©rico parcial ou parte do nome.
+     * Autocomplete de projetos. Busca por código numérico parcial ou parte do nome.
 
      * Limite: 10 resultados para performance.
 
@@ -2561,15 +2561,15 @@ class PatrimonioController extends Controller
 
 
 
-        // Buscar todos os projetos (excluindo códigodigo 0 - "nãoo se aplica")
+        // Buscar todos os projetos (excluindo código 0 - "não se aplica")
 
         $projetos = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
 
-            ->where('CDPROJETO', '!=', 0)  // Excluir códigodigo 0
+            ->where('CDPROJETO', '!=', 0)  // Excluir código 0
 
             ->distinct()
 
-            ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')  // OrdenaÃ§Ã£o numÃ©rica
+            ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')  // Ordenação numÃ©rica
 
             ->get()
 
@@ -2805,7 +2805,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * Busca projetos associados a um local especÃ­fico.
+     * Busca projetos associados a um local específico.
 
      * Retorna os projetos vinculados ao local informado pelo cdlocal.
 
@@ -2861,7 +2861,7 @@ class PatrimonioController extends Controller
 
 
 
-            // Se veio um termo de busca (q), filtra pelo códigodigo ou nome
+            // Se veio um termo de busca (q), filtra pelo código ou nome
 
             $q = trim((string) request()->query('q', ''));
 
@@ -2913,7 +2913,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * Cria um novo projeto com códigodigo Ãºnico e sequencial.
+     * Cria um novo projeto com código único e sequencial.
 
      */
 
@@ -2937,7 +2937,7 @@ class PatrimonioController extends Controller
 
         try {
 
-            // Gera o prÃ³ximo códigodigo sequencial Ãºnico
+            // Gera o próximo código sequencial único
 
             $maxCodigo = Tabfant::max('CDPROJETO') ?? 0;
 
@@ -3085,7 +3085,7 @@ class PatrimonioController extends Controller
 
         if (!$projeto) {
 
-            return response()->json([]); // projeto nãoo encontrado => sem locais
+            return response()->json([]); // projeto não encontrado => sem locais
 
         }
 
@@ -3137,13 +3137,13 @@ class PatrimonioController extends Controller
 
         if (!$projeto) {
 
-            return response()->json(['error' => 'Projeto nãoo encontrado.'], 404);
+            return response()->json(['error' => 'Projeto não encontrado.'], 404);
 
         }
 
 
 
-        // Calcula automaticamente o prÃ³ximo cdlocal baseado apenas nos locais deste projeto
+        // Calcula automaticamente o próximo cdlocal baseado apenas nos locais deste projeto
 
         $maxCdLocal = LocalProjeto::where('tabfant_id', $projeto->id)
 
@@ -3203,7 +3203,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * Busca locais disponÃ­veis por códigodigo ou nome
+     * Busca locais disponÃ­veis por código ou nome
 
      */
 
@@ -3255,7 +3255,7 @@ class PatrimonioController extends Controller
 
 
 
-        // Buscar informaÃ§Ãµes do projeto na tabfant para cada local
+        // Buscar informações do projeto na tabfant para cada local
 
         $locais = $locaisProjeto->map(function ($lp) {
 
@@ -3303,7 +3303,7 @@ class PatrimonioController extends Controller
 
             ['cdlocal', 'delocal'],  // campos de busca
 
-            ['cdlocal' => 'nÃºmero', 'delocal' => 'texto'],  // tipos de campo
+            ['cdlocal' => 'número', 'delocal' => 'texto'],  // tipos de campo
 
             100  // limite
 
@@ -3319,9 +3319,9 @@ class PatrimonioController extends Controller
 
     /**
 
-     * Busca um local especÃ­fico por ID e retorna informaÃ§Ãµes completas
+     * Busca um local específico por ID e retorna informações completas
 
-     * Inclui qual projeto ele realmente pertence (para sincronizaÃ§Ã£o de dados desincronizados)
+     * Inclui qual projeto ele realmente pertence (para sincronização de dados desincronizados)
 
      */
 
@@ -3433,7 +3433,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * ð DEBUG: Listar todos os locais com códigodigo especÃ­fico
+     *      * DEBUG: Listar todos os locais com código específico­fico
 
      */
 
@@ -3445,7 +3445,7 @@ class PatrimonioController extends Controller
 
 
 
-        Log::info('ð [DEBUG] Buscando locais com códigodigo:', ['codigo' => $codigo]);
+        Log::info(' [DEBUG] Buscando locais com código:', ['codigo' => $codigo]);
 
 
 
@@ -3461,7 +3461,7 @@ class PatrimonioController extends Controller
 
 
 
-        Log::info('ð [DEBUG] LocalProjeto encontrados:', ['total' => $locaisProjeto->count()]);
+        Log::info(' [DEBUG] LocalProjeto encontrados:', ['total' => $locaisProjeto->count()]);
 
 
 
@@ -3505,7 +3505,7 @@ class PatrimonioController extends Controller
 
 
 
-        Log::info('ð [DEBUG] Resultado:', $resultado);
+        Log::info(' [DEBUG] Resultado:', $resultado);
 
 
 
@@ -3517,7 +3517,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * Cria um novo local informando o projeto por nome ou códigodigo
+     * Cria um novo local informando o projeto por nome ou código
 
      */
 
@@ -3541,7 +3541,7 @@ class PatrimonioController extends Controller
 
 
 
-        // Busca o projeto por códigodigo ou nome
+        // Busca o projeto por código ou nome
 
         $projeto = Tabfant::where('CDPROJETO', $request->projeto)
 
@@ -3553,13 +3553,13 @@ class PatrimonioController extends Controller
 
         if (!$projeto) {
 
-            return response()->json(['error' => 'Projeto nãoo encontrado.'], 404);
+            return response()->json(['error' => 'Projeto não encontrado.'], 404);
 
         }
 
 
 
-        // Calcula automaticamente o prÃ³ximo cdlocal baseado apenas nos locais deste projeto
+        // Calcula automaticamente o próximo cdlocal baseado apenas nos locais deste projeto
 
         $maxCdLocal = LocalProjeto::where('tabfant_id', $projeto->id)
 
@@ -3627,7 +3627,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * PÃ¡gina dedicada para atribuiÃ§Ã£o de códigodigos de termo
+     * PÃ¡gina dedicada para atribuiÃ§Ã£o de códigos de termo
 
      */
 
@@ -3639,9 +3639,9 @@ class PatrimonioController extends Controller
 
 
 
-        // Nota: Removido filtro por usuÃ¡rio para que todos os Patrimônionios
+        // Nota: Removido filtro por usuÃ¡rio para que todos os Patrimônios
 
-        // apareÃ§am na tela de atribuiÃ§Ã£o de códigodigos (requisito de negÃ³cio).
+        // apareÃ§am na tela de atribuiÃ§Ã£o de códigos (requisito de negÃ³cio).
 
 
 
@@ -3649,31 +3649,31 @@ class PatrimonioController extends Controller
 
         $status = $request->get('status', 'disponivel');
 
-        Log::info('ð Filtro Status: ' . $status);
+        Log::info(' Filtro Status: ' . $status);
 
 
 
         if ($status === 'disponivel') {
 
-            // Patrimônios sem códigodigo de termo (campo integer => apenas null significa "sem")
+            // Patrimônios sem código de termo (campo integer => apenas null significa "sem")
 
             $query->whereNull('NMPLANTA');
 
         } elseif ($status === 'indisponivel') {
 
-            // Patrimônios com códigodigo de termo
+            // Patrimônios com código de termo
 
             $query->whereNotNull('NMPLANTA');
 
         }
 
-        // Se status for vazio ou 'todos', nãoo aplica filtro de status
+        // Se status for vazio ou 'todos', não aplica filtro de status
 
 
 
-                // ObservaÃ§Ã£o: originalmente excluÃ­amos Patrimônionios sem DEPATRIMONIO,
+                // ObservaÃ§Ã£o: originalmente excluÃ­amos Patrimônios sem DEPATRIMONIO,
 
-                // mas a regra atual exige que TODOS os Patrimônionios cadastrados
+                // mas a regra atual exige que TODOS os Patrimônios cadastrados
 
                 // apareÃ§am na tela de atribuiÃ§Ã£o. Portanto, removemos esse filtro.
 
@@ -3683,7 +3683,7 @@ class PatrimonioController extends Controller
 
         if ($request->filled('filtro_numero')) {
 
-            Log::info('ð Filtro NÃºmero: ' . $request->filtro_numero);
+            Log::info(' Filtro número: ' . $request->filtro_numero);
 
             $query->where('NUPATRIMONIO', 'like', '%' . $request->filtro_numero . '%');
 
@@ -3693,7 +3693,7 @@ class PatrimonioController extends Controller
 
         if ($request->filled('filtro_descricao')) {
 
-            Log::info('ð Filtro Descrição: ' . $request->filtro_descricao);
+            Log::info(' Filtro Descrição: ' . $request->filtro_descricao);
 
             $query->where('DEPATRIMONIO', 'like', '%' . $request->filtro_descricao . '%');
 
@@ -3703,7 +3703,7 @@ class PatrimonioController extends Controller
 
         if ($request->filled('filtro_modelo')) {
 
-            Log::info('ð Filtro Modelo: ' . $request->filtro_modelo);
+            Log::info(' Filtro Modelo: ' . $request->filtro_modelo);
 
             $query->where('MODELO', 'like', '%' . $request->filtro_modelo . '%');
 
@@ -3715,7 +3715,7 @@ class PatrimonioController extends Controller
 
         if ($request->filled('filtro_projeto')) {
 
-            Log::info('ð Filtro Projeto: ' . $request->filtro_projeto);
+            Log::info(' Filtro Projeto: ' . $request->filtro_projeto);
 
             $query->where('CDPROJETO', $request->filtro_projeto);
 
@@ -3727,7 +3727,7 @@ class PatrimonioController extends Controller
 
         if ($request->filled('filtro_termo')) {
 
-            Log::info('ð Filtro Termo: ' . $request->filtro_termo);
+            Log::info(' Filtro Termo: ' . $request->filtro_termo);
 
             $query->where('NMPLANTA', $request->filtro_termo);
 
@@ -3739,7 +3739,7 @@ class PatrimonioController extends Controller
 
         if ($request->filled('filtro_matr_responsavel')) {
 
-            Log::info('ð Filtro MatrÃ­cula Responsável: ' . $request->filtro_matr_responsavel);
+            Log::info(' Filtro MatrÃ­cula Responsável: ' . $request->filtro_matr_responsavel);
 
             $query->where('CDMATRFUNCIONARIO', $request->filtro_matr_responsavel);
 
@@ -3751,7 +3751,7 @@ class PatrimonioController extends Controller
 
         if ($request->filled('filtro_matr_cadastrador')) {
 
-            Log::info('ð Filtro MatrÃ­cula Cadastrador: ' . $request->filtro_matr_cadastrador);
+            Log::info(' Filtro MatrÃ­cula Cadastrador: ' . $request->filtro_matr_cadastrador);
 
             // Buscar pelo NMLOGIN do usuÃ¡rio que cadastrou
 
@@ -3765,7 +3765,7 @@ class PatrimonioController extends Controller
 
 
 
-        // OrdenaÃ§Ã£o
+        // Ordenação
 
         $query->orderBy('NMPLANTA', 'asc');
 
@@ -3787,9 +3787,9 @@ class PatrimonioController extends Controller
 
 
 
-        Log::info('ð Total de Patrimônionios apÃ³s filtro: ' . $patrimonios->total() . ' (PÃ¡gina ' . $patrimonios->currentPage() . ')');
+        Log::info(' Total de Patrimônios apÃ³s filtro: ' . $patrimonios->total() . ' (PÃ¡gina ' . $patrimonios->currentPage() . ')');
 
-        Log::info('ð Patrimônios nesta pÃ¡gina: ' . count($patrimonios));
+        Log::info(' Patrimônios nesta pÃ¡gina: ' . count($patrimonios));
 
 
 
@@ -3815,7 +3815,7 @@ class PatrimonioController extends Controller
 
         foreach ($patrimonios as $p) {
 
-            // Prioridade: DEPATRIMONIO (campo), depois DEOBJETO via CODOBJETO, senãoo compor por Marca/Modelo/SÃ©rie
+            // Prioridade: DEPATRIMONIO (campo), depois DEOBJETO via CODOBJETO, senão compor por Marca/Modelo/SÃ©rie
 
             $display = $p->DEPATRIMONIO ?: ($descMap[$p->CODOBJETO] ?? null);
 
@@ -3851,7 +3851,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * PÃ¡gina isolada (clonada) para atribuiÃ§Ã£o de códigodigos de termo.
+     * PÃ¡gina isolada (clonada) para atribuiÃ§Ã£o de códigos de termo.
 
      * Reaproveita a mesma lÃ³gica de filtragem da pÃ¡gina principal para manter consistÃªncia.
 
@@ -3865,15 +3865,15 @@ class PatrimonioController extends Controller
 
 
 
-        // Nota: Removido filtro por usuÃ¡rio para que todos os Patrimônionios
+        // Nota: Removido filtro por usuÃ¡rio para que todos os Patrimônios
 
-        // apareÃ§am na pÃ¡gina de atribuiÃ§Ã£o de códigodigos (requisito do produto).
+        // apareÃ§am na pÃ¡gina de atribuiÃ§Ã£o de códigos (requisito do produto).
 
 
 
         $status = $request->get('status', 'disponivel');
 
-        Log::info('[atribuirCodigos] ð Filtro Status: ' . $status);
+        Log::info('[atribuirCodigos]  Filtro Status: ' . $status);
 
 
 
@@ -3891,7 +3891,7 @@ class PatrimonioController extends Controller
 
         if ($request->filled('filtro_numero')) {
 
-            Log::info('[atribuirCodigos] ð Filtro NÃºmero: ' . $request->filtro_numero);
+            Log::info('[atribuirCodigos]  Filtro número: ' . $request->filtro_numero);
 
             $query->where('NUPATRIMONIO', 'like', '%' . $request->filtro_numero . '%');
 
@@ -3899,7 +3899,7 @@ class PatrimonioController extends Controller
 
         if ($request->filled('filtro_descricao')) {
 
-            Log::info('[atribuirCodigos] ð Filtro Descrição: ' . $request->filtro_descricao);
+            Log::info('[atribuirCodigos]  Filtro Descrição: ' . $request->filtro_descricao);
 
             $query->where('DEPATRIMONIO', 'like', '%' . $request->filtro_descricao . '%');
 
@@ -3907,7 +3907,7 @@ class PatrimonioController extends Controller
 
         if ($request->filled('filtro_modelo')) {
 
-            Log::info('[atribuirCodigos] ð Filtro Modelo: ' . $request->filtro_modelo);
+            Log::info('[atribuirCodigos]  Filtro Modelo: ' . $request->filtro_modelo);
 
             $query->where('MODELO', 'like', '%' . $request->filtro_modelo . '%');
 
@@ -3915,7 +3915,7 @@ class PatrimonioController extends Controller
 
         if ($request->filled('filtro_projeto')) {
 
-            Log::info('[atribuirCodigos] ð Filtro Projeto: ' . $request->filtro_projeto);
+            Log::info('[atribuirCodigos]  Filtro Projeto: ' . $request->filtro_projeto);
 
             $query->where('CDPROJETO', $request->filtro_projeto);
 
@@ -3923,7 +3923,7 @@ class PatrimonioController extends Controller
 
         if ($request->filled('filtro_termo')) {
 
-            Log::info('[atribuirCodigos] ð Filtro Termo: ' . $request->filtro_termo);
+            Log::info('[atribuirCodigos]  Filtro Termo: ' . $request->filtro_termo);
 
             $query->where('NMPLANTA', $request->filtro_termo);
 
@@ -3945,9 +3945,9 @@ class PatrimonioController extends Controller
 
 
 
-        Log::info('[atribuirCodigos] ð Total de Patrimônionios apÃ³s filtro: ' . $patrimonios->total() . ' (PÃ¡gina ' . $patrimonios->currentPage() . ')');
+        Log::info('[atribuirCodigos]  Total de Patrimônios apÃ³s filtro: ' . $patrimonios->total() . ' (PÃ¡gina ' . $patrimonios->currentPage() . ')');
 
-        Log::info('[atribuirCodigos] ð Patrimônios nesta pÃ¡gina: ' . count($patrimonios));
+        Log::info('[atribuirCodigos]  Patrimônios nesta pÃ¡gina: ' . count($patrimonios));
 
 
 
@@ -4007,7 +4007,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * Processar a atribuiÃ§Ã£o/desatribuiÃ§Ã£o de códigodigos de termo
+     * Processar a atribuiÃ§Ã£o/desatribuiÃ§Ã£o de códigos de termo
 
      */
 
@@ -4029,7 +4029,7 @@ class PatrimonioController extends Controller
 
         }
 
-        // ValidaÃ§Ã£o condicional (caso envie códigodigo manualmente ainda funciona, mas nãoo Ã© mais o fluxo principal)
+        // ValidaÃ§Ã£o condicional (caso envie código manualmente ainda funciona, mas não Ã© mais o fluxo principal)
 
         $rules = [
 
@@ -4053,7 +4053,7 @@ class PatrimonioController extends Controller
 
         if (!$request->has($fieldName) || empty($request->input($fieldName))) {
 
-            Log::warning('Erro de validaÃ§Ã£o: campo de Patrimônionios obrigatÃ³rio nãoo foi preenchido', [
+            Log::warning('Erro de validaÃ§Ã£o: campo de Patrimônios obrigatÃ³rio não foi preenchido', [
 
                 'usuario' => Auth::user()?->NMLOGIN ?? 'Desconhecido',
 
@@ -4097,7 +4097,7 @@ class PatrimonioController extends Controller
 
 
 
-            // Novo fluxo: se nãoo veio um códigodigo explÃ­cito, o sistema determina automaticamente.
+            // Novo fluxo: se não veio um código explÃ­cito, o sistema determina automaticamente.
 
             if ($request->filled('codigo_termo')) {
 
@@ -4107,7 +4107,7 @@ class PatrimonioController extends Controller
 
                 if (!$codigoExiste) {
 
-                    // Caso o códigodigo tenha sido "gerado" no front mas ainda nãoo registrado, registramos agora
+                    // Caso o código tenha sido "gerado" no front mas ainda não registrado, registramos agora
 
                     TermoCodigo::firstOrCreate([
 
@@ -4123,7 +4123,7 @@ class PatrimonioController extends Controller
 
             } else {
 
-                // Fluxo inteligente: reutilizar menor códigodigo registrado sem uso ou gerar prÃ³ximo sequencial
+                // Fluxo inteligente: reutilizar menor código registrado sem uso ou gerar próximo sequencial
 
                 $unusedCodigo = TermoCodigo::whereNotIn('codigo', function ($q) {
 
@@ -4139,7 +4139,7 @@ class PatrimonioController extends Controller
 
                 if ($unusedCodigo) {
 
-                    $codigoTermo = (int) $unusedCodigo->codigo; // reutiliza códigodigo "vago"
+                    $codigoTermo = (int) $unusedCodigo->codigo; // reutiliza código "vago"
 
                 } else {
 
@@ -4147,9 +4147,9 @@ class PatrimonioController extends Controller
 
                     $maxUsado = (int) Patrimonio::max('NMPLANTA');
 
-                    $codigoTermo = max($maxRegistrado, $maxUsado) + 1; // prÃ³ximo sequencial
+                    $codigoTermo = max($maxRegistrado, $maxUsado) + 1; // próximo sequencial
 
-                    // registra para manter histÃ³rico de códigodigos gerados
+                    // registra para manter histÃ³rico de códigos gerados
 
                     TermoCodigo::firstOrCreate([
 
@@ -4167,7 +4167,7 @@ class PatrimonioController extends Controller
 
 
 
-            // Verificar quais Patrimônionios jÃ¡ estÃ£o atribuÃ­dos
+            // Verificar quais Patrimônios jÃ¡ estÃ£o atribuÃ­dos
 
             $jaAtribuidos = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)
 
@@ -4177,7 +4177,7 @@ class PatrimonioController extends Controller
 
 
 
-            // Atualizar apenas os Patrimônionios disponÃ­veis
+            // Atualizar apenas os Patrimônios disponÃ­veis
 
             $updated = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)
 
@@ -4187,7 +4187,7 @@ class PatrimonioController extends Controller
 
 
 
-            $message = "Código de termo {$codigoTermo} atribuÃ­do a {$updated} Patrimônionio(s) com sucesso!";
+            $message = "Código de termo {$codigoTermo} atribuÃ­do a {$updated} Patrimônio(s) com sucesso!";
 
 
 
@@ -4231,7 +4231,7 @@ class PatrimonioController extends Controller
 
                         $actorMat = Auth::user()->CDMATRFUNCIONARIO ?? null;
 
-                        // Aqui nãoo temos o dono do Patrimônionio carregado; buscar rapidamente
+                        // Aqui não temos o dono do Patrimônio carregado; buscar rapidamente
 
                         $ownerMat = Patrimonio::where('NUPATRIMONIO', $p->NUPATRIMONIO)->value('CDMATRFUNCIONARIO');
 
@@ -4277,7 +4277,7 @@ class PatrimonioController extends Controller
 
             if ($jaAtribuidos > 0) {
 
-                $message .= " ({$jaAtribuidos} Patrimônionio(s) jÃ¡ estavam atribuÃ­dos e foram ignorados)";
+                $message .= " ({$jaAtribuidos} Patrimônio(s) jÃ¡ estavam atribuÃ­dos e foram ignorados)";
 
             }
 
@@ -4303,7 +4303,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * Processar desatribuiÃ§Ã£o de códigodigos de termo
+     * Processar desatribuiÃ§Ã£o de códigos de termo
 
      */
 
@@ -4323,7 +4323,7 @@ class PatrimonioController extends Controller
 
         if (!$request->has($fieldName) || empty($request->input($fieldName))) {
 
-            Log::warning('Erro de validaÃ§Ã£o: campo de Patrimônionios obrigatÃ³rio nãoo foi preenchido (desatribuiÃ§Ã£o)', [
+            Log::warning('Erro de validaÃ§Ã£o: campo de Patrimônios obrigatÃ³rio não foi preenchido (desatribuiÃ§Ã£o)', [
 
                 'usuario' => Auth::user()?->NMLOGIN ?? 'Desconhecido',
 
@@ -4373,7 +4373,7 @@ class PatrimonioController extends Controller
 
 
 
-            // Buscar informaÃ§Ãµes antes da desatribuiÃ§Ã£o para feedback
+            // Buscar informações antes da desatribuiÃ§Ã£o para feedback
 
             $patrimonio = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)->first();
 
@@ -4445,13 +4445,13 @@ class PatrimonioController extends Controller
 
                 return redirect()->route('patrimonios.atribuir')
 
-                    ->with('success', "Código de termo {$codigoAnterior} removido de {$updated} Patrimônionio(s) com sucesso!");
+                    ->with('success', "Código de termo {$codigoAnterior} removido de {$updated} Patrimônio(s) com sucesso!");
 
             } else {
 
                 return redirect()->route('patrimonios.atribuir')
 
-                    ->with('warning', 'Nenhum Patrimônionio foi desatribuÃ­do. Verifique se os Patrimônionios selecionados possuem códigodigo de termo.');
+                    ->with('warning', 'Nenhum Patrimônio foi desatribuÃ­do. Verifique se os Patrimônios selecionados possuem código de termo.');
 
             }
 
@@ -4471,7 +4471,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * ð¯ API: Retorna lista de cadastradores disponÃ­veis para filtro multi-select
+     * ¯ API: Retorna lista de cadastradores disponÃ­veis para filtro multi-select
 
      * Retorna usuÃ¡rios ativos + SISTEMA
 
@@ -4531,7 +4531,7 @@ class PatrimonioController extends Controller
 
 
 
-            Log::info('ð [API] Listar cadastradores executado', [
+            Log::info(' [API] Listar cadastradores executado', [
 
                 'user_login' => $user->NMLOGIN,
 
@@ -4571,7 +4571,7 @@ class PatrimonioController extends Controller
 
         
 
-        Log::info('ð [getPatrimoniosQuery] INICIADO', [
+        Log::info(' [getPatrimoniosQuery] INICIADO', [
 
             'user_id' => $user->NUSEQUSUARIO ?? null,
 
@@ -4606,7 +4606,7 @@ class PatrimonioController extends Controller
 
         if (!empty($cadastradoresMulti)) {
 
-            Log::info('ð¯ [FILTRO MULTI] Cadastradores mÃºltiplos solicitados', [
+            Log::info('¯ [FILTRO MULTI] Cadastradores mÃºltiplos solicitados', [
 
                 'valores' => $cadastradoresMulti,
 
@@ -4638,7 +4638,7 @@ class PatrimonioController extends Controller
 
             if (!empty($permitidos)) {
 
-                Log::info('ð¯ [FILTRO MULTI] Aplicando filtro com usuÃ¡rios permitidos', [
+                Log::info('¯ [FILTRO MULTI] Aplicando filtro com usuÃ¡rios permitidos', [
 
                     'permitidos' => $permitidos
 
@@ -4676,7 +4676,7 @@ class PatrimonioController extends Controller
 
         } else {
 
-            // Filtro SINGLE para compatibilidade com formulário antigo (se nãoo houver multi-select)
+            // Filtro SINGLE para compatibilidade com formulário antigo (se não houver multi-select)
 
             if ($request->filled('cadastrado_por')) {
 
@@ -4684,11 +4684,11 @@ class PatrimonioController extends Controller
 
 
 
-                // Valor especial para restaurar comportamento antigo: nãoo aplicar filtro
+                // Valor especial para restaurar comportamento antigo: não aplicar filtro
 
                 if (trim((string)$valorFiltro) === '__TODOS__') {
 
-                    // nãoo filtrar
+                    // não filtrar
 
                 } else {
 
@@ -4768,7 +4768,7 @@ class PatrimonioController extends Controller
 
         // ========== APLICAR FILTROS ADICIONAIS ==========
 
-        Log::info('ð [FILTROS] Antes de aplicar filtros', [
+        Log::info(' [FILTROS] Antes de aplicar filtros', [
 
             'nupatrimonio' => $request->input('nupatrimonio'),
 
@@ -4798,13 +4798,13 @@ class PatrimonioController extends Controller
 
                     $intVal = (int) $val;
 
-                    Log::info('â [FILTRO] nupatrimonio aplicado (INT)', ['val' => $intVal]);
+                    Log::info(' [FILTRO] nupatrimonio aplicado (INT)', ['val' => $intVal]);
 
                     $query->where('NUPATRIMONIO', $intVal);
 
                 } else {
 
-                    Log::info('â [FILTRO] nupatrimonio aplicado (LIKE)', ['val' => $val]);
+                    Log::info(' [FILTRO] nupatrimonio aplicado (LIKE)', ['val' => $val]);
 
                     $query->whereRaw('LOWER(CAST(NUPATRIMONIO AS CHAR)) LIKE ?', ['%' . mb_strtolower($val) . '%']);
 
@@ -4812,7 +4812,7 @@ class PatrimonioController extends Controller
 
             } else {
 
-                Log::info('â ï¸  [FILTRO] nupatrimonio vazio (nãoo aplicado)');
+                Log::info(' ¸  [FILTRO] nupatrimonio vazio (não aplicado)');
 
             }
 
@@ -4826,7 +4826,7 @@ class PatrimonioController extends Controller
 
             if ($val !== '') {
 
-                Log::info('â [FILTRO] cdprojeto aplicado', ['val' => $val]);
+                Log::info(' [FILTRO] cdprojeto aplicado', ['val' => $val]);
 
                 $query->where(function($q) use ($val) {
 
@@ -4842,7 +4842,7 @@ class PatrimonioController extends Controller
 
             } else {
 
-                Log::info('â ï¸  [FILTRO] cdprojeto vazio (nãoo aplicado)');
+                Log::info(' ¸  [FILTRO] cdprojeto vazio (não aplicado)');
 
             }
 
@@ -4858,13 +4858,13 @@ class PatrimonioController extends Controller
 
                 $like = '%' . mb_strtolower($val) . '%';
 
-                Log::info('â [FILTRO] descricao aplicado', ['val' => $val]);
+                Log::info(' [FILTRO] descricao aplicado', ['val' => $val]);
 
                 $query->whereRaw('LOWER(DEPATRIMONIO) LIKE ?', [$like]);
 
             } else {
 
-                Log::info('â ï¸  [FILTRO] descricao vazio (nãoo aplicado)');
+                Log::info(' ¸  [FILTRO] descricao vazio (não aplicado)');
 
             }
 
@@ -4878,13 +4878,13 @@ class PatrimonioController extends Controller
 
             if ($val !== '') {
 
-                Log::info('â [FILTRO] situacao aplicado', ['val' => $val]);
+                Log::info(' [FILTRO] situacao aplicado', ['val' => $val]);
 
                 $query->where('SITUACAO', $val);
 
             } else {
 
-                Log::info('â ï¸  [FILTRO] situacao vazio (nãoo aplicado)');
+                Log::info(' ¸  [FILTRO] situacao vazio (não aplicado)');
 
             }
 
@@ -4898,13 +4898,13 @@ class PatrimonioController extends Controller
 
             if ($val !== '') {
 
-                Log::info('â [FILTRO] modelo aplicado', ['val' => $val]);
+                Log::info(' [FILTRO] modelo aplicado', ['val' => $val]);
 
                 $query->whereRaw('LOWER(MODELO) LIKE ?', ['%' . mb_strtolower($val) . '%']);
 
             } else {
 
-                Log::info('â ï¸  [FILTRO] modelo vazio (nãoo aplicado)');
+                Log::info(' ¸  [FILTRO] modelo vazio (não aplicado)');
 
             }
 
@@ -4918,13 +4918,13 @@ class PatrimonioController extends Controller
 
             if ($val !== '') {
 
-                Log::info('â [FILTRO] nmplanta aplicado', ['val' => $val]);
+                Log::info(' [FILTRO] nmplanta aplicado', ['val' => $val]);
 
                 $query->where('NMPLANTA', $val);
 
             } else {
 
-                Log::info('â ï¸  [FILTRO] nmplanta vazio (nãoo aplicado)');
+                Log::info(' ¸  [FILTRO] nmplanta vazio (não aplicado)');
 
             }
 
@@ -4938,7 +4938,7 @@ class PatrimonioController extends Controller
 
             if ($val !== '') {
 
-                Log::info('â [FILTRO] matr_responsavel aplicado', ['val' => $val]);
+                Log::info(' [FILTRO] matr_responsavel aplicado', ['val' => $val]);
 
                 if (is_numeric($val)) {
 
@@ -4950,13 +4950,13 @@ class PatrimonioController extends Controller
 
                     if ($usuarioFiltro) {
 
-                        Log::info('ð¤ [FILTRO] matr_responsavel encontrado usuÃ¡rio', ['cdmatr' => $usuarioFiltro->CDMATRFUNCIONARIO, 'nmlogin' => $usuarioFiltro->NMLOGIN]);
+                        Log::info('¤ [FILTRO] matr_responsavel encontrado usuÃ¡rio', ['cdmatr' => $usuarioFiltro->CDMATRFUNCIONARIO, 'nmlogin' => $usuarioFiltro->NMLOGIN]);
 
                         $query->where('CDMATRFUNCIONARIO', $usuarioFiltro->CDMATRFUNCIONARIO);
 
                     } else {
 
-                        Log::info('â [FILTRO] matr_responsavel usuÃ¡rio NÃO encontrado', ['val' => $val]);
+                        Log::info(' [FILTRO] matr_responsavel usuÃ¡rio NÃO encontrado', ['val' => $val]);
 
                         $query->whereHas('funcionario', function($q) use ($val) {
 
@@ -4970,7 +4970,7 @@ class PatrimonioController extends Controller
 
             } else {
 
-                Log::info('â ï¸  [FILTRO] matr_responsavel vazio (nãoo aplicado)');
+                Log::info(' ¸  [FILTRO] matr_responsavel vazio (não aplicado)');
 
             }
 
@@ -5114,7 +5114,7 @@ class PatrimonioController extends Controller
 
         }
 
-        Log::info('ð [QUERY] SQL gerada', [
+        Log::info(' [QUERY] SQL gerada', [
 
             'sql' => $query->toSql(),
 
@@ -5140,9 +5140,9 @@ class PatrimonioController extends Controller
 
         } catch (\Throwable $e) {
 
-            // se algo falhar, nãoo interromper; continuar com ordenaÃ§Ã£o padrÃ£o
+            // se algo falhar, não interromper; continuar com Ordenação padrÃ£o
 
-            Log::warning('Falha ao aplicar ordenaÃ§Ã£o por usuÃ¡rio/DTOPERACAO: ' . $e->getMessage());
+            Log::warning('Falha ao aplicar Ordenação por usuÃ¡rio/DTOPERACAO: ' . $e->getMessage());
 
         }
 
@@ -5162,7 +5162,7 @@ class PatrimonioController extends Controller
 
         } else {
 
-            // OrdenaÃ§Ã£o padrÃ£o por data de aquisiÃ§Ã£o crescente
+            // Ordenação padrÃ£o por data de aquisiÃ§Ã£o crescente
 
             $query->orderBy('DTAQUISICAO', 'asc');
 
@@ -5198,27 +5198,27 @@ class PatrimonioController extends Controller
 
             if (!$user) {
 
-                return response()->json(['error' => 'nãoo autorizado'], 403);
+                return response()->json(['error' => 'não autorizado'], 403);
 
             }
 
 
 
-            // Query para Patrimônionios disponÃ­veis (sem termo atribuÃ­do ou conforme regra de negÃ³cio)
+            // Query para Patrimônios disponÃ­veis (sem termo atribuÃ­do ou conforme regra de negÃ³cio)
 
             $query = Patrimonio::with(['funcionario'])
 
-                ->whereNull('NMPLANTA') // Sem códigodigo de termo
+                ->whereNull('NMPLANTA') // Sem código de termo
 
-                ->orWhere('NMPLANTA', '') // Ou códigodigo vazio
+                ->orWhere('NMPLANTA', '') // Ou código vazio
 
                 ->orderBy('NUPATRIMONIO', 'asc');
 
 
 
-            // Nota: Removido filtro de seguranÃ§a que restringia Patrimônionios
+            // Nota: Removido filtro de seguranÃ§a que restringia Patrimônios
 
-            // para nãoo-admins. Todos os Patrimônionios serÃ£o retornados para a
+            // para não-admins. Todos os Patrimônios serÃ£o retornados para a
 
             // listagem de disponibilidade/atribuiÃ§Ã£o conforme regra de negÃ³cio.
 
@@ -5286,7 +5286,7 @@ class PatrimonioController extends Controller
 
                         if (empty($displayText)) {
 
-                            // Ãltimo fallback: tentar juntar campos menores (nÃºmero sÃ©rie, cor) ou usar texto padrÃ£o
+                            // Ãltimo fallback: tentar juntar campos menores (número sÃ©rie, cor) ou usar texto padrÃ£o
 
                             $parts = array_filter([$p->NUSERIE ?? null, $p->COR ?? null]);
 
@@ -5352,9 +5352,9 @@ class PatrimonioController extends Controller
 
     {
 
-        // ð Debug inicial
+        //  Debug inicial
 
-        Log::info('ð [VALIDATE] InÃ­cio da validaÃ§Ã£o', [
+        Log::info(' [VALIDATE] InÃ­cio da validaÃ§Ã£o', [
 
             'request_all' => $request->all(),
 
@@ -5372,7 +5372,7 @@ class PatrimonioController extends Controller
 
             'NUMOF' => 'nullable|integer',
 
-            // Fluxo novo de códigodigo
+            // Fluxo novo de código
 
             'NUSEQOBJ' => 'nullable|integer',
 
@@ -5436,7 +5436,7 @@ class PatrimonioController extends Controller
             }
         }
 
-        Log::info('ð [VALIDATE] Dados apÃ³s validaÃ§Ã£o inicial', [
+        Log::info(' [VALIDATE] Dados apÃ³s validaÃ§Ã£o inicial', [
 
             'data' => $data,
 
@@ -5444,7 +5444,7 @@ class PatrimonioController extends Controller
 
 
 
-        // 2) Resolver o códigodigo do objeto a partir de NUSEQOBJ (preferencial) ou CODOBJETO (fallback)
+        // 2) Resolver o código do objeto a partir de NUSEQOBJ (preferencial) ou CODOBJETO (fallback)
 
         $codigoInput = $request->input('NUSEQOBJ', $request->input('CODOBJETO'));
 
@@ -5457,7 +5457,7 @@ class PatrimonioController extends Controller
 
             throw ValidationException::withMessages([
 
-                'NUSEQOBJ' => 'O códigodigo do objeto deve ser numÃ©rico.'
+                'NUSEQOBJ' => 'O código do objeto deve ser numÃ©rico.'
 
             ]);
 
@@ -5517,7 +5517,7 @@ class PatrimonioController extends Controller
 
 
 
-        Log::info('ð [VALIDATE] ApÃ³s mapear códigodigo do objeto', [
+        Log::info(' [VALIDATE] ApÃ³s mapear código do objeto', [
 
             'CODOBJETO' => $data['CODOBJETO'],
 
@@ -5573,7 +5573,7 @@ class PatrimonioController extends Controller
 
 
 
-    /* === Rotas solicitadas para geraÃ§Ã£o e atribuiÃ§Ã£o direta de códigodigos (fluxo simplificado) === */
+    /* === Rotas solicitadas para geraÃ§Ã£o e atribuiÃ§Ã£o direta de códigos (fluxo simplificado) === */
 
     private function normalizeConferidoFlag(mixed $value): ?string
 
@@ -5639,7 +5639,7 @@ class PatrimonioController extends Controller
 
             Log::error('Falha gerarCodigo', ['erro' => $e->getMessage()]);
 
-            return response()->json(['message' => 'Erro ao gerar códigodigo'], 500);
+            return response()->json(['message' => 'Erro ao gerar código'], 500);
 
         }
 
@@ -5651,11 +5651,11 @@ class PatrimonioController extends Controller
 
     {
 
-        // Aceita códigodigo numÃ©rico vindo como number ou string
+        // Aceita código numÃ©rico vindo como number ou string
 
         $request->validate([
 
-            'code' => 'required', // pode vir number no JSON, entÃ£o nãoo restringimos a string
+            'code' => 'required', // pode vir number no JSON, entÃ£o não restringimos a string
 
             'ids' => 'required|array|min:1',
 
@@ -5695,7 +5695,7 @@ class PatrimonioController extends Controller
 
             Log::error('Falha atribuirCodigo', ['erro' => $e->getMessage()]);
 
-            return response()->json(['message' => 'Erro ao atribuir códigodigo'], 500);
+            return response()->json(['message' => 'Erro ao atribuir código'], 500);
 
         }
 
@@ -5705,7 +5705,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * Desatribui (remove) o códigodigo de termo de uma lista de Patrimônionios (API JSON usada na pÃ¡gina de atribuiÃ§Ã£o)
+     * Desatribui (remove) o código de termo de uma lista de Patrimônios (API JSON usada na pÃ¡gina de atribuiÃ§Ã£o)
 
      */
 
@@ -5725,13 +5725,13 @@ class PatrimonioController extends Controller
 
             $ids = $request->input('ids', []);
 
-            // Seleciona Patrimônionios que realmente tÃªm códigodigo para evitar updates desnecessÃ¡rios
+            // Seleciona Patrimônios que realmente tÃªm código para evitar updates desnecessÃ¡rios
 
             $patrimonios = Patrimonio::whereIn('NUSEQPATR', $ids)->whereNotNull('NMPLANTA')->get(['NUSEQPATR', 'NUPATRIMONIO', 'NMPLANTA', 'CDMATRFUNCIONARIO']);
 
             if ($patrimonios->isEmpty()) {
 
-                return response()->json(['message' => 'Nenhum Patrimônionio elegÃ­vel para desatribuir', 'updated_ids' => []], 200);
+                return response()->json(['message' => 'Nenhum Patrimônio elegÃ­vel para desatribuir', 'updated_ids' => []], 200);
 
             }
 
@@ -5803,7 +5803,7 @@ class PatrimonioController extends Controller
 
             Log::error('Falha desatribuirCodigo', ['erro' => $e->getMessage()]);
 
-            return response()->json(['message' => 'Erro ao desatribuir códigodigo'], 500);
+            return response()->json(['message' => 'Erro ao desatribuir código'], 500);
 
         }
 
@@ -5867,7 +5867,7 @@ class PatrimonioController extends Controller
 
 
 
-            // Verificar se jÃ¡ existe local com esse códigodigo
+            // Verificar se jÃ¡ existe local com esse código
 
             $localExistente = LocalProjeto::where('cdlocal', $cdlocal)->first();
 
@@ -5877,7 +5877,7 @@ class PatrimonioController extends Controller
 
                     'success' => false,
 
-                    'message' => 'JÃ¡ existe um local com este códigodigo.'
+                    'message' => 'JÃ¡ existe um local com este código.'
 
                 ]);
 
@@ -5999,7 +5999,7 @@ class PatrimonioController extends Controller
 
      * Cria um novo local vinculado a um projeto existente.
 
-     * Usado no modal de criar local do formulário de Patrimônionio.
+     * Usado no modal de criar local do formulário de Patrimônio.
 
      */
 
@@ -6025,9 +6025,9 @@ class PatrimonioController extends Controller
 
                 'local' => 'required|string|max:255',
 
-                'cdprojeto' => 'required', // Aceita string ou nÃºmero
+                'cdprojeto' => 'required', // Aceita string ou número
 
-                'cdlocal' => 'required',    // Aceita string ou nÃºmero
+                'cdlocal' => 'required',    // Aceita string ou número
 
             ], [
 
@@ -6061,7 +6061,7 @@ class PatrimonioController extends Controller
 
             $nomeLocal = $request->input('local');
 
-            $cdprojeto = (int) $request->input('cdprojeto');  // Converter para INT, nãoo STRING!
+            $cdprojeto = (int) $request->input('cdprojeto');  // Converter para INT, não STRING!
 
             $cdlocalBase = (string) $request->input('cdlocal');
 
@@ -6079,7 +6079,7 @@ class PatrimonioController extends Controller
 
                     'success' => false,
 
-                    'message' => 'Projeto nãoo encontrado.'
+                    'message' => 'Projeto não encontrado.'
 
                 ], 404);
 
@@ -6271,7 +6271,7 @@ class PatrimonioController extends Controller
 
             if ($localInfo) {
 
-                // Tentar extrair códigodigo e nome do formato "123 - Nome do Local"
+                // Tentar extrair código e nome do formato "123 - Nome do Local"
 
                 if (preg_match('/^(\d+)\s*-\s*(.+)$/', $localInfo, $matches)) {
 
@@ -6377,7 +6377,7 @@ class PatrimonioController extends Controller
 
     /**
 
-     * Cria local e/ou projeto baseado nos dados do formulário de Patrimônionio.
+     * Cria local e/ou projeto baseado nos dados do formulário de Patrimônio.
 
      */
 
@@ -6463,7 +6463,7 @@ class PatrimonioController extends Controller
 
             if ($nomeProjeto) {
 
-                // Criar novo projeto sempre (nãoo buscar existente)
+                // Criar novo projeto sempre (não buscar existente)
 
                 $maxCodigo = Tabfant::max('CDPROJETO') ?? 0;
 
@@ -6765,7 +6765,7 @@ class PatrimonioController extends Controller
 
     {
 
-        // Precisa ao menos do local para validar/regra
+        // Precisa ao menos do local para validar/regrafia
 
         if (!$cdlocal) {
 
@@ -6920,4 +6920,6 @@ class PatrimonioController extends Controller
 
 
 }
+
+
 

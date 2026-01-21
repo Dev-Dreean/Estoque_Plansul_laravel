@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -14,3 +14,5 @@ class AlmoxarifadoController extends Controller
         return view('almoxarifado.construcao');
     }
 }
+
+

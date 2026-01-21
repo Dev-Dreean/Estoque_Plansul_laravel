@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers\Auth;
 
@@ -19,3 +19,4 @@ class EmailVerificationPromptController extends Controller
                     : view('auth.verify-email');
     }
 }
+

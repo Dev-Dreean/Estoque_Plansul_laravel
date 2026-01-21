@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers\Auth;
 
@@ -27,3 +27,4 @@ class ResetPasswordController extends Controller
      */
     protected $redirectTo = '/home';
 }
+

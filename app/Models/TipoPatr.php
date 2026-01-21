@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -30,3 +30,4 @@ class TipoPatr extends Model
         return $this->hasMany(ObjetoPatr::class, 'NUSEQTIPOPATR', 'NUSEQTIPOPATR');
     }
 }
+

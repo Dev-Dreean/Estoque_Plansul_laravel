@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -61,3 +61,4 @@ class SolicitacaoBem extends Model
         return $this->belongsTo(Tabfant::class, 'projeto_id', 'id');
     }
 }
+

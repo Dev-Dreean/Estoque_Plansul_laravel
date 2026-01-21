@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Observers;
 
@@ -103,3 +103,4 @@ class RegistroRemovidoObserver
         return $model::class . ' #' . $model->getKey();
     }
 }
+

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -43,7 +43,7 @@ class ObjetoPatr extends Model
     protected $keyType = 'int';
     public $timestamps = false;
 
-    // fillable dinâmico baseado na PK detectada
+    // fillable dinmico baseado na PK detectada
     public function getFillable()
     {
         $pk = $this->primaryKey ?? 'NUSEQOBJETO';
@@ -63,3 +63,4 @@ class ObjetoPatr extends Model
         return $this->belongsTo(TipoPatr::class, 'NUSEQTIPOPATR', 'NUSEQTIPOPATR');
     }
 }
+

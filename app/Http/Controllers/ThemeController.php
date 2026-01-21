@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -81,3 +81,5 @@ class ThemeController extends Controller
             ->with('success', 'Tema atualizado para "' . $theme . '".');
     }
 }
+
+

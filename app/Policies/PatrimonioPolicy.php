@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Policies;
 
@@ -114,3 +114,4 @@ class PatrimonioPolicy
         return true;
     }
 }
+

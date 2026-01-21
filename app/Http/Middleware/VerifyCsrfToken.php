@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Middleware;
 
@@ -37,3 +37,4 @@ class VerifyCsrfToken extends Middleware
         return parent::handle($request, $next);
     }
 }
+

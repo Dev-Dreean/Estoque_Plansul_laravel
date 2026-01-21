@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\View\Components;
 
@@ -24,3 +24,4 @@ class PatrimonioForm extends Component
         return view('components.patrimonio-form');
     }
 }
+

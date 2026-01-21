@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Services;
 
@@ -84,3 +84,4 @@ class CodigoService
         });
     }
 }
+

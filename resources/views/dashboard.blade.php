@@ -6,7 +6,7 @@
         <div class="lg:col-span-1 space-y-6">
           <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 text-gray-900 dark:text-gray-100">
-              <h3 class="font-semibold text-lg mb-2">Patrim&ocirc;nios Cadastrados Hoje</h3>
+              <h3 class="font-semibold text-lg mb-2">Patrimônios Cadastrados Hoje</h3>
               <p class="text-5xl font-bold text-plansul-blue">{{ $cadastrosHoje }}</p>
             </div>
           </div>

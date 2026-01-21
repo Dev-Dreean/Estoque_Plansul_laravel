@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Providers;
 
@@ -46,3 +46,4 @@ class AppServiceProvider extends ServiceProvider
         User::observe(RegistroRemovidoObserver::class);
     }
 }
+

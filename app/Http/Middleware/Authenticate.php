@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // DENTRO DE app/Http/Middleware/Authenticate.php
 
 namespace App\Http\Middleware;
@@ -16,3 +16,4 @@ class Authenticate extends Middleware
         return $request->expectsJson() ? null : route('login');
     }
 }
+

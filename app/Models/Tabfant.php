@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 
 // Caminho: app/Models/Tabfant.php
@@ -66,3 +66,4 @@ class Tabfant extends Model
         $this->attributes['UF'] = $value ? strtoupper($value) : null;
     }
 }
+

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -75,3 +75,5 @@ class RelatorioDownloadController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 }
+
+

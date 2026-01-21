@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -27,4 +27,5 @@ class RegistroRemovido extends Model
         'payload' => 'array',
     ];
 }
+
 

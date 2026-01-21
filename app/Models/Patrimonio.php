@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -422,4 +422,5 @@ class Patrimonio extends Model
         });
     }
 }
+
 

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers\Auth;
 
@@ -84,3 +84,4 @@ class AuthenticatedSessionController extends Controller
         return redirect()->route('menu.index');
     }
 }
+

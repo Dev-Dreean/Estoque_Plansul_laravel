@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -211,3 +211,5 @@ class PatrimonioBulkController extends Controller
         abort($status, $message);
     }
 }
+
+

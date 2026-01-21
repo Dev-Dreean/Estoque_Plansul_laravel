@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -223,3 +223,5 @@ class CadastroTelaController extends Controller
         ];
     }
 }
+
+

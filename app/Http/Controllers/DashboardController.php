@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -45,7 +45,7 @@ class DashboardController extends Controller
 
     /**
      * Retorna JSON com labels e data para o gráfico conforme o período solicitado.
-     * Parâmetros aceitos via query: period = day|week|month|year (default: week)
+     * Parmetros aceitos via query: period = day|week|month|year (default: week)
      */
     public function data(Request $request)
     {
@@ -154,3 +154,5 @@ class DashboardController extends Controller
         ]);
     }
 }
+
+

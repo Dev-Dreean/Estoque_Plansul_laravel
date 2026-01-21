@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers\Auth;
 
@@ -27,3 +27,4 @@ class PasswordController extends Controller
         return back()->with('status', 'password-updated');
     }
 }
+

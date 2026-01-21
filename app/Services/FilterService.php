@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Services;
 
@@ -89,9 +89,9 @@ class FilterService
     private static function normalizar(string $str): string
     {
         // Remove acentos
-        $str = preg_replace('/[áàâãä]/i', 'a', $str);
+        $str = preg_replace('/[áàãä]/i', 'a', $str);
         $str = preg_replace('/[éèêë]/i', 'e', $str);
-        $str = preg_replace('/[íìîï]/i', 'i', $str);
+        $str = preg_replace('/[íìî]/i', 'i', $str);
         $str = preg_replace('/[óòôõö]/i', 'o', $str);
         $str = preg_replace('/[úùûü]/i', 'u', $str);
         $str = preg_replace('/[ç]/i', 'c', $str);
@@ -156,7 +156,7 @@ class FilterService
      * - 0: Match exato
      * - 5-15: Começa com termo (números têm penalidade menor)
      * - 20-50: Contém termo (com posição considerada)
-     * - 100-200: Distância de Levenshtein pequena
+     * - 100-200: Distncia de Levenshtein pequena
      * - PHP_INT_MAX: Não encontrado
      * 
      * @param mixed $valor Valor do campo
@@ -196,7 +196,7 @@ class FilterService
             return (int) $score;
         }
 
-        // ❓ Distância de Levenshtein (similaridade fuzzy)
+        // ❓ Distncia de Levenshtein (similaridade fuzzy)
         $distancia = self::distanciaLevenshtein($valorNorm, $termo);
 
         // Aceitar matches muito similares (até 2 caracteres de diferença)
@@ -238,11 +238,11 @@ class FilterService
     }
 
     /**
-     * Calcular distância de Levenshtein entre duas strings
+     * Calcular distncia de Levenshtein entre duas strings
      * 
      * @param string $s1 Primeira string
      * @param string $s2 Segunda string
-     * @return int Distância
+     * @return int Distncia
      */
     private static function distanciaLevenshtein(string $s1, string $s2): int
     {
@@ -311,3 +311,4 @@ class FilterService
         return $items;
     }
 }
+

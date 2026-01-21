@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -498,3 +498,5 @@ class TermoDocxController extends Controller
         return "termo_responsabilidade_{$matricula}_{$type}_{$timestamp}.docx";
     }
 }
+
+

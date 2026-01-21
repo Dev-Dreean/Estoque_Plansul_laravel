@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 
 
@@ -264,7 +264,7 @@ class RelatorioBensController extends Controller
 
         if (!$tipo && empty($data['DETIPOPATR'])) {
 
-            $message = 'Informe o nome do tipo para criar o cÃ³digo informado.';
+            $message = 'Informe o nome do tipo para criar o código informado.';
 
             if ($wantsJson) {
 
@@ -385,4 +385,6 @@ class RelatorioBensController extends Controller
     }
 
 }
+
+
 

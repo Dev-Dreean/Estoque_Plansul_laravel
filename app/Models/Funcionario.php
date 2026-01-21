@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
@@ -26,3 +26,4 @@ class Funcionario extends Model
         'UFPROJ',
     ];
 }
+

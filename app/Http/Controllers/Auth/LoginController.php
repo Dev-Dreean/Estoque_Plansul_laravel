@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 
 // app/Http/Controllers/Auth/LoginController.php

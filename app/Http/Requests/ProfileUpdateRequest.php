@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Requests;
 
@@ -28,3 +28,4 @@ class ProfileUpdateRequest extends FormRequest
         ];
     }
 }
+

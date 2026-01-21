@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -361,3 +361,5 @@ class RemovidosController extends Controller
             ->with('success', 'Registro removido definitivamente.');
     }
 }
+
+

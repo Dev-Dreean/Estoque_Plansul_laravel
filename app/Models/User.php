@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 
 // app/Models/User.php
@@ -357,3 +357,4 @@ class User extends Authenticatable
     }
 
 }
+

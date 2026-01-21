@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -97,3 +97,5 @@ class HistoricoController extends Controller
         return view('historico.index', compact('historicos', 'usuarios'));
     }
 }
+
+

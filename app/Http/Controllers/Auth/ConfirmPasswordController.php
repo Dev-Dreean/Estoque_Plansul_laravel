@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers\Auth;
 
@@ -37,3 +37,4 @@ class ConfirmPasswordController extends Controller
         $this->middleware('auth');
     }
 }
+

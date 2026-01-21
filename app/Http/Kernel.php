@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // DENTRO DE app/Http/Kernel.php
 
 namespace App\Http;
@@ -62,3 +62,4 @@ class Kernel extends HttpKernel
         'profile.complete' => \App\Http\Middleware\EnsureProfileIsComplete::class,
     ];
 }
+

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -79,4 +79,6 @@ class FuncionarioController extends Controller
         return response()->json($funcionarios);
     }
 }
+
+
 

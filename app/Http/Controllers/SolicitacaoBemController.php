@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -412,3 +412,5 @@ class SolicitacaoBemController extends Controller
         }
     }
 }
+
+

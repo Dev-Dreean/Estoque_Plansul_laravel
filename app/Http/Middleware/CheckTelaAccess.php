@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Middleware;
 
@@ -44,3 +44,4 @@ class CheckTelaAccess
         return $next($request);
     }
 }
+

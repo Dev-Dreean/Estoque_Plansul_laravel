@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Middleware;
 
@@ -21,3 +21,4 @@ class AdminMiddleware
         abort(403, 'Acesso não autorizado.');
     }
 }
+

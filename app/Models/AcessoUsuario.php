@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -100,3 +100,4 @@ class AcessoUsuario extends Model
         return $query->where('NUSEQTELA', $nuseqtela);
     }
 }
+

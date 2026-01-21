@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Services;
 
@@ -192,3 +192,4 @@ class SearchCacheService
         return $resultados;
     }
 }
+

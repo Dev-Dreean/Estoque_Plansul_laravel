@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Middleware;
 
@@ -90,3 +90,4 @@ class ApplyTheme
         return $response;
     }
 }
+

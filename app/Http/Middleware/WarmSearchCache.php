@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Middleware;
 
@@ -23,3 +23,4 @@ class WarmSearchCache
         return $next($request);
     }
 }
+

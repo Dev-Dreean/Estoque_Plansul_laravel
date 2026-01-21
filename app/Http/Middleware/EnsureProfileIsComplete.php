@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 // DENTRO DE app/Http/Middleware/EnsureProfileIsComplete.php
 
@@ -38,3 +38,4 @@ class EnsureProfileIsComplete // <-- Verifique se o nome da classe está correto
         return $next($request);
     }
 }
+

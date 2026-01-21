@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -26,3 +26,4 @@ class SolicitacaoBemItem extends Model
         return $this->belongsTo(SolicitacaoBem::class, 'solicitacao_id');
     }
 }
+

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
@@ -621,3 +621,5 @@ class RelatorioController extends Controller
         return response()->download($tempPath)->deleteFileAfterSend(true);
     }
 }
+
+

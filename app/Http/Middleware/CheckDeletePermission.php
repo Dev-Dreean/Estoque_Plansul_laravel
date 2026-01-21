@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Middleware;
 
@@ -47,3 +47,4 @@ class CheckDeletePermission
         return $next($request);
     }
 }
+

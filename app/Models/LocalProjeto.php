@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -84,4 +84,5 @@ class LocalProjeto extends Model
         return $this->uf_estado;
     }
 }
+
 

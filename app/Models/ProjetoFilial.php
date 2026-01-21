@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -15,3 +15,4 @@ class ProjetoFilial extends Model
         return $this->belongsTo(Tabfant::class, 'tabfant_id');
     }
 }
+

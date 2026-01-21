@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers\Auth;
 
@@ -25,3 +25,4 @@ class VerifyEmailController extends Controller
         return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
     }
 }
+

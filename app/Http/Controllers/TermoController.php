@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -248,3 +248,5 @@ class TermoController extends Controller
         return back()->with('success', 'Código cadastrado com sucesso.');
     }
 }
+
+

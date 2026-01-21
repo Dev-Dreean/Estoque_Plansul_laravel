@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Middleware;
 
@@ -35,3 +35,4 @@ class CheckSessionExpiration
         return $next($request);
     }
 }
+

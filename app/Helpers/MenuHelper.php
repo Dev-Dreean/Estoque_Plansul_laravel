@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Helpers;
 
@@ -212,3 +212,4 @@ HTML;
 HTML;
     }
 }
+

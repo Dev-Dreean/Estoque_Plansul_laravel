@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // DENTRO DE app/Models/HistoricoMovimentacao.php
 
 namespace App\Models;
@@ -27,3 +27,4 @@ class HistoricoMovimentacao extends Model
         'CO_AUTOR',
     ];
 }
+

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Helpers;
 
@@ -17,3 +17,4 @@ class RouteHelper
         return (bool) Route::getRoutes()->getByName($routeName);
     }
 }
+

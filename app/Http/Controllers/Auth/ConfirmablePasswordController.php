@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers\Auth;
 
@@ -38,3 +38,4 @@ class ConfirmablePasswordController extends Controller
         return redirect()->intended(route('dashboard', absolute: false));
     }
 }
+

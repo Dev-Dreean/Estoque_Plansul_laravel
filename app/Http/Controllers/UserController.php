@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -595,3 +595,5 @@ class UserController extends Controller
         return !User::where('NMLOGIN', $login)->exists();
     }
 }
+
+
