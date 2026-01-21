@@ -73,8 +73,11 @@
 
                         @php
                             $userForCreate = auth()->user();
-                            $canCreateSolicitacao = ($userForCreate?->isAdmin() ?? false)
-                                || (($userForCreate?->PERFIL ?? '') === \App\Models\User::PERFIL_CONSULTOR);
+                            $isAdmin = $userForCreate?->isAdmin() ?? false;
+                            $isConsultor = ($userForCreate?->PERFIL ?? '') === \App\Models\User::PERFIL_CONSULTOR;
+                            $isUsrComPermissao = ($userForCreate?->PERFIL ?? '') === \App\Models\User::PERFIL_USUARIO 
+                                && ($userForCreate?->temAcessoTela('1013') ?? false);
+                            $canCreateSolicitacao = $isAdmin || $isConsultor || $isUsrComPermissao;
                         @endphp
                         @if($canCreateSolicitacao)
                             <div>

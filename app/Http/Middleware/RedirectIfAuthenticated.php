@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // DENTRO DE app/Http/Middleware/RedirectIfAuthenticated.php
 
 namespace App\Http\Middleware;

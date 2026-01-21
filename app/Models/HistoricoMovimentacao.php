@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // DENTRO DE app/Models/HistoricoMovimentacao.php
 
 namespace App\Models;

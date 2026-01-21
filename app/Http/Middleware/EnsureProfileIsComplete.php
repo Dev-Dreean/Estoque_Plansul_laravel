@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 declare(strict_types=1);
 // DENTRO DE app/Http/Middleware/EnsureProfileIsComplete.php
 

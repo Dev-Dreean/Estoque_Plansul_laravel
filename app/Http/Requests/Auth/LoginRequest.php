@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 // app/Http/Requests/Auth/LoginRequest.php
 

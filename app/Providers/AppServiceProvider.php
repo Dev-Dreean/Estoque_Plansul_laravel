@@ -1,10 +1,8 @@
-﻿<?php
+<?php
 
 namespace App\Providers;
 
-// ADICIONE ESTA LINHA
 use Illuminate\Support\Facades\Schema;
-
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;

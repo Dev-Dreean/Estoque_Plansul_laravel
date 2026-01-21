@@ -15,15 +15,20 @@
     $telaObrigatoria = 1000;
     $telasCombinadasIds = [1000, 1006];
     $telasPrincipaisIds = [1001, 1007];
+    $telasSolicitacoesIds = [1010, 1011, 1012, 1013];
     $telasDisponiveis = collect($telasDisponiveis ?? []);
     $telaPatrimonio = $telasDisponiveis->firstWhere('NUSEQTELA', $telaObrigatoria);
     $telasPrincipais = $telasDisponiveis->filter(function ($tela) use ($telasPrincipaisIds) {
         return in_array((int) $tela->NUSEQTELA, $telasPrincipaisIds, true);
     })->values();
-    $telasEspeciais = $telasDisponiveis->reject(function ($tela) use ($telasPrincipaisIds, $telasCombinadasIds) {
+    $telasSolicitacoes = $telasDisponiveis->filter(function ($tela) use ($telasSolicitacoesIds) {
+        return in_array((int) $tela->NUSEQTELA, $telasSolicitacoesIds, true);
+    })->values();
+    $telasEspeciais = $telasDisponiveis->reject(function ($tela) use ($telasPrincipaisIds, $telasCombinadasIds, $telasSolicitacoesIds) {
         $codigo = (int) $tela->NUSEQTELA;
         return in_array($codigo, $telasPrincipaisIds, true)
-            || in_array($codigo, $telasCombinadasIds, true);
+            || in_array($codigo, $telasCombinadasIds, true)
+            || in_array($codigo, $telasSolicitacoesIds, true);
     })->values();
 
     $acessosAtuais = $acessosAtuais ?? [];
@@ -162,6 +167,23 @@
             @error('telas')
             <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
             @enderror
+        </div>
+    </x-permissions-section>
+    @endif
+
+    @if($telasSolicitacoes->isNotEmpty())
+    <x-permissions-section title="Solicitações de Bens" description="Permissões para criar, visualizar e gerenciar solicitações de bens." badge="Admin">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+            @foreach($telasSolicitacoes as $tela)
+            @php
+                $selecionada = in_array((int) $tela->NUSEQTELA, $telasSelecionadas, true);
+            @endphp
+            <x-permission-checkbox 
+                :checked="$selecionada"
+                value="{{ $tela->NUSEQTELA }}"
+                title="{{ $tela->DETELA }}"
+                subtitle="Código: {{ $tela->NUSEQTELA }}{{ !empty($tela->NMSISTEMA) ? ' | Sistema: ' . $tela->NMSISTEMA : '' }}" />
+            @endforeach
         </div>
     </x-permissions-section>
     @endif

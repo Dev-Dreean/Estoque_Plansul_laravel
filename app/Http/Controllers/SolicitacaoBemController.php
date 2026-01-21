@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Http\Controllers;
 
@@ -19,6 +19,7 @@ class SolicitacaoBemController extends Controller
 {
     private const TELA_SOLICITACOES_VER_TODAS = 1011;
     private const TELA_SOLICITACOES_ATUALIZAR = 1012;
+    private const TELA_SOLICITACOES_CRIAR = 1013;
 
     public function index(Request $request): View
     {
@@ -342,7 +343,15 @@ class SolicitacaoBemController extends Controller
         if ($user->isAdmin()) {
             return true;
         }
-        return $user->PERFIL === User::PERFIL_CONSULTOR;
+        // Consultores sempre podem criar
+        if ($user->PERFIL === User::PERFIL_CONSULTOR) {
+            return true;
+        }
+        // USRs precisam ter permissão específica
+        if ($user->PERFIL === User::PERFIL_USR) {
+            return $user->temAcessoTela((string) self::TELA_SOLICITACOES_CRIAR);
+        }
+        return false;
     }
 
     private function applyOwnerScope($query, ?User $user): void
