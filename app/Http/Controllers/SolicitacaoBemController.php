@@ -207,7 +207,6 @@ class SolicitacaoBemController extends Controller
         }
 
         $data = $request->validate([
-            'status' => ['required', Rule::in(SolicitacaoBem::statusOptions())],
             'local_destino' => ['nullable', 'string', 'max:150'],
             'observacao_controle' => ['nullable', 'string', 'max:2000'],
             'matricula_recebedor' => ['nullable', 'string', 'max:20'],

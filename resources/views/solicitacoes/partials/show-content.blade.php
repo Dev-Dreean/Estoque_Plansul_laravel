@@ -261,24 +261,6 @@
                                             <input type="hidden" name="modal" value="1" />
                                         @endif
 
-                                        <!-- Status Field -->
-                                        <div>
-                                            <label for="status" class="block text-[10px] font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wide mb-1 ml-0.5">Definir Status</label>
-                                            <div class="relative">
-                                                <select id="status" name="status" class="block w-full rounded-lg border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-900/80 text-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1.5 shadow-sm">
-                                                    @foreach($statusOptions as $status)
-                                                        <option value="{{ $status }}" @selected(old('status', $solicitacao->status) === $status)>{{ $status }}</option>
-                                                    @endforeach
-                                                </select>
-                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                            <x-input-error :messages="$errors->get('status')" class="mt-1" />
-                                        </div>
-
                                         <div class="relative">
                                             <div class="absolute inset-0 flex items-center" aria-hidden="true">
                                                 <div class="w-full border-t border-[color:var(--solicitacao-modal-border,#d6dde6)]"></div>
