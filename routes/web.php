@@ -245,6 +245,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         ->middleware('tela.access:1010');
 
     // Ações de solicitações de bens
+    Route::get('/solicitacoes-bens/{solicitacao}/show-modal', 
+        [SolicitacaoBemController::class, 'showModal'])->name('solicitacoes-bens.show-modal')->middleware('tela.access:1010');
     Route::post('/solicitacoes-bens/{solicitacao}/confirm', 
         [SolicitacaoBemController::class, 'confirm'])->name('solicitacoes-bens.confirm')->middleware('tela.access:1010');
     Route::post('/solicitacoes-bens/{solicitacao}/approve', 

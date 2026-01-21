@@ -179,6 +179,22 @@ class SolicitacaoBemController extends Controller
         return view('solicitacoes.show', compact('solicitacao', 'statusOptions', 'isModal', 'canUpdate'));
     }
 
+    public function showModal(Request $request, SolicitacaoBem $solicitacao): View
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canViewSolicitacao($user, $solicitacao)) {
+            abort(403, 'Você não tem permissão para visualizar esta solicitacao.');
+        }
+
+        $solicitacao->load(['itens', 'projeto']);
+        $statusOptions = SolicitacaoBem::statusOptions();
+        $canUpdate = $this->canUpdateSolicitacao($user);
+        $isModal = true;
+
+        return view('solicitacoes.partials.show-content', compact('solicitacao', 'statusOptions', 'isModal', 'canUpdate'));
+    }
+
     public function update(Request $request, SolicitacaoBem $solicitacao): RedirectResponse|JsonResponse
     {
         /** @var User|null $user */

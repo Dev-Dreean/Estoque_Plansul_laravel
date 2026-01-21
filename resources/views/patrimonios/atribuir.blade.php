@@ -552,7 +552,6 @@
         gerandoCodigo: false,
         groupState: {}, // Estado dos grupos (expandido/colapsado)
         grupoSelecionados: {}, // Itens selecionados por grupo
-        bulkToggle: false,
         selectionEnabled: false,
         // Estados de listagem de códigos removidos (modal removido)
         init() {
@@ -636,10 +635,8 @@
             selectedSet.delete(id);
           }
           this.selectedPatrimonios = Array.from(selectedSet);
-          if (!this.bulkToggle) {
-            this.saveSelection();
-            this.updateCounter();
-          }
+          this.saveSelection();
+          this.updateCounter();
         },
         syncCodigoTermo(value) {
           this.codigoTermo = value;
@@ -673,9 +670,6 @@
         toggleAll(event) {
           const source = event.target;
           const checkboxes = document.querySelectorAll('.patrimonio-checkbox');
-          if (this.selectionEnabled) {
-            this.bulkToggle = true;
-          }
           checkboxes.forEach(cb => {
             cb.checked = source.checked;
             // Dispara evento change para notificar o footerAcoes()
@@ -683,13 +677,23 @@
               bubbles: true
             }));
           });
-          if (this.selectionEnabled) {
-            this.bulkToggle = false;
-            this.saveSelection();
-          }
           this.updateCounter();
         },
         updateCounter() {
+          if (this.selectionEnabled) {
+            const selectedSet = new Set((this.selectedPatrimonios || []).map(String));
+            const count = selectedSet.size;
+            this.contadorTexto = count === 0 ? '0 patrimônios selecionados' : `${count} patrimônio${count>1?'s':''} selecionado${count>1?'s':''}`;
+            const selectAll = document.getElementById('selectAll');
+            if (selectAll) {
+              const allCheckboxes = document.querySelectorAll('.patrimonio-checkbox');
+              const selectedVisible = Array.from(allCheckboxes).filter(cb => selectedSet.has(String(cb.value))).length;
+              selectAll.checked = allCheckboxes.length > 0 && selectedVisible === allCheckboxes.length;
+              selectAll.indeterminate = selectedVisible > 0 && selectedVisible < allCheckboxes.length;
+            }
+            this.selectedPatrimonios = Array.from(selectedSet);
+            return;
+          }
           const checkboxes = document.querySelectorAll('.patrimonio-checkbox:checked');
           const count = checkboxes.length;
           this.contadorTexto = count === 0 ? '0 patrimônios selecionados' : `${count} patrimônio${count>1?'s':''} selecionado${count>1?'s':''}`;
@@ -1140,9 +1144,16 @@
           // Auto-gerar código ao inicializar
           this.gerarAutomatico();
         },
+        getSelectedIds() {
+          if (window.patrimonioAtribuirSelection && window.patrimonioAtribuirSelection.status === 'disponivel') {
+            return window.patrimonioAtribuirSelection.read();
+          }
+          return Array.from(document.querySelectorAll("input.patrimonio-checkbox[name='ids[]']:checked")).map(cb => cb.value);
+        },
         wireCheckboxListener() {
           const update = () => {
-            this.qtdSelecionados = document.querySelectorAll("input.patrimonio-checkbox[name='ids[]']:checked").length;
+            const ids = this.getSelectedIds();
+            this.qtdSelecionados = ids.length;
             // Mudar para estado 'generated' quando houver seleção
             if (this.qtdSelecionados > 0 && this.generatedCode && this.state === 'idle') {
               this.state = 'generated';
@@ -1202,7 +1213,7 @@
           if (this.qtdSelecionados === 0 || !this.generatedCode) return;
           this.state = 'assigning';
           try {
-            const ids = Array.from(document.querySelectorAll("input.patrimonio-checkbox[name='ids[]']:checked")).map(cb => cb.value);
+            const ids = this.getSelectedIds();
             const res = await fetch("{{ route('patrimonios.atribuirCodigo') }}", {
               method: 'POST',
               headers: {
@@ -1236,6 +1247,9 @@
               }
             });
             this.qtdSelecionados = 0;
+            if (window.patrimonioAtribuirSelection) {
+              window.patrimonioAtribuirSelection.clear();
+            }
             // Redireciona imediatamente para aba de atribuídos COM filtro do termo criado
             window.location.href = "{{ route('patrimonios.atribuir.codigos') }}?status=indisponivel&filtro_termo=" + this.generatedCode;
             this.state = 'generated';

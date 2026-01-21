@@ -645,7 +645,7 @@
                         this.showModalContentReady = false;
                         modalBody.innerHTML = '';
 
-                        const url = "{{ url('solicitacoes-bens') }}/" + encodeURIComponent(id) + "?modal=1";
+                        const url = "{{ url('solicitacoes-bens') }}/" + encodeURIComponent(id) + "/show-modal";
                         console.log('[SOLICITACAO] Fetching:', url);
                         
                         fetch(url, {
@@ -786,8 +786,13 @@
 
                     async submitModalForm(form, targetId) {
                         if (!form) return;
-                        this.formModalLoading = true;
-                        this.showModalLoading = true; // Block both just in case
+                        
+                        // Fechar modal imediatamente ao submeter
+                        this.closeFormModal();
+                        this.closeShowModal();
+                        
+                        // Mostrar loading (reutilizar o loading do show modal)
+                        this.showModalLoading = true;
                         
                         const formData = new FormData(form);
                         const method = (form.getAttribute('method') || 'POST').toUpperCase();
@@ -815,8 +820,6 @@
                                     }
                                     if (data.success) {
                                         // Sucesso sem redirect: reload page
-                                        this.closeFormModal();
-                                        this.closeShowModal();
                                         window.location.reload();
                                         return;
                                     }
@@ -830,6 +833,11 @@
                             // Se for sucesso (200 OK) e HTML, pode ser que o controller redirecionou para INDEX ou SHOW page.
                             // Mas se estamos num modal, não queremos renderizar a INDEX inteira dentro do modal.
                             // ASSUMCAO: Se retornou HTML, é porque deu erro de validacao e o Laravel redirecionou 'back' (para a URL do modal).
+                            
+                            // Se tiver erro, reabrir o modal
+                            this.showModalLoading = false;
+                            this.formModalOpen = true;
+                            this.formModalLoading = false;
                             
                             const target = document.getElementById(targetId);
                             if (target) {
@@ -850,10 +858,10 @@
                         } catch (err) {
                             console.error('[SOLICITACAO] Modal submit error', err);
                             console.log('Error details:', err.message);
+                            this.showModalLoading = false;
                             alert('Falha ao salvar solicitacao. Verifique sua conexao.');
                         } finally {
-                            this.formModalLoading = false;
-                            this.showModalLoading = false;
+                            // Não fazer nada aqui pois já controlamos acima
                         }
                     }
                 };
