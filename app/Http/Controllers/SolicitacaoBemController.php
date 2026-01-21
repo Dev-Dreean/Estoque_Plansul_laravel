@@ -234,19 +234,8 @@ class SolicitacaoBemController extends Controller
         $statusNovo = $data['status'];
         $solicitacao->fill($data);
 
-        if ($statusNovo === SolicitacaoBem::STATUS_SEPARADO && !$solicitacao->separado_em) {
-            $solicitacao->separado_em = now();
-            $solicitacao->separado_por_id = Auth::id();
-        }
-
-        if ($statusNovo === SolicitacaoBem::STATUS_CONCLUIDO && !$solicitacao->concluido_em) {
-            $solicitacao->concluido_em = now();
-            $solicitacao->concluido_por_id = Auth::id();
-            if (!$solicitacao->separado_em) {
-                $solicitacao->separado_em = $solicitacao->concluido_em;
-                $solicitacao->separado_por_id = Auth::id();
-            }
-        }
+        // Não há mais lógica de status antigos (SEPARADO, CONCLUIDO)
+        // O novo fluxo é: PENDENTE -> AGUARDANDO_CONFIRMACAO -> CONFIRMADO ou CANCELADO
 
         $solicitacao->save();
 
@@ -258,7 +247,7 @@ class SolicitacaoBemController extends Controller
         }
 
         return redirect()
-            ->route('solicitacoes-bens.show', $solicitacao)
+            ->route('solicitacoes-bens.index')
             ->with('success', 'Solicitacao atualizada com sucesso.');
     }
 
