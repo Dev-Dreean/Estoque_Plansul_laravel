@@ -48,7 +48,7 @@ class BenchmarkPerformance extends Command
             $inicio = microtime(true);
             
             $totalRecords = 0;
-            DB::cursor($query)->each(function ($record) use (&$totalRecords) {
+            $query->cursor()->each(function ($record) use (&$totalRecords) {
                 $totalRecords++;
                 if ($totalRecords % 10000 == 0) {
                     $this->info("   ✓ {$totalRecords} registros processados");

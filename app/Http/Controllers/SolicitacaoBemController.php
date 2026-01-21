@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Tabfant;
 use App\Models\SolicitacaoBem;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,10 +17,19 @@ use Illuminate\View\View;
 
 class SolicitacaoBemController extends Controller
 {
+    private const TELA_SOLICITACOES_VER_TODAS = 1011;
+    private const TELA_SOLICITACOES_ATUALIZAR = 1012;
+
     public function index(Request $request): View
     {
         $perPage = max(10, min(200, $request->integer('per_page', 30)));
         $query = SolicitacaoBem::query();
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        if (!$this->canViewAllSolicitacoes($user)) {
+            $this->applyOwnerScope($query, $user);
+        }
 
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
@@ -46,12 +56,19 @@ class SolicitacaoBemController extends Controller
             ->withQueryString();
 
         $statusOptions = SolicitacaoBem::statusOptions();
+        $projetos = Tabfant::orderBy('NOMEPROJETO')->get();
 
-        return view('solicitacoes.index', compact('solicitacoes', 'statusOptions'));
+        return view('solicitacoes.index', compact('solicitacoes', 'statusOptions', 'projetos'));
     }
 
-    public function create(Request $request): View
+    public function create(Request $request): View|JsonResponse
     {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canCreateSolicitacao($user)) {
+            return $this->denyAccess($request, 'Você não tem permissão para criar solicitacao.');
+        }
+
         $isModal = $request->input('modal') === '1';
         $projetos = Tabfant::orderBy('NOMEPROJETO')->get();
         return view('solicitacoes.create', [
@@ -63,6 +80,12 @@ class SolicitacaoBemController extends Controller
 
     public function store(Request $request): RedirectResponse|JsonResponse
     {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canCreateSolicitacao($user)) {
+            return $this->denyAccess($request, 'Você não tem permissão para criar solicitacao.');
+        }
+
         $rules = [
             'solicitante_nome' => ['required', 'string', 'max:120'],
             'solicitante_matricula' => ['nullable', 'string', 'max:20'],
@@ -134,16 +157,38 @@ class SolicitacaoBemController extends Controller
             ->with('success', 'Solicitacao registrada com sucesso.');
     }
 
-    public function show(SolicitacaoBem $solicitacao): View
+    public function show(Request $request, SolicitacaoBem $solicitacao): View|JsonResponse
     {
-        $solicitacao->load('itens');
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canViewSolicitacao($user, $solicitacao)) {
+            return $this->denyAccess($request, 'Você não tem permissão para visualizar esta solicitacao.');
+        }
+
+        $isModal = $request->input('modal') === '1';
+        $solicitacao->load(['itens', 'projeto']);
         $statusOptions = SolicitacaoBem::statusOptions();
 
-        return view('solicitacoes.show', compact('solicitacao', 'statusOptions'));
+        $canUpdate = $this->canUpdateSolicitacao($user);
+
+        if ($isModal) {
+            return view('solicitacoes.partials.show-content', compact('solicitacao', 'statusOptions', 'isModal', 'canUpdate'));
+        }
+
+        return view('solicitacoes.show', compact('solicitacao', 'statusOptions', 'isModal', 'canUpdate'));
     }
 
-    public function update(Request $request, SolicitacaoBem $solicitacao): RedirectResponse
+    public function update(Request $request, SolicitacaoBem $solicitacao): RedirectResponse|JsonResponse
     {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canViewSolicitacao($user, $solicitacao)) {
+            return $this->denyAccess($request, 'Você não tem permissão para atualizar esta solicitacao.');
+        }
+        if (!$this->canUpdateSolicitacao($user)) {
+            return $this->denyAccess($request, 'Você não tem permissão para atualizar esta solicitacao.');
+        }
+
         $data = $request->validate([
             'status' => ['required', Rule::in(SolicitacaoBem::statusOptions())],
             'local_destino' => ['nullable', 'string', 'max:150'],
@@ -188,9 +233,149 @@ class SolicitacaoBemController extends Controller
 
         $solicitacao->save();
 
+        if ($request->input('modal') === '1') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitacao atualizada com sucesso.',
+            ]);
+        }
+
         return redirect()
             ->route('solicitacoes-bens.show', $solicitacao)
             ->with('success', 'Solicitacao atualizada com sucesso.');
+    }
+
+    public function destroy(Request $request, SolicitacaoBem $solicitacao): RedirectResponse|JsonResponse
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canDeleteSolicitacao($user, $solicitacao)) {
+            return $this->denyAccess($request, 'Você não tem permissão para remover esta solicitacao.');
+        }
+
+        DB::transaction(function () use ($solicitacao) {
+            $solicitacao->itens()->delete();
+            $solicitacao->delete();
+        });
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitacao removida com sucesso.',
+            ]);
+        }
+
+        return redirect()
+            ->route('solicitacoes-bens.index')
+            ->with('success', 'Solicitacao removida com sucesso.');
+    }
+
+    private function canViewAllSolicitacoes(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+        if ($user->PERFIL === User::PERFIL_CONSULTOR) {
+            return false;
+        }
+        return $user->temAcessoTela((string) self::TELA_SOLICITACOES_VER_TODAS)
+            || $user->temAcessoTela((string) self::TELA_SOLICITACOES_ATUALIZAR);
+    }
+
+    private function isOwner(?User $user, SolicitacaoBem $solicitacao): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        $userId = $user->getAuthIdentifier();
+        if ($userId && (string) $solicitacao->solicitante_id === (string) $userId) {
+            return true;
+        }
+
+        $matricula = trim((string) ($user->CDMATRFUNCIONARIO ?? ''));
+        if ($matricula === '') {
+            return false;
+        }
+
+        return trim((string) ($solicitacao->solicitante_matricula ?? '')) === $matricula;
+    }
+
+    private function canViewSolicitacao(?User $user, SolicitacaoBem $solicitacao): bool
+    {
+        return $this->canViewAllSolicitacoes($user) || $this->isOwner($user, $solicitacao);
+    }
+
+    private function canDeleteSolicitacao(?User $user, SolicitacaoBem $solicitacao): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+        return $this->isOwner($user, $solicitacao);
+    }
+
+    private function canUpdateSolicitacao(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+        if ($user->PERFIL === User::PERFIL_CONSULTOR) {
+            return false;
+        }
+        return $user->temAcessoTela((string) self::TELA_SOLICITACOES_ATUALIZAR);
+    }
+
+    private function canCreateSolicitacao(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+        return $user->PERFIL === User::PERFIL_CONSULTOR;
+    }
+
+    private function applyOwnerScope($query, ?User $user): void
+    {
+        if (!$user) {
+            $query->whereRaw('1=0');
+            return;
+        }
+
+        $userId = $user->getAuthIdentifier();
+        $matricula = trim((string) ($user->CDMATRFUNCIONARIO ?? ''));
+
+        $query->where(function ($builder) use ($userId, $matricula) {
+            if ($userId) {
+                $builder->where('solicitante_id', $userId);
+            }
+            if ($matricula !== '') {
+                if ($userId) {
+                    $builder->orWhere('solicitante_matricula', $matricula);
+                } else {
+                    $builder->where('solicitante_matricula', $matricula);
+                }
+            }
+        });
+    }
+
+    private function denyAccess(Request $request, string $message)
+    {
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message], 403);
+        }
+
+        abort(403, $message);
     }
 
     private function sendConfirmacaoEmail(SolicitacaoBem $solicitacao): void

@@ -37,6 +37,9 @@ class User extends Authenticatable
     public const PERFIL_CONSULTOR = 'C';
     public const TELA_PATRIMONIO = '1000';
     public const TELA_RELATORIOS = '1006';
+    public const TELA_SOLICITACOES_BENS = '1010';
+    public const TELA_SOLICITACOES_VER_TODAS = '1011';
+    public const TELA_SOLICITACOES_ATUALIZAR = '1012';
     public const MATRICULA_PLACEHOLDERS = ['0', '1'];
     public const MATRICULA_PLACEHOLDER_PREFIX = 'TMP-';
 
@@ -195,6 +198,20 @@ class User extends Authenticatable
             return true;
         }
 
+        // Consultor sempre tem acesso a Solicitações de Bens
+        if ($nuseqtela === self::TELA_SOLICITACOES_BENS && $this->PERFIL === self::PERFIL_CONSULTOR) {
+            return true;
+        }
+
+        // Quem tem permissao para ver/atualizar solicitacoes tambem acessa a tela base
+        if ($nuseqtela === self::TELA_SOLICITACOES_BENS) {
+            $temPermissaoSolicitacoes = $this->temAcessoTela(self::TELA_SOLICITACOES_VER_TODAS)
+                || $this->temAcessoTela(self::TELA_SOLICITACOES_ATUALIZAR);
+            if ($temPermissaoSolicitacoes) {
+                return true;
+            }
+        }
+
         // Admin tem acesso total
         if ($this->isAdmin()) {
             return true;
@@ -329,6 +346,11 @@ class User extends Authenticatable
         if (in_array((int) self::TELA_PATRIMONIO, $telas, true)
             && !in_array((int) self::TELA_RELATORIOS, $telas, true)) {
             $telas[] = (int) self::TELA_RELATORIOS;
+        }
+
+        if ($this->PERFIL === self::PERFIL_CONSULTOR
+            && !in_array((int) self::TELA_SOLICITACOES_BENS, $telas, true)) {
+            $telas[] = (int) self::TELA_SOLICITACOES_BENS;
         }
 
         return $telas;

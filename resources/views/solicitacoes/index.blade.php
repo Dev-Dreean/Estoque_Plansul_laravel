@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-12" x-data="solicitacaoBemsIndex()">
+    <div class="py-12" x-data="solicitacaoBemsIndex()" data-projetos='@json($projetos ?? [])'>
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             @if(session('success'))
                 <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert">
@@ -71,12 +71,19 @@
                             </div>
                         </div>
 
-                        <div>
-                            <button type="button" @click="openCreateModal()" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
-                                <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
-                                <span>Nova solicitacao</span>
-                            </button>
-                        </div>
+                        @php
+                            $userForCreate = auth()->user();
+                            $canCreateSolicitacao = ($userForCreate?->isAdmin() ?? false)
+                                || (($userForCreate?->PERFIL ?? '') === \App\Models\User::PERFIL_CONSULTOR);
+                        @endphp
+                        @if($canCreateSolicitacao)
+                            <div>
+                                <button type="button" @click="openCreateModal()" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+                                    <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
+                                    <span>Nova solicitacao</span>
+                                </button>
+                            </div>
+                        @endif
                     </div>
 
                     @php
@@ -86,6 +93,13 @@
                             'CONCLUIDO' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
                             'CANCELADO' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
                         ];
+                    @endphp
+
+                    @php
+                        $currentUser = auth()->user();
+                        $currentUserId = $currentUser?->getAuthIdentifier();
+                        $currentUserMatricula = trim((string) ($currentUser?->CDMATRFUNCIONARIO ?? ''));
+                        $isAdminUser = $currentUser?->isAdmin() ?? false;
                     @endphp
 
                     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
@@ -105,7 +119,7 @@
                             </thead>
                             <tbody>
                                 @forelse($solicitacoes as $solicitacao)
-                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors cursor-pointer" @click="openShowModal({{ $solicitacao->id }})">
                                         <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white">#{{ $solicitacao->id }}</td>
                                         <td class="px-4 py-3">
                                             <div class="text-gray-900 dark:text-gray-100">{{ $solicitacao->solicitante_nome ?? '-' }}</div>
@@ -120,7 +134,24 @@
                                         <td class="px-4 py-3">{{ $solicitacao->itens_count ?? 0 }}</td>
                                         <td class="px-4 py-3">{{ optional($solicitacao->created_at)->format('d/m/Y H:i') }}</td>
                                         <td class="px-4 py-3">
-                                            <button type="button" @click="openShowModal({{ $solicitacao->id }})" class="text-indigo-600 dark:text-indigo-400 hover:underline">Ver</button>
+                                            @php
+                                                $isOwner = $currentUserId
+                                                    && (string) $solicitacao->solicitante_id === (string) $currentUserId;
+                                                if (!$isOwner && $currentUserMatricula !== '') {
+                                                    $isOwner = trim((string) ($solicitacao->solicitante_matricula ?? '')) === $currentUserMatricula;
+                                                }
+                                            @endphp
+                                            <div class="flex items-center gap-3">
+                                                @if($isAdminUser || $isOwner)
+                                                    <form method="POST" action="{{ route('solicitacoes-bens.destroy', $solicitacao) }}" onsubmit="return confirm('Remover a solicitacao #{{ $solicitacao->id }}?');" class="inline" @click.stop>
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" aria-label="Remover solicitacao">
+                                                            <x-heroicon-o-trash class="h-5 w-5" />
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
@@ -181,7 +212,7 @@
         <div class="w-full">
         <!-- Overlay Background -->
         <div
-            x-show="formModalOpen"
+            x-show="formModalOpen || showModalOpen || showModalLoading"
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
@@ -190,7 +221,7 @@
             x-transition:leave-end="opacity-0"
             x-cloak
             class="fixed inset-0 z-[60] bg-black/60 dark:bg-black/80 p-3 sm:p-6"
-            @click="if(!formModalLoading) closeFormModal()"
+            @click="if(!formModalLoading && !showModalLoading) { closeFormModal(); closeShowModal(); }"
         ></div>
 
         <!-- Loading Screen -->
@@ -212,6 +243,29 @@
                 <div class="text-center">
                     <h3 class="text-xl font-semibold text-white mb-2">Carregando...</h3>
                     <p class="text-gray-300 text-sm">Preparando o formulário</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Screen (Show modal) -->
+        <div
+            x-show="showModalLoading"
+            x-transition:leave="transition ease-out duration-300"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            x-cloak
+            class="fixed inset-0 z-[70] flex items-center justify-center pointer-events-none"
+        >
+            <div class="flex flex-col items-center gap-6">
+                <div class="relative w-20 h-20">
+                    <svg class="w-full h-full animate-spin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" style="color: rgb(209, 213, 219);"></circle>
+                        <path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" style="color: rgb(99, 102, 241);"></path>
+                    </svg>
+                </div>
+                <div class="text-center">
+                    <h3 class="text-xl font-semibold text-white mb-2">Carregando...</h3>
+                    <p class="text-gray-300 text-sm">Buscando detalhes da solicitacao</p>
                 </div>
             </div>
         </div>
@@ -240,8 +294,8 @@
                     </div>
                     <button type="button" @click="closeFormModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">×</button>
                 </div>
-                <div class="relative flex-1 min-h-0 overflow-hidden">
-                    <div id="solicitacao-form-modal-body" class="h-full min-h-0 overflow-y-auto overscroll-contain"></div>
+                <div class="relative flex-1 min-h-[300px]">
+                    <div id="solicitacao-form-modal-body" class="h-full"></div>
                 </div>
             </div>
         </div>
@@ -249,7 +303,7 @@
         <div
             x-show="showModalOpen"
             x-cloak
-            class="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-6 pointer-events-none"
+            class="fixed inset-0 z-[65] flex items-center justify-center p-3 sm:p-6"
         >
             <div
                 x-show="showModalOpen"
@@ -259,20 +313,20 @@
                 x-transition:leave="transition ease-in duration-200"
                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                 x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-                class="solicitacao-modal-theme rounded-2xl shadow-2xl w-full max-w-5xl h-auto max-h-[90vh] overflow-hidden border flex flex-col min-h-0 pointer-events-auto"
-                @click.self="closeShowModal"
+                class="solicitacao-modal-theme rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden border flex flex-col bg-white dark:bg-gray-800"
+                @click.stop
             >
-                <div class="flex items-center justify-between px-4 sm:px-6 py-3 bg-[var(--solicitacao-modal-bg)] border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between px-4 sm:px-6 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                     <div>
                         <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white" x-text="showModalTitle"></h3>
                     </div>
                     <button type="button" @click="closeShowModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">×</button>
                 </div>
-                <div class="relative flex-1 min-h-0 overflow-hidden">
-                    <div x-show="showModalLoading" class="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <div class="text-sm text-white">Carregando...</div>
+                <div class="relative flex-1 overflow-y-auto bg-white dark:bg-gray-800 min-h-[320px]">
+                    <div x-show="showModalLoading" class="absolute inset-0 flex items-center justify-center bg-white/90 dark:bg-gray-800/90 z-10">
+                        <div class="text-sm text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-800 px-4 py-2 rounded shadow-lg border border-indigo-200 dark:border-indigo-700 animate-pulse">Carregando detalhes...</div>
                     </div>
-                    <div id="solicitacao-show-modal-body" class="h-full min-h-0 overflow-y-auto overscroll-contain"></div>
+                    <div id="solicitacao-show-modal-body" class="min-h-full" x-show="showModalContentReady" x-cloak></div>
                 </div>
             </div>
         </div>
@@ -284,24 +338,17 @@
         <script>
             function renderSolicitacaoModalContent(html, target) {
                 if (!target) return;
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const scripts = Array.from(doc.querySelectorAll('script'));
-                scripts.forEach((script) => script.remove());
-                target.innerHTML = doc.body.innerHTML;
-                scripts.forEach((original) => {
-                    const script = document.createElement('script');
-                    if (original.type) {
-                        script.type = original.type;
-                    }
-                    if (original.src) {
-                        script.src = original.src;
-                        script.async = false;
-                    } else {
-                        script.text = original.textContent || '';
-                    }
-                    document.body.appendChild(script);
-                });
+                
+                // Simplificado: Apenas insere o HTML. Scripts devem ser globais.
+                target.innerHTML = html;
+                
+                // Reiniciar Alpine se necessario
+                if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+                    // Pequeno delay para garantir que o DOM esteja pronto
+                    requestAnimationFrame(() => {
+                         window.Alpine.initTree(target);
+                    });
+                }
             }
 
             function bindSolicitacaoModalHandlers(root, onClose, onSubmit) {
@@ -325,6 +372,241 @@
                 });
             }
 
+            function getProjetosFromDataset() {
+                const root = document.querySelector('[data-projetos]');
+                if (!root) return [];
+                const raw = root.dataset.projetos;
+                if (!raw) return [];
+                try {
+                    return JSON.parse(raw);
+                } catch (error) {
+                    console.warn('[SOLICITACAO] Falha ao ler projetos do dataset', error);
+                    return [];
+                }
+            }
+
+            function extractModalHtml(html, selector) {
+                if (!html) return '';
+                if (typeof DOMParser === 'undefined') return html;
+                try {
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const node = doc.querySelector(selector);
+                    return node ? node.innerHTML : html;
+                } catch (error) {
+                    console.warn('[SOLICITACAO] Falha ao extrair HTML do modal', error);
+                    return html;
+                }
+            }
+
+            // --- FUNCOES GLOBAIS PARA MODAIS (Form & Show) ---
+
+            // Funcao usada em show.blade.php
+            function matriculaLookup({ matriculaOld, nomeOld, lookupOnInit }) {
+                return {
+                    matricula: matriculaOld || '',
+                    nome: nomeOld || '',
+                    lookupOnInit: !!lookupOnInit,
+                    matriculaExiste: false,
+                    nomeBloqueado: false,
+                    initLookup() {
+                        if (this.lookupOnInit && this.matricula) {
+                            this.lookupMatricula(this.matricula);
+                        }
+                    },
+                    onMatriculaInput(e) {
+                        const val = (e?.target?.value ?? '').trim();
+                        if (val === '') {
+                            this.matriculaExiste = false;
+                            this.nomeBloqueado = false;
+                            this.nome = '';
+                        }
+                    },
+                    async onMatriculaBlur() {
+                        const mat = (this.matricula || '').trim();
+                        if (!mat) return;
+                        await this.lookupMatricula(mat);
+                    },
+                    async lookupMatricula(mat) {
+                        try {
+                            const url = `{{ route('api.usuarios.porMatricula') }}?matricula=${encodeURIComponent(mat)}`;
+                            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                            if (!res.ok) throw new Error('Falha busca matricula');
+                            const data = await res.json();
+                            this.matriculaExiste = !!data?.exists;
+                            if (data?.exists && data?.nome) {
+                                this.nome = data.nome;
+                                this.nomeBloqueado = true;
+                            } else {
+                                this.nomeBloqueado = false;
+                            }
+                        } catch (e) {
+                            console.warn('Lookup matricula falhou', e);
+                        }
+                    }
+                };
+            }
+
+            // Funcoes usadas em form.blade.php
+            function solicitacaoForm({ itensOld, showStep2 }) {
+                const buildItem = (item = {}) => ({
+                    key: item.key || `item-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                    descricao: item.descricao || '',
+                    quantidade: parseInt(item.quantidade, 10) || 1,
+                    unidade: item.unidade || '',
+                    observacao: item.observacao || '',
+                    patrimonio_busca: item.patrimonio_busca || item.descricao || '',
+                    selecionado: Boolean(item.descricao),
+                });
+
+                return {
+                    step: showStep2 ? 2 : 1,
+                    item: (itensOld && itensOld.length) ? buildItem(itensOld[0]) : buildItem(),
+                    nextStep() {
+                        const fields = ['projeto_id', 'setor', 'local_destino'];
+                        for (const id of fields) {
+                            const el = document.getElementById(id);
+                            if (!el) continue;
+                            if (!String(el.value || '').trim()) {
+                                if (typeof el.reportValidity === 'function') {
+                                    el.reportValidity();
+                                }
+                                el.focus();
+                                return;
+                            }
+                        }
+                        this.step = 2;
+                    },
+                };
+            }
+
+            function projetoSearch(projetosInjected = null) {
+                // Se projetos nao for passado, tenta pegar do global (caso estivesse no script inline)
+                // Mas aqui assumimos que virá via argumento ou usamos a lista global da pagina index
+                const todasProjetos = projetosInjected || getProjetosFromDataset();
+                
+                return {
+                    projetoSearch: '',
+                    projetoSelecionado: '',
+                    showProjetoDrop: false,
+                    projetoIndex: -1,
+                    allProjetos: todasProjetos,
+
+                    get projetosFiltrados() {
+                        const termo = (this.projetoSearch || '').toLowerCase().trim();
+                        let filtrados = this.allProjetos;
+                        
+                        if (termo) {
+                            filtrados = this.allProjetos.filter(proj => {
+                                const cdMatch = String(proj.CDPROJETO || '').toLowerCase().includes(termo);
+                                const nomeMatch = String(proj.NOMEPROJETO || '').toLowerCase().includes(termo);
+                                return cdMatch || nomeMatch;
+                            });
+                        }
+
+                        // Order by CDPROJETO numeric
+                        return filtrados.sort((a, b) => {
+                            return String(a.CDPROJETO).localeCompare(String(b.CDPROJETO), undefined, { numeric: true });
+                        });
+                    },
+
+                    filtrarProjetos() {
+                        this.projetoIndex = -1;
+                        if (!this.projetoSearch.trim()) {
+                            this.showProjetoDrop = true;
+                        }
+                    },
+
+                    selecionarProjeto(proj) {
+                        if (!proj) return;
+                        this.projetoSelecionado = proj.id;
+                        this.projetoSearch = `${proj.CDPROJETO} - ${proj.NOMEPROJETO}`;
+                        this.showProjetoDrop = false;
+                        this.projetoIndex = -1;
+                        
+                        // Atualiza hidden input
+                        const hiddenInput = document.getElementById('projeto_id');
+                        if (hiddenInput) hiddenInput.value = proj.id;
+                    },
+                };
+            }
+
+            function patrimonioSearch(item) {
+                return {
+                    resultados: [],
+                    item,
+                    dropdownOpen: false,
+                    loading: false,
+                    controller: null,
+
+                    openResults() {
+                        this.dropdownOpen = true;
+                        const term = (this.item?.patrimonio_busca || '').trim();
+                        if (term.length === 0) {
+                            this.buscar('');
+                        } else if (term.length >= 2) {
+                            this.buscar(term);
+                        }
+                    },
+
+                    closeResults() {
+                        this.dropdownOpen = false;
+                    },
+
+                    onInput() {
+                        this.item.descricao = '';
+                        this.item.selecionado = false;
+
+                        const term = (this.item?.patrimonio_busca || '').trim();
+                        if (term.length < 2) {
+                            this.resultados = [];
+                            return;
+                        }
+
+                        this.buscar(term);
+                    },
+
+                    async buscar(term) {
+                        const query = (term ?? '').trim();
+
+                        if (this.controller) {
+                            this.controller.abort();
+                        }
+                        this.controller = new AbortController();
+                        this.loading = true;
+                        this.dropdownOpen = true;
+
+                        try {
+                            const url = `{{ route('solicitacoes-bens.patrimonio-disponivel') }}?q=${encodeURIComponent(query)}`;
+                            const res = await fetch(url, {
+                                signal: this.controller.signal,
+                                headers: { 'Accept': 'application/json' },
+                            });
+                            if (!res.ok) {
+                                throw new Error(`HTTP ${res.status}`);
+                            }
+                            const data = await res.json();
+                            this.resultados = Array.isArray(data) ? data : [];
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                console.error('[SOLICITACAO] Erro ao buscar patrimonios', err);
+                            }
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
+
+                    selectResultado(resultado) {
+                        const text = resultado?.text
+                            || [resultado?.nupatrimonio, resultado?.descricao].filter(Boolean).join(' - ');
+                        this.item.descricao = text;
+                        this.item.patrimonio_busca = text;
+                        this.item.selecionado = true;
+                        this.resultados = [];
+                        this.dropdownOpen = false;
+                    },
+                };
+            }
+
             function solicitacaoBemsIndex() {
                 return {
                     formModalOpen: false,
@@ -335,6 +617,7 @@
                     formModalId: null,
                     showModalOpen: false,
                     showModalLoading: false,
+                    showModalContentReady: false,
                     showModalTitle: '',
 
                     csrf() {
@@ -347,12 +630,21 @@
                     openShowModal(id) {
                         if (!id) return;
                         const modalBody = document.getElementById('solicitacao-show-modal-body');
-                        if (!modalBody) return;
-                        this.showModalTitle = `Solicitacao #${id}`;
-                        this.showModalOpen = true;
+                        if (!modalBody) {
+                            console.error('[SOLICITACAO] Modal body not found!');
+                            return;
+                        }
+                        
+                        console.log('[SOLICITACAO] Opening show modal for ID:', id);
+                        this.showModalTitle = `Solicita\u00e7\u00e3o #${id}`;
+                        this.showModalOpen = false;
                         this.showModalLoading = true;
+                        this.showModalContentReady = false;
+                        modalBody.innerHTML = '';
 
                         const url = "{{ url('solicitacoes-bens') }}/" + encodeURIComponent(id) + "?modal=1";
+                        console.log('[SOLICITACAO] Fetching:', url);
+                        
                         fetch(url, {
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
@@ -361,19 +653,44 @@
                         })
                             .then((resp) => {
                                 if (!resp.ok) {
-                                    throw new Error(`HTTP ${resp.status}`);
+                                    if (resp.status === 401) {
+                                        throw new Error('Sua sessão expirou. Por favor, faça login novamente.');
+                                    } else if (resp.status === 403) {
+                                        throw new Error('Você não tem permissão para visualizar esta solicitação.');
+                                    }
+                                    throw new Error(`Erro HTTP ${resp.status}`);
                                 }
                                 return resp.text();
                             })
                             .then((html) => {
-                                renderSolicitacaoModalContent(html, modalBody);
+                                console.log('[SOLICITACAO] Show modal HTML received, length:', html?.length);
+                                let content = extractModalHtml(html, '[data-solicitacao-modal-content]');
+                                if (!content || !content.trim()) {
+                                    content = html;
+                                }
+                                renderSolicitacaoModalContent(content, modalBody);
+                                console.log('[SOLICITACAO] Content inserted into modal body');
+                                if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+                                    window.Alpine.initTree(modalBody);
+                                    console.log('[SOLICITACAO] Alpine initialized');
+                                }
+                                bindSolicitacaoModalHandlers(
+                                    modalBody,
+                                    () => this.closeShowModal(),
+                                    (form) => this.submitModalForm(form, 'solicitacao-show-modal-body')
+                                );
+                                console.log('[SOLICITACAO] Handlers bound');
+                                this.showModalContentReady = true;
                             })
                             .catch((err) => {
                                 console.error('[SOLICITACAO] Show modal fetch error', err);
-                                modalBody.innerHTML = '<div class="p-6 text-sm text-red-600">Falha ao carregar detalhes.</div>';
+                                const message = err.message || 'Falha ao carregar detalhes.';
+                                modalBody.innerHTML = `<div class="p-6 text-sm text-red-600 dark:text-red-400"><strong>Erro:</strong> ${message}</div>`;
+                                this.showModalContentReady = true;
                             })
                             .finally(() => {
                                 this.showModalLoading = false;
+                                this.showModalOpen = true;
                             });
                     },
 
@@ -384,7 +701,7 @@
 
                         this.formModalMode = mode;
                         this.formModalId = id;
-                        this.formModalTitle = mode === 'create' ? 'Nova Solicitacao de Bens' : 'Editar Solicitacao';
+                        this.formModalTitle = mode === 'create' ? 'Nova Solicita\u00e7\u00e3o de Bens' : 'Editar Solicita\u00e7\u00e3o';
                         this.formModalSubtitle = mode === 'create'
                             ? 'Crie uma nova solicitacao de bens.'
                             : 'Atualize os dados da solicitacao.';
@@ -403,8 +720,14 @@
                             },
                         })
                             .then((resp) => {
+                                console.log('[SOLICITACAO] Fetch response status:', resp.status, 'URL:', url);
                                 if (!resp.ok) {
-                                    throw new Error(`HTTP ${resp.status}`);
+                                    if (resp.status === 401) {
+                                        throw new Error('Sua sessão expirou. Por favor, faça login novamente.');
+                                    } else if (resp.status === 403) {
+                                        throw new Error('Você não tem permissão para acessar esta funcionalidade. Verifique com o administrador.');
+                                    }
+                                    throw new Error(`Erro HTTP ${resp.status}`);
                                 }
                                 return resp.text();
                             })
@@ -413,7 +736,8 @@
                             })
                             .catch((err) => {
                                 console.error('[SOLICITACAO] Modal fetch error', err);
-                                modalBody.innerHTML = '<div class="p-6 text-sm text-red-600">Falha ao carregar formulario.</div>';
+                                const message = err.message || 'Falha ao carregar formulario.';
+                                modalBody.innerHTML = `<div class="p-6 text-sm text-red-600 dark:text-red-400"><strong>Erro:</strong> ${message}</div>`;
                             })
                             .finally(() => {
                                 this.formModalLoading = false;
@@ -435,6 +759,7 @@
                     closeShowModal() {
                         this.showModalOpen = false;
                         this.showModalLoading = false;
+                        this.showModalContentReady = false;
                         this.showModalTitle = '';
                         const modalBody = document.getElementById('solicitacao-show-modal-body');
                         if (modalBody) {
@@ -452,13 +777,15 @@
                         bindSolicitacaoModalHandlers(
                             modalBody,
                             () => this.closeFormModal(),
-                            (form) => this.submitModalForm(form)
+                            (form) => this.submitModalForm(form, 'solicitacao-form-modal-body')
                         );
                     },
 
-                    async submitModalForm(form) {
+                    async submitModalForm(form, targetId) {
                         if (!form) return;
                         this.formModalLoading = true;
+                        this.showModalLoading = true; // Block both just in case
+                        
                         const formData = new FormData(form);
                         const method = (form.getAttribute('method') || 'POST').toUpperCase();
 
@@ -468,30 +795,62 @@
                                 body: formData,
                                 headers: {
                                     'X-Requested-With': 'XMLHttpRequest',
-                                    'Accept': 'text/html',
+                                    'Accept': 'text/html', // Prefer HTML for errors, JSON for success handled by content-type check
                                 },
                             });
+                            
                             const contentType = resp.headers.get('content-type') || '';
-                            if (resp.status === 422) {
-                                const html = await resp.text();
-                                this.applyFormModalHtml(html);
-                                return;
-                            }
+                            const responseText = await resp.text();
+
+                            // Se for JSON (sucesso explícito)
                             if (contentType.includes('application/json')) {
-                                const data = await resp.json().catch(() => ({}));
-                                if (data.redirect) {
-                                    window.location.href = data.redirect;
-                                    return;
+                                try {
+                                    const data = JSON.parse(responseText);
+                                    if (data.redirect) {
+                                        window.location.href = data.redirect;
+                                        return;
+                                    }
+                                    if (data.success) {
+                                        // Sucesso sem redirect: reload page
+                                        this.closeFormModal();
+                                        this.closeShowModal();
+                                        window.location.reload();
+                                        return;
+                                    }
+                                } catch (e) {
+                                    console.warn('Resposta JSON invalida', e);
                                 }
                             }
-                            // ✅ SUCESSO: Fechar modal e recarregar página
-                            this.closeFormModal();
-                            window.location.reload();
+
+                            // Se chegou aqui, é HTML.
+                            // Pode ser erro de validacao (422) ou sucesso com redirect seguido (200 com HTML).
+                            // Se for sucesso (200 OK) e HTML, pode ser que o controller redirecionou para INDEX ou SHOW page.
+                            // Mas se estamos num modal, não queremos renderizar a INDEX inteira dentro do modal.
+                            // ASSUMCAO: Se retornou HTML, é porque deu erro de validacao e o Laravel redirecionou 'back' (para a URL do modal).
+                            
+                            const target = document.getElementById(targetId);
+                            if (target) {
+                                renderSolicitacaoModalContent(responseText, target);
+                                if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+                                    window.Alpine.initTree(target);
+                                }
+                                // Rebind handlers no novo HTML
+                                bindSolicitacaoModalHandlers(
+                                    target,
+                                    () => {
+                                        if (targetId === 'solicitacao-form-modal-body') this.closeFormModal();
+                                        else this.closeShowModal();
+                                    },
+                                    (f) => this.submitModalForm(f, targetId)
+                                );
+                            }
                         } catch (err) {
                             console.error('[SOLICITACAO] Modal submit error', err);
-                            alert('Falha ao salvar solicitacao.');
+                            console.log('Error details:', err.message);
+                            alert('Falha ao salvar solicitacao. Verifique sua conexao.');
                         } finally {
                             this.formModalLoading = false;
+                            this.showModalLoading = false;
                         }
                     }
                 };

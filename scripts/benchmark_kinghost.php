@@ -28,7 +28,7 @@ $inicioRelatorio = microtime(true);
 $totalRecords = 0;
 $batchSize = 1000;
 
-try {
+// try {
     $query = DB::table('funcionarios')
         ->select([
             'CDMATRFUNCIONARIO',
@@ -47,7 +47,7 @@ try {
     echo "⏱️  Iterando com cursor (batches de {$batchSize})...\n";
     $inicio = microtime(true);
     
-    DB::cursor($query)
+    $query->cursor()
         ->each(function ($record) use (&$totalRecords) {
             $totalRecords++;
             // Simular processamento (como no streaming)
