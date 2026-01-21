@@ -4,8 +4,8 @@
     $wrapperClass = $isModal ? 'w-full' : 'max-w-6xl mx-auto sm:px-6 lg:px-8';
     $statusColors = [
         'PENDENTE' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700',
-        'SEPARADO' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-200 dark:border-blue-700',
-        'CONCLUIDO' => 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-700',
+        'AGUARDANDO_CONFIRMACAO' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-200 dark:border-blue-700',
+        'CONFIRMADO' => 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-700',
         'CANCELADO' => 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border border-red-200 dark:border-red-700',
     ];
     $matriculaOld = old('matricula_recebedor', $solicitacao->matricula_recebedor ?? '');
@@ -44,7 +44,7 @@
                 </div>
             @endif
 
-            <div class="grid gap-3 {{ $gridClass }}" x-data="{ showUpdate: true }">
+            <div class="grid gap-3 {{ $gridClass }}" x-data="{ showUpdate: true, showConfirmModal: false, showApproveModal: false, showCancelModal: false }">
 
                 <!-- Coluna Principal (Detalhes + Itens) -->
                 <div class="{{ $leftColClass }} space-y-3">
@@ -121,23 +121,66 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                     </div>
-                                    <div>
-                                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Situa&ccedil;&atilde;o</div>
-                                        <div class="flex flex-col gap-1">
+                                    <div class="flex-1">
+                                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Situação</div>
+                                        <div class="flex flex-col gap-2">
                                             <div class="flex items-center gap-2">
                                                 <span class="text-xs text-slate-500 dark:text-slate-400">Status:</span>
                                                 <x-status-badge :status="$solicitacao->status" :color-map="$statusColors" class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full shadow-sm" />
                                             </div>
                                             <div class="text-xs text-slate-500 dark:text-slate-400">Criado em: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ optional($solicitacao->created_at)->format('d/m/Y H:i') }}</span></div>
-                                            @if($solicitacao->separado_em)
-                                                <div class="text-xs text-slate-500 dark:text-slate-400">Separado em: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ $solicitacao->separado_em->format('d/m/Y H:i') }}</span></div>
+                                            
+                                            @if($solicitacao->confirmado_em)
+                                                <div class="text-xs text-slate-500 dark:text-slate-400">Confirmado em: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ $solicitacao->confirmado_em->format('d/m/Y H:i') }}</span></div>
+                                                <div class="text-xs text-slate-500 dark:text-slate-400">Confirmado por: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ $solicitacao->confirmadoPor?->NOMEUSER ?? '-' }}</span></div>
                                             @endif
-                                            @if($solicitacao->concluido_em)
-                                                <div class="text-xs text-slate-500 dark:text-slate-400">Conclu&iacute;do em: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ $solicitacao->concluido_em->format('d/m/Y H:i') }}</span></div>
+                                            
+                                            @if($solicitacao->cancelado_em)
+                                                <div class="text-xs text-slate-500 dark:text-slate-400">Cancelado em: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ $solicitacao->cancelado_em->format('d/m/Y H:i') }}</span></div>
+                                                <div class="text-xs text-slate-500 dark:text-slate-400">Cancelado por: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ $solicitacao->canceladoPor?->NOMEUSER ?? '-' }}</span></div>
                                             @endif
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Tipo de Destino -->
+                                @if($solicitacao->destination_type)
+                                    <div class="flex items-start gap-3">
+                                        <div class="mt-1 p-1.5 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg text-cyan-600 dark:text-cyan-400 flex-shrink-0">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Destinação</div>
+                                            <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                                @if($solicitacao->destination_type === 'FILIAL')
+                                                    🏢 Filial
+                                                @elseif($solicitacao->destination_type === 'PROJETO')
+                                                    📍 Projeto
+                                                @else
+                                                    {{ $solicitacao->destination_type }}
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <!-- Código de Rastreio -->
+                                @if($solicitacao->tracking_code)
+                                    <div class="flex items-start gap-3">
+                                        <div class="mt-1 p-1.5 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-orange-600 dark:text-orange-400 flex-shrink-0">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Código de Rastreio</div>
+                                            <div class="text-sm font-mono font-semibold text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{{ $solicitacao->tracking_code }}</div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
                             <!-- Observacao -->
@@ -298,18 +341,163 @@
                                             <x-input-error :messages="$errors->get('observacao_controle')" class="mt-1" />
                                         </div>
 
-                                        <button type="submit" class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all dark:focus:ring-offset-slate-900">
-                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                            </svg>
-                                            Salvar Altera&ccedil;&otilde;es
-                                        </button>
+                                        <div class="space-y-2">
+                                            <button type="submit" class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all dark:focus:ring-offset-slate-900">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                                </svg>
+                                                Salvar Altera&ccedil;&otilde;es
+                                            </button>
+
+                                            <!-- Botões de Ação do Fluxo de Aprovação -->
+                                            <div class="border-t border-gray-200 dark:border-gray-700 pt-2 space-y-2">
+                                                <!-- Botão Confirmar (Tiago/Beatriz) -->
+                                                @if($solicitacao->status === 'PENDENTE' && auth()->user()->canViewTela(env('TELA_SOLICITACOES_APROVAR', 1011)))
+                                                    <button type="button" @click="showConfirmModal = true" 
+                                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all dark:focus:ring-offset-slate-900">
+                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        Confirmar Solicitação
+                                                    </button>
+                                                @endif
+
+                                                <!-- Botão Aprovar (Solicitante) -->
+                                                @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $solicitacao->solicitante_id === auth()->id())
+                                                    <button type="button" @click="showApproveModal = true" 
+                                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all dark:focus:ring-offset-slate-900">
+                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h-4V6h4v4zM12 14a2 2 0 100-4 2 2 0 000 4z" />
+                                                        </svg>
+                                                        Aprovar Solicitação
+                                                    </button>
+                                                @endif
+
+                                                <!-- Botão Cancelar -->
+                                                @if(in_array($solicitacao->status, ['PENDENTE', 'AGUARDANDO_CONFIRMACAO']) && $solicitacao->solicitante_id === auth()->id())
+                                                    <button type="button" @click="showCancelModal = true" 
+                                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all dark:focus:ring-offset-slate-900">
+                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                        Cancelar Solicitação
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
                             <div class="bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] px-4 py-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] text-center">
                                 <p class="text-[10px] text-gray-400 uppercase tracking-wide">&Uacute;ltima atualiza&ccedil;&atilde;o: {{ $solicitacao->updated_at->diffForHumans() }}</p>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- MODAL: Confirmar Solicitação -->
+                    <div x-show="showConfirmModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-emerald-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Confirmar Solicitação</h3>
+                                <button @click="showConfirmModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.confirm', $solicitacao->id) }}" class="p-6 space-y-4">
+                                @csrf
+                                @method('POST')
+                                
+                                <div>
+                                    <label for="tracking_code" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Rastreio *</label>
+                                    <input type="text" id="tracking_code" name="tracking_code" required 
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
+                                        placeholder="Ex: RAS-2025-001" />
+                                </div>
+
+                                <div>
+                                    <label for="destination_type" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Destino *</label>
+                                    <select id="destination_type" name="destination_type" required 
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3">
+                                        <option value="">Selecione...</option>
+                                        <option value="FILIAL">🏢 Filial</option>
+                                        <option value="PROJETO">📍 Projeto</option>
+                                    </select>
+                                </div>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showConfirmModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition">
+                                        Confirmar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- MODAL: Aprovar Solicitação -->
+                    <div x-show="showApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Aprovar Solicitação</h3>
+                                <button @click="showApproveModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.approve', $solicitacao->id) }}" class="p-6 space-y-4">
+                                @csrf
+                                @method('POST')
+                                
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Tem certeza que deseja aprovar esta solicitação? Ela será marcada como confirmada.</p>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showApproveModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">
+                                        Aprovar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- MODAL: Cancelar Solicitação -->
+                    <div x-show="showCancelModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-red-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Cancelar Solicitação</h3>
+                                <button @click="showCancelModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.cancel', $solicitacao->id) }}" class="p-6 space-y-4">
+                                @csrf
+                                @method('POST')
+                                
+                                <div>
+                                    <label for="justificativa_cancelamento" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo do Cancelamento *</label>
+                                    <textarea id="justificativa_cancelamento" name="justificativa_cancelamento" required rows="3"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        placeholder="Descreva o motivo do cancelamento..."></textarea>
+                                </div>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showCancelModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Voltar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition">
+                                        Cancelar Solicitação
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 @endif
