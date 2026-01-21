@@ -352,7 +352,7 @@
                                             <!-- Botões de Ação do Fluxo de Aprovação -->
                                             <div class="border-t border-gray-200 dark:border-gray-700 pt-2 space-y-2">
                                                 <!-- Botão Confirmar (Tiago/Beatriz) -->
-                                                @if($solicitacao->status === 'PENDENTE' && auth()->user()->canViewTela(env('TELA_SOLICITACOES_APROVAR', 1011)))
+                                                @if($solicitacao->status === 'PENDENTE' && auth()->user()->temAcessoTela('1011'))
                                                     <button type="button" @click="showConfirmModal = true" 
                                                         class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all dark:focus:ring-offset-slate-900">
                                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
