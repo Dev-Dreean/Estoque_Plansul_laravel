@@ -92,7 +92,6 @@ class SolicitacaoBemController extends Controller
             'solicitante_matricula' => ['nullable', 'string', 'max:20'],
             'projeto_id' => ['required', 'integer', 'exists:tabfant,id'],
             'uf' => ['nullable', 'string', 'max:2'],
-            'setor' => ['required', 'string', 'max:120'],
             'local_destino' => ['required', 'string', 'max:150'],
             'observacao' => ['nullable', 'string', 'max:2000'],
             'itens' => ['required', 'array', 'min:1'],
@@ -118,7 +117,6 @@ class SolicitacaoBemController extends Controller
                 'solicitante_matricula' => $matricula !== '' ? $matricula : null,
                 'projeto_id' => $validated['projeto_id'],
                 'uf' => $uf !== '' ? $uf : null,
-                'setor' => trim((string) $validated['setor']),
                 'local_destino' => trim((string) $validated['local_destino']),
                 'observacao' => $observacao !== '' ? $observacao : null,
                 'status' => SolicitacaoBem::STATUS_PENDENTE,
@@ -209,8 +207,7 @@ class SolicitacaoBemController extends Controller
         $data = $request->validate([
             'local_destino' => ['nullable', 'string', 'max:150'],
             'observacao_controle' => ['nullable', 'string', 'max:2000'],
-            'matricula_recebedor' => ['nullable', 'string', 'max:20'],
-            'nome_recebedor' => ['nullable', 'string', 'max:120'],
+            'recebedor_matricula' => ['nullable', 'string', 'max:20', 'exists:funcionarios,CDMATRFUNCIONARIO'],
         ]);
 
         $data['local_destino'] = trim((string) ($data['local_destino'] ?? ''));
@@ -221,16 +218,16 @@ class SolicitacaoBemController extends Controller
         if ($data['observacao_controle'] === '') {
             $data['observacao_controle'] = null;
         }
-        $data['matricula_recebedor'] = trim((string) ($data['matricula_recebedor'] ?? ''));
-        if ($data['matricula_recebedor'] === '') {
-            $data['matricula_recebedor'] = null;
+        
+        // Mapear recebedor_matricula → matricula_recebedor (coluna do banco)
+        if (!empty($data['recebedor_matricula'])) {
+            $funcionario = \App\Models\Funcionario::where('CDMATRFUNCIONARIO', $data['recebedor_matricula'])->first();
+            if ($funcionario) {
+                $data['matricula_recebedor'] = $funcionario->CDMATRFUNCIONARIO;
+                $data['nome_recebedor'] = $funcionario->NMFUNCIONARIO;
+            }
         }
-        $data['nome_recebedor'] = trim((string) ($data['nome_recebedor'] ?? ''));
-        if ($data['nome_recebedor'] === '') {
-            $data['nome_recebedor'] = null;
-        }
-
-        $statusNovo = $data['status'];
+        unset($data['recebedor_matricula']); // Remove campo temporário
         $solicitacao->fill($data);
 
         // Novo fluxo: não há campos separado_em, concluido_em, etc.
@@ -352,7 +349,7 @@ class SolicitacaoBemController extends Controller
             return true;
         }
         // USRs precisam ter permissão específica
-        if ($user->PERFIL === User::PERFIL_USR) {
+        if ($user->PERFIL === User::PERFIL_USUARIO) {
             return $user->temAcessoTela((string) self::TELA_SOLICITACOES_CRIAR);
         }
         return false;
@@ -446,10 +443,15 @@ class SolicitacaoBemController extends Controller
             return $this->denyAccess($request, 'Apenas solicitações pendentes podem ser confirmadas.');
         }
 
+        $validated = $request->validate([
+            'tracking_code' => ['required', 'string', 'max:100'],
+            'destination_type' => ['required', 'in:FILIAL,PROJETO'],
+        ]);
+
         $solicitacao->update([
             'status' => SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO,
-            'tracking_code' => $request->input('tracking_code'),
-            'destination_type' => $request->input('destination_type', SolicitacaoBem::DESTINATION_PROJETO),
+            'tracking_code' => $validated['tracking_code'],
+            'destination_type' => $validated['destination_type'],
         ]);
 
         Log::info('✅ [SOLICITACOES] Solicitação confirmada (1º nível)', [
@@ -525,12 +527,12 @@ class SolicitacaoBemController extends Controller
         }
 
         $validated = $request->validate([
-            'justificativa' => ['required', 'string', 'max:1000'],
+            'justificativa_cancelamento' => ['required', 'string', 'max:1000'],
         ]);
 
         $solicitacao->update([
             'status' => SolicitacaoBem::STATUS_CANCELADO,
-            'justificativa_cancelamento' => $validated['justificativa'],
+            'justificativa_cancelamento' => $validated['justificativa_cancelamento'],
             'cancelado_por_id' => $user->getAuthIdentifier(),
             'cancelado_em' => now(),
         ]);
@@ -538,7 +540,7 @@ class SolicitacaoBemController extends Controller
         Log::info('🚫 [SOLICITACOES] Solicitação cancelada', [
             'solicitacao_id' => $solicitacao->id,
             'cancelado_por' => $user->NMLOGIN,
-            'justificativa' => $validated['justificativa'],
+            'justificativa' => $validated['justificativa_cancelamento'],
         ]);
 
         if ($request->expectsJson()) {

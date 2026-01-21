@@ -533,6 +533,130 @@
                 };
             }
 
+            function projetoLocalForm() {
+                const todasProjetos = getProjetosFromDataset();
+                
+                return {
+                    projetoSearch: '',
+                    projetoSelecionado: '',
+                    showProjetoDrop: false,
+                    projetoIndex: -1,
+                    allProjetos: todasProjetos,
+                    
+                    localDestinoSearch: '',
+                    localSelecionado: '',
+                    showLocalDrop: false,
+                    localIndex: -1,
+                    locaisList: [],
+                    loadingLocais: false,
+
+                    get projetosFiltrados() {
+                        const termo = (this.projetoSearch || '').toLowerCase().trim();
+                        let filtrados = this.allProjetos;
+                        
+                        if (termo) {
+                            filtrados = this.allProjetos.filter(proj => {
+                                const cdMatch = String(proj.CDPROJETO || '').toLowerCase().includes(termo);
+                                const nomeMatch = String(proj.NOMEPROJETO || '').toLowerCase().includes(termo);
+                                return cdMatch || nomeMatch;
+                            });
+                        }
+
+                        return filtrados.sort((a, b) => {
+                            return String(a.CDPROJETO).localeCompare(String(b.CDPROJETO), undefined, { numeric: true });
+                        });
+                    },
+                    
+                    get locaisFiltrados() {
+                        const termo = (this.localDestinoSearch || '').toLowerCase().trim();
+                        let filtrados = this.locaisList;
+                        
+                        if (termo) {
+                            filtrados = this.locaisList.filter(loc => {
+                                const cdMatch = String(loc.cdlocal || '').toLowerCase().includes(termo);
+                                const nomeMatch = String(loc.delocal || '').toLowerCase().includes(termo);
+                                return cdMatch || nomeMatch;
+                            });
+                        }
+
+                        return filtrados;
+                    },
+
+                    filtrarProjetos() {
+                        this.projetoIndex = -1;
+                        if (!this.projetoSearch.trim()) {
+                            this.showProjetoDrop = true;
+                        }
+                    },
+
+                    async selecionarProjeto(proj) {
+                        if (!proj) return;
+                        this.projetoSelecionado = proj.id;
+                        this.projetoSearch = `${proj.CDPROJETO} - ${proj.NOMEPROJETO}`;
+                        this.showProjetoDrop = false;
+                        this.projetoIndex = -1;
+                        
+                        // Limpar local selecionado
+                        this.localDestinoSearch = '';
+                        this.localSelecionado = '';
+                        this.locaisList = [];
+                        
+                        // Buscar locais do projeto
+                        await this.buscarLocais(proj.id);
+                    },
+                    
+                    limparProjeto() {
+                        this.projetoSearch = '';
+                        this.projetoSelecionado = '';
+                        this.projetoIndex = -1;
+                        this.localDestinoSearch = '';
+                        this.localSelecionado = '';
+                        this.locaisList = [];
+                    },
+                    
+                    async buscarLocais(projetoId) {
+                        if (!projetoId) return;
+                        
+                        this.loadingLocais = true;
+                        try {
+                            const resp = await fetch(`/api/locais/lookup?projeto_id=${projetoId}`);
+                            if (!resp.ok) throw new Error('Erro ao buscar locais');
+                            const data = await resp.json();
+                            this.locaisList = data;
+                        } catch (err) {
+                            console.error('Erro ao buscar locais:', err);
+                            this.locaisList = [];
+                        } finally {
+                            this.loadingLocais = false;
+                        }
+                    },
+                    
+                    abrirDropdownLocal() {
+                        if (!this.projetoSelecionado) return;
+                        this.showLocalDrop = true;
+                        this.localIndex = -1;
+                    },
+                    
+                    filtrarLocais() {
+                        this.localIndex = -1;
+                    },
+                    
+                    selecionarLocal(loc) {
+                        if (!loc) return;
+                        this.localSelecionado = loc.delocal; // Armazena o nome do local
+                        this.localDestinoSearch = `${loc.cdlocal} - ${loc.delocal}`;
+                        this.showLocalDrop = false;
+                        this.localIndex = -1;
+                    },
+                    
+                    limparLocal() {
+                        this.localDestinoSearch = '';
+                        this.localSelecionado = '';
+                        this.localIndex = -1;
+                    }
+                };
+            }
+
             function patrimonioSearch(item) {
                 return {
                     resultados: [],
@@ -604,6 +728,15 @@
                         this.item.descricao = text;
                         this.item.patrimonio_busca = text;
                         this.item.selecionado = true;
+                        
+                        // Se tiver peso, preenche automaticamente o campo unidade
+                        if (resultado?.peso && resultado.peso > 0) {
+                            this.item.peso = resultado.peso;
+                            this.item.unidade = `${resultado.peso} kg`;
+                        } else {
+                            this.item.peso = null;
+                            // Mantém unidade editável quando não há peso
+                        }
                         this.resultados = [];
                         this.dropdownOpen = false;
                     },

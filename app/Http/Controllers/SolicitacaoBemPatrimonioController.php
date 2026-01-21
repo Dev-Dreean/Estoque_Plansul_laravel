@@ -34,7 +34,7 @@ class SolicitacaoBemPatrimonioController extends Controller
             });
         }
 
-        $patrimonios = $query->select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'FLCONFERIDO'])
+        $patrimonios = $query->select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'FLCONFERIDO', 'PESO'])
             ->orderBy('NUPATRIMONIO')
             ->limit(50)
             ->get()
@@ -43,6 +43,7 @@ class SolicitacaoBemPatrimonioController extends Controller
                 'nupatrimonio' => $p->NUPATRIMONIO,
                 'descricao' => $p->DEPATRIMONIO,
                 'conferido' => $p->FLCONFERIDO === 'S',
+                'peso' => $p->PESO ? (float) $p->PESO : null,
                 'text' => "{$p->NUPATRIMONIO} - {$p->DEPATRIMONIO}",
             ]);
 

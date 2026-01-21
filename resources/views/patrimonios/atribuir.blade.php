@@ -2,7 +2,7 @@
   {{-- Abas de navegação do patrimônio --}}
   <x-patrimonio-nav-tabs />
 
-  <div x-data="atribuirPage()" x-init="init()">
+  <div x-data="atribuirPage()" x-init="init()" @atribuir-aplicar-filtros.window="aplicarFiltros()">
     <div class="py-12">
       <div class="w-full sm:px-6 lg:px-8">
         <!-- Mensagens de Feedback -->
@@ -35,7 +35,43 @@
           <div class="section-body">
             <div class="space-y-6">
               <!-- Filtros (layout replicado do index) -->
-              <div x-data="{ open: false, temFiltroAtivo: false, textofiltro: '' }"
+              <div x-data="{
+                  open: false,
+                  temFiltroAtivo: false,
+                  textofiltro: '',
+                  focusFirst() {
+                    this.open = true;
+                    this.$nextTick(() => {
+                      const termo = document.getElementById('filtro_termo');
+                      const numero = document.getElementById('filtro_numero');
+                      const el = termo || numero;
+                      if (el) {
+                        el.focus();
+                        if (typeof el.select === 'function') {
+                          el.select();
+                        }
+                      }
+                    });
+                  },
+                  handleKey(event) {
+                    if (!event || event.defaultPrevented) return;
+                    if (event.ctrlKey || event.metaKey || event.altKey) return;
+                    if (event.key !== 'f' && event.key !== 'F') return;
+                    const target = event.target;
+                    const tag = target ? target.tagName : '';
+                    if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag))) return;
+                    event.preventDefault();
+                    this.focusFirst();
+                  },
+                  handleEnter(event) {
+                    if (!event || event.defaultPrevented) return;
+                    const target = event.target;
+                    const tag = target ? target.tagName : '';
+                    if (!target || !['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+                    event.preventDefault();
+                    window.dispatchEvent(new CustomEvent('atribuir-aplicar-filtros'));
+                  }
+                }"
                 x-init="
                   const num = document.getElementById('filtro_numero').value;
                   const desc = document.getElementById('filtro_descricao').value;
@@ -51,7 +87,13 @@
                   if (termo) partes.push('Termo=' + termo);
                   textofiltro = partes.join(', ');
                 "
-                @click.outside="open = false" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6" x-id="['filtro-atribuir']" :aria-expanded="open.toString()" :aria-controls="$id('filtro-atribuir')">
+                @click.outside="open = false"
+                @keydown.window="handleKey($event)"
+                @keydown.enter.prevent="handleEnter($event)"
+                class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6"
+                x-id="['filtro-atribuir']"
+                :aria-expanded="open.toString()"
+                :aria-controls="$id('filtro-atribuir')">
                 <div class="flex justify-between items-center">
                   <h3 class="font-semibold text-lg">
                     Filtros de Busca
@@ -179,7 +221,7 @@
                   <div class="flex flex-wrap items-center justify-between mt-4 gap-4">
                     <div class="flex items-center gap-3">
                       <button type="button" @click="aplicarFiltros()" class="btn-accent h-10">Filtrar</button>
-                      <a href="{{ route('patrimonios.atribuir.codigos') }}" @click="temFiltroAtivo = false; open = false" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">Limpar</a>
+                      <a href="{{ route('patrimonios.atribuir.codigos') }}" @click.prevent="temFiltroAtivo = false; open = false; limparFiltros();" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md">Limpar</a>
                     </div>
                     <label class="flex items-center gap-2 ml-auto shrink-0">
                       <span class="text-sm text-gray-700 dark:text-gray-300">Itens por página</span>
@@ -220,6 +262,7 @@
             </div>
 
             <!-- Tabela (estrutura idêntica ao index) -->
+            <div id="atribuir-grid-container">
             <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0">
               {{-- MODO DISPONÍVEIS: Usa componente reutilizável --}}
               @if(!request('status') || request('status')=='disponivel')
@@ -434,8 +477,9 @@
               </table>
               @endif
             </div>
-            <div class="mt-4">
+            <div class="mt-4" id="atribuir-pagination">
               {{ $patrimonios->appends(request()->query())->links() }}
+            </div>
             </div>
             </form> <!-- Fechamento do form-atribuir-lote -->
           </div> <!-- /mb-6 flex flex-col gap-6 -->
@@ -553,6 +597,7 @@
         groupState: {}, // Estado dos grupos (expandido/colapsado)
         grupoSelecionados: {}, // Itens selecionados por grupo
         selectionEnabled: false,
+        ajaxHandlersBound: false,
         // Estados de listagem de códigos removidos (modal removido)
         init() {
           this.selectionEnabled = !!(window.patrimonioAtribuirSelection && window.patrimonioAtribuirSelection.status === 'disponivel');
@@ -603,8 +648,145 @@
 
           // Verificação inicial
           updateFooterVisibility();
+          this.bindAjaxHandlers();
+        },
+        bindAjaxHandlers() {
+          if (this.ajaxHandlersBound) return;
+          this.ajaxHandlersBound = true;
+          document.addEventListener('click', (e) => {
+            const sortLink = e.target.closest('[data-ajax-sort]');
+            if (sortLink) {
+              e.preventDefault();
+              const href = sortLink.getAttribute('href');
+              if (!href) return;
+              const hrefParams = this.parseHrefParams(href);
+              const params = this.buildFilterParams({
+                sort: hrefParams.get('sort'),
+                direction: hrefParams.get('direction'),
+                page: null,
+              });
+              this.ajaxFetchParams(params);
+              return;
+            }
+
+            const pagLink = e.target.closest('#atribuir-pagination a');
+            if (pagLink) {
+              e.preventDefault();
+              const href = pagLink.getAttribute('href');
+              if (!href) return;
+              const hrefParams = this.parseHrefParams(href);
+              const params = this.buildFilterParams({
+                page: hrefParams.get('page'),
+                per_page: hrefParams.get('per_page'),
+              });
+              this.ajaxFetchParams(params);
+            }
+          });
+        },
+        buildFilterParams(overrides = {}) {
+          const params = new URLSearchParams(window.location.search);
+          [
+            'filtro_numero',
+            'filtro_descricao',
+            'filtro_modelo',
+            'filtro_projeto',
+            'filtro_termo',
+            'filtro_matr_responsavel',
+            'filtro_matr_cadastrador',
+            'per_page',
+            'page',
+            'sort',
+            'direction',
+          ].forEach(k => params.delete(k));
+          const numero = document.getElementById('filtro_numero')?.value;
+          const descricao = document.getElementById('filtro_descricao')?.value;
+          const modelo = document.getElementById('filtro_modelo')?.value;
+          const projeto = document.getElementById('filtro_projeto')?.value;
+          const termo = document.getElementById('filtro_termo')?.value;
+          const matrResp = document.getElementById('filtro_matr_responsavel')?.value;
+          const matrCad = document.getElementById('filtro_matr_cadastrador')?.value;
+          const perPage = document.getElementById('per_page')?.value;
+          if (numero) params.set('filtro_numero', numero);
+          if (descricao) params.set('filtro_descricao', descricao);
+          if (modelo) params.set('filtro_modelo', modelo);
+          if (projeto) params.set('filtro_projeto', projeto);
+          if (termo) params.set('filtro_termo', termo);
+          if (matrResp) params.set('filtro_matr_responsavel', matrResp);
+          if (matrCad) params.set('filtro_matr_cadastrador', matrCad);
+          if (perPage) params.set('per_page', perPage);
+          Object.entries(overrides || {}).forEach(([key, value]) => {
+            if (value == null || value === '') {
+              params.delete(key);
+            } else {
+              params.set(key, value);
+            }
+          });
+          return params;
+        },
+        updateHistory(params) {
+          if (!window.history) return;
+          const query = params.toString();
+          const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+          window.history.replaceState(null, '', url);
+        },
+        parseHrefParams(href) {
+          try {
+            const url = new URL(href, window.location.origin);
+            return url.searchParams;
+          } catch (_) {
+            const idx = href.indexOf('?');
+            return new URLSearchParams(idx >= 0 ? href.slice(idx + 1) : '');
+          }
+        },
+        ajaxFetchParams(params) {
+          const gridContainer = document.getElementById('atribuir-grid-container');
+          if (!gridContainer) {
+            const query = params.toString();
+            window.location.href = query ? `{{ route('patrimonios.atribuir.codigos') }}?${query}` : '{{ route('patrimonios.atribuir.codigos') }}';
+            return;
+          }
+          if (this.selectionEnabled) {
+            this.saveSelection();
+          }
+          const query = params.toString();
+          const url = query ? `{{ route('patrimonios.atribuir.codigos') }}?${query}` : '{{ route('patrimonios.atribuir.codigos') }}';
+          gridContainer.classList.add('opacity-60');
+          fetch(url, {
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'text/html',
+            },
+          })
+            .then(resp => resp.text())
+            .then(html => this.swapGrid(html))
+            .then(() => this.updateHistory(params))
+            .catch((err) => {
+              console.error('[ATRIBUIR] ajax fetch error', err);
+              alert('Falha ao atualizar a listagem. Tente novamente.');
+            })
+            .finally(() => {
+              gridContainer.classList.remove('opacity-60');
+            });
+        },
+        swapGrid(html) {
+          const gridContainer = document.getElementById('atribuir-grid-container');
+          if (!gridContainer) return;
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const fresh = doc.querySelector('#atribuir-grid-container');
+          if (fresh) {
+            gridContainer.innerHTML = fresh.innerHTML;
+            if (window.Alpine && typeof Alpine.initTree === 'function') {
+              Alpine.initTree(gridContainer);
+            }
+          }
+          if (this.selectionEnabled) {
+            this.syncCheckboxes();
+          }
+          this.updateCounter();
         },
         loadSelection() {
+
           if (!this.selectionEnabled || !window.patrimonioAtribuirSelection) return;
           this.selectedPatrimonios = window.patrimonioAtribuirSelection.read();
         },
@@ -642,30 +824,21 @@
           this.codigoTermo = value;
         },
         aplicarFiltros() {
-          const params = new URLSearchParams(window.location.search);
-          // Limpa filtros antigos para reconstruir
-          ['filtro_numero', 'filtro_descricao', 'filtro_modelo', 'filtro_projeto', 'filtro_termo', 'filtro_matr_responsavel', 'filtro_matr_cadastrador', 'per_page'].forEach(k => params.delete(k));
-          const numero = document.getElementById('filtro_numero')?.value;
-          const descricao = document.getElementById('filtro_descricao')?.value;
-          const modelo = document.getElementById('filtro_modelo')?.value;
-          const projeto = document.getElementById('filtro_projeto')?.value;
-          const termo = document.getElementById('filtro_termo')?.value;
-          const matrResp = document.getElementById('filtro_matr_responsavel')?.value;
-          const matrCad = document.getElementById('filtro_matr_cadastrador')?.value;
-          const perPage = document.getElementById('per_page')?.value;
-          if (numero) params.set('filtro_numero', numero);
-          if (descricao) params.set('filtro_descricao', descricao);
-          if (modelo) params.set('filtro_modelo', modelo);
-          if (projeto) params.set('filtro_projeto', projeto);
-          if (termo) params.set('filtro_termo', termo);
-          if (matrResp) params.set('filtro_matr_responsavel', matrResp);
-          if (matrCad) params.set('filtro_matr_cadastrador', matrCad);
-          if (perPage) params.set('per_page', perPage);
-          else params.delete('per_page');
-          if (this.selectionEnabled) {
-            this.saveSelection();
+          const params = this.buildFilterParams();
+          this.ajaxFetchParams(params);
+        },
+        limparFiltros() {
+          ['filtro_numero', 'filtro_descricao', 'filtro_modelo', 'filtro_projeto', 'filtro_termo', 'filtro_matr_responsavel', 'filtro_matr_cadastrador'].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+          });
+          const perPage = document.getElementById('per_page');
+          if (perPage) {
+            const first = perPage.querySelector('option');
+            perPage.value = first ? first.value : '';
           }
-          window.location.href = '{{ route("patrimonios.atribuir.codigos") }}?' + params.toString();
+          const params = this.buildFilterParams({ codigo: null, page: null });
+          this.ajaxFetchParams(params);
         },
         toggleAll(event) {
           const source = event.target;
@@ -956,11 +1129,8 @@
           }
         },
         filtrarPorCodigo() {
-          // Reaproveita lÃ³gica aplicarFiltros adicionando parametro codigoTermo
-          const params = new URLSearchParams(window.location.search);
-          if (this.codigoTermo) params.set('codigo', this.codigoTermo);
-          else params.delete('codigo');
-          window.location.href = '{{ route("patrimonios.atribuir.codigos") }}?' + params.toString();
+          const params = this.buildFilterParams({ codigo: this.codigoTermo || null, page: null });
+          this.ajaxFetchParams(params);
         },
         // FUNÇÃO LEGADA - NÃO USE MAIS
         // Use desatribuirGrupo() ou footerDesatribuir()

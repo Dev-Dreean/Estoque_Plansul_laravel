@@ -896,7 +896,7 @@ class PatrimonioController extends Controller
 
             'SITUACAO' => $validated['SITUACAO'],
 
-            'FLCONFERIDO' => $this->normalizeConferidoFlag($validated['FLCONFERIDO'] ?? null),
+            'FLCONFERIDO' => $this->normalizeConferidoFlag($validated['FLCONFERIDO'] ?? null) ?? 'S',
 
             'CDMATRFUNCIONARIO' => isset($validated['CDMATRFUNCIONARIO']) ? (int) $validated['CDMATRFUNCIONARIO'] : null,
 

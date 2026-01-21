@@ -29,7 +29,7 @@
                     <div x-show="step === 1" class="space-y-3">
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">Dados da Solicitação</h3>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3" x-data="projetoSearch()">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" x-data="projetoLocalForm()">
                             <!-- Projeto com Dropdown Searchable -->
                             <div>
                                 <label for="projetoSearch" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Projeto *</label>
@@ -44,7 +44,7 @@
                                         placeholder="Buscar projeto..."
                                         required />
                                     <input type="hidden" id="projeto_id" name="projeto_id" :value="projetoSelecionado" />
-                                    <button type="button" x-show="projetoSearch" @click="projetoSearch=''; projetoSelecionado=''; projetoIndex=-1" class="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" tabindex="-1">×</button>
+                                    <button type="button" x-show="projetoSearch" @click="limparProjeto()" class="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" tabindex="-1">×</button>
                                     <div x-show="showProjetoDrop" x-transition class="absolute z-[999] top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg overflow-hidden text-xs">
                                         <div style="max-height: 145px; overflow-y: auto;">
                                         <template x-for="(proj, i) in projetosFiltrados" :key="proj.id">
@@ -62,21 +62,42 @@
                                 <x-input-error :messages="$errors->get('projeto_id')" class="mt-1" />
                             </div>
 
-                            <!-- Setor -->
+                            <!-- Local Destino (dropdown baseado no projeto) -->
                             <div>
-                                <label for="setor" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Setor *</label>
-                                <input id="setor" name="setor" type="text" 
-                                    class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" 
-                                    value="{{ old('setor') }}" required />
-                                <x-input-error :messages="$errors->get('setor')" class="mt-1" />
-                            </div>
-
-                            <!-- Local Destino -->
-                            <div>
-                                <label for="local_destino" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Local Destino *</label>
-                                <input id="local_destino" name="local_destino" type="text" 
-                                    class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" 
-                                    value="{{ old('local_destino') }}" required />
+                                <label for="localDestinoSearch" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Local Destino *</label>
+                                <div class="relative" @click.away="showLocalDrop=false">
+                                    <input id="localDestinoSearch" type="text" x-model="localDestinoSearch"
+                                        @focus="abrirDropdownLocal()"
+                                        @input="filtrarLocais()"
+                                        @keydown.down.prevent="localIndex = Math.min(localIndex+1, locaisFiltrados.length-1)"
+                                        @keydown.up.prevent="localIndex = Math.max(localIndex-1, 0)"
+                                        @keydown.enter.prevent="selecionarLocal(locaisFiltrados[localIndex])"
+                                        :disabled="!projetoSelecionado"
+                                        class="block w-full h-8 text-xs rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 pr-6"
+                                        :class="projetoSelecionado ? 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200' : 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-500 cursor-not-allowed'"
+                                        placeholder="Selecione o projeto primeiro..."
+                                        required />
+                                    <input type="hidden" id="local_destino" name="local_destino" :value="localSelecionado" />
+                                    <button type="button" x-show="localDestinoSearch && projetoSelecionado" @click="limparLocal()" class="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" tabindex="-1">×</button>
+                                    <div x-show="showLocalDrop" x-transition class="absolute z-[999] top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg overflow-hidden text-xs">
+                                        <div style="max-height: 180px; overflow-y: auto;">
+                                        <template x-if="loadingLocais">
+                                            <div class="px-3 py-2 text-gray-500 dark:text-gray-400 text-center">Carregando locais...</div>
+                                        </template>
+                                        <template x-if="!loadingLocais && locaisFiltrados.length === 0">
+                                            <div class="px-3 py-2 text-gray-500 dark:text-gray-400">Nenhum local encontrado</div>
+                                        </template>
+                                        <template x-for="(loc, i) in locaisFiltrados" :key="loc.id">
+                                            <button type="button" @click="selecionarLocal(loc); showLocalDrop=false"
+                                                :class="{'bg-indigo-100 dark:bg-gray-700': localIndex === i, 'hover:bg-gray-50 dark:hover:bg-gray-700': localIndex !== i}"
+                                                class="w-full text-left px-3 py-2 border-b border-gray-100 dark:border-gray-700 last:border-0 transition">
+                                                <span class="text-indigo-600 dark:text-indigo-400 font-mono text-xs" x-text="loc.cdlocal"></span>
+                                                <span class="text-gray-700 dark:text-gray-300 ml-2" x-text="loc.delocal"></span>
+                                            </button>
+                                        </template>
+                                        </div>
+                                    </div>
+                                </div>
                                 <x-input-error :messages="$errors->get('local_destino')" class="mt-1" />
                             </div>
                         </div>
@@ -145,7 +166,7 @@
                                 </div>
                             </div>
 
-                            <!-- Grid: Quantidade, Unidade, Observação -->
+                            <!-- Grid: Quantidade, Unidade (com Peso automático), Observação -->
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Quantidade *</label>
@@ -157,13 +178,18 @@
                                         required />
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Unidade</label>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Unidade / Peso</label>
                                     <input type="text" 
                                         class="w-full h-8 text-xs px-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
                                         name="itens[0][unidade]" 
                                         :value="item?.unidade || ''" 
-                                        @input="item.unidade = $el.value" 
-                                        placeholder="Un., Kg, L, ..." />
+                                        @input="item.unidade = $el.value"
+                                        :placeholder="item?.peso ? `Peso: ${item.peso} kg` : 'Un., Kg, L, ...'"
+                                        :readonly="!!item?.peso"
+                                        :class="item?.peso ? 'bg-gray-50 dark:bg-gray-700 cursor-not-allowed' : ''" />
+                                    <p x-show="item?.peso" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Peso do item: <span class="font-semibold" x-text="item.peso + ' kg'"></span>
+                                    </p>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observação</label>

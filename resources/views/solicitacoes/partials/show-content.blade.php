@@ -248,62 +248,44 @@
                             </div>
 
                             <div class="p-3">
-                                <div x-data="matriculaLookup({
-                                    matriculaOld: @js($matriculaOld),
-                                    nomeOld: @js($nomeOld),
-                                    lookupOnInit: @js($lookupOnInit)
-                                })" x-init="initLookup()">
+                                <form method="POST" action="{{ route('solicitacoes-bens.update', $solicitacao) }}" data-modal-form="{{ $isModal ? '1' : '0' }}" class="space-y-3">
+                                    @csrf
+                                    @method('PATCH')
+                                    @if($isModal)
+                                        <input type="hidden" name="modal" value="1" />
+                                    @endif
 
-                                    <form method="POST" action="{{ route('solicitacoes-bens.update', $solicitacao) }}" data-modal-form="{{ $isModal ? '1' : '0' }}" class="space-y-3">
-                                        @csrf
-                                        @method('PATCH')
-                                        @if($isModal)
-                                            <input type="hidden" name="modal" value="1" />
-                                        @endif
+                                    <div class="relative">
+                                        <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                                            <div class="w-full border-t border-[color:var(--solicitacao-modal-border,#d6dde6)]"></div>
+                                        </div>
+                                        <div class="relative flex justify-center">
+                                            <span class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] px-2 text-[10px] text-gray-400">Dados de Entrega</span>
+                                        </div>
+                                    </div>
 
-                                        <div class="relative">
-                                            <div class="absolute inset-0 flex items-center" aria-hidden="true">
-                                                <div class="w-full border-t border-[color:var(--solicitacao-modal-border,#d6dde6)]"></div>
-                                            </div>
-                                            <div class="relative flex justify-center">
-                                                <span class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] px-2 text-[10px] text-gray-400">Dados de Entrega</span>
-                                            </div>
+                                    <!-- Recebedor Info -->
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label for="recebedor_search" class="block text-[10px] font-medium text-gray-700 dark:text-slate-300 mb-1">Respons&aacute;vel Recebedor * <span class="text-red-500">*</span></label>
+                                            <x-user-autocomplete 
+                                                id="recebedor_search"
+                                                name="recebedor_matricula"
+                                                :value="$matriculaOld"
+                                                placeholder="Digite matrícula ou nome..."
+                                                class="h-7 text-xs border-gray-300 dark:border-slate-600" />
+                                            <x-input-error :messages="$errors->get('recebedor_matricula')" class="mt-1" />
+                                            <p class="mt-1 text-[9px] text-gray-500 dark:text-gray-400">Obrigatório: Deve ter um responsável para aprovar o envio</p>
                                         </div>
 
-                                        <!-- Recebedor Info -->
-                                        <div class="space-y-3">
-                                            <div>
-                                                <label for="matricula_recebedor" class="block text-[10px] font-medium text-gray-700 dark:text-slate-300 mb-1">Matr&iacute;cula Recebedor</label>
-                                                <div class="relative rounded-md shadow-sm">
-                                                    <input id="matricula_recebedor" name="matricula_recebedor" type="text"
-                                                        class="block w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900/80 focus:border-indigo-500 focus:ring-indigo-500 text-xs h-7"
-                                                        value="{{ $matriculaOld }}" x-model="matricula" @blur="onMatriculaBlur" @input="onMatriculaInput" placeholder="Ex: 12345" />
-                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none" x-show="matriculaExiste" style="display: none;">
-                                                        <svg class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                    </div>
-                                                </div>
-                                                <x-input-error :messages="$errors->get('matricula_recebedor')" class="mt-1" />
-                                            </div>
-
-                                            <div>
-                                                <label for="nome_recebedor" class="block text-[10px] font-medium text-gray-700 dark:text-slate-300 mb-1">Nome Recebedor</label>
-                                                <input id="nome_recebedor" name="nome_recebedor" type="text"
-                                                    class="block w-full rounded-md border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs h-7 transition-colors"
-                                                    value="{{ $nomeOld }}" x-model="nome" x-bind:readonly="nomeBloqueado"
-                                                    x-bind:class="nomeBloqueado ? 'text-gray-500' : 'bg-white dark:bg-slate-900/80'" />
-                                                <x-input-error :messages="$errors->get('nome_recebedor')" class="mt-1" />
-                                            </div>
-
-                                            <div>
-                                                <label for="local_destino" class="block text-[10px] font-medium text-gray-700 dark:text-slate-300 mb-1">Local Atualizado</label>
-                                                <input id="local_destino" name="local_destino" type="text"
-                                                    class="block w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs h-7"
-                                                    value="{{ old('local_destino', $solicitacao->local_destino) }}" />
-                                                <x-input-error :messages="$errors->get('local_destino')" class="mt-1" />
-                                            </div>
+                                        <div>
+                                            <label for="local_destino" class="block text-[10px] font-medium text-gray-700 dark:text-slate-300 mb-1">Local Atualizado</label>
+                                            <input id="local_destino" name="local_destino" type="text"
+                                                class="block w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs h-7"
+                                                value="{{ old('local_destino', $solicitacao->local_destino) }}" />
+                                            <x-input-error :messages="$errors->get('local_destino')" class="mt-1" />
                                         </div>
+                                    </div>
 
                                         <div class="relative">
                                             <div class="absolute inset-0 flex items-center" aria-hidden="true">
@@ -368,7 +350,6 @@
                                             </div>
                                         </div>
                                     </form>
-                                </div>
                             </div>
                             <div class="bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] px-4 py-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] text-center">
                                 <p class="text-[10px] text-gray-400 uppercase tracking-wide">&Uacute;ltima atualiza&ccedil;&atilde;o: {{ $solicitacao->updated_at->diffForHumans() }}</p>

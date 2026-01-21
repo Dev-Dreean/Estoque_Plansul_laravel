@@ -80,10 +80,26 @@
       if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag))) return;
       event.preventDefault();
       this.focusFirst();
+    },
+    handleEnter(event) {
+      if (!event || event.defaultPrevented) return;
+      const target = event.target;
+      const tag = target ? target.tagName : '';
+      if (!target || !['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+      event.preventDefault();
+      const form = this.$refs.filterForm || document.getElementById('patrimonio-filter-form');
+      if (form) {
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit();
+        } else {
+          form.submit();
+        }
+      }
     }
   }"
   @click.outside="open = false"
   @keydown.window="handleKey($event)"
+  @keydown.enter.prevent="handleEnter($event)"
   class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg mb-3"
   x-id="['filtro-patrimonios']"
   :aria-expanded="open.toString()"
@@ -171,7 +187,7 @@
     </button>
   </div>
   <div x-cloak x-show="open" x-transition class="mt-4 bg-gray-200 dark:bg-gray-800 rounded-lg p-4" :id="$id('filtro-patrimonios')">
-    <form id="patrimonio-filter-form" method="GET" action="{{ route('patrimonios.index') }}" @submit="open=false">
+    <form id="patrimonio-filter-form" x-ref="filterForm" method="GET" action="{{ route('patrimonios.index') }}" @submit="open=false">
       @if($isBruno)
         <input type="hidden" name="bruno_skip_default" value="{{ $brunoSkipDefault }}">
       @endif
