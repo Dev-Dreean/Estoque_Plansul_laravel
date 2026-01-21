@@ -420,6 +420,131 @@ class SolicitacaoBemController extends Controller
             ]);
         }
     }
-}
+
+    /**
+     * Confirmar solicitação (primeira confirmação)
+     * Somente Tiago, Beatriz e Admin
+     */
+    public function confirm(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        
+        // Verificar se pode confirmar (Tiago, Beatriz, Admin)
+        $confirmadores = ['TIAGOP', 'BEATRIZ.SC'];
+        $canConfirm = $user?->isAdmin() || in_array(strtoupper($user->NMLOGIN ?? ''), $confirmadores, true);
+        
+        if (!$canConfirm) {
+            return $this->denyAccess($request, 'Apenas Tiago e Beatriz podem confirmar solicitações.');
+        }
+
+        if ($solicitacao->status !== SolicitacaoBem::STATUS_PENDENTE) {
+            return $this->denyAccess($request, 'Apenas solicitações pendentes podem ser confirmadas.');
+        }
+
+        $solicitacao->update([
+            'status' => SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO,
+            'tracking_code' => $request->input('tracking_code'),
+            'destination_type' => $request->input('destination_type', SolicitacaoBem::DESTINATION_PROJETO),
+        ]);
+
+        Log::info('✅ [SOLICITACOES] Solicitação confirmada (1º nível)', [
+            'solicitacao_id' => $solicitacao->id,
+            'confirmado_por' => $user->NMLOGIN,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitação confirmada. Aguardando aprovação final.',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Solicitação confirmada com sucesso!');
+    }
+
+    /**
+     * Aprovar solicitação (confirmação final)
+     * Somente o solicitante original pode fazer
+     */
+    public function approve(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        // Verificar se é o solicitante
+        if (!$this->isOwner($user, $solicitacao)) {
+            return $this->denyAccess($request, 'Apenas o solicitante pode aprovar a solicitação.');
+        }
+
+        if ($solicitacao->status !== SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO) {
+            return $this->denyAccess($request, 'Apenas solicitações aguardando confirmação podem ser aprovadas.');
+        }
+
+        $solicitacao->update([
+            'status' => SolicitacaoBem::STATUS_CONFIRMADO,
+            'confirmado_por_id' => $user->getAuthIdentifier(),
+            'confirmado_em' => now(),
+        ]);
+
+        Log::info('✅ [SOLICITACOES] Solicitação aprovada (2º nível)', [
+            'solicitacao_id' => $solicitacao->id,
+            'aprovado_por' => $user->NMLOGIN,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitação aprovada com sucesso!',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Solicitação aprovada com sucesso!');
+    }
+
+    /**
+     * Cancelar solicitação
+     * Somente o solicitante pode cancelar
+     */
+    public function cancel(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        // Verificar se é o solicitante
+        if (!$this->isOwner($user, $solicitacao)) {
+            return $this->denyAccess($request, 'Apenas o solicitante pode cancelar a solicitação.');
+        }
+
+        if ($solicitacao->status === SolicitacaoBem::STATUS_CANCELADO) {
+            return $this->denyAccess($request, 'Esta solicitação já foi cancelada.');
+        }
+
+        $validated = $request->validate([
+            'justificativa' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $solicitacao->update([
+            'status' => SolicitacaoBem::STATUS_CANCELADO,
+            'justificativa_cancelamento' => $validated['justificativa'],
+            'cancelado_por_id' => $user->getAuthIdentifier(),
+            'cancelado_em' => now(),
+        ]);
+
+        Log::info('🚫 [SOLICITACOES] Solicitação cancelada', [
+            'solicitacao_id' => $solicitacao->id,
+            'cancelado_por' => $user->NMLOGIN,
+            'justificativa' => $validated['justificativa'],
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitação cancelada com sucesso!',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Solicitação cancelada com sucesso!');
+    }
 
 

@@ -9,9 +9,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SolicitacaoBem extends Model
 {
     public const STATUS_PENDENTE = 'PENDENTE';
-    public const STATUS_SEPARADO = 'SEPARADO';
-    public const STATUS_CONCLUIDO = 'CONCLUIDO';
+    public const STATUS_AGUARDANDO_CONFIRMACAO = 'AGUARDANDO_CONFIRMACAO';
+    public const STATUS_CONFIRMADO = 'CONFIRMADO';
     public const STATUS_CANCELADO = 'CANCELADO';
+    
+    public const DESTINATION_FILIAL = 'FILIAL';
+    public const DESTINATION_PROJETO = 'PROJETO';
 
     protected $table = 'solicitacoes_bens';
 
@@ -28,16 +31,17 @@ class SolicitacaoBem extends Model
         'observacao_controle',
         'matricula_recebedor',
         'nome_recebedor',
-        'separado_por_id',
-        'separado_em',
-        'concluido_por_id',
-        'concluido_em',
+        'tracking_code',
+        'destination_type',
+        'justificativa_cancelamento',
+        'confirmado_por_id',
+        'cancelado_por_id',
         'email_confirmacao_enviado_em',
     ];
 
     protected $casts = [
-        'separado_em' => 'datetime',
-        'concluido_em' => 'datetime',
+        'confirmado_em' => 'datetime',
+        'cancelado_em' => 'datetime',
         'email_confirmacao_enviado_em' => 'datetime',
     ];
 
@@ -45,9 +49,17 @@ class SolicitacaoBem extends Model
     {
         return [
             self::STATUS_PENDENTE,
-            self::STATUS_SEPARADO,
-            self::STATUS_CONCLUIDO,
+            self::STATUS_AGUARDANDO_CONFIRMACAO,
+            self::STATUS_CONFIRMADO,
             self::STATUS_CANCELADO,
+        ];
+    }
+    
+    public static function destinationTypeOptions(): array
+    {
+        return [
+            self::DESTINATION_FILIAL => 'Filial',
+            self::DESTINATION_PROJETO => 'Projeto',
         ];
     }
 

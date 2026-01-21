@@ -244,6 +244,14 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         ->only(['index', 'create', 'store', 'show', 'update', 'destroy'])
         ->middleware('tela.access:1010');
 
+    // Ações de solicitações de bens
+    Route::post('/solicitacoes-bens/{solicitacao}/confirm', 
+        [SolicitacaoBemController::class, 'confirm'])->name('solicitacoes-bens.confirm')->middleware('tela.access:1010');
+    Route::post('/solicitacoes-bens/{solicitacao}/approve', 
+        [SolicitacaoBemController::class, 'approve'])->name('solicitacoes-bens.approve')->middleware('tela.access:1010');
+    Route::post('/solicitacoes-bens/{solicitacao}/cancel', 
+        [SolicitacaoBemController::class, 'cancel'])->name('solicitacoes-bens.cancel')->middleware('tela.access:1010');
+
     // API para buscar patrimônios disponíveis (autocomplete)
     Route::get('/api/solicitacoes-bens/patrimonio-disponivel', 
         [App\Http\Controllers\SolicitacaoBemPatrimonioController::class, 'buscarDisponivel']
