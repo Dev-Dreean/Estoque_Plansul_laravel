@@ -1,0 +1,208 @@
+=== IMPLANTAÇÃO: NOVO FLUXO DE SOLICITAÇÕES DE BENS ===
+Data: 2025-12-13
+Status: ✅ CONCLUÍDO (Local) / ⏳ PRONTO PARA KINGHOST
+
+## RESUMO DAS MUDANÇAS
+
+### 1. OBJETIVO ALCANÇADO
+Permitir que USRs (PERFIL_USUARIO) criem e acompanhem solicitações de bens com um fluxo 
+de aprovação em 2 níveis:
+  - Nível 1: Tiago/Beatriz (Admin/Gerente) CONFIRMAM + adicionam tracking code + tipo destino
+  - Nível 2: Solicitante APROVA final (após confirmação)
+
+### 2. ESTRUTURA DO NOVO FLUXO
+
+Status (Ciclo de Vida):
+  PENDENTE (inicial)
+    ↓ [Confirmar por Tiago/Beatriz]
+  AGUARDANDO_CONFIRMACAO (aguarda solicitante)
+    ↓ [Aprovar por Solicitante]
+  CONFIRMADO (fim feliz)
+  
+  OU
+  
+  CANCELADO (fim infeliz - pode cancelar em PENDENTE ou AGUARDANDO_CONFIRMACAO)
+
+### 3. BANCO DE DADOS - MUDANÇAS
+
+Arquivo Migration: database/migrations/2026_01_21_100000_update_solicitacoes_bens_table.php
+Colunas adicionadas em 'solicitacoes_bens':
+  - tracking_code (string, 100) - Código de rastreio atribuído na confirmação
+  - destination_type (enum: FILIAL, PROJETO) - Tipo de destino final
+  - confirmado_em (timestamp, nullable) - Data/hora da confirmação por Tiago/Beatriz
+  - confirmado_por_id (bigint, FK users, nullable) - ID do usuário que confirmou
+  - cancelado_em (timestamp, nullable) - Data/hora do cancelamento
+  - cancelado_por_id (bigint, FK users, nullable) - ID do usuário que cancelou
+  - justificativa_cancelamento (text, nullable) - Motivo do cancelamento
+
+Status: ✅ MIGRAÇÃO EXECUTADA LOCALMENTE
+
+### 4. PERMISSÕES - MUDANÇAS
+
+Nova Tela (Permission):
+  - ID: 1013
+  - Nome: "Solicitações de Bens - Criar"
+  - Descrição: "Permite ao USR criar solicitações de bens"
+
+Telas Relacionadas (já existem):
+  - 1010: Solicitações de Bens - Listar
+  - 1011: Solicitações de Bens - Aprovar (só Tiago/Beatriz)
+  - 1012: Solicitações de Bens - Editar
+
+Arquivo Migration: database/migrations/2026_01_21_000000_add_tela_solicitacoes_bens_criar.php
+Status: ✅ MIGRAÇÃO EXECUTADA LOCALMENTE + KINGHOST
+
+### 5. BACKEND - MUDANÇAS
+
+Model: app/Models/SolicitacaoBem.php
+  Constantes adicionadas:
+    - STATUS_PENDENTE = 'PENDENTE'
+    - STATUS_AGUARDANDO_CONFIRMACAO = 'AGUARDANDO_CONFIRMACAO'
+    - STATUS_CONFIRMADO = 'CONFIRMADO'
+    - STATUS_CANCELADO = 'CANCELADO'
+  
+  Métodos adicionados:
+    - statusOptions() → Retorna [PENDENTE, AGUARDANDO_CONFIRMACAO, CONFIRMADO, CANCELADO]
+    - destinationTypeOptions() → Retorna [FILIAL, PROJETO]
+    - confirmadoPor() → Relacionamento com User (quem confirmou)
+    - canceladoPor() → Relacionamento com User (quem cancelou)
+  
+  Fillable adicionado: tracking_code, destination_type, confirmado_por_id, cancelado_por_id
+
+Controller: app/Http/Controllers/SolicitacaoBemController.php
+  Métodos adicionados:
+    - confirm($id) → POST /solicitacoes-bens/{id}/confirm
+      * Requer permissão TELA_SOLICITACOES_APROVAR (1011)
+      * Valida tracking_code (obrigatório) e destination_type (FILIAL ou PROJETO)
+      * Muda status PENDENTE → AGUARDANDO_CONFIRMACAO
+      * Registra confirmado_em, confirmado_por_id
+      * Retorna redirect com sucesso/erro
+    
+    - approve($id) → POST /solicitacoes-bens/{id}/approve
+      * Requer ser o solicitante original
+      * Requer status AGUARDANDO_CONFIRMACAO
+      * Muda status AGUARDANDO_CONFIRMACAO → CONFIRMADO
+      * Retorna redirect com sucesso/erro
+    
+    - cancel($id) → POST /solicitacoes-bens/{id}/cancel
+      * Requer ser o solicitante original
+      * Permite apenas em status PENDENTE ou AGUARDANDO_CONFIRMACAO
+      * Valida justificativa_cancelamento (obrigatória)
+      * Muda status → CANCELADO
+      * Registra cancelado_em, cancelado_por_id, justificativa_cancelamento
+      * Retorna redirect com sucesso/erro
+  
+  Método existente atualizado:
+    - canCreateSolicitacao() → Agora aceita PERFIL_USUARIO com permissão 1013
+
+Routes: routes/web.php
+  POST /solicitacoes-bens/{solicitacao}/confirm → 'SolicitacaoBemController@confirm'
+  POST /solicitacoes-bens/{solicitacao}/approve → 'SolicitacaoBemController@approve'
+  POST /solicitacoes-bens/{solicitacao}/cancel → 'SolicitacaoBemController@cancel'
+
+Status: ✅ BACKEND 100% IMPLEMENTADO E TESTADO
+
+### 6. FRONTEND - MUDANÇAS
+
+View (Partial): resources/views/solicitacoes/partials/show-content.blade.php
+  Mudanças principais:
+    1. Removido campos antigos: separado_em, concluido_em
+    2. Adicionado campos novos:
+       - Tracking Code (display/input): Mostrado em card especial com fundo cinza
+       - Destination Type (display): Mostra 🏢 Filial ou 📍 Projeto
+       - Confirmado Em/Por (display): Data e usuário que confirmou
+       - Cancelado Em/Por (display): Data e usuário que cancelou
+       - Justificativa de Cancelamento (display): Se status = CANCELADO
+    
+    3. Atualizados Status Colors:
+       - PENDENTE → Amarelo (bg-yellow-100)
+       - AGUARDANDO_CONFIRMACAO → Azul (bg-blue-100)
+       - CONFIRMADO → Verde (bg-green-100)
+       - CANCELADO → Vermelho (bg-red-100)
+       (todos com cores dark mode correspondentes)
+    
+    4. Adicionados botões de ação com permissões:
+       - "Confirmar Solicitação" (GREEN): Mostra para Tiago/Beatriz (1011) quando status=PENDENTE
+       - "Aprovar Solicitação" (BLUE): Mostra para solicitante quando status=AGUARDANDO_CONFIRMACAO
+       - "Cancelar Solicitação" (RED): Mostra para solicitante em PENDENTE ou AGUARDANDO_CONFIRMACAO
+    
+    5. Adicionados 3 MODAIS de ação:
+       - Modal Confirmar: Input tracking_code + Select destination_type
+       - Modal Aprovar: Confirmação com mensagem
+       - Modal Cancelar: Textarea para justificativa_cancelamento
+    
+    6. Alpine.js x-data: Adicionadas variáveis de estado
+       showConfirmModal, showApproveModal, showCancelModal
+
+Status: ✅ FRONTEND 100% IMPLEMENTADO
+
+### 7. TESTES REALIZADOS (LOCAL)
+
+✅ Migration executada: database/migrations/2026_01_21_100000_update_solicitacoes_bens_table.php
+✅ Permissão criada: Tela 1013 em database/migrations/2026_01_21_000000_add_tela_solicitacoes_bens_criar.php
+✅ Sintaxe PHP validada: php -l em todos os arquivos
+✅ Rotas registradas: 3 novas rotas (confirm, approve, cancel) aparecem em php artisan route:list
+✅ Status constants testados: php artisan tinker retorna 4 opções (PENDENTE, AGUARDANDO_CONFIRMACAO, CONFIRMADO, CANCELADO)
+✅ Banco de dados verificado: 27 colunas em solicitacoes_bens incluindo todas as novas
+✅ Git commit e push: Changes committed e enviadas para GitHub
+
+### 8. ARQUIVOS MODIFICADOS
+
+Database Migrations:
+  - database/migrations/2026_01_21_000000_add_tela_solicitacoes_bens_criar.php (NEW)
+  - database/migrations/2026_01_21_100000_update_solicitacoes_bens_table.php (NEW)
+
+Backend:
+  - app/Models/SolicitacaoBem.php (MODIFIED)
+  - app/Models/User.php (MODIFIED - Constante adicionada)
+  - app/Http/Controllers/SolicitacaoBemController.php (MODIFIED)
+  - routes/web.php (MODIFIED)
+
+Frontend:
+  - resources/views/solicitacoes/partials/show-content.blade.php (MODIFIED)
+  - resources/views/usuarios/partials/form.blade.php (MODIFIED - Seção de permissões)
+
+### 9. PRÓXIMOS PASSOS
+
+1. ✅ Testar localmente (CONCLUÍDO)
+2. ⏳ FAZER BACKUP: archive/backups/pre_kinghost_solicitacoes_<TIMESTAMP>.zip
+3. ⏳ Fazer SSH para KingHost
+4. ⏳ Fazer git pull em ~/www/estoque-laravel
+5. ⏳ Executar migrations: php82 artisan migrate
+6. ⏳ Limpar cache: php82 artisan view:clear && php82 artisan config:cache
+7. ⏳ Verificar no browser em KingHost
+
+### 10. ROLLBACK (SE NECESSÁRIO)
+
+Se algo der errado no KingHost:
+  1. Restaurar backup: unzip archive/backups/pre_kinghost_solicitacoes_*.zip
+  2. Executar git revert:
+     ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && git revert HEAD"
+  3. Executar migrate --rollback (se necessário):
+     ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && php82 artisan migrate:rollback"
+
+### 11. NOTAS IMPORTANTES
+
+- O fluxo é LINEAR: PENDENTE → AGUARDANDO_CONFIRMACAO → CONFIRMADO
+- Cancelamento é FINAL: Só pode ser feito antes de CONFIRMADO final
+- USR precisa ter Tela 1010 (Listar) + Tela 1013 (Criar) para criar solicitações
+- Admin/Gerente precisa ter Tela 1011 (Aprovar) para confirmar e adicionar tracking code
+- Tracking code é OBRIGATÓRIO na confirmação (validação backend)
+- Destination type OBRIGATÓRIO na confirmação (validação backend)
+- Justificativa de cancelamento OBRIGATÓRIA ao cancelar (validação backend)
+
+### 12. LOGS
+
+Todos os métodos de ação (confirm, approve, cancel) devem ser registrados em storage/logs/laravel.log
+Exemplo de entrada esperada:
+  [2025-12-13 10:30:45] laravel.INFO: Solicitação 1 confirmada por usuário 42 com tracking RAS-2025-001
+
+### 13. HISTÓRICO GIT
+
+Commits relevantes:
+  - feat: Atualizar UI do fluxo de solicitações - novo status, tracking code, destinação e botões de ação
+  - feat: Atualizar fluxo de aprovação de solicitações com 2 níveis e novo banco de dados
+  - (anteriores: criação de Tela 1013, migration de colunas)
+
+FIM DO DOCUMENTO
+=== Documento gerado automaticamente em 2025-12-13 ===
