@@ -1,4 +1,5 @@
 import './bootstrap';
+import './alpine-functions';
 
 import Alpine from 'alpinejs';
 

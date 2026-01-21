@@ -1,21 +1,25 @@
 @php
-    $containerClass = $isModal ? 'bg-transparent' : 'py-12';
-    $innerClass = $isModal ? 'w-full' : 'max-w-5xl mx-auto px-4 sm:px-6 lg:px-8';
-    $cardClass = $isModal ? 'w-full bg-white dark:bg-gray-800 shadow-sm rounded-lg' : 'bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg';
-    $padClass = $isModal ? 'p-4 sm:p-6' : 'p-6';
+    $containerClass = $isModal ? 'bg-transparent' : 'py-8 px-4 sm:px-6';
+    $innerClass = $isModal ? 'w-full' : 'max-w-3xl mx-auto';
+    $cardClass = $isModal ? 'w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm' : 'bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden';
+    $padClass = $isModal ? 'p-5 sm:p-6' : 'p-6 sm:p-8';
     $showStep2 = $errors->has('itens') || $errors->has('itens.0.descricao') || $errors->has('itens.0.quantidade') || $errors->has('itens.0.unidade') || $errors->has('itens.0.observacao');
 @endphp
 
 <div class="{{ $containerClass }}">
     <div class="{{ $innerClass }}">
         @if($errors->any())
-            <div class="mb-2 bg-red-100 border border-red-400 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200 px-4 py-3 rounded-lg text-sm" role="alert">
-                <span class="font-semibold">Erro:</span> {{ $errors->first() }}
+            <div class="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-sm flex items-start gap-2" role="alert">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                <div>
+                    <span class="font-semibold block">Erro na validação</span>
+                    <span class="text-sm">{{ $errors->first() }}</span>
+                </div>
             </div>
         @endif
 
         <div class="{{ $cardClass }}">
-            <div class="{{ $padClass }} text-gray-900 dark:text-gray-100 space-y-4" style="min-height: 200px;">
+            <div class="{{ $padClass }} text-gray-900 dark:text-gray-100 space-y-5" style="min-height: 200px;">
                 <form method="POST" action="{{ route('solicitacoes-bens.store') }}" x-data="solicitacaoForm({ itensOld: @js($oldItens), showStep2: @js($showStep2) })" data-modal-form="{{ $isModal ? '1' : '0' }}" x-cloak class="space-y-4">
                     @csrf
                     @if($isModal)
