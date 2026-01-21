@@ -271,28 +271,55 @@ class ProjetoController extends Controller
     /**
      * Lookup AJAX: dado um cdlocal retorna se já existe local ativo e seus dados
      */
+    /**
+     * 🔍 Buscar locais por projeto (para formulário de solicitações de bens)
+     * Parametro: projeto_id (ID do projeto)
+     * Retorna: Array de locais do projeto
+     */
     public function lookup(Request $request)
     {
+        $projetoId = $request->query('projeto_id');
         $codigo = $request->query('cdlocal');
-        if (!$codigo) {
-            return response()->json(['found' => false]);
+        
+        // Se for busca por projeto_id (para cascading no formulário de solicitações)
+        if ($projetoId) {
+            $locais = LocalProjeto::where('tabfant_id', $projetoId)
+                ->orderBy('delocal')
+                ->get()
+                ->map(fn($local) => [
+                    'id' => $local->id,
+                    'cdlocal' => $local->cdlocal,
+                    'delocal' => $local->delocal,
+                    'tabfant_id' => $local->tabfant_id,
+                ])
+                ->toArray();
+            
+            return response()->json($locais);
         }
-        $local = LocalProjeto::with('projeto')
-            ->where('cdlocal', $codigo)
-            ->first(); // removido filtro estrito flativo para garantir retorno
-        if (!$local) {
-            return response()->json(['found' => false]);
+        
+        // Se for busca por código do local (compatibilidade com uso anterior)
+        if ($codigo) {
+            $local = LocalProjeto::with('projeto')
+                ->where('cdlocal', $codigo)
+                ->first();
+            
+            if (!$local) {
+                return response()->json(['found' => false]);
+            }
+            
+            return response()->json([
+                'found' => true,
+                'local' => [
+                    'delocal' => $local->delocal,
+                    'cdlocal' => $local->cdlocal,
+                    'tabfant_id' => $local->tabfant_id,
+                    'projeto_nome' => $local->projeto->NOMEPROJETO ?? null,
+                    'projeto_codigo' => $local->projeto->CDPROJETO ?? null,
+                ]
+            ]);
         }
-        return response()->json([
-            'found' => true,
-            'local' => [
-                'delocal' => $local->delocal,
-                'cdlocal' => $local->cdlocal,
-                'tabfant_id' => $local->tabfant_id,
-                'projeto_nome' => $local->projeto->NOMEPROJETO ?? null,
-                'projeto_codigo' => $local->projeto->CDPROJETO ?? null,
-            ]
-        ]);
+        
+        return response()->json(['found' => false]);
     }
 
     /**

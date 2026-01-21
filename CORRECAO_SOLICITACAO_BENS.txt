@@ -1,0 +1,30 @@
+📋 TESTE DE CRIAÇÃO DE SOLICITAÇÃO NO KINGHOST
+=====================================================
+
+Data: 21 de janeiro de 2026
+Usuário: THEO (Setor de Compras)
+Ação: Tentar criar nova solicitação de bem
+
+ERRO RESOLVIDO:
+✅ Constante PERFIL_USR não existia no Model User
+✅ Corrigido para PERFIL_USUARIO (constante correcta)
+✅ Commit feito: 🐛 Fix: Corrigir constante PERFIL_USR para PERFIL_USUARIO
+✅ Push para GitHub completado
+✅ Pull no KingHost completado
+✅ Cache limpo
+
+PRÓXIMAS VERIFICAÇÕES:
+- [ ] Testar criar solicitação como THEO
+- [ ] Verificar se Tela 1013 (CRIAR) está acessível
+- [ ] Testar cascading Projeto → Local
+- [ ] Testar peso auto-preenchido
+- [ ] Testar validação de recebedor no Painel de Controle
+- [ ] Testar TIAGOP e BEA.SC confirmando solicitação
+
+ARQUITETURA VERIFICADA:
+✅ Migrations rodadas (batch 23 final)
+✅ Constantes User::PERFIL_USUARIO e similares corretas
+✅ SolicitacaoBemController sem erros de sintaxe
+✅ Tabela solicitacoes_bens tem todas as colunas necessárias
+
+PRONTO PARA TESTAR EM PRODUÇÃO!
