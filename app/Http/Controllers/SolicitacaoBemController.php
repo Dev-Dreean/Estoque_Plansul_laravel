@@ -234,8 +234,8 @@ class SolicitacaoBemController extends Controller
         $statusNovo = $data['status'];
         $solicitacao->fill($data);
 
-        // Não há mais lógica de status antigos (SEPARADO, CONCLUIDO)
-        // O novo fluxo é: PENDENTE -> AGUARDANDO_CONFIRMACAO -> CONFIRMADO ou CANCELADO
+        // Novo fluxo: não há campos separado_em, concluido_em, etc.
+        // Os campos confirmado_em, cancelado_em são preenchidos pelos métodos confirm/approve/cancel
 
         $solicitacao->save();
 
