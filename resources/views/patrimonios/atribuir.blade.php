@@ -233,7 +233,7 @@
                 :show-checkbox="true"
                 :show-actions="false"
                 :clickable="false"
-                on-checkbox-change="updateCounter()"
+                on-checkbox-change="handleCheckboxChange($event)"
                 on-select-all-change="toggleAll($event)"
                 checkbox-class="patrimonio-checkbox"
                 empty-message="Nenhum patrimônio encontrado. Não há patrimônios disponíveis para atribuição ou nenhum atende aos filtros aplicados."
@@ -496,6 +496,45 @@
   <!-- Forms auxiliares invisíveis removidos: geração de código via fetch -->
 
   <script>
+    const patrimonioAtribuirSelection = (() => {
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get('status') || 'disponivel';
+      const key = `patrimonios.atribuir.selection.${status}`;
+      const normalize = (ids) => {
+        const unique = new Set();
+        (ids || []).forEach((id) => {
+          if (id === null || typeof id === 'undefined') return;
+          const value = String(id).trim();
+          if (!value) return;
+          unique.add(value);
+        });
+        return Array.from(unique);
+      };
+      const read = () => {
+        try {
+          const raw = sessionStorage.getItem(key);
+          if (!raw) return [];
+          const data = JSON.parse(raw);
+          if (Array.isArray(data)) return normalize(data);
+          return normalize(data && data.ids ? data.ids : []);
+        } catch (_) {
+          return [];
+        }
+      };
+      const write = (ids) => {
+        try {
+          sessionStorage.setItem(key, JSON.stringify({ ids: normalize(ids) }));
+        } catch (_) {}
+      };
+      const clear = () => {
+        try {
+          sessionStorage.removeItem(key);
+        } catch (_) {}
+      };
+      return { key, status, read, write, clear, normalize };
+    })();
+    window.patrimonioAtribuirSelection = patrimonioAtribuirSelection;
+
     function atribuirPage() {
       return {
         // Animação custom: classe usada: animate-fadeInScale
@@ -513,8 +552,15 @@
         gerandoCodigo: false,
         groupState: {}, // Estado dos grupos (expandido/colapsado)
         grupoSelecionados: {}, // Itens selecionados por grupo
+        bulkToggle: false,
+        selectionEnabled: false,
         // Estados de listagem de códigos removidos (modal removido)
         init() {
+          this.selectionEnabled = !!(window.patrimonioAtribuirSelection && window.patrimonioAtribuirSelection.status === 'disponivel');
+          if (this.selectionEnabled) {
+            this.loadSelection();
+            this.syncCheckboxes();
+          }
           this.updateCounter();
           // ESC para fechar popover e modais leves
           window.addEventListener('keydown', (e) => {
@@ -537,9 +583,10 @@
 
           // Monitora seleções para mostrar/esconder o footer com background
           const updateFooterVisibility = () => {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"][name="ids[]"]:checked, input.patrimonio-checkbox:checked, input.grupo-item-checkbox:checked');
+            const checkboxes = document.querySelectorAll('input.patrimonio-checkbox:checked, input.grupo-item-checkbox:checked');
             const htmlElement = document.documentElement;
-            if (checkboxes.length > 0) {
+            const hasSelection = this.selectionEnabled ? this.selectedPatrimonios.length > 0 : checkboxes.length > 0;
+            if (hasSelection) {
               htmlElement.classList.add('with-visible-footer');
               htmlElement.classList.remove('without-visible-footer');
             } else {
@@ -557,6 +604,42 @@
 
           // Verificação inicial
           updateFooterVisibility();
+        },
+        loadSelection() {
+          if (!this.selectionEnabled || !window.patrimonioAtribuirSelection) return;
+          this.selectedPatrimonios = window.patrimonioAtribuirSelection.read();
+        },
+        saveSelection() {
+          if (!this.selectionEnabled || !window.patrimonioAtribuirSelection) return;
+          window.patrimonioAtribuirSelection.write(this.selectedPatrimonios);
+        },
+        syncCheckboxes() {
+          if (!this.selectionEnabled) return;
+          const selectedSet = new Set((this.selectedPatrimonios || []).map(String));
+          const checkboxes = document.querySelectorAll("input.patrimonio-checkbox[name='ids[]']");
+          checkboxes.forEach(cb => {
+            cb.checked = selectedSet.has(String(cb.value));
+          });
+        },
+        handleCheckboxChange(event) {
+          if (!this.selectionEnabled) {
+            this.updateCounter();
+            return;
+          }
+          const target = event?.target;
+          if (!target || !target.matches("input.patrimonio-checkbox[name='ids[]']")) return;
+          const selectedSet = new Set((this.selectedPatrimonios || []).map(String));
+          const id = String(target.value);
+          if (target.checked) {
+            selectedSet.add(id);
+          } else {
+            selectedSet.delete(id);
+          }
+          this.selectedPatrimonios = Array.from(selectedSet);
+          if (!this.bulkToggle) {
+            this.saveSelection();
+            this.updateCounter();
+          }
         },
         syncCodigoTermo(value) {
           this.codigoTermo = value;
@@ -582,11 +665,17 @@
           if (matrCad) params.set('filtro_matr_cadastrador', matrCad);
           if (perPage) params.set('per_page', perPage);
           else params.delete('per_page');
+          if (this.selectionEnabled) {
+            this.saveSelection();
+          }
           window.location.href = '{{ route("patrimonios.atribuir.codigos") }}?' + params.toString();
         },
         toggleAll(event) {
           const source = event.target;
           const checkboxes = document.querySelectorAll('.patrimonio-checkbox');
+          if (this.selectionEnabled) {
+            this.bulkToggle = true;
+          }
           checkboxes.forEach(cb => {
             cb.checked = source.checked;
             // Dispara evento change para notificar o footerAcoes()
@@ -594,6 +683,10 @@
               bubbles: true
             }));
           });
+          if (this.selectionEnabled) {
+            this.bulkToggle = false;
+            this.saveSelection();
+          }
           this.updateCounter();
         },
         updateCounter() {

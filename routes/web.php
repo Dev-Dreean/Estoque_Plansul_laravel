@@ -241,7 +241,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // Solicitacoes de Bens (T:1010)
     Route::resource('solicitacoes-bens', SolicitacaoBemController::class)
         ->parameters(['solicitacoes-bens' => 'solicitacao'])
-        ->only(['index', 'create', 'store', 'show', 'update', 'destroy'])
+        ->only(['index', 'create', 'store', 'update', 'destroy'])
         ->middleware('tela.access:1010');
 
     // Ações de solicitações de bens

@@ -149,12 +149,12 @@ class SolicitacaoBemController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Solicitacao registrada com sucesso.',
-                'redirect' => route('solicitacoes-bens.show', $solicitacao),
+                'redirect' => route('solicitacoes-bens.index'),
             ]);
         }
 
         return redirect()
-            ->route('solicitacoes-bens.show', $solicitacao)
+            ->route('solicitacoes-bens.index')
             ->with('success', 'Solicitacao registrada com sucesso.');
     }
 
@@ -546,5 +546,4 @@ class SolicitacaoBemController extends Controller
 
         return redirect()->back()->with('success', 'Solicitação cancelada com sucesso!');
     }
-
-
+}
