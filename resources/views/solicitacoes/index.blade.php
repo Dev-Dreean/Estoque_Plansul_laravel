@@ -210,7 +210,7 @@
                                         </svg>
                                     </button>
                             </div>
-                            <form method="POST" :action="`/solicitacoes-bens/${selectedSolicitacaoId}/confirm`" class="p-6 space-y-4">
+                            <form method="POST" :action="urlConfirm()" class="p-6 space-y-4">
                                 @csrf
                                 @method('POST')
                                 
@@ -254,7 +254,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" :action="`/solicitacoes-bens/${selectedSolicitacaoId}/approve`" class="p-6 space-y-4">
+                            <form method="POST" :action="urlApprove()" class="p-6 space-y-4">
                                 @csrf
                                 @method('POST')
                                 
@@ -283,7 +283,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" :action="`/solicitacoes-bens/${selectedSolicitacaoId}/cancel`" class="p-6 space-y-4">
+                            <form method="POST" :action="urlCancel()" class="p-6 space-y-4">
                                 @csrf
                                 @method('POST')
                                 
@@ -354,6 +354,9 @@
             showQuickApproveModal: false,
             showQuickCancelModal: false,
             selectedSolicitacaoId: null,
+            urlConfirm() { return `/solicitacoes-bens/${this.selectedSolicitacaoId}/confirm`; },
+            urlApprove() { return `/solicitacoes-bens/${this.selectedSolicitacaoId}/approve`; },
+            urlCancel() { return `/solicitacoes-bens/${this.selectedSolicitacaoId}/cancel`; },
             mostrarModalConfirmar(id) {
                 this.selectedSolicitacaoId = id;
                 this.showQuickConfirmModal = true;
