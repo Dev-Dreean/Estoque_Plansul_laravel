@@ -64,7 +64,7 @@
                     this.focusFirst();
                   },
                   handleEnter(event) {
-                    if (!event || event.defaultPrevented) return;
+                    if (!event) return;
                     const target = event.target;
                     const tag = target ? target.tagName : '';
                     if (!target || !['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
