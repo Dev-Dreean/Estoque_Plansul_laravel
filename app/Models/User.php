@@ -152,8 +152,16 @@ class User extends Authenticatable
     }
 
     /**
-     * Verifica se o usu├írio ├® Administrador (ou superior)
-     */
+     * Verifica se o usu├írio ├® Administrador (ou superior)     * 
+     * ⚠️ IMPORTANTE: ADM TEM ACESSO ABSOLUTO
+     * - Independente de LGATIVO (ativo/inativo)
+     * - Independente de permissões de tela
+     * - Todos os métodos de permissão retornam TRUE para ADM
+     * 
+     * Não precisa de ativação ou atribuição de telas.
+     * ADM é "sempre ativo" por definição.
+     * 
+     * @return bool TRUE se PERFIL === 'ADM'     */
     public function isAdmin(): bool
     {
         return $this->PERFIL === self::PERFIL_ADMIN;

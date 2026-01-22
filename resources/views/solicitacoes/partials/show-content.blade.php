@@ -107,6 +107,21 @@
                                         <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->local_destino ?? '-' }}</div>
                                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">UF: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->uf ?? '-' }}</span></div>
                                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Setor: <span class="text-gray-700 dark:text-gray-200">{{ $solicitacao->setor ?? 'Setor n&atilde;o informado' }}</span></div>
+
+                                        @if($solicitacao->destination_type)
+                                            <div class="mt-2">
+                                                <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Destinac&atilde;o</div>
+                                                <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                                    @if($solicitacao->destination_type === 'FILIAL')
+                                                        Filial
+                                                    @elseif($solicitacao->destination_type === 'PROJETO')
+                                                        Projeto
+                                                    @else
+                                                        {{ $solicitacao->destination_type }}
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
 
@@ -151,28 +166,7 @@
                                             @endif
                                         </div>
                                     </div>
-                                </div>
-
-                                <!-- Tipo de Destino -->
-                                @if($solicitacao->destination_type)
-                                    <div class="flex items-start gap-3">
-                                        <div class="mt-1 p-1.5 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg text-cyan-600 dark:text-cyan-400 flex-shrink-0">
-                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Destinação</div>
-                                            <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                                @if($solicitacao->destination_type === 'FILIAL')
-                                                    🏢 Filial
-                                                @elseif($solicitacao->destination_type === 'PROJETO')
-                                                    📍 Projeto
-                                                @else
-                                                    {{ $solicitacao->destination_type }}
-                                                @endif
-                                            </div>
+                                </div>                                            </div>
                                         </div>
                                     </div>
                                 @endif

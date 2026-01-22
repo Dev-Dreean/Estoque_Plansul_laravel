@@ -347,6 +347,7 @@ class SolicitacaoBemController extends Controller
         if (!$user) {
             return false;
         }
+        // ✅ ADM sempre tem acesso (nunca precisa de permissão explícita)
         if ($user->isAdmin()) {
             return true;
         }
@@ -358,6 +359,7 @@ class SolicitacaoBemController extends Controller
         if (!$user) {
             return false;
         }
+        // ✅ ADM sempre tem acesso (nunca precisa de permissão explícita)
         if ($user->isAdmin()) {
             return true;
         }
@@ -369,6 +371,7 @@ class SolicitacaoBemController extends Controller
         if (!$user) {
             return false;
         }
+        // ✅ ADM sempre tem acesso (nunca precisa de permissão explícita)
         if ($user->isAdmin()) {
             return true;
         }
@@ -380,6 +383,7 @@ class SolicitacaoBemController extends Controller
         if (!$user) {
             return false;
         }
+        // ✅ ADM sempre tem acesso (nunca precisa de permissão explícita)
         if ($user->isAdmin()) {
             return true;
         }
