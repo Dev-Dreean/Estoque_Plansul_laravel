@@ -106,9 +106,7 @@
                                         <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Local / UF</div>
                                         <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->local_destino ?? '-' }}</div>
                                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">UF: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->uf ?? '-' }}</span></div>
-                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Setor: <span class="text-gray-700 dark:text-gray-200">{{ $solicitacao->setor ?? 'Setor n&atilde;o informado' }}</span></div>
-
-                                        @endif
+                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Setor: <span class="text-gray-700 dark:text-slate-200">{{ $solicitacao->setor ?? 'Setor n&atilde;o informado' }}</span></div>
                                     </div>
                                 </div>
 
@@ -163,10 +161,7 @@
                                             @endif
                                         </div>
                                     </div>
-                                </div>                                            </div>
-                                        </div>
-                                    </div>
-                                @endif
+                                </div>
 
                                 <!-- Código de Rastreio -->
                                 @if($solicitacao->tracking_code)
