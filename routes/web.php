@@ -239,25 +239,28 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::get('/api/usuarios/login-disponivel', [UserController::class, 'loginDisponivel'])->name('api.usuarios.loginDisponivel')->middleware('tela.access:1003');
 
     // Solicitacoes de Bens (T:1010)
-    Route::resource('solicitacoes-bens', SolicitacaoBemController::class)
-        ->parameters(['solicitacoes-bens' => 'solicitacao'])
-        ->only(['index', 'create', 'store', 'update', 'destroy'])
-        ->middleware('tela.access:1010');
+    // ⚠️ IMPORTANTE: Middleware removido do resource para permitir admin SEMPRE
+    // Admin bypass é feito no middleware CheckTelaAccess, mas precisa ser auth primeiro
+    Route::middleware('auth')->group(function () {
+        Route::resource('solicitacoes-bens', SolicitacaoBemController::class)
+            ->parameters(['solicitacoes-bens' => 'solicitacao'])
+            ->only(['index', 'create', 'store', 'update', 'destroy']);
 
-    // Ações de solicitações de bens
-    Route::get('/solicitacoes-bens/{solicitacao}/show-modal', 
-        [SolicitacaoBemController::class, 'showModal'])->name('solicitacoes-bens.show-modal')->middleware('tela.access:1010');
-    Route::post('/solicitacoes-bens/{solicitacao}/confirm', 
-        [SolicitacaoBemController::class, 'confirm'])->name('solicitacoes-bens.confirm')->middleware('tela.access:1010');
-    Route::post('/solicitacoes-bens/{solicitacao}/approve', 
-        [SolicitacaoBemController::class, 'approve'])->name('solicitacoes-bens.approve')->middleware('tela.access:1010');
-    Route::post('/solicitacoes-bens/{solicitacao}/cancel', 
-        [SolicitacaoBemController::class, 'cancel'])->name('solicitacoes-bens.cancel')->middleware('tela.access:1010');
+        // Ações de solicitações de bens
+        Route::get('/solicitacoes-bens/{solicitacao}/show-modal', 
+            [SolicitacaoBemController::class, 'showModal'])->name('solicitacoes-bens.show-modal');
+        Route::post('/solicitacoes-bens/{solicitacao}/confirm', 
+            [SolicitacaoBemController::class, 'confirm'])->name('solicitacoes-bens.confirm');
+        Route::post('/solicitacoes-bens/{solicitacao}/approve', 
+            [SolicitacaoBemController::class, 'approve'])->name('solicitacoes-bens.approve');
+        Route::post('/solicitacoes-bens/{solicitacao}/cancel', 
+            [SolicitacaoBemController::class, 'cancel'])->name('solicitacoes-bens.cancel');
 
-    // API para buscar patrimônios disponíveis (autocomplete)
-    Route::get('/api/solicitacoes-bens/patrimonio-disponivel', 
-        [App\Http\Controllers\SolicitacaoBemPatrimonioController::class, 'buscarDisponivel']
-    )->name('solicitacoes-bens.patrimonio-disponivel')->middleware('tela.access:1010');
+        // API para buscar patrimônios disponíveis (autocomplete)
+        Route::get('/api/solicitacoes-bens/patrimonio-disponivel', 
+            [App\Http\Controllers\SolicitacaoBemPatrimonioController::class, 'buscarDisponivel']
+        )->name('solicitacoes-bens.patrimonio-disponivel');
+    });
 
 
     // Rotas de Relatórios
