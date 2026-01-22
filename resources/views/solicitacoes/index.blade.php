@@ -148,7 +148,7 @@
                                                 $canApprove = ($currentUser?->temAcessoTela('1014') ?? false)
                                                     && $solicitacao->status === 'AGUARDANDO_CONFIRMACAO';
                                                 $canCancel = ($currentUser?->temAcessoTela('1015') ?? false)
-                                                    && in_array($solicitacao->status, ['PENDENTE', 'AGUARDANDO_CONFIRMACAO'], true);
+                                                    && $solicitacao->status === 'PENDENTE';
                                             @endphp
                                             <div class="flex items-center gap-2" @click.stop>
                                                 @if($canConfirm && $solicitacao->status === 'PENDENTE')
@@ -219,23 +219,23 @@
                                 @method('POST')
                                 
                                 <div>
+                                    <label for="quick_recebedor_search" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Responsavel Recebedor *</label>
+                                    <x-user-autocomplete
+                                        id="quick_recebedor_search"
+                                        name="recebedor_matricula"
+                                        value=""
+                                        placeholder="Digite matricula ou nome..."
+                                        class="h-8 text-xs border-gray-300 dark:border-gray-600" />
+                                    <x-input-error :messages="$errors->get('recebedor_matricula')" class="mt-1" />
+                                </div>
+
+                                <div>
                                     <label for="quick_tracking_code" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Rastreio *</label>
                                     <input type="text" id="quick_tracking_code" name="tracking_code" required 
                                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
                                         placeholder="Ex: RAS-2025-001" />
                                 </div>
-
-                                <div>
-                                    <label for="quick_destination_type" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Destino *</label>
-                                    <select id="quick_destination_type" name="destination_type" required 
-                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3">
-                                        <option value="">Selecione...</option>
-                                        <option value="FILIAL">🏢 Filial</option>
-                                        <option value="PROJETO">📍 Projeto</option>
-                                    </select>
-                                </div>
-
-                                <div class="flex gap-2 pt-4">
+<div class="flex gap-2 pt-4">
                                     <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
                                     </button>

@@ -190,7 +190,7 @@
                                         @input="item.unidade = $el.value"
                                         :placeholder="item?.peso ? `Peso: ${item.peso} kg` : 'Un., Kg, L, ...'"
                                         :readonly="!!item?.peso"
-                                        :class="item?.peso ? 'bg-gray-50 dark:bg-gray-700 cursor-not-allowed' : ''" />
+                                        :class="item?.peso ? 'bg-gray-100 dark:bg-gray-700/80 text-gray-500 dark:text-gray-300 border-gray-300 dark:border-gray-600 cursor-not-allowed' : ''" />
                                     <p x-show="item?.peso" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                         Peso do item: <span class="font-semibold" x-text="item.peso + ' kg'"></span>
                                     </p>

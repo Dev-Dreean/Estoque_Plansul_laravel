@@ -474,15 +474,28 @@ class SolicitacaoBemController extends Controller
         }
 
         $validated = $request->validate([
+            'recebedor_matricula' => ['required', 'string', 'max:20', 'exists:funcionarios,CDMATRFUNCIONARIO'],
             'tracking_code' => ['required', 'string', 'max:100'],
-            'destination_type' => ['required', 'in:FILIAL,PROJETO'],
+            'destination_type' => ['nullable', 'in:FILIAL,PROJETO'],
         ]);
 
-        $solicitacao->update([
+        $data = [
             'status' => SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO,
             'tracking_code' => $validated['tracking_code'],
-            'destination_type' => $validated['destination_type'],
-        ]);
+        ];
+        if (!empty($validated['destination_type'])) {
+            $data['destination_type'] = $validated['destination_type'];
+        }
+
+        if (!empty($validated['recebedor_matricula'])) {
+            $funcionario = \App\Models\Funcionario::where('CDMATRFUNCIONARIO', $validated['recebedor_matricula'])->first();
+            if ($funcionario) {
+                $data['matricula_recebedor'] = $funcionario->CDMATRFUNCIONARIO;
+                $data['nome_recebedor'] = $funcionario->NMFUNCIONARIO;
+            }
+        }
+
+        $solicitacao->update($data);
 
         Log::info('✅ [SOLICITACOES] Solicitação confirmada (1º nível)', [
             'solicitacao_id' => $solicitacao->id,
@@ -509,6 +522,9 @@ class SolicitacaoBemController extends Controller
         $user = Auth::user();
         if (!$this->canApproveSolicitacao($user)) {
             return $this->denyAccess($request, 'Voce nao tem permissao para aprovar a solicitacao.');
+        }
+        if (empty($solicitacao->matricula_recebedor)) {
+            return $this->denyAccess($request, 'Informe o responsavel recebedor antes de aprovar a solicitacao.');
         }
 
         if ($solicitacao->status !== SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO) {
@@ -552,8 +568,8 @@ class SolicitacaoBemController extends Controller
             return $this->denyAccess($request, 'Esta solicitação já foi cancelada.');
         }
 
-        if (!in_array($solicitacao->status, [SolicitacaoBem::STATUS_PENDENTE, SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO], true)) {
-            return $this->denyAccess($request, 'Apenas solicitacoes pendentes ou aguardando confirmacao podem ser canceladas.');
+        if ($solicitacao->status !== SolicitacaoBem::STATUS_PENDENTE) {
+            return $this->denyAccess($request, 'Apenas solicitacoes pendentes podem ser canceladas.');
         }
 
         $validated = $request->validate([

@@ -25,6 +25,8 @@
 
         $removidosBadgeCount = 0;
         $canSeeRemovidos = auth()->user()?->temAcessoTela(1009) ?? false;
+        $solicitacoesBadgeCount = 0;
+        $canSeeSolicitacoes = auth()->user()?->temAcessoTela(1010) ?? false;
 
         if ($canSeeRemovidos && \Illuminate\Support\Facades\Schema::hasTable('registros_removidos')) {
             $lastSeenKey = 'removidos_last_seen_' . (auth()->id() ?? 'guest');
@@ -45,6 +47,34 @@
             }
             $removidosBadgeCount = $removidosQuery->count();
         }
+        if ($canSeeSolicitacoes && \Illuminate\Support\Facades\Schema::hasTable('solicitacoes_bens')) {
+            $user = auth()->user();
+            $solicitacoesQuery = \App\Models\SolicitacaoBem::query()
+                ->where('status', \App\Models\SolicitacaoBem::STATUS_PENDENTE);
+            $canViewAllSolicitacoes = $user
+                && ($user->isAdmin()
+                    || $user->temAcessoTela(1011)
+                    || $user->temAcessoTela(1012)
+                    || $user->temAcessoTela(1014)
+                    || $user->temAcessoTela(1015));
+            if (!$canViewAllSolicitacoes && $user) {
+                $userId = $user->getAuthIdentifier();
+                $matricula = trim((string) ($user->CDMATRFUNCIONARIO ?? ''));
+                $solicitacoesQuery->where(function ($builder) use ($userId, $matricula) {
+                    if ($userId) {
+                        $builder->where('solicitante_id', $userId);
+                    }
+                    if ($matricula !== '') {
+                        if ($userId) {
+                            $builder->orWhere('solicitante_matricula', $matricula);
+                        } else {
+                            $builder->where('solicitante_matricula', $matricula);
+                        }
+                    }
+                });
+            }
+            $solicitacoesBadgeCount = $solicitacoesQuery->count();
+        }
     @endphp
     <div class="w-full sm:px-6 lg:px-8">
         <div class="flex items-center h-16">
@@ -61,6 +91,9 @@
                             <span>{{ $tela['nome'] }}</span>
                             @if($tela['route'] === 'removidos.index')
                                 <x-notification-badge :count="$removidosBadgeCount" class="ml-2" title="Novos removidos" />
+                            @endif
+                            @if($tela['route'] === 'solicitacoes-bens.index')
+                                <x-notification-badge :count="$solicitacoesBadgeCount" class="ml-2 bg-yellow-400 text-yellow-900" title="Solicitacoes pendentes" />
                             @endif
                         </x-nav-link>
                     @endforeach
@@ -133,6 +166,9 @@
                     <span>{{ $tela['nome'] }}</span>
                     @if($tela['route'] === 'removidos.index')
                         <x-notification-badge :count="$removidosBadgeCount" class="ml-2 align-middle" title="Novos removidos" />
+                    @endif
+                    @if($tela['route'] === 'solicitacoes-bens.index')
+                        <x-notification-badge :count="$solicitacoesBadgeCount" class="ml-2 align-middle bg-yellow-400 text-yellow-900" title="Solicitacoes pendentes" />
                     @endif
                 </x-responsive-nav-link>
             @endforeach

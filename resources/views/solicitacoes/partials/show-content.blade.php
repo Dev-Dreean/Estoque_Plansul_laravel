@@ -263,7 +263,7 @@
                                 @endif
 
                                 <!-- Botão Cancelar - APENAS em PENDENTE (desaparece após confirmar) -->
-                                @if(in_array($solicitacao->status, ['PENDENTE', 'AGUARDANDO_CONFIRMACAO'], true) && auth()->user()->temAcessoTela('1015'))
+                                @if($solicitacao->status === 'PENDENTE' && auth()->user()->temAcessoTela('1015'))
                                     <button type="button" @click="showCancelModal = true" 
                                         class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all dark:focus:ring-offset-slate-900">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -434,23 +434,25 @@
                                 @method('POST')
                                 
                                 <div>
+                                    <label for="confirm_recebedor_search" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Responsavel Recebedor *</label>
+                                    <x-user-autocomplete
+                                        id="confirm_recebedor_search"
+                                        name="recebedor_matricula"
+                                        :value="$matriculaOld"
+                                        :initial-display="$recebedorDisplay"
+                                        :lookup-on-init="$lookupOnInit"
+                                        placeholder="Digite matricula ou nome..."
+                                        class="h-8 text-xs border-gray-300 dark:border-gray-600" />
+                                    <x-input-error :messages="$errors->get('recebedor_matricula')" class="mt-1" />
+                                </div>
+
+                                <div>
                                     <label for="tracking_code" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Rastreio *</label>
                                     <input type="text" id="tracking_code" name="tracking_code" required 
                                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
                                         placeholder="Ex: RAS-2025-001" />
                                 </div>
-
-                                <div>
-                                    <label for="destination_type" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Destino *</label>
-                                    <select id="destination_type" name="destination_type" required 
-                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3">
-                                        <option value="">Selecione...</option>
-                                        <option value="FILIAL">🏢 Filial</option>
-                                        <option value="PROJETO">📍 Projeto</option>
-                                    </select>
-                                </div>
-
-                                <div class="flex gap-2 pt-4">
+<div class="flex gap-2 pt-4">
                                     <button type="button" @click="showConfirmModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
                                     </button>
