@@ -15,7 +15,7 @@
     $telaObrigatoria = 1000;
     $telasCombinadasIds = [1000, 1006];
     $telasPrincipaisIds = [1001, 1007];
-    $telasSolicitacoesIds = [1010, 1011, 1012, 1013];
+    $telasSolicitacoesIds = [1010, 1011, 1012, 1013, 1014, 1015];
     $telasDisponiveis = collect($telasDisponiveis ?? []);
     $telaPatrimonio = $telasDisponiveis->firstWhere('NUSEQTELA', $telaObrigatoria);
     $telasPrincipais = $telasDisponiveis->filter(function ($tela) use ($telasPrincipaisIds) {

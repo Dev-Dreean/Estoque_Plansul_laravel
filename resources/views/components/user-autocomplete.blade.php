@@ -15,6 +15,8 @@
     'name' => null,
     'placeholder' => 'Pesquisar matrícula ou nome...',
     'value' => '',
+    'initialDisplay' => '',
+    'lookupOnInit' => false,
     'apiEndpoint' => '/api/funcionarios/pesquisar',
 ])
 
@@ -22,8 +24,10 @@
     inputId: '{{ $id }}',
     inputName: '{{ $name }}',
     apiEndpoint: '{{ $apiEndpoint }}',
-    initialValue: '{{ $value }}'
-})" x-init="init()" class="relative w-full">
+    initialValue: '{{ $value }}',
+    initialDisplay: @js($initialDisplay),
+    lookupOnInit: @js($lookupOnInit)
+})" x-init="init(); const display = @js($initialDisplay); const fallback = @js($value); searchTerm = display || fallback || '';" class="relative w-full">
     
     <!-- Input de busca -->
     <div class="relative">
@@ -33,7 +37,7 @@
             x-ref="searchInput"
             x-model="searchTerm"
             @input="onSearch()"
-            @focus="showDropdown = true; if(!searchTerm && !selectedValue) filtrarResultados()"
+            @focus="if (!selectedValue) { showDropdown = true; if(!searchTerm) filtrarResultados() }"
             @blur="setTimeout(() => showDropdown = false, 250)"
             @keydown.arrow-down.prevent="highlightedIndex = Math.min(highlightedIndex + 1, results.length - 1)"
             @keydown.arrow-up.prevent="highlightedIndex = Math.max(highlightedIndex - 1, 0)"

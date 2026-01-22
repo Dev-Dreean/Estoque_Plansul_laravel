@@ -10,7 +10,16 @@
     ];
     $matriculaOld = old('matricula_recebedor', $solicitacao->matricula_recebedor ?? '');
     $nomeOld = old('nome_recebedor', $solicitacao->nome_recebedor ?? '');
-    $lookupOnInit = trim((string) $nomeOld) === '' && trim((string) $matriculaOld) !== '';
+    $matriculaTrim = trim((string) $matriculaOld);
+    $nomeTrim = trim((string) $nomeOld);
+    $lookupOnInit = $nomeTrim === '' && $matriculaTrim !== '';
+    if ($matriculaTrim !== '' && $nomeTrim !== '') {
+        $recebedorDisplay = $matriculaTrim . ' - ' . $nomeTrim;
+    } elseif ($nomeTrim !== '') {
+        $recebedorDisplay = $nomeTrim;
+    } else {
+        $recebedorDisplay = $matriculaTrim;
+    }
     $canUpdate = $canUpdate ?? false;
 
     // Se pode atualizar, usa colunas lateral. Se nao, full width.
@@ -242,6 +251,42 @@
                         <div class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] shadow-lg rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] overflow-hidden sticky top-4">
 
                             <!-- Header Acoes -->
+                            <!-- Botões de Ação Rápida (Acima do Painel) -->
+                            <div class="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 p-3 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)] space-y-2">
+                                <!-- Botão Confirmar (Tiago/Beatriz) -->
+                                @if($solicitacao->status === 'PENDENTE' && auth()->user()->temAcessoTela('1011'))
+                                    <button type="button" @click="showConfirmModal = true" 
+                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all dark:focus:ring-offset-slate-900">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Confirmar Solicitação
+                                    </button>
+                                @endif
+
+                                <!-- Botão Aprovar (Solicitante) - aparece DEPOIS de confirmado -->
+                                @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $solicitacao->solicitante_id === auth()->id())
+                                    <button type="button" @click="showApproveModal = true" 
+                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all dark:focus:ring-offset-slate-900">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h-4V6h4v4zM12 14a2 2 0 100-4 2 2 0 000 4z" />
+                                        </svg>
+                                        Aprovar Solicitação
+                                    </button>
+                                @endif
+
+                                <!-- Botão Cancelar - APENAS em PENDENTE (desaparece após confirmar) -->
+                                @if($solicitacao->status === 'PENDENTE' && $solicitacao->solicitante_id === auth()->id())
+                                    <button type="button" @click="showCancelModal = true" 
+                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all dark:focus:ring-offset-slate-900">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Cancelar Solicitação
+                                    </button>
+                                @endif
+                            </div>
+
                             <div class="bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] p-3 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)]">
                                 <h3 class="text-sm font-bold text-indigo-600 dark:text-indigo-300">Painel de Controle</h3>
                                 <p class="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5">Gerenciamento da Solicita&ccedil;&atilde;o #{{ $solicitacao->id }}</p>
@@ -272,6 +317,8 @@
                                                 id="recebedor_search"
                                                 name="recebedor_matricula"
                                                 :value="$matriculaOld"
+                                                :initial-display="$recebedorDisplay"
+                                                :lookup-on-init="$lookupOnInit"
                                                 placeholder="Digite matrícula ou nome..."
                                                 class="h-7 text-xs border-gray-300 dark:border-slate-600" />
                                             <x-input-error :messages="$errors->get('recebedor_matricula')" class="mt-1" />
@@ -279,11 +326,68 @@
                                         </div>
 
                                         <div>
-                                            <label for="local_destino" class="block text-[10px] font-medium text-gray-700 dark:text-slate-300 mb-1">Local Atualizado</label>
-                                            <input id="local_destino" name="local_destino" type="text"
-                                                class="block w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs h-7"
-                                                value="{{ old('local_destino', $solicitacao->local_destino) }}" />
-                                            <x-input-error :messages="$errors->get('local_destino')" class="mt-1" />
+                                            <label for="local_destino_id" class="block text-[10px] font-medium text-gray-700 dark:text-slate-300 mb-1">Local Atualizado</label>
+                                            @php
+                                                $projetoId = $solicitacao->projeto_id;
+                                                $locaisDoProj = $projetoId 
+                                                    ? \App\Models\LocalProjeto::where('tabfant_id', $projetoId)->orderBy('delocal')->get()
+                                                    : collect([]);
+                                                $localAtualId = old('local_destino_id', null);
+                                                $localAtualText = '';
+                                                if ($localAtualId) {
+                                                    $localAtualText = $locaisDoProj->firstWhere('id', $localAtualId)?->delocal ?? '';
+                                                } elseif ($solicitacao->local_destino) {
+                                                    $localAtualText = $solicitacao->local_destino;
+                                                }
+                                            @endphp
+                                            @php
+                                                $locaisOptions = $locaisDoProj->map(function ($local) {
+                                                    return ['id' => $local->id, 'label' => $local->delocal];
+                                                })->values();
+                                            @endphp
+                                            <div class="relative" x-data="{
+                                                localSearch: @js($localAtualText),
+                                                localId: @js($localAtualId),
+                                                options: @js($locaisOptions),
+                                                showLocalDropdown: false,
+                                                filtered() {
+                                                    const term = (this.localSearch || '').toLowerCase();
+                                                    if (!term) return this.options;
+                                                    return this.options.filter(opt => (opt.label || '').toLowerCase().includes(term));
+                                                },
+                                                selectLocal(option) {
+                                                    this.localSearch = option.label;
+                                                    this.localId = option.id;
+                                                    this.showLocalDropdown = false;
+                                                }
+                                            }" @click.outside="showLocalDropdown = false">
+                                                <input type="text"
+                                                    id="local_destino_search"
+                                                    name="local_destino"
+                                                    placeholder="Buscar local..."
+                                                    x-model="localSearch"
+                                                    @focus="showLocalDropdown = true"
+                                                    @input="showLocalDropdown = true; localId = null"
+                                                    @keydown.escape="showLocalDropdown = false"
+                                                    class="block w-full h-7 text-xs border-gray-300 dark:border-slate-600 dark:bg-slate-900/80 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                                <input type="hidden" id="local_destino_id" name="local_destino_id" x-model="localId" value="{{ $localAtualId }}" />
+                                                <div x-show="showLocalDropdown" x-transition
+                                                    class="absolute z-50 mt-1 w-full rounded-md border border-slate-700 bg-slate-950/95 shadow-xl max-h-48 overflow-y-auto ring-1 ring-slate-700/50">
+                                                    <template x-for="option in filtered()" :key="option.id">
+                                                        <button type="button"
+                                                            @click="selectLocal(option)"
+                                                            class="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-indigo-600/20 focus:outline-none focus:bg-indigo-600/20">
+                                                            <span x-text="option.label"></span>
+                                                        </button>
+                                                    </template>
+                                                    <template x-if="filtered().length === 0">
+                                                        <div class="px-3 py-2 text-xs text-slate-400">
+                                                            Nenhum local encontrado
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                            <x-input-error :messages="$errors->get('local_destino_id')" class="mt-1" />
                                         </div>
                                     </div>
 
@@ -312,42 +416,6 @@
                                                 </svg>
                                                 Salvar Altera&ccedil;&otilde;es
                                             </button>
-
-                                            <!-- Botões de Ação do Fluxo de Aprovação -->
-                                            <div class="border-t border-gray-200 dark:border-gray-700 pt-2 space-y-2">
-                                                <!-- Botão Confirmar (Tiago/Beatriz) -->
-                                                @if($solicitacao->status === 'PENDENTE' && auth()->user()->temAcessoTela('1011'))
-                                                    <button type="button" @click="showConfirmModal = true" 
-                                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all dark:focus:ring-offset-slate-900">
-                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                        </svg>
-                                                        Confirmar Solicitação
-                                                    </button>
-                                                @endif
-
-                                                <!-- Botão Aprovar (Solicitante) -->
-                                                @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $solicitacao->solicitante_id === auth()->id())
-                                                    <button type="button" @click="showApproveModal = true" 
-                                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all dark:focus:ring-offset-slate-900">
-                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h-4V6h4v4zM12 14a2 2 0 100-4 2 2 0 000 4z" />
-                                                        </svg>
-                                                        Aprovar Solicitação
-                                                    </button>
-                                                @endif
-
-                                                <!-- Botão Cancelar -->
-                                                @if(in_array($solicitacao->status, ['PENDENTE', 'AGUARDANDO_CONFIRMACAO']) && $solicitacao->solicitante_id === auth()->id())
-                                                    <button type="button" @click="showCancelModal = true" 
-                                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all dark:focus:ring-offset-slate-900">
-                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                        Cancelar Solicitação
-                                                    </button>
-                                                @endif
-                                            </div>
                                         </div>
                                     </form>
                             </div>

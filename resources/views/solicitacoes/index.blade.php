@@ -143,14 +143,44 @@
                                                 if (!$isOwner && $currentUserMatricula !== '') {
                                                     $isOwner = trim((string) ($solicitacao->solicitante_matricula ?? '')) === $currentUserMatricula;
                                                 }
+                                                $canConfirm = $currentUser?->temAcessoTela('1011') ?? false;
+                                                $canApprove = $isOwner && $solicitacao->status === 'AGUARDANDO_CONFIRMACAO';
+                                                $canCancel = $isOwner && $solicitacao->status === 'PENDENTE';
                                             @endphp
-                                            <div class="flex items-center gap-3">
+                                            <div class="flex items-center gap-2" @click.stop>
+                                                @if($canConfirm && $solicitacao->status === 'PENDENTE')
+                                                    <button type="button" title="Confirmar" @click="mostrarModalConfirmar({{ $solicitacao->id }})" 
+                                                        class="inline-flex items-center justify-center p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg transition">
+                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                    </button>
+                                                @endif
+
+                                                @if($canApprove)
+                                                    <button type="button" title="Aprovar" @click="mostrarModalAprovar({{ $solicitacao->id }})" 
+                                                        class="inline-flex items-center justify-center p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition">
+                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </button>
+                                                @endif
+
+                                                @if($canCancel)
+                                                    <button type="button" title="Cancelar" @click="mostrarModalCancelar({{ $solicitacao->id }})" 
+                                                        class="inline-flex items-center justify-center p-1.5 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition">
+                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                @endif
+
                                                 @if($isAdminUser || $isOwner)
                                                     <form method="POST" action="{{ route('solicitacoes-bens.destroy', $solicitacao) }}" onsubmit="return confirm('Remover a solicitacao #{{ $solicitacao->id }}?');" class="inline" @click.stop>
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" aria-label="Remover solicitacao">
-                                                            <x-heroicon-o-trash class="h-5 w-5" />
+                                                        <button type="submit" class="inline-flex items-center justify-center p-1.5 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition" title="Remover">
+                                                            <x-heroicon-o-trash class="h-4 w-4" />
                                                         </button>
                                                     </form>
                                                 @endif
@@ -164,11 +194,119 @@
                                 @endforelse
                             </tbody>
                         </table>
+
+                        <div class="mt-4">
+                            {{ $solicitacoes->links() }}
+                        </div>
+
+                        <!-- MODAIS RÁPIDOS -->
+                        <!-- Modal: Confirmar (Quick) -->
+                        <div x-show="showQuickConfirmModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                                <div class="bg-emerald-600 text-white px-6 py-4 flex items-center justify-between">
+                                    <h3 class="text-sm font-bold">Confirmar Solicitação</h3>
+                                    <button @click="fecharModais()" class="text-white/70 hover:text-white">
+                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                            </div>
+                            <form method="POST" :action="`{{ route('solicitacoes-bens.confirm', '') }}/${selectedSolicitacaoId}`" class="p-6 space-y-4">
+                                @csrf
+                                @method('POST')
+                                
+                                <div>
+                                    <label for="quick_tracking_code" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Rastreio *</label>
+                                    <input type="text" id="quick_tracking_code" name="tracking_code" required 
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
+                                        placeholder="Ex: RAS-2025-001" />
+                                </div>
+
+                                <div>
+                                    <label for="quick_destination_type" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Destino *</label>
+                                    <select id="quick_destination_type" name="destination_type" required 
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3">
+                                        <option value="">Selecione...</option>
+                                        <option value="FILIAL">🏢 Filial</option>
+                                        <option value="PROJETO">📍 Projeto</option>
+                                    </select>
+                                </div>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition">
+                                        Confirmar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
-                    <div class="mt-4">
-                        {{ $solicitacoes->links() }}
+                    <!-- Modal: Aprovar (Quick) -->
+                    <div x-show="showQuickApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Aprovar Solicitação</h3>
+                                <button @click="fecharModais()" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" :action="`{{ route('solicitacoes-bens.approve', '') }}/${selectedSolicitacaoId}`" class="p-6 space-y-4">
+                                @csrf
+                                @method('POST')
+                                
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Tem certeza que deseja aprovar esta solicitação? Ela será marcada como confirmada.</p>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">
+                                        Aprovar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
+
+                    <!-- Modal: Cancelar Solicitação (Quick) -->
+                    <div x-show="showQuickCancelModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-red-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Cancelar Solicitação</h3>
+                                <button @click="fecharModais()" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" :action="`{{ route('solicitacoes-bens.cancel', '') }}/${selectedSolicitacaoId}`" class="p-6 space-y-4">
+                                @csrf
+                                @method('POST')
+                                
+                                <div>
+                                    <label for="quick_justificativa" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo do Cancelamento *</label>
+                                    <textarea id="quick_justificativa" name="justificativa_cancelamento" required rows="3"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        placeholder="Descreva o motivo do cancelamento..."></textarea>
+                                </div>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Voltar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition">
+                                        Cancelar Solicitação
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -212,7 +350,29 @@
                 color: var(--solicitacao-modal-input-placeholder) !important;
             }
         </style>
-        <div class="w-full">
+        <div class="w-full" x-data="{
+            showQuickConfirmModal: false,
+            showQuickApproveModal: false,
+            showQuickCancelModal: false,
+            selectedSolicitacaoId: null,
+            mostrarModalConfirmar(id) {
+                this.selectedSolicitacaoId = id;
+                this.showQuickConfirmModal = true;
+            },
+            mostrarModalAprovar(id) {
+                this.selectedSolicitacaoId = id;
+                this.showQuickApproveModal = true;
+            },
+            mostrarModalCancelar(id) {
+                this.selectedSolicitacaoId = id;
+                this.showQuickCancelModal = true;
+            },
+            fecharModais() {
+                this.showQuickConfirmModal = false;
+                this.showQuickApproveModal = false;
+                this.showQuickCancelModal = false;
+            }
+        }">
         <!-- Overlay Background -->
         <div
             x-show="formModalOpen || showModalOpen || showModalLoading"
@@ -996,6 +1156,30 @@
                         } finally {
                             // Não fazer nada aqui pois já controlamos acima
                         }
+                    },
+
+                    // Modais rápidos (Confirmar/Aprovar/Cancelar)
+                    showQuickConfirmModal: false,
+                    showQuickApproveModal: false,
+                    showQuickCancelModal: false,
+                    selectedSolicitacaoId: null,
+
+                    mostrarModalConfirmar(id) {
+                        this.selectedSolicitacaoId = id;
+                        this.showQuickConfirmModal = true;
+                    },
+                    mostrarModalAprovar(id) {
+                        this.selectedSolicitacaoId = id;
+                        this.showQuickApproveModal = true;
+                    },
+                    mostrarModalCancelar(id) {
+                        this.selectedSolicitacaoId = id;
+                        this.showQuickCancelModal = true;
+                    },
+                    fecharModais() {
+                        this.showQuickConfirmModal = false;
+                        this.showQuickApproveModal = false;
+                        this.showQuickCancelModal = false;
                     }
                 };
             }
