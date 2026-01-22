@@ -354,12 +354,10 @@
             showQuickApproveModal: false,
             showQuickCancelModal: false,
             selectedSolicitacaoId: null,
-            confirmUrlBase: @js(route('solicitacoes-bens.confirm', ['solicitacao' => '__ID__'])),
-            approveUrlBase: @js(route('solicitacoes-bens.approve', ['solicitacao' => '__ID__'])),
-            cancelUrlBase: @js(route('solicitacoes-bens.cancel', ['solicitacao' => '__ID__'])),
-            urlConfirm() { return this.confirmUrlBase.replace('__ID__', this.selectedSolicitacaoId); },
-            urlApprove() { return this.approveUrlBase.replace('__ID__', this.selectedSolicitacaoId); },
-            urlCancel() { return this.cancelUrlBase.replace('__ID__', this.selectedSolicitacaoId); },
+            baseUrl: @json(url('/')),
+            urlConfirm() { return this.baseUrl.replace(/\/$/, '') + '/solicitacoes-bens/' + this.selectedSolicitacaoId + '/confirm'; },
+            urlApprove() { return this.baseUrl.replace(/\/$/, '') + '/solicitacoes-bens/' + this.selectedSolicitacaoId + '/approve'; },
+            urlCancel() { return this.baseUrl.replace(/\/$/, '') + '/solicitacoes-bens/' + this.selectedSolicitacaoId + '/cancel'; },
             mostrarModalConfirmar(id) {
                 this.selectedSolicitacaoId = id;
                 this.showQuickConfirmModal = true;
