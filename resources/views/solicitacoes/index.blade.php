@@ -210,7 +210,7 @@
                                         </svg>
                                     </button>
                             </div>
-                            <form method="POST" :action="`{{ route('solicitacoes-bens.confirm', '') }}/${selectedSolicitacaoId}`" class="p-6 space-y-4">
+                            <form method="POST" :action="`/solicitacoes-bens/${selectedSolicitacaoId}/confirm`" class="p-6 space-y-4">
                                 @csrf
                                 @method('POST')
                                 
@@ -254,7 +254,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" :action="`{{ route('solicitacoes-bens.approve', '') }}/${selectedSolicitacaoId}`" class="p-6 space-y-4">
+                            <form method="POST" :action="`/solicitacoes-bens/${selectedSolicitacaoId}/approve`" class="p-6 space-y-4">
                                 @csrf
                                 @method('POST')
                                 
@@ -283,7 +283,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" :action="`{{ route('solicitacoes-bens.cancel', '') }}/${selectedSolicitacaoId}`" class="p-6 space-y-4">
+                            <form method="POST" :action="`/solicitacoes-bens/${selectedSolicitacaoId}/cancel`" class="p-6 space-y-4">
                                 @csrf
                                 @method('POST')
                                 
