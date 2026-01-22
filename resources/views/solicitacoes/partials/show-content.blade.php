@@ -108,19 +108,6 @@
                                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">UF: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->uf ?? '-' }}</span></div>
                                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Setor: <span class="text-gray-700 dark:text-gray-200">{{ $solicitacao->setor ?? 'Setor n&atilde;o informado' }}</span></div>
 
-                                        @if($solicitacao->destination_type)
-                                            <div class="mt-2">
-                                                <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Destinac&atilde;o</div>
-                                                <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                                    @if($solicitacao->destination_type === 'FILIAL')
-                                                        Filial
-                                                    @elseif($solicitacao->destination_type === 'PROJETO')
-                                                        Projeto
-                                                    @else
-                                                        {{ $solicitacao->destination_type }}
-                                                    @endif
-                                                </div>
-                                            </div>
                                         @endif
                                     </div>
                                 </div>
@@ -138,6 +125,16 @@
                                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">C&oacute;d: <span class="font-mono text-gray-700 dark:text-slate-200">{{ $solicitacao->projeto?->CDPROJETO ?? '-' }}</span></div>
                                     </div>
                                 </div>
+
+                                <!-- Destinação (abaixo de Local/UF) -->
+                                @if($solicitacao->destination_type)
+                                    <div class="col-span-1 sm:col-span-2 lg:col-span-3">
+                                        <div class="mt-2">
+                                            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Destinação</div>
+                                            <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">Filial/Projeto</div>
+                                        </div>
+                                    </div>
+                                @endif
 
                                 <!-- Situacao -->
                                 <div class="flex items-start gap-3 sm:col-span-2 lg:col-span-3">
