@@ -168,13 +168,16 @@ class SolicitacaoBemController extends Controller
         $solicitacao->load(['itens', 'projeto']);
         $statusOptions = SolicitacaoBem::statusOptions();
 
-        $canUpdate = $this->canUpdateSolicitacao($user);
+        $canManage = $this->canUpdateSolicitacao($user)
+            || $this->canConfirmSolicitacao($user)
+            || $this->canApproveSolicitacao($user)
+            || $this->canCancelSolicitacao($user);
 
         if ($isModal) {
-            return view('solicitacoes.partials.show-content', compact('solicitacao', 'statusOptions', 'isModal', 'canUpdate'));
+            return view('solicitacoes.partials.show-content', compact('solicitacao', 'statusOptions', 'isModal', 'canManage'));
         }
 
-        return view('solicitacoes.show', compact('solicitacao', 'statusOptions', 'isModal', 'canUpdate'));
+        return view('solicitacoes.show', compact('solicitacao', 'statusOptions', 'isModal', 'canManage'));
     }
 
     public function showModal(Request $request, SolicitacaoBem $solicitacao): View
@@ -187,10 +190,13 @@ class SolicitacaoBemController extends Controller
 
         $solicitacao->load(['itens', 'projeto']);
         $statusOptions = SolicitacaoBem::statusOptions();
-        $canUpdate = $this->canUpdateSolicitacao($user);
+        $canManage = $this->canUpdateSolicitacao($user)
+            || $this->canConfirmSolicitacao($user)
+            || $this->canApproveSolicitacao($user)
+            || $this->canCancelSolicitacao($user);
         $isModal = true;
 
-        return view('solicitacoes.partials.show-content', compact('solicitacao', 'statusOptions', 'isModal', 'canUpdate'));
+        return view('solicitacoes.partials.show-content', compact('solicitacao', 'statusOptions', 'isModal', 'canManage'));
     }
 
     public function update(Request $request, SolicitacaoBem $solicitacao): RedirectResponse|JsonResponse
@@ -284,7 +290,9 @@ class SolicitacaoBemController extends Controller
             return false;
         }
         return $user->temAcessoTela((string) self::TELA_SOLICITACOES_VER_TODAS)
-            || $user->temAcessoTela((string) self::TELA_SOLICITACOES_ATUALIZAR);
+            || $user->temAcessoTela((string) self::TELA_SOLICITACOES_ATUALIZAR)
+            || $user->temAcessoTela((string) User::TELA_SOLICITACOES_APROVAR)
+            || $user->temAcessoTela((string) User::TELA_SOLICITACOES_CANCELAR);
     }
 
     private function isOwner(?User $user, SolicitacaoBem $solicitacao): bool
@@ -334,9 +342,7 @@ class SolicitacaoBemController extends Controller
             return false;
         }
         return $user->temAcessoTela((string) self::TELA_SOLICITACOES_ATUALIZAR);
-    }
-
-    private function canCreateSolicitacao(?User $user): bool
+    }    private function canCreateSolicitacao(?User $user): bool
     {
         if (!$user) {
             return false;
@@ -344,15 +350,40 @@ class SolicitacaoBemController extends Controller
         if ($user->isAdmin()) {
             return true;
         }
-        // Consultores sempre podem criar
-        if ($user->PERFIL === User::PERFIL_CONSULTOR) {
+        return $user->temAcessoTela((string) self::TELA_SOLICITACOES_CRIAR);
+    }
+
+    private function canConfirmSolicitacao(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
             return true;
         }
-        // USRs precisam ter permissão específica
-        if ($user->PERFIL === User::PERFIL_USUARIO) {
-            return $user->temAcessoTela((string) self::TELA_SOLICITACOES_CRIAR);
+        return $user->temAcessoTela((string) self::TELA_SOLICITACOES_VER_TODAS);
+    }
+
+    private function canApproveSolicitacao(?User $user): bool
+    {
+        if (!$user) {
+            return false;
         }
-        return false;
+        if ($user->isAdmin()) {
+            return true;
+        }
+        return $user->temAcessoTela((string) User::TELA_SOLICITACOES_APROVAR);
+    }
+
+    private function canCancelSolicitacao(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+        return $user->temAcessoTela((string) User::TELA_SOLICITACOES_CANCELAR);
     }
 
     private function applyOwnerScope($query, ?User $user): void
@@ -430,13 +461,8 @@ class SolicitacaoBemController extends Controller
     {
         /** @var User|null $user */
         $user = Auth::user();
-        
-        // Verificar se pode confirmar (Tiago, Beatriz, Admin)
-        $confirmadores = ['TIAGOP', 'BEATRIZ.SC'];
-        $canConfirm = $user?->isAdmin() || in_array(strtoupper($user->NMLOGIN ?? ''), $confirmadores, true);
-        
-        if (!$canConfirm) {
-            return $this->denyAccess($request, 'Apenas Tiago e Beatriz podem confirmar solicitações.');
+        if (!$this->canConfirmSolicitacao($user)) {
+            return $this->denyAccess($request, 'Voce nao tem permissao para confirmar solicitacoes.');
         }
 
         if ($solicitacao->status !== SolicitacaoBem::STATUS_PENDENTE) {
@@ -477,10 +503,8 @@ class SolicitacaoBemController extends Controller
     {
         /** @var User|null $user */
         $user = Auth::user();
-
-        // Verificar se é o solicitante
-        if (!$this->isOwner($user, $solicitacao)) {
-            return $this->denyAccess($request, 'Apenas o solicitante pode aprovar a solicitação.');
+        if (!$this->canApproveSolicitacao($user)) {
+            return $this->denyAccess($request, 'Voce nao tem permissao para aprovar a solicitacao.');
         }
 
         if ($solicitacao->status !== SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO) {
@@ -516,14 +540,16 @@ class SolicitacaoBemController extends Controller
     {
         /** @var User|null $user */
         $user = Auth::user();
-
-        // Verificar se é o solicitante
-        if (!$this->isOwner($user, $solicitacao)) {
-            return $this->denyAccess($request, 'Apenas o solicitante pode cancelar a solicitação.');
+        if (!$this->canCancelSolicitacao($user)) {
+            return $this->denyAccess($request, 'Voce nao tem permissao para cancelar a solicitacao.');
         }
 
         if ($solicitacao->status === SolicitacaoBem::STATUS_CANCELADO) {
             return $this->denyAccess($request, 'Esta solicitação já foi cancelada.');
+        }
+
+        if (!in_array($solicitacao->status, [SolicitacaoBem::STATUS_PENDENTE, SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO], true)) {
+            return $this->denyAccess($request, 'Apenas solicitacoes pendentes ou aguardando confirmacao podem ser canceladas.');
         }
 
         $validated = $request->validate([

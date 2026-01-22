@@ -74,10 +74,7 @@
                         @php
                             $userForCreate = auth()->user();
                             $isAdmin = $userForCreate?->isAdmin() ?? false;
-                            $isConsultor = ($userForCreate?->PERFIL ?? '') === \App\Models\User::PERFIL_CONSULTOR;
-                            $isUsrComPermissao = ($userForCreate?->PERFIL ?? '') === \App\Models\User::PERFIL_USUARIO 
-                                && ($userForCreate?->temAcessoTela('1013') ?? false);
-                            $canCreateSolicitacao = $isAdmin || $isConsultor || $isUsrComPermissao;
+                            $canCreateSolicitacao = $isAdmin || ($userForCreate?->temAcessoTela('1013') ?? false);
                         @endphp
                         @if($canCreateSolicitacao)
                             <div>
@@ -92,8 +89,8 @@
                     @php
                         $statusColors = [
                             'PENDENTE' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-                            'SEPARADO' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-                            'CONCLUIDO' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+                            'AGUARDANDO_CONFIRMACAO' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+                            'CONFIRMADO' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
                             'CANCELADO' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
                         ];
                     @endphp
@@ -144,8 +141,10 @@
                                                     $isOwner = trim((string) ($solicitacao->solicitante_matricula ?? '')) === $currentUserMatricula;
                                                 }
                                                 $canConfirm = $currentUser?->temAcessoTela('1011') ?? false;
-                                                $canApprove = $isOwner && $solicitacao->status === 'AGUARDANDO_CONFIRMACAO';
-                                                $canCancel = $isOwner && $solicitacao->status === 'PENDENTE';
+                                                $canApprove = ($currentUser?->temAcessoTela('1014') ?? false)
+                                                    && $solicitacao->status === 'AGUARDANDO_CONFIRMACAO';
+                                                $canCancel = ($currentUser?->temAcessoTela('1015') ?? false)
+                                                    && in_array($solicitacao->status, ['PENDENTE', 'AGUARDANDO_CONFIRMACAO'], true);
                                             @endphp
                                             <div class="flex items-center gap-2" @click.stop>
                                                 @if($canConfirm && $solicitacao->status === 'PENDENTE')

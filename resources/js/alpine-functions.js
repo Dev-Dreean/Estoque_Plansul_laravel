@@ -3,7 +3,7 @@
  */
 
 // Autocomplete para usuários/funcionários
-window.userAutocomplete = function(config) {
+window.userAutocomplete = function (config) {
     return {
         searchTerm: '',
         results: [],
@@ -15,7 +15,7 @@ window.userAutocomplete = function(config) {
         isLoading: false,
         debounceTimer: null,
         apiEndpoint: config.apiEndpoint,
-        
+
         init() {
             if (this.initialDisplay) {
                 this.searchTerm = this.initialDisplay;
@@ -52,29 +52,29 @@ window.userAutocomplete = function(config) {
                 this.searchTerm = this.selectedValue;
             }
         },
-        
+
         onSearch() {
             clearTimeout(this.debounceTimer);
             this.highlightedIndex = -1;
-            
+
             if (this.searchTerm.length === 0) {
                 this.results = [];
                 return;
             }
-            
+
             this.isLoading = true;
             this.showDropdown = true;
-            
+
             this.debounceTimer = setTimeout(() => this.filtrarResultados(), 300);
         },
-        
+
         filtrarResultados() {
             if (this.searchTerm.length === 0) {
                 this.isLoading = false;
                 this.results = [];
                 return;
             }
-            
+
             fetch(`${this.apiEndpoint}?q=${encodeURIComponent(this.searchTerm)}`)
                 .then(response => {
                     if (!response.ok) throw new Error('Erro na busca');
@@ -90,7 +90,7 @@ window.userAutocomplete = function(config) {
                     this.isLoading = false;
                 });
         },
-        
+
         selectResult(index) {
             if (index >= 0 && index < this.results.length) {
                 const result = this.results[index];
@@ -103,7 +103,7 @@ window.userAutocomplete = function(config) {
                 this.highlightedIndex = -1;
             }
         },
-        
+
         limpar() {
             this.searchTerm = '';
             this.selectedValue = '';

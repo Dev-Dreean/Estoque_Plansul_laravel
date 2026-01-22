@@ -26,7 +26,8 @@ ssh plansul@ftp.plansul.info $comando
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ Acesso liberado com sucesso!" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "❌ Erro ao liberar acesso" -ForegroundColor Red
     exit 1
 }

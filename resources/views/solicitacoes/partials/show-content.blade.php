@@ -20,11 +20,12 @@
     } else {
         $recebedorDisplay = $matriculaTrim;
     }
-    $canUpdate = $canUpdate ?? false;
+    $canManage = $canManage ?? false;
+    $canUpdateData = auth()->user()?->temAcessoTela('1012') ?? false;
 
     // Se pode atualizar, usa colunas lateral. Se nao, full width.
-    $gridClass = $canUpdate ? 'lg:grid-cols-3' : 'lg:grid-cols-1';
-    $leftColClass = $canUpdate ? 'lg:col-span-2' : '';
+    $gridClass = $canManage ? 'lg:grid-cols-3' : 'lg:grid-cols-1';
+    $leftColClass = $canManage ? 'lg:col-span-2' : '';
 @endphp
 
 <div data-solicitacao-modal-content>
@@ -246,7 +247,7 @@
                 </div>
 
                 <!-- Coluna Lateral (Acoes) -->
-                @if($canUpdate)
+                @if($canManage)
                     <div class="lg:col-span-1">
                         <div class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] shadow-lg rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] overflow-hidden sticky top-4">
 
@@ -265,7 +266,7 @@
                                 @endif
 
                                 <!-- Botão Aprovar (Solicitante) - aparece DEPOIS de confirmado -->
-                                @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $solicitacao->solicitante_id === auth()->id())
+                                @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && auth()->user()->temAcessoTela('1014'))
                                     <button type="button" @click="showApproveModal = true" 
                                         class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all dark:focus:ring-offset-slate-900">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -276,7 +277,7 @@
                                 @endif
 
                                 <!-- Botão Cancelar - APENAS em PENDENTE (desaparece após confirmar) -->
-                                @if($solicitacao->status === 'PENDENTE' && $solicitacao->solicitante_id === auth()->id())
+                                @if(in_array($solicitacao->status, ['PENDENTE', 'AGUARDANDO_CONFIRMACAO'], true) && auth()->user()->temAcessoTela('1015'))
                                     <button type="button" @click="showCancelModal = true" 
                                         class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all dark:focus:ring-offset-slate-900">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -293,6 +294,7 @@
                             </div>
 
                             <div class="p-3">
+                                @if($canUpdateData)
                                 <form method="POST" action="{{ route('solicitacoes-bens.update', $solicitacao) }}" data-modal-form="{{ $isModal ? '1' : '0' }}" class="space-y-3">
                                     @csrf
                                     @method('PATCH')
@@ -418,6 +420,11 @@
                                             </button>
                                         </div>
                                     </form>
+                                @else
+                                <div class="rounded-lg border border-dashed border-slate-600/60 bg-slate-900/60 px-3 py-2 text-[11px] text-slate-400">
+                                    Sem permiss&atilde;o para atualizar dados de entrega.
+                                </div>
+                                @endif
                             </div>
                             <div class="bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] px-4 py-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] text-center">
                                 <p class="text-[10px] text-gray-400 uppercase tracking-wide">&Uacute;ltima atualiza&ccedil;&atilde;o: {{ $solicitacao->updated_at->diffForHumans() }}</p>
