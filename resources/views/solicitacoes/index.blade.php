@@ -5,7 +5,11 @@
         </h2>
     </x-slot>
 
-    <div class="py-12" x-data="solicitacaoBemsIndex()" data-projetos='@json($projetos ?? [])'>
+    <div class="py-12" x-data="solicitacaoBemsIndex()"
+        data-projetos='@json($projetos ?? [])'
+        data-confirm-url="{{ route('solicitacoes-bens.confirm', ['solicitacao' => '__ID__']) }}"
+        data-approve-url="{{ route('solicitacoes-bens.approve', ['solicitacao' => '__ID__']) }}"
+        data-cancel-url="{{ route('solicitacoes-bens.cancel', ['solicitacao' => '__ID__']) }}">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             @if(session('success'))
                 <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert">
@@ -349,33 +353,7 @@
                 color: var(--solicitacao-modal-input-placeholder) !important;
             }
         </style>
-        <div class="w-full" x-data="{
-            showQuickConfirmModal: false,
-            showQuickApproveModal: false,
-            showQuickCancelModal: false,
-            selectedSolicitacaoId: null,
-            baseUrl: @json(url('/')),
-            urlConfirm() { return this.baseUrl.replace(/\/$/, '') + '/solicitacoes-bens/' + this.selectedSolicitacaoId + '/confirm'; },
-            urlApprove() { return this.baseUrl.replace(/\/$/, '') + '/solicitacoes-bens/' + this.selectedSolicitacaoId + '/approve'; },
-            urlCancel() { return this.baseUrl.replace(/\/$/, '') + '/solicitacoes-bens/' + this.selectedSolicitacaoId + '/cancel'; },
-            mostrarModalConfirmar(id) {
-                this.selectedSolicitacaoId = id;
-                this.showQuickConfirmModal = true;
-            },
-            mostrarModalAprovar(id) {
-                this.selectedSolicitacaoId = id;
-                this.showQuickApproveModal = true;
-            },
-            mostrarModalCancelar(id) {
-                this.selectedSolicitacaoId = id;
-                this.showQuickCancelModal = true;
-            },
-            fecharModais() {
-                this.showQuickConfirmModal = false;
-                this.showQuickApproveModal = false;
-                this.showQuickCancelModal = false;
-            }
-        }">
+        <div class="w-full">
         <!-- Overlay Background -->
         <div
             x-show="formModalOpen || showModalOpen || showModalLoading"
@@ -908,6 +886,9 @@
 
             function solicitacaoBemsIndex() {
                 return {
+                    confirmUrlBase: '',
+                    approveUrlBase: '',
+                    cancelUrlBase: '',
                     formModalOpen: false,
                     formModalLoading: false,
                     formModalTitle: '',
@@ -918,6 +899,12 @@
                     showModalLoading: false,
                     showModalContentReady: false,
                     showModalTitle: '',
+                    init() {
+                        this.confirmUrlBase = this.$el?.dataset?.confirmUrl || '';
+                        this.approveUrlBase = this.$el?.dataset?.approveUrl || '';
+                        this.cancelUrlBase = this.$el?.dataset?.cancelUrl || '';
+                    },
+
 
                     csrf() {
                         return document.querySelector('meta[name=csrf-token]')?.content || '';
@@ -1166,6 +1153,9 @@
                     showQuickApproveModal: false,
                     showQuickCancelModal: false,
                     selectedSolicitacaoId: null,
+                    urlConfirm() { return this.confirmUrlBase.replace('__ID__', this.selectedSolicitacaoId); },
+                    urlApprove() { return this.approveUrlBase.replace('__ID__', this.selectedSolicitacaoId); },
+                    urlCancel() { return this.cancelUrlBase.replace('__ID__', this.selectedSolicitacaoId); },
 
                     mostrarModalConfirmar(id) {
                         this.selectedSolicitacaoId = id;
