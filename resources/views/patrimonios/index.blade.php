@@ -704,6 +704,7 @@
         const bulkConfirmCancel = document.querySelector('#bulk-confirm-cancel');
         const bulkConfirmClose = document.querySelector('#bulk-confirm-close');
         const bulkEndpoint = "{{ route('patrimonios.bulk-situacao') }}";
+        const bulkVerifyEndpoint = "{{ route('patrimonios.bulk-verificar') }}";
         const filterEndpoint = "{{ route('patrimonios.ajax-filter') }}";
         const csrf = document.querySelector('meta[name=\"csrf-token\"]')?.content || '';
         const selectedIds = new Set();
@@ -932,16 +933,8 @@
         };
 
                 const runBulkUpdate = (situacao) => {
-          const payload = {
-            ids: Array.from(selectedIds),
-          };
-          if (situacao) {
-            payload.situacao = situacao;
-          }
-          if (pendingConferido) {
-            payload.conferido = pendingConferido;
-          }
-          fetch(bulkEndpoint, {
+          const ids = Array.from(selectedIds);
+          const postJson = (endpoint, payload) => fetch(endpoint, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -954,14 +947,46 @@
             if (!resp.ok) {
               throw new Error(data.error || `Falha ao aplicar: ${resp.status}`);
             }
-            clearSelection();
-            if (window.location.href) {
-              ajaxFetchParams(buildParamsFromForm());
-            }
-          }).catch((err) => {
-            console.error(err);
-            alert(err.message || 'Falha ao aplicar alteracoes.');
+            return data;
           });
+
+          if (!situacao && pendingConferido) {
+            postJson(bulkVerifyEndpoint, { ids, conferido: pendingConferido })
+              .then(() => {
+                clearSelection();
+                if (window.location.href) {
+                  ajaxFetchParams(buildParamsFromForm());
+                }
+              })
+              .catch((err) => {
+                console.error(err);
+                alert(err.message || 'Falha ao aplicar alteracoes.');
+              });
+            return;
+          }
+
+          if (!situacao) return;
+
+          postJson(bulkEndpoint, { ids, situacao })
+            .then(() => {
+              if (pendingConferido === 'S') {
+                return postJson(bulkVerifyEndpoint, { ids, conferido: pendingConferido });
+              }
+              if (pendingConferido === 'N') {
+                return postJson(bulkVerifyEndpoint, { ids, conferido: pendingConferido });
+              }
+              return null;
+            })
+            .then(() => {
+              clearSelection();
+              if (window.location.href) {
+                ajaxFetchParams(buildParamsFromForm());
+              }
+            })
+            .catch((err) => {
+              console.error(err);
+              alert(err.message || 'Falha ao aplicar alteracoes.');
+            });
         };
 
         const closeConfirmModal = () => {

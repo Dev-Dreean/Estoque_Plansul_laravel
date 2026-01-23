@@ -2238,6 +2238,7 @@ class PatrimonioController extends Controller
         $request->validate([
             'ids' => 'required|array|min:1',
             'ids.*' => 'integer',
+            'conferido' => 'nullable|string|in:S,N,1,0',
         ]);
 
         $ids = collect($request->input('ids', []))
@@ -2289,14 +2290,15 @@ class PatrimonioController extends Controller
             ], 403);
         }
 
+        $newConferido = $this->normalizeConferidoFlag($request->input('conferido')) ?? 'S';
         $updated = 0;
         foreach ($patrimonios as $patrimonio) {
             $oldConferido = $this->normalizeConferidoFlag($patrimonio->FLCONFERIDO) ?? 'N';
-            if ($oldConferido === 'S') {
+            if ($oldConferido === $newConferido) {
                 continue;
             }
 
-            $patrimonio->FLCONFERIDO = 'S';
+            $patrimonio->FLCONFERIDO = $newConferido;
             $patrimonio->DTOPERACAO = now();
             $patrimonio->save();
             $updated++;
@@ -2313,7 +2315,7 @@ class PatrimonioController extends Controller
                     'TIPO' => 'conferido',
                     'CAMPO' => 'FLCONFERIDO',
                     'VALOR_ANTIGO' => $oldConferido,
-                    'VALOR_NOVO' => 'S',
+                    'VALOR_NOVO' => $newConferido,
                     'NUPATR' => $patrimonio->NUPATRIMONIO,
                     'CODPROJ' => $patrimonio->CDPROJETO,
                     'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
