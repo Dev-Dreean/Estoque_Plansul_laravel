@@ -1,0 +1,340 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║            📊 FLUXO COMPLETO - DO EMAIL À SOLICITAÇÃO                     ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+🔄 COMO TUDO FUNCIONA JUNTO:
+─────────────────────────────────────────────────────────────────────────────
+
+1️⃣ USUÁRIO ENVIA EMAIL
+   ├─ De: joao.silva@empresa.com.br
+   ├─ Para: suporte.dev@plansul.com.br
+   ├─ Assunto: Solicitacao de Bem
+   └─ Corpo:
+      Nome: João Silva
+      Matrícula: 12345
+      Projeto: CASAN
+      Estado: SC
+      Setor: TI
+      Entregar em: Almoxarifado
+      
+      2x Monitor 24"
+      3x Teclado USB
+      5x Mouse sem fio; UN; 100g
+
+2️⃣ POWER AUTOMATE DETECTA EMAIL
+   ├─ Trigger dispara (novo email recebido)
+   ├─ Extrai: from, subject, body
+   └─ Monta JSON com 3 campos
+
+3️⃣ POWER AUTOMATE ENVIA PARA API
+   ├─ POST https://plansul.info/api/solicitacoes/email
+   ├─ Headers:
+   │  ├─ Content-Type: application/json
+   │  └─ X-API-KEY: 3a7f9e2c5b8d1a4f7c9e2b5a...
+   └─ Body JSON:
+      {
+        "from": "joao.silva@empresa.com.br",
+        "subject": "Solicitacao de Bem",
+        "body": "Nome: João Silva\nMatrícula..."
+      }
+
+4️⃣ SERVIDOR LARAVEL RECEBE
+   ├─ Valida token X-API-KEY
+   ├─ Faz parsing do body:
+   │  ├─ Extrai "Nome:" → solicitante_nome
+   │  ├─ Extrai "Matrícula:" → solicitante_matricula
+   │  ├─ Extrai "Projeto:" → busca projeto_id
+   │  ├─ Extrai "Estado:" → uf
+   │  ├─ Extrai "Setor:" → setor
+   │  ├─ Extrai "Entregar em:" → local_destino
+   │  └─ Extrai itens com Qtd, Unidade, Peso
+   └─ Valida dados obrigatórios
+
+5️⃣ SERVIDOR CRIA SOLICITAÇÃO
+   ├─ Insere em banco de dados
+   ├─ Cria items (Monitor, Teclado, Mouse)
+   ├─ Gera ID da solicitação
+   └─ Envia email de confirmação ao usuário
+
+6️⃣ SERVIDOR RETORNA RESPOSTA
+   ├─ Status: 200 OK
+   └─ Body:
+      {
+        "success": true,
+        "message": "Solicitacao registrada com sucesso.",
+        "solicitacao_id": 456
+      }
+
+7️⃣ POWER AUTOMATE RECEBE RESPOSTA
+   ├─ Verifica status 200
+   ├─ Se sucesso: envia email de confirmação
+   └─ Se erro: envia email com detalhes
+
+8️⃣ SOLICITAÇÃO APARECE NO DASHBOARD
+   ├─ https://plansul.info/solicitacoes
+   ├─ Status: Pendente
+   ├─ Com todos os itens, quantidades, pesos
+   └─ Pronta para ser processada
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📋 DADOS CAPTURADOS DE CADA ITEM:
+─────────────────────────────────────────────────────────────────────────────
+
+Email contém:
+"2x Monitor 24"; 3; UN; 500g; Para sala 204"
+
+Sistema extrai:
+┌──────────────────────────────────┐
+│ descricao: "Monitor 24"          │
+│ quantidade: 2                    │
+│ unidade: "UN"                    │
+│ peso: "500g"                     │
+│ observacao: "Para sala 204"      │
+└──────────────────────────────────┘
+
+Armazena no banco:
+┌─────────────────────────────────────────┐
+│ solicitacao_bens_itens                  │
+├─────────────────────────────────────────┤
+│ id: 1                                   │
+│ solicitacao_id: 456                     │
+│ descricao: Monitor 24"                  │
+│ quantidade: 2                           │
+│ unidade: UN                             │
+│ peso: 500g                              │
+│ observacao: Para sala 204               │
+│ created_at: 2026-01-26 18:30:00        │
+└─────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ O SISTEMA VALIDA AUTOMATICAMENTE:
+─────────────────────────────────────────────────────────────────────────────
+
+Antes de criar solicitação, verifica:
+
+✅ Nome do solicitante (obrigatório)
+   └─ Se não achar em "Nome:", tenta "Solicitante:", "Solicitado por:", etc
+
+✅ Projeto (obrigatório)
+   └─ Busca inteligente:
+      1. Por código exato (281, 2, etc)
+      2. Por nome completo (CASAN, BRADESCO)
+      3. Por nome parcial (CASA encontra CASAN)
+      4. Por semelhança (CEF encontra CEF - RS)
+
+✅ Local de entrega (obrigatório)
+   └─ Aceita qualquer descrição:
+      - "Almoxarifado"
+      - "Sala 204"
+      - "Recepção do 2º andar"
+
+✅ Pelo menos 1 item (obrigatório)
+   └─ Com descrição + quantidade
+
+✅ Opcionais:
+   ├─ Matrícula do solicitante
+   ├─ UF/Estado
+   ├─ Setor
+   ├─ Observações
+   ├─ Peso dos itens
+   └─ Unidade dos itens (padrão: UN)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+❌ SE FALTAR ALGO (Status 422):
+─────────────────────────────────────────────────────────────────────────────
+
+Exemplo: Falta o "Projeto"
+
+Email:
+```
+Nome: João
+Matrícula: 123
+Estado: SC
+Setor: TI
+Entregar em: Almoxarifado
+
+2x Monitor
+```
+
+Resposta (erro):
+```json
+{
+  "success": false,
+  "message": "Missing required fields.",
+  "missing": ["projeto_id"],
+  "details": {
+    "projeto_tentado": null,
+    "hint": "Use um código de projeto válido (ex: 281, 2, 47)"
+  }
+}
+```
+
+🔧 Solução: Adicionar no email:
+```
+Projeto: CASAN
+```
+
+═══════════════════════════════════════════════════════════════════════════════
+
+💻 EXEMPLO REAL - TROCA JSON:
+─────────────────────────────────────────────────────────────────────────────
+
+USUÁRIO DIGITA NO EMAIL:
+```
+Nome: Maria Santos
+Matrícula: 54321
+Projeto: BRADESCO
+Estado: RS
+Setor: Financeiro
+Entregar em: Recepção 2º andar
+Detalhes: Entregar até sexta
+
+3x Calculadora científica
+10x Caneta azul; UN; 5g
+2x RESMA papel A4; 75g
+```
+
+POWER AUTOMATE ENVIA:
+```json
+{
+  "from": "maria.santos@empresa.com.br",
+  "subject": "Solicitacao de Bem",
+  "body": "Nome: Maria Santos\nMatrícula: 54321\nProjeto: BRADESCO\nEstado: RS\nSetor: Financeiro\nEntregar em: Recepção 2º andar\nDetalhes: Entregar até sexta\n\n3x Calculadora científica\n10x Caneta azul; UN; 5g\n2x RESMA papel A4; 75g"
+}
+```
+
+LARAVEL PROCESSA E RETORNA:
+```json
+{
+  "success": true,
+  "message": "Solicitacao registrada com sucesso.",
+  "solicitacao_id": 789
+}
+```
+
+BANCO DE DADOS FICA:
+```
+solicitacoes_bens:
+├─ id: 789
+├─ solicitante_nome: Maria Santos
+├─ solicitante_matricula: 54321
+├─ email_origem: maria.santos@empresa.com.br
+├─ email_assunto: Solicitacao de Bem
+├─ projeto_id: 281
+├─ uf: RS
+├─ setor: Financeiro
+├─ local_destino: Recepção 2º andar
+├─ observacao: Entregar até sexta
+└─ status: pendente
+
+solicitacoes_bens_itens:
+├─ Item 1: Calculadora científica | Qtd: 3 | UN: UN | Peso: -
+├─ Item 2: Caneta azul | Qtd: 10 | UN: UN | Peso: 5g
+└─ Item 3: Papel A4 | Qtd: 2 | UN: RESMA | Peso: 75g
+```
+
+DASHBOARD MOSTRA:
+```
+🎯 Solicitação #789
+├─ Solicitante: Maria Santos
+├─ Matrícula: 54321
+├─ Projeto: BRADESCO
+├─ Estado: RS
+├─ Setor: Financeiro
+├─ Local: Recepção 2º andar
+├─ Status: Pendente
+└─ Itens:
+   ├─ 3x Calculadora científica
+   ├─ 10x Caneta azul (5g cada)
+   └─ 2x RESMA Papel A4 (75g)
+```
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 TESTE RÁPIDO - COMO VERIFICAR:
+─────────────────────────────────────────────────────────────────────────────
+
+1. No Power Automate:
+   └─ Meus fluxos → seu flow → última execução
+      → Expanda a ação HTTP
+         → Inputs: mostra o JSON enviado
+         → Outputs: mostra a resposta (200 ou 422)
+
+2. No Dashboard Plansul:
+   └─ https://plansul.info/solicitacoes
+      → Deve aparecer uma solicitação nova
+
+3. Nos Logs (SSH):
+   └─ ssh plansul@ftp.plansul.info
+      tail -50 ~/www/estoque-laravel/storage/logs/laravel.log
+      └─ Procure por "POWER_AUTOMATE_EMAIL"
+
+═══════════════════════════════════════════════════════════════════════════════
+
+⚡ PERFORMANCE:
+─────────────────────────────────────────────────────────────────────────────
+
+Tempo total de processamento:
+├─ Email é recebido → 0 segundos
+├─ Power Automate detecta → ~5 segundos (dependendo da configuração)
+├─ Power Automate envia → ~1 segundo
+├─ Laravel processa → ~500ms
+├─ Email de confirmação é enviado → ~2 segundos
+└─ TOTAL: 8-10 segundos aproximadamente
+
+Solicitação aparece no dashboard:
+└─ Imediatamente após resposta 200
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔒 SEGURANÇA:
+─────────────────────────────────────────────────────────────────────────────
+
+✅ Verificações de segurança:
+  ├─ Token X-API-KEY validado em cada request
+  ├─ HTTPS/SSL (conexão encriptada)
+  ├─ Dados sanitizados (SQL injection prevention)
+  ├─ Rate limiting (máximo X requisições/hora)
+  ├─ Logs de auditoria (quem enviou, quando, quê)
+  └─ Validação de CORS (apenas domínios permitidos)
+
+⚠️ Token API:
+  ├─ Nunca compartilhe publicamente
+  ├─ Use apenas em Power Automate privado
+  ├─ Pode ser revogado/alterado se necessário
+  └─ Se vazar, solicitar novo ao administrador
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📝 RESUMO FINAL:
+─────────────────────────────────────────────────────────────────────────────
+
+Fluxo simples:
+EMAIL → POWER AUTOMATE → API LARAVEL → BANCO DE DADOS → DASHBOARD
+
+O que você precisa fazer:
+✅ Configurar Power Automate (copiar JSON no Body)
+✅ Enviar email para suporte.dev@plansul.com.br
+✅ Escrever dados no corpo do email (linguagem natural)
+✅ Incluir quantidade nos itens (obrigatório)
+
+O sistema faz:
+✅ Recebe email
+✅ Extrai dados
+✅ Busca projeto inteligentemente
+✅ Valida campos obrigatórios
+✅ Cria solicitação no banco
+✅ Retorna confirmação
+
+Resultado:
+✅ Solicitação aparece no dashboard
+✅ Pronta para processamento
+✅ Com todos os detalhes capturados
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Data: 26/01/2026 18:30
+Status: ✅ Sistema 100% integrado e funcional
