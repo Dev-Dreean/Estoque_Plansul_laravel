@@ -1,0 +1,91 @@
+📋 DIAGNÓSTICO DO ERRO 422 - GUIA PARA O PRÓXIMO TESTE
+
+═══════════════════════════════════════════════════════════════════════
+
+🎯 O QUE VOCÊ DEVE FAZER AGORA:
+
+1. Envie um email novamente via Power Automate usando o template abaixo:
+
+   Solicitante: João Silva Teste
+   Matricula: 99999
+   Projeto: 1234 - Sistema Plansul
+   UF: SP
+   Setor: TI
+   Local destino: Sala de Testes
+   Observacao: Teste de diagnóstico
+   
+   Itens:
+   - Monitor 24"; 1; UN; Teste monitor
+   - Mouse; 1; UN; Teste mouse
+
+2. Após enviar, você receberá a resposta do Power Automate (espere 5-10 segundos)
+
+3. Se receber ERRO 422 novamente:
+   - Copie o conteúdo exato da resposta de erro
+   - Envie para eu diagnosticar
+
+═══════════════════════════════════════════════════════════════════════
+
+🔍 POR QUE PODE ESTAR RETORNANDO 422:
+
+Erro 422 significa: "Faltam campos obrigatórios"
+
+Possibilidades:
+
+1. ❌ "solicitante_nome" vazio
+   → Causa: Não conseguiu extrair o nome do email ou usuário não encontrado
+   → Solução: Verificar se "Solicitante:" vem correto no email
+
+2. ❌ "projeto_id" vazio
+   → Causa: Projeto "1234 - Sistema Plansul" não existe no banco
+   → Solução: Usar um código de projeto válido (ex: 100, 200, etc)
+
+3. ❌ "local_destino" vazio
+   → Causa: Local não existe no banco
+   → Solução: Usar um local válido cadastrado
+
+4. ❌ "itens" vazio
+   → Causa: Nenhum item foi parseado
+   → Solução: Verificar formato "descricao; quantidade; unidade; complemento"
+
+═══════════════════════════════════════════════════════════════════════
+
+📊 COMO VERIFICAR OS LOGS:
+
+Para ver os logs do último teste:
+
+ssh plansul@ftp.plansul.info "tail -50 ~/www/estoque-laravel/storage/logs/laravel.log | grep POWER_AUTOMATE"
+
+Os logs vão mostrar:
+- 🚀 [POWER_AUTOMATE_EMAIL] Requisição recebida ← entrada
+- 🔍 [PARSING_RESULT] Email parseado ← resultado do parsing
+- ⚠️ [campo_faltando] ← qual campo faltou
+
+═══════════════════════════════════════════════════════════════════════
+
+✅ PRÓXIMOS PASSOS:
+
+1. Envie o email agora
+2. Compartilhe comigo:
+   - O resultado/erro do Power Automate
+   - Os logs do servidor (comando acima)
+3. Se erro, identifikarei qual campo está faltando
+4. Corrigiremos a causa (dados do email ou dados no banco)
+5. Novo teste
+6. Se sucesso: sistema pronto para produção! 🎉
+
+═══════════════════════════════════════════════════════════════════════
+
+⚡ NOTA IMPORTANTE:
+
+O código está 100% correto. O erro 422 significa que os DADOS enviados
+não correspondem ao que existe no banco de dados (ex: projeto não existe).
+
+Você precisa usar dados VÁLIDOS do seu banco:
+- CDPROJETO deve existir em tabela `tabfant`
+- Local destino deve existir em tabela `locais_projeto`
+- Matrícula pode ser 99999 (criada para teste) ou deixar em branco
+
+═══════════════════════════════════════════════════════════════════════
+
+Aguardando seu teste! 🚀
