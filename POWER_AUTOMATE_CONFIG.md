@@ -1,61 +1,83 @@
-# 🔧 CONFIGURAÇÃO CORRETA DO POWER AUTOMATE
+# 🔧 CONFIGURAÇÃO POWER AUTOMATE - MÉTODO CORRETO
 
-## ❌ Problema Identificado
+## ⚠️ ERRO COMUM QUE VOCÊ PODE ESTAR COMETENDO
 
-O Power Automate está enviando campos VAZIOS:
+**❌ ERRADO:** Escrever manualmente as expressions no JSON:
 ```json
-{
-  "from": "",  ← VAZIO
-  "subject": "",  ← VAZIO  
-  "body": "corrupted data"
-}
+{"from":"@{triggerOutputs()?['body/from']}","subject":"..."}
+```
+☝️ **Isso NÃO funciona! O Power Automate não vai interpretar as expressions!**
+
+**✅ CORRETO:** Usar o modo visual e mapear campos dinâmicos.
+
+---
+
+## 📋 PASSO A PASSO CORRETO
+
+### **1️⃣ Configurar o Trigger**
+
+1. Trigger: **"Quando um novo email é recebido (V3)"**
+2. Pasta: **Inbox** (ou pasta específica que você monitora)
+3. **NÃO** use filtro de assunto (pode causar problemas)
+
+---
+
+### **2️⃣ Configurar a Ação HTTP**
+
+1. Adicione ação: **HTTP**
+2. Configure:
+   - **Method:** POST
+   - **URI:** `https://plansul.info/api/solicitacoes/email`
+
+3. **Headers** (adicione 2 headers):
+   ```
+   Content-Type: application/json
+   X-API-KEY: 3a7f9e2c5b8d1a4f7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e
+   ```
+
+---
+
+### **3️⃣ Configurar o Body (CRÍTICO - SIGA EXATAMENTE)**
+
+**MÉTODO 1 - Recomendado (Modo Visual):**
+
+1. No campo **Body**, clique no ícone de **{}** (Adicionar conteúdo dinâmico)
+2. Clique em **"Expression"** (no topo do painel)
+3. Cole esta expression:
+
+```javascript
+json(concat('{"from":"', replace(triggerOutputs()?['body/from'], '"', '\\"'), '","subject":"', replace(triggerOutputs()?['body/subject'], '"', '\\"'), '","body":"', replace(replace(triggerOutputs()?['body/body'], '"', '\\"'), char(10), '\\n'), '"}'))
 ```
 
-## ✅ Solução: Configurar Corretamente os Campos
+4. Clique em **OK**
 
-### Passo 1: Editar a Ação HTTP no Power Automate
+**MÉTODO 2 - Alternativo (Estrutura simples):**
 
-1. Abra seu Flow "Email para Solicitacao - Plansul"
-2. Clique na ação **HTTP** (POST para https://plansul.info/api/solicitacoes/email)
-3. Clique em **"Mostrar opções avançadas"**
+Se o Método 1 der erro, use esta estrutura simples:
 
-### Passo 2: Configurar os Campos do Body
-
-No campo **Body**, use este JSON (clique em "Alternar para modo de entrada de texto"):
-
-```json
-{
-  "from": "Remetente",
-  "subject": "Assunto",
-  "body": "Corpo"
-}
+1. No campo **Body**, digite:
 ```
+{
+```
+2. Pressione ENTER
+3. Digite: `"from": "`
+4. Clique no ícone **⚡** (Conteúdo dinâmico)
+5. Selecione: **De** (do trigger)
+6. Continue digitando: `",`
+7. ENTER e digite: `"subject": "`
+8. Clique **⚡** e selecione: **Assunto**
+9. Continue: `",`
+10. ENTER e digite: `"body": "`
+11. Clique **⚡** e selecione: **Corpo**
+12. Finalize: `"`
+13. ENTER e digite: `}`
 
-### Passo 3: Mapear os Conteúdos Dinâmicos
-
-Após colar o JSON acima:
-
-1. **Clique** no valor `"Remetente"` (mantenha as aspas!)
-2. No menu de **Conteúdo dinâmico**, selecione:
-   - **De** (campo From do trigger "Quando um novo email é recebido")
-
-3. **Clique** no valor `"Assunto"`  
-4. Selecione:
-   - **Assunto** (campo Subject do trigger)
-
-5. **Clique** no valor `"Corpo"`
-6. Selecione:
-   - **Corpo** (campo Body do trigger)
-
-### ✅ Resultado Final Esperado
-
-O JSON deve ficar assim (com os campos dinâmicos mapeados):
-
+O resultado deve parecer com:
 ```json
 {
-  "from": @{triggerOutputs()?['body/from']},
-  "subject": @{triggerOutputs()?['body/subject']},
-  "body": @{triggerOutputs()?['body/body']}
+"from": [De - ícone dinâmico],
+"subject": [Assunto - ícone dinâmico],
+"body": [Corpo - ícone dinâmico]
 }
 ```
 
@@ -75,27 +97,118 @@ O JSON deve ficar assim (com os campos dinâmicos mapeados):
 
 ---
 
-## 🧪 Como Testar
+---
 
-1. Salve o Flow
-2. Envie um email para a caixa monitorada com este conteúdo:
+### **4️⃣ VERIFICAR SE ESTÁ CORRETO**
 
+Após configurar, clique em **"Código"** (View code) na ação HTTP.
+
+**✅ DEVE parecer com isto:**
+```json
+{
+  "inputs": {
+    "method": "POST",
+    "uri": "https://plansul.info/api/solicitacoes/email",
+    "headers": {
+      "Content-Type": "application/json",
+      "X-API-KEY": "3a7f9e2c5b8d1a4f7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e"
+    },
+    "body": {
+      "from": "@{triggerOutputs()?['body/from']}",
+      "subject": "@{triggerOutputs()?['body/subject']}",
+      "body": "@{triggerOutputs()?['body/body']}"
+    }
+  }
+}
 ```
-Solicitante: João Silva Teste
-Matricula: 99999
-Projeto: 100 - Nome do Projeto Real
-UF: SP
-Setor: TI
-Local destino: Almoxarifado
-Observacao: Teste de integração
+---
+
+## 🐛 TROUBLESHOOTING
+
+### ❌ **Erro: "Campos vazios" (from="", subject="", body="")**
+
+**Causa:** Conteúdos dinâmicos não foram mapeados
+
+**Solução:**
+1. Delete a ação HTTP e crie novamente
+2. Use o **Método 2** (estrutura simples) descrito acima
+3. Certifique-se de clicar no ⚡ para adicionar campos dinâmicos
+4. NÃO digite manualmente `@{triggerOutputs()...}` - isso não funciona!
+
+---
+
+### ❌ **Erro: 401 Unauthorized**
+
+**Causa:** Token incorreto
+
+**Solução:**
+- Copie o token novamente (pode ter espaço extra):
+  ```
+  3a7f9e2c5b8d1a4f7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e
+  ```
+
+---
+
+### ❌ **Erro: 422 "Missing required fields"**
+
+**Causa:** Dados do email estão incompletos ou projeto não existe
+
+**Solução:**
+1. Verifique se o projeto com o código informado EXISTE no banco
+2. Use um CDPROJETO válido (não use 1234 se não existir)
+3. Verifique se "Local destino" está preenchido
+
+**Como verificar projeto válido:**
+```bash
+ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && php82 artisan db 'SELECT id, CDPROJETO, NOMEPROJETO FROM tabfant LIMIT 10;'"
+```
+
+---
+
+### ❌ **Flow não executa automaticamente**
+
+**Causa:** Email não chegou na pasta monitorada
+
+**Solução:**
+1. Verifique se o email está na pasta **Inbox**
+2. Aguarde até 5 minutos (Power Automate tem delay)
+3. Execute manualmente: Clique em "Testar" → "Manualmente
 
 Itens:
 - Monitor 24"; 1; UN; Teste
 - Mouse; 1; UN; Teste
 ```
 
-3. Aguarde 30 segundos
-4. Verifique se o Flow executou com sucesso (Status: **Succeeded**)
+### **Passo 2: Verificar Execução**
+
+1. Aguarde 30-60 segundos
+2. Abra o Power Automate
+3. Vá em **"Meus fluxos"**
+4. Clique no seu flow
+5. Clique na última execução
+
+### **Passo 3: Verificar os Inputs**
+
+Na execução, expanda a ação **HTTP** e veja os **Inputs**:
+
+**✅ CORRETO - Deve mostrar:**
+```json
+{
+  "from": "seuemail@empresa.com",
+  "subject": "Solicitacao de Bem",
+  "body": "Solicitante: João Silva Teste\nMatricula: 99999..."
+}
+```
+
+**❌ ERRADO - Se mostrar:**
+```json
+{
+  "from": "",
+  "subject": "",
+  "body": ""
+}
+```
+☝️ Significa que os campos dinâmicos não foram mapeados!
 
 ---
 
