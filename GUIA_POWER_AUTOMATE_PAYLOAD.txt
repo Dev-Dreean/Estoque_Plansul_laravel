@@ -1,0 +1,324 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║         🤖 GUIA POWER AUTOMATE - COMO ENVIAR PARA O ENDPOINT             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+🎯 ENDPOINT CORRETO:
+
+URL: https://plansul.info/api/solicitacoes/email
+Método: POST
+Content-Type: application/json
+X-API-KEY: 3a7f9e2c5b8d1a4f7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📋 PAYLOAD ESPERADO (Formato JSON):
+─────────────────────────────────────────────────────────────────────────────
+
+O sistema espera um JSON com EXATAMENTE 3 campos principais:
+
+{
+  "from": "email.do.usuario@empresa.com.br",
+  "subject": "Assunto do Email",
+  "body": "Corpo completo do email com todos os dados"
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ EXEMPLO REAL - PAYLOAD COMPLETO:
+─────────────────────────────────────────────────────────────────────────────
+
+```json
+{
+  "from": "joao.silva@empresa.com",
+  "subject": "Solicitacao de Bem - Material de TI",
+  "body": "Nome: João da Silva\nMatrícula: 12345\nProjeto: CASAN\nEstado: SC\nSetor: TI\nEntregar em: Almoxarifado\nDetalhes: Urgente para sexta-feira\n\nO que preciso:\n2x Monitor 24\"\n3x Teclado USB\n5x Mouse sem fio; UN; 100g\n10x Caneta azul; UN; 5g; Para escritório"
+}
+```
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔧 PASSO A PASSO - CONFIGURAR NO POWER AUTOMATE:
+─────────────────────────────────────────────────────────────────────────────
+
+**1. AÇÃO HTTP - Configurar Headers**
+
+Abra a ação HTTP e configure EXATAMENTE assim:
+
+Headers:
+┌─────────────────────────────────────────────────────┐
+│ Content-Type: application/json                     │
+│ X-API-KEY: 3a7f9e2c5b8d...d1f4a7c9e              │
+└─────────────────────────────────────────────────────┘
+
+**2. AÇÃO HTTP - Configurar Body (Corpo)**
+
+No campo Body, clique em { } (modo avançado) e construa assim:
+
+┌─────────────────────────────────────────────────────┐
+│ {                                                  │
+│   "from": "@{triggerOutputs()?['body/from']}",   │
+│   "subject": "@{triggerOutputs()?['body/subject']}",
+│   "body": "@{triggerOutputs()?['body/body']}"    │
+│ }                                                  │
+└─────────────────────────────────────────────────────┘
+
+⚠️ IMPORTANTE:
+- Use ⚡ ícone para adicionar campos dinâmicos (NÃO digite manualmente!)
+- "from" = Campo "De" do email
+- "subject" = Campo "Assunto" do email
+- "body" = Campo "Corpo" do email (HTML ou texto)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📝 O QUE VAI NO BODY (Corpo do Email):
+─────────────────────────────────────────────────────────────────────────────
+
+O usuário escreve no CORPO DO EMAIL (isso é capturado automaticamente):
+
+```
+Nome: João da Silva
+Matrícula: 12345
+Projeto: CASAN
+Estado: SC
+Setor: TI
+Entregar em: Almoxarifado
+Detalhes: Urgente
+
+O que preciso:
+2x Monitor 24"
+3x Teclado USB
+5x Mouse sem fio
+```
+
+👉 O Power Automate pega TODO esse texto e envia como "body"
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 COMO O SISTEMA PROCESSA:
+─────────────────────────────────────────────────────────────────────────────
+
+1️⃣ Power Automate recebe email
+        ↓
+2️⃣ Extrai: from, subject, body
+        ↓
+3️⃣ Envia POST para https://plansul.info/api/solicitacoes/email
+        ↓
+4️⃣ Sistema Laravel recebe o JSON
+        ↓
+5️⃣ Sistema faz o PARSING do body:
+        - Extrai "Nome:", "Matrícula:", "Projeto:", etc
+        - Valida os dados
+        - Cria a solicitação no banco
+        ↓
+6️⃣ Retorna resposta:
+   - ✅ 200 OK se sucesso
+   - ❌ 422 se faltam campos obrigatórios
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ RESPOSTA DE SUCESSO (200 OK):
+─────────────────────────────────────────────────────────────────────────────
+
+```json
+{
+  "success": true,
+  "message": "Solicitacao registrada com sucesso.",
+  "solicitacao_id": 456
+}
+```
+
+Status: 200 OK
+✅ Solicitação foi criada no sistema
+✅ Pode ver em: https://plansul.info/solicitacoes
+
+═══════════════════════════════════════════════════════════════════════════════
+
+❌ RESPOSTA DE ERRO (422 Unprocessable Entity):
+─────────────────────────────────────────────────────────────────────────────
+
+```json
+{
+  "success": false,
+  "message": "Missing required fields.",
+  "missing": ["projeto_id"],
+  "details": {
+    "projeto_tentado": "XYZ Projeto",
+    "hint": "Use um código de projeto válido (ex: 281, 2, 47)"
+  }
+}
+```
+
+Status: 422
+❌ Faltam campos obrigatórios (veja em "missing")
+❌ Solicitação NÃO foi criada
+
+═══════════════════════════════════════════════════════════════════════════════
+
+💾 EXEMPLO - COMO FICA O JSON ENVIADO:
+─────────────────────────────────────────────────────────────────────────────
+
+Quando usuário envia email:
+
+Para: suporte.dev@plansul.com.br
+De: joao.silva@empresa.com.br
+Assunto: Solicitacao de Bem
+Corpo:
+```
+Nome: João Silva
+Matrícula: 12345
+Projeto: CASAN
+Estado: SC
+Setor: TI
+Entregar em: Almoxarifado
+Detalhes: Urgente
+
+2x Monitor 24"
+3x Teclado USB
+5x Mouse sem fio
+```
+
+─────────────────────────────────────────────────────────────────────────────
+
+Power Automate transforma em:
+
+```json
+{
+  "from": "joao.silva@empresa.com.br",
+  "subject": "Solicitacao de Bem",
+  "body": "Nome: João Silva\nMatrícula: 12345\nProjeto: CASAN\nEstado: SC\nSetor: TI\nEntregar em: Almoxarifado\nDetalhes: Urgente\n\n2x Monitor 24\"\n3x Teclado USB\n5x Mouse sem fio"
+}
+```
+
+E envia para: https://plansul.info/api/solicitacoes/email
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔍 VERIFICAR O PAYLOAD ENVIADO:
+─────────────────────────────────────────────────────────────────────────────
+
+Para DEBUG, faça assim no Power Automate:
+
+1. Após ação HTTP, adicione "Inicializar variável"
+2. Nome: debugPayload
+3. Tipo: String
+4. Valor: @{json(body('HTTP'))}
+
+5. Isso vai mostrar no histórico de execução exatamente o que foi enviado
+
+Ou veja nos logs do servidor:
+
+ssh plansul@ftp.plansul.info
+tail -200 ~/www/estoque-laravel/storage/logs/laravel.log | grep "POWER_AUTOMATE"
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 VALIDAÇÃO AUTOMÁTICA - O SISTEMA VALIDA:
+─────────────────────────────────────────────────────────────────────────────
+
+✅ Obrigatórios (sistema retorna erro 422 se faltar):
+  - Nome do solicitante
+  - Projeto (busca inteligente)
+  - Local de entrega
+  - Pelo menos 1 item
+
+✅ Opcionais (preenchidos se disponível):
+  - Matrícula do solicitante
+  - UF/Estado
+  - Setor
+  - Observações
+  - Peso dos itens
+
+═══════════════════════════════════════════════════════════════════════════════
+
+⚡ FLUXO POWER AUTOMATE RECOMENDADO:
+─────────────────────────────────────────────────────────────────────────────
+
+1. Trigger: "Quando um novo email é recebido (V3)"
+
+2. Ação: Adicionar condição
+   Se "Assunto" contém "solicitacao" ou "bem"
+
+3. Ação: HTTP POST
+   URI: https://plansul.info/api/solicitacoes/email
+   Method: POST
+   Headers:
+     Content-Type: application/json
+     X-API-KEY: 3a7f9e2c5b8d1a4f7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e
+   Body: {
+     "from": "@{triggerOutputs()?['body/from']}",
+     "subject": "@{triggerOutputs()?['body/subject']}",
+     "body": "@{triggerOutputs()?['body/body']}"
+   }
+
+4. Ação: Condição sobre resultado
+   Se sucesso (200 OK):
+     - Enviar email confirmação ao usuário
+   Se erro (422):
+     - Enviar email com detalhes do erro
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔐 SEGURANÇA - TOKEN API:
+─────────────────────────────────────────────────────────────────────────────
+
+Token: 3a7f9e2c5b8d1a4f7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e
+
+⚠️ IMPORTANTE:
+✅ Use este token em TODAS as chamadas à API
+✅ Coloque no header X-API-KEY
+❌ NUNCA publique esse token em código público
+❌ NUNCA compartilhe por email/chat sem criptografia
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📧 TESTE MANUAL (via CURL):
+─────────────────────────────────────────────────────────────────────────────
+
+Abra terminal e execute:
+
+```bash
+curl -X POST https://plansul.info/api/solicitacoes/email \
+  -H "Content-Type: application/json" \
+  -H "X-API-KEY: 3a7f9e2c5b8d1a4f7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e" \
+  -d '{
+    "from": "teste@empresa.com",
+    "subject": "Teste",
+    "body": "Nome: João\nMatrícula: 123\nProjeto: CASAN\nLocal: Almoxarifado\n\n2x Monitor"
+  }'
+```
+
+Resposta esperada:
+```json
+{
+  "success": true,
+  "message": "Solicitacao registrada com sucesso.",
+  "solicitacao_id": 123
+}
+```
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 RESUMÃO - ESSENCIAL:
+─────────────────────────────────────────────────────────────────────────────
+
+URL: https://plansul.info/api/solicitacoes/email
+
+Headers:
+  Content-Type: application/json
+  X-API-KEY: 3a7f9e2c5b8d1a4f7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e
+
+Body (JSON):
+{
+  "from": "email do usuário",
+  "subject": "assunto do email",
+  "body": "corpo completo do email com todos os dados"
+}
+
+Resposta:
+  ✅ 200 OK = Sucesso
+  ❌ 422 = Faltam campos
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Data: 26/01/2026 18:00
+Status: ✅ Pronto para integrar com Power Automate
