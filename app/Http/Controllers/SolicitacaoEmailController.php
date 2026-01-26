@@ -106,16 +106,29 @@ class SolicitacaoEmailController extends Controller
         }
 
         if (!empty($missing)) {
-            Log::warning('Email solicitacao missing fields.', [
+            $errorDetails = [
                 'missing' => $missing,
                 'from' => $from,
                 'subject' => $subject,
-            ]);
+                'parsed_data' => [
+                    'solicitante_nome' => $solicitanteNome,
+                    'projeto_tentado' => $projetoValue,
+                    'projeto_id_encontrado' => $projetoId,
+                    'local_destino' => $localDestino,
+                    'itens_count' => count($itens),
+                ],
+            ];
+
+            Log::warning('⚠️ [POWER_AUTOMATE_EMAIL] Campos obrigatórios faltando', $errorDetails);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Missing required fields.',
                 'missing' => $missing,
+                'details' => [
+                    'projeto_tentado' => $projetoValue,
+                    'hint' => 'Use um código de projeto válido (ex: 281, 2, 47). Veja projetos disponíveis em /api/projetos',
+                ],
             ], 422);
         }
 
