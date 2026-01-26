@@ -471,38 +471,64 @@ class SolicitacaoEmailController extends Controller
         }
 
         $descricao = '';
-        $quantidade = 1;
+        $quantidade = null;  // null = obrigatório
         $unidade = null;
         $observacao = null;
+        $peso = null;
 
+        // Formato: "2x Monitor 24" ou "Monitor 24x 2"
         if (preg_match('/^(\d+)\s*[xX]\s*(.+)$/', $line, $matches)) {
             $quantidade = (int) $matches[1];
             $descricao = trim($matches[2]);
-        } elseif (preg_match('/^(.+?)\s*[xX]\s*(\d+)$/', $line, $matches)) {
+        } elseif (preg_match('/^(.+?)\s+(\d+)\s*[xX]\s*$/i', $line, $matches)) {
             $descricao = trim($matches[1]);
             $quantidade = (int) $matches[2];
         } else {
+            // Formato com separadores: "Monitor 24; 2; UN; 5kg" ou similar
             $parts = preg_split('/[;|]/', $line);
             if ($parts && count($parts) > 1) {
                 $parts = array_map('trim', $parts);
-                $first = $parts[0] ?? '';
-                $second = $parts[1] ?? '';
-
-                if ($this->isNumericValue($first) && $second !== '') {
-                    $quantidade = (int) $first;
-                    $descricao = $second;
-                    $unidade = $parts[2] ?? null;
-                    $observacao = $parts[3] ?? null;
-                } else {
-                    $descricao = $first;
-                    if ($this->isNumericValue($second)) {
-                        $quantidade = (int) $second;
-                    } else {
-                        $observacao = $second ?: null;
+                $descricao = $parts[0] ?? '';
+                
+                // Procura quantidade nos próximos campos
+                for ($i = 1; $i < count($parts); $i++) {
+                    $part = $parts[$i];
+                    
+                    // Se for número, é quantidade (primeira ocorrência)
+                    if ($quantidade === null && $this->isNumericValue($part)) {
+                        $quantidade = (int) $part;
+                        continue;
                     }
-                    $unidade = $parts[2] ?? null;
+                    
+                    // Se tiver "kg", "g", "ml", etc é peso
+                    if (preg_match('/^([\d.,]+)\s*(kg|g|mg|ml|l|un|caixa|cx|resma|metro|m|pc|pç)$/i', $part, $weightMatches)) {
+                        $peso = $part;
+                        if ($quantidade === null) {
+                            $quantidade = 1;
+                        }
+                        continue;
+                    }
+                    
+                    // Próximas ocorrências de números é unidade
+                    if ($this->isNumericValue($part) && $unidade === null) {
+                        $unidade = $part;
+                        continue;
+                    }
+                    
+                    // Se é texto (UN, unidade, peça, etc)
+                    if (preg_match('/^(un|unit|unidade|peça|pç|caixa|cx|resma|metro|m|pc)$/i', $part)) {
+                        $unidade = preg_replace('/\.$/i', '', $part);
+                        if ($quantidade === null) {
+                            $quantidade = 1;
+                        }
+                        continue;
+                    }
+                    
+                    // Resto é observação
                     if ($observacao === null) {
-                        $observacao = $parts[3] ?? null;
+                        $observacao = $part;
+                    } else {
+                        $observacao .= ' ' . $part;
                     }
                 }
             } else {
@@ -510,18 +536,28 @@ class SolicitacaoEmailController extends Controller
             }
         }
 
+        // Validações
         $descricao = $this->cleanValue($descricao, 200);
-        if ($descricao === null) {
+        if ($descricao === null || $descricao === '') {
             return null;
         }
 
-        $quantidade = max(1, (int) $quantidade);
+        // Quantidade é obrigatória (mínimo 1)
+        if ($quantidade === null || $quantidade < 1) {
+            $quantidade = 1;
+        }
+
+        // Se não tem unidade, assume "UN"
+        if ($unidade === null || $unidade === '') {
+            $unidade = 'UN';
+        }
 
         return [
             'descricao' => $descricao,
             'quantidade' => $quantidade,
             'unidade' => $this->cleanValue($unidade, 20),
             'observacao' => $this->cleanValue($observacao, 500),
+            'peso' => $this->cleanValue($peso, 50),
         ];
     }
 
@@ -544,16 +580,25 @@ class SolicitacaoEmailController extends Controller
             }
 
             $descricao = $this->cleanValue($item['descricao'] ?? null, 200);
-            if ($descricao === null) {
+            if ($descricao === null || $descricao === '') {
                 continue;
             }
 
+            // QUANTIDADE É OBRIGATÓRIA
             $quantidade = max(1, (int) ($item['quantidade'] ?? 1));
+            
+            // UNIDADE É OBRIGATÓRIA (padrão: UN)
+            $unidade = $this->cleanValue($item['unidade'] ?? 'UN', 20) ?? 'UN';
+            
+            $observacao = $this->cleanValue($item['observacao'] ?? null, 500);
+            $peso = $this->cleanValue($item['peso'] ?? null, 50);
+
             $sanitized[] = [
                 'descricao' => $descricao,
                 'quantidade' => $quantidade,
-                'unidade' => $this->cleanValue($item['unidade'] ?? null, 20),
-                'observacao' => $this->cleanValue($item['observacao'] ?? null, 500),
+                'unidade' => $unidade,
+                'observacao' => $observacao,
+                'peso' => $peso,
             ];
         }
 
