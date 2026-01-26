@@ -159,8 +159,14 @@ class SolicitacaoEmailController extends Controller
         }
 
         $body = html_entity_decode($body, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // Converter <br>, <br/>, <br /> em quebras de linha ANTES de remover tags
+        $body = preg_replace('/<br\s*\/?>/i', "\n", $body);
+        // Remover tags HTML
         $body = strip_tags($body);
+        // Normalizar quebras de linha
         $body = str_replace(["\r\n", "\r"], "\n", $body);
+        // Remover múltiplas quebras de linha consecutivas
+        $body = preg_replace('/\n+/', "\n", $body);
 
         return trim($body);
     }
