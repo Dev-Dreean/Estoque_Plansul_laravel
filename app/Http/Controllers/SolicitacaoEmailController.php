@@ -29,6 +29,16 @@ class SolicitacaoEmailController extends Controller
 
         $parsed = $this->parseEmail($body);
 
+        // DEBUG: Log detalhado do parsing
+        Log::info('🔍 [DEBUG parseEmail] Payload received', [
+            'payload_keys' => array_keys($payload),
+            'subject_value' => $payload['subject'] ?? 'VAZIO',
+            'from_value' => $payload['from'] ?? 'VAZIO',
+            'body_length' => strlen($payload['body'] ?? ''),
+            'bodyPreview_exists' => isset($payload['bodyPreview']),
+            'parsed_result' => $parsed,
+        ]);
+
         $emailOrigem = $this->cleanValue($from['email'] ?? null, 200);
         $emailAssunto = $this->cleanValue($subject, 200);
 
