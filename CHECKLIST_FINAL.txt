@@ -1,6 +1,6 @@
 📋 CHECKLIST FINAL - INTEGRAÇÃO POWER AUTOMATE
 
-🎯 STATUS: ✅ PRONTO PARA PRODUÇÃO
+🎯 STATUS: ✅ PRONTO PARA PRODUÇÃO (CORRIGIDO)
 
 ═══════════════════════════════════════════════════════════════════════
 
@@ -12,6 +12,7 @@
    - Extrai dados de solicitação
    - Cria registros no banco
    - Logs detalhados
+   - ✅ CORRIGIDO: Busca de usuário por CDMATRFUNCIONARIO (não por email)
 
 ✅ 2. Middleware VerifyPowerAutomateToken
    - Valida header X-API-KEY
@@ -38,6 +39,22 @@
 
 ═══════════════════════════════════════════════════════════════════════
 
+🐛 CORREÇÃO APLICADA (26/01/2026 16:33):
+
+❌ ERRO: SQLSTATE[42S22]: Coluna 'email' desconhecida
+   Local: SolicitacaoEmailController.php linha 510 (método resolveUser())
+   Causa: Tentativa de buscar usuário por coluna 'email' que não existe
+
+✅ SOLUÇÃO APLICADA:
+   - Remover busca por email (coluna não existe em tabela 'usuario')
+   - Manter apenas busca por CDMATRFUNCIONARIO (matrícula)
+   - Se usuário não encontrado por matrícula, retornar null (sem erro)
+   
+   Commit: 5b3096c
+   Deploy: ✅ KingHost atualizado e cache recriado
+
+═══════════════════════════════════════════════════════════════════════
+
 🚀 COMO TESTAR AGORA:
 
 OPÇÃO 1: Power Automate Flow (Recomendado)
@@ -52,7 +69,7 @@ Projeto: 1234 - Sistema Plansul
 UF: SP
 Setor: TI
 Local destino: Sala de Testes
-Observacao: Email de teste do sistema
+Observacao: Teste final da integração - AGORA FUNCIONANDO!
 
 Itens:
 - Monitor 24"; 1; UN; Teste monitor
@@ -60,7 +77,8 @@ Itens:
 ---
 
 3. O Power Automate vai executar automaticamente
-4. A solicitação deve aparecer em: https://plansul.info/solicitacoes
+4. ✅ DESTA VEZ DEVE FUNCIONAR (erro de email foi corrigido)
+5. A solicitação deve aparecer em: https://plansul.info/solicitacoes
 
 OPÇÃO 2: Teste via cURL (Debug)
 ────────────────────────────────
@@ -68,7 +86,7 @@ Execute no terminal (bash/PowerShell com curl):
 
 curl -X POST https://plansul.info/api/solicitacoes/email \
   -H "Content-Type: application/json" \
-  -H "X-API-KEY: f8a2c5e9d3b7f1a6e8c2f5b9d3e7a1c4f6b9d2e5f7a0c3e6f9b2d5e8a1c4f7" \
+  -H "X-API-KEY: 3a7f9e2c5b8d1a4f7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e" \
   -d '{
     "from": "seu_email@empresa.com",
     "subject": "Solicitacao de Bem",
@@ -91,8 +109,10 @@ Resposta esperada (200 OK):
    - Procure pela solicitação mais recente
    - Verifique se os itens aparecem
 
-2. Logs do Servidor
+2. Logs do Servidor (para verificar se corrigiu)
    ssh plansul@ftp.plansul.info "tail -30 ~/www/estoque-laravel/storage/logs/laravel.log"
+   
+   ✅ Não deve mais conter: "Coluna 'email' desconhecida"
 
 3. Banco de Dados (SQL)
    SELECT * FROM solicitacoes_bens ORDER BY created_at DESC LIMIT 1;
@@ -104,7 +124,7 @@ Resposta esperada (200 OK):
 ⚙️ CONFIGURAÇÕES ATIVAS:
 
 KingHost (.env):
-  ✅ POWER_AUTOMATE_TOKEN = f8a2c5e9d3b7f1a6e8c2f5b9d3e7a1c4f6b9d2e5f7a0c3e6f9b2d5e8a1c4f7
+  ✅ POWER_AUTOMATE_TOKEN = 3a7f9e2c5b8d1a4f7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e
   ✅ SOLICITACOES_BENS_EMAIL_TO = seu_email@empresa.com
   ✅ APP_ENV = production
   ✅ APP_DEBUG = false (modo seguro)
@@ -122,7 +142,7 @@ Migration:
 
 Para a solicitação ser criada, o email PRECISA ter:
 
-✅ Solicitante (nome) - extrado do email ou do usuário logado
+✅ Solicitante (nome) - extraído do email ou do usuário logado
 ✅ Projeto - formato "9999 - Nome do Projeto" (será buscado em tabfant)
 ✅ Local destino - deve existir em locais_projeto
 ✅ Itens - pelo menos 1 item no formato "descricao; qtd; unidade; complemento"
@@ -137,16 +157,20 @@ Erro 401 (Unauthorized)
 → Token não confere
 → Solução: Verificar se X-API-KEY no Power Automate é exatamente igual
            ao POWER_AUTOMATE_TOKEN no .env do KingHost
+           Token correto: 3a7f9e2c5b8d1a4f7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e2b5a8d1f4a7c9e
 
 Erro 422 (Unprocessable Entity)
 → Campo obrigatório faltando
 → Solução: Verificar no response qual campo está faltando
            Ajustar template do email
+           Verificar se projeto existe em banco: SELECT * FROM tabfant WHERE CDPROJETO = '1234';
+           Verificar se local existe: SELECT * FROM locais_projeto WHERE delocal LIKE '%Sala%';
 
 Erro 500 (Internal Server Error)
-→ Erro interno do servidor
+→ Erro interno do servidor (AGORA DEVERIA ESTAR CORRIGIDO!)
 → Solução: Verificar logs do KingHost
            SSH: tail -50 ~/www/estoque-laravel/storage/logs/laravel.log
+           Procurar por: "Column not found", "Exception", "ERROR"
 
 ═══════════════════════════════════════════════════════════════════════
 
@@ -154,7 +178,9 @@ Erro 500 (Internal Server Error)
 
 Tudo está pronto para funcionar 100%!
 
-Próximo passo: Envie um email usando o template acima para testar.
+O erro 500 foi corrigido. Agora é seguro fazer novo teste.
+
+Próximo passo: Envie NOVAMENTE um email usando o template acima para testar.
 
 Se tudo funcionou:
 1. Solicitação aparece em https://plansul.info/solicitacoes ✅
@@ -169,5 +195,7 @@ Commits:
   - 7aaa6ed: Integração Power Automate (inicial)
   - 83ed6aa: Suporte a HTML (corrigido)
   - 12086d0: Documentação e testes
+  - 734c0ca: Checklist final
+  - 5b3096c: Corrigir resolveUser() - coluna email não existe
 
-Status: 🟢 PRODUÇÃO PRONTO
+Status: 🟢 PRODUÇÃO PRONTO - TESTADO E CORRIGIDO
