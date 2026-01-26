@@ -1,0 +1,219 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║          📧 TEMPLATE DE EMAIL - SOLICITAÇÃO DE BENS (NATURAL)             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+✨ AGORA VOCÊ PODE ESCREVER DE FORMA MAIS NATURAL!
+
+O sistema agora entende várias formas de escrever e busca inteligentemente
+projetos e locais, mesmo se você não souber o código exato.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📝 FORMATO SIMPLES E NATURAL:
+─────────────────────────────────────────────────────────────────────────────
+
+Para: suporte.dev@plansul.com.br
+Assunto: Solicitacao de Bem
+
+Nome: João da Silva
+Matrícula: 12345
+Projeto: CASAN
+Estado: SC
+Setor: Tecnologia da Informação
+Entregar em: Almoxarifado Central
+Detalhes: Preciso urgente para instalação na sala 204
+
+O que preciso:
+- Monitor 24 polegadas
+- Mouse sem fio
+- Teclado USB
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 FORMAS ACEITAS DE ESCREVER (TODAS FUNCIONAM!):
+─────────────────────────────────────────────────────────────────────────────
+
+**PROJETO** (aceita qualquer um):
+✅ Projeto: CASAN
+✅ Projeto: 2
+✅ Nome projeto: CASAN
+✅ Para projeto: CEF
+✅ Em projeto: BRADESCO
+✅ Código projeto: 281
+
+**LOCAL** (aceita qualquer um):
+✅ Local destino: Almoxarifado
+✅ Entregar em: Sala 204
+✅ Enviar para: Depósito Central
+✅ Onde entregar: Setor de TI
+✅ Endereço: Almoxarifado Central
+✅ Destino: Recepção
+
+**OBSERVAÇÕES** (aceita qualquer um):
+✅ Observação: Entregar até sexta
+✅ Obs: Urgente
+✅ Detalhes: Para instalação
+✅ Notas: Projeto prioritário
+✅ Informações adicionais: Fragil
+✅ Comentários: Manusear com cuidado
+
+**ITENS** (aceita qualquer um):
+✅ Itens:
+✅ Lista:
+✅ Produtos:
+✅ Materiais:
+✅ Bens:
+✅ O que preciso:
+✅ Necessito:
+
+═══════════════════════════════════════════════════════════════════════════════
+
+💬 EXEMPLOS DE EMAILS NATURAIS QUE FUNCIONAM:
+─────────────────────────────────────────────────────────────────────────────
+
+**EXEMPLO 1 - Super Simples:**
+```
+Nome: Maria Santos
+Mat: 98765
+Projeto: CEF
+Estado: RS
+Setor: Financeiro
+Destino: Sala 301
+
+Lista:
+- Calculadora científica
+- Grampeador
+```
+
+─────────────────────────────────────────────────────────────────────────────
+
+**EXEMPLO 2 - Linguagem Natural:**
+```
+Solicitado por: Carlos Eduardo
+Registro: 55555
+Para projeto: BRADESCO
+Região: SP
+Departamento: Recursos Humanos
+Entregar em: Recepção do 2º andar
+Comentários: Entregar na parte da manhã, entre 9h e 11h
+
+Materiais:
+- Papel A4, 5 resmas
+- Canetas azuis, 20 unidades
+- Pastas suspensas
+```
+
+─────────────────────────────────────────────────────────────────────────────
+
+**EXEMPLO 3 - Com Código de Projeto:**
+```
+Nome: Ana Paula
+Matrícula: 11111
+Projeto: 281 - BRADESCO-RS
+UF: RS
+Setor: TI
+Local de entrega: Datacenter - Sala de servidores
+Observação: Material para manutenção preventiva
+
+Itens:
+- 2x Cabo de rede Cat6
+- 1x Switch 24 portas
+- Ferramentas de crimpagem
+```
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔍 BUSCA INTELIGENTE DE PROJETOS:
+─────────────────────────────────────────────────────────────────────────────
+
+O sistema agora busca projetos de forma inteligente:
+
+✅ Por código exato: "281", "2", "47"
+✅ Por nome completo: "CASAN", "BRADESCO-RS"
+✅ Por nome parcial: "BRADESKO" encontra "BRADESCO-RS"
+✅ Por nome sem acentos: "CEF CE" encontra "CEF - CE"
+✅ Case insensitive: "casan", "CASAN", "Casan" (todos funcionam)
+
+**EXEMPLOS QUE FUNCIONAM:**
+- Projeto: CASAN ✅
+- Projeto: casan ✅
+- Projeto: Casa ✅ (busca parcial)
+- Projeto: 2 ✅
+- Projeto: CEF ✅ (encontra o primeiro CEF)
+- Projeto: BRADESKO ✅ (encontra BRADESCO por similaridade)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 FORMATO DOS ITENS (FLEXÍVEL):
+─────────────────────────────────────────────────────────────────────────────
+
+**ACEITA TODOS ESSES FORMATOS:**
+
+✅ - Monitor 24"
+✅ Monitor 24 polegadas
+✅ 2x Mouse sem fio
+✅ Mouse sem fio, 2 unidades
+✅ Teclado USB; 1; UN
+✅ Cabo HDMI; 3; UN; Para salas de reunião
+✅ 5 resmas de papel A4
+
+═══════════════════════════════════════════════════════════════════════════════
+
+⚡ DICAS PARA MELHOR RESULTADO:
+─────────────────────────────────────────────────────────────────────────────
+
+1. **Nome do Projeto**: Pode escrever só parte do nome (ex: "BRADESKO")
+2. **Local**: Descreva onde quer receber (ex: "Recepção", "Sala 204")
+3. **Itens**: Liste um por linha, começando com - ou número
+4. **Quantidade**: Use "2x", "2 unidades", "2; UN" (todos funcionam)
+5. **Observações**: Escreva livremente o que precisar
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ RESULTADO ESPERADO:
+─────────────────────────────────────────────────────────────────────────────
+
+Status: **200 OK**
+```json
+{
+  "success": true,
+  "message": "Solicitacao registrada com sucesso.",
+  "solicitacao_id": 456
+}
+```
+
+E a solicitação aparecerá automaticamente em: https://plansul.info/solicitacoes
+
+═══════════════════════════════════════════════════════════════════════════════
+
+❓ SE AINDA NÃO FUNCIONAR:
+─────────────────────────────────────────────────────────────────────────────
+
+O sistema vai te dar uma dica do que está faltando:
+
+```json
+{
+  "success": false,
+  "message": "Missing required fields.",
+  "missing": ["projeto_id"],
+  "details": {
+    "projeto_tentado": "XYZ Projeto",
+    "hint": "Use um código de projeto válido (ex: 281, 2, 47)"
+  }
+}
+```
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎉 VANTAGENS DO NOVO SISTEMA:
+
+✨ Escreve de forma natural (como você fala)
+🔍 Busca inteligente de projetos (aceita erros de digitação)
+💬 Vários sinônimos aceitos (observação = obs = detalhes = notas)
+🎯 Mais fácil de usar (menos códigos para decorar)
+📝 Formato flexível (não precisa ser exato)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Data: 26/01/2026 17:30
+Status: ✅ Sistema melhorado com linguagem natural e busca inteligente

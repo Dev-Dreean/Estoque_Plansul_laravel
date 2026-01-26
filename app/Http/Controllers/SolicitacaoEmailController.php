@@ -385,26 +385,58 @@ class SolicitacaoEmailController extends Controller
             'solicitante',
             'solicitante nome',
             'nome',
-            'nome solicitante' => 'solicitante_nome',
+            'nome solicitante',
+            'nome do solicitante',
+            'quem solicita',
+            'solicitado por' => 'solicitante_nome',
             'matricula',
-            'matricula solicitante' => 'solicitante_matricula',
+            'matricula solicitante',
+            'numero matricula',
+            'mat',
+            'registro' => 'solicitante_matricula',
             'projeto',
             'projeto id',
             'codigo projeto',
-            'cdprojeto' => 'projeto',
+            'cdprojeto',
+            'nome projeto',
+            'projeto destino',
+            'para projeto',
+            'em projeto' => 'projeto',
             'uf',
-            'estado' => 'uf',
-            'setor' => 'setor',
+            'estado',
+            'regiao',
+            'federacao' => 'uf',
+            'setor',
+            'departamento',
+            'area',
+            'secao' => 'setor',
             'local',
             'local destino',
             'localdestino',
-            'destino' => 'local_destino',
+            'destino',
+            'local de entrega',
+            'entregar em',
+            'enviar para',
+            'endereco',
+            'onde entregar' => 'local_destino',
             'observacao',
             'observacoes',
-            'obs' => 'observacao',
+            'obs',
+            'notas',
+            'detalhes',
+            'informacoes adicionais',
+            'comentarios',
+            'comentario' => 'observacao',
             'itens',
             'items',
-            'item' => 'itens',
+            'item',
+            'produtos',
+            'materiais',
+            'bens',
+            'lista',
+            'lista de itens',
+            'o que preciso',
+            'necessito' => 'itens',
             default => null,
         };
     }
@@ -535,12 +567,16 @@ class SolicitacaoEmailController extends Controller
             return null;
         }
 
+        // Log para debug
+        Log::info('🔍 [RESOLVE_PROJETO] Tentando resolver projeto', ['input' => $value]);
+
         $candidates = [$value];
         if (str_contains($value, '-')) {
             $parts = array_map('trim', explode('-', $value, 2));
             $candidates = array_merge($candidates, array_filter($parts));
         }
 
+        // Busca exata por código ou ID
         foreach ($candidates as $candidate) {
             if ($candidate === '') {
                 continue;
@@ -549,31 +585,50 @@ class SolicitacaoEmailController extends Controller
             if (ctype_digit($candidate)) {
                 $project = Tabfant::where('id', (int) $candidate)->first();
                 if ($project) {
+                    Log::info('✅ [RESOLVE_PROJETO] Encontrado por ID', ['id' => $project->id, 'nome' => $project->NOMEPROJETO]);
                     return (int) $project->id;
                 }
 
                 $project = Tabfant::where('CDPROJETO', $candidate)->first();
                 if ($project) {
+                    Log::info('✅ [RESOLVE_PROJETO] Encontrado por CDPROJETO', ['id' => $project->id, 'nome' => $project->NOMEPROJETO]);
                     return (int) $project->id;
                 }
             }
 
             $project = Tabfant::where('CDPROJETO', $candidate)->first();
             if ($project) {
+                Log::info('✅ [RESOLVE_PROJETO] Encontrado por CDPROJETO', ['id' => $project->id, 'nome' => $project->NOMEPROJETO]);
                 return (int) $project->id;
             }
 
-            $project = Tabfant::where('NOMEPROJETO', $candidate)->first();
+            // Busca exata por nome (case insensitive)
+            $project = Tabfant::whereRaw('UPPER(NOMEPROJETO) = ?', [mb_strtoupper($candidate, 'UTF-8')])->first();
             if ($project) {
+                Log::info('✅ [RESOLVE_PROJETO] Encontrado por nome exato', ['id' => $project->id, 'nome' => $project->NOMEPROJETO]);
                 return (int) $project->id;
             }
         }
 
+        // Busca parcial por nome (fuzzy search)
         $project = Tabfant::where('NOMEPROJETO', 'like', '%' . $value . '%')->first();
         if ($project) {
+            Log::info('✅ [RESOLVE_PROJETO] Encontrado por busca parcial', ['id' => $project->id, 'nome' => $project->NOMEPROJETO]);
             return (int) $project->id;
         }
 
+        // Busca mais tolerante (remover acentos e caracteres especiais)
+        $normalizedValue = $this->normalizeKey($value);
+        $allProjects = Tabfant::all();
+        foreach ($allProjects as $project) {
+            $normalizedName = $this->normalizeKey($project->NOMEPROJETO);
+            if (str_contains($normalizedName, $normalizedValue) || str_contains($normalizedValue, $normalizedName)) {
+                Log::info('✅ [RESOLVE_PROJETO] Encontrado por busca normalizada', ['id' => $project->id, 'nome' => $project->NOMEPROJETO]);
+                return (int) $project->id;
+            }
+        }
+
+        Log::warning('⚠️ [RESOLVE_PROJETO] Projeto não encontrado', ['tentativas' => $candidates]);
         return null;
     }
 
