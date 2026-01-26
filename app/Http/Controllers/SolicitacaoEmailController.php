@@ -16,28 +16,35 @@ class SolicitacaoEmailController extends Controller
     public function store(Request $request): JsonResponse
     {
         $payload = $request->all();
-        $subject = $this->stringValue($payload['subject'] ?? '');
-        $body = $this->extractBody($payload);
-        $from = $this->normalizeFrom($payload['from'] ?? null);
-
-        // DEBUG LOG: Detalhado
+        
+        // DEBUG LOG: Ver EXATAMENTE o que Power Automate está enviando
         Log::info('🚀 [POWER_AUTOMATE_EMAIL] Requisição recebida', [
-            'payload_keys_count' => count($payload),
-            'payload_keys' => array_slice(array_keys($payload), 0, 15), // primeiras 15 chaves
-            'has_subject' => isset($payload['subject']),
-            'has_from' => isset($payload['from']),
-            'has_body' => isset($payload['body']),
-            'has_bodyPreview' => isset($payload['bodyPreview']),
-            'subject_length' => strlen($subject),
+            'payload_completo' => $payload,
+            'payload_keys' => array_keys($payload),
+            'raw_body' => $request->getContent(),
+        ]);
+        
+        // Extrair campos (aceitar tanto formato direto quanto Microsoft Graph)
+        $subject = $this->extractSubject($payload);
+        $body = $this->extractBody($payload);
+        $from = $this->extractFrom($payload);
+
+        Log::info('📧 [POWER_AUTOMATE_EMAIL] Campos extraídos', [
+            'subject' => $subject,
             'body_length' => strlen($body),
-            'body_preview' => substr($body, 0, 150),
+            'body_preview' => substr($body, 0, 200),
+            'from' => $from,
         ]);
 
         if ($subject === '' && $body === '') {
-            Log::warning('⚠️ [POWER_AUTOMATE_EMAIL] Payload vazio', ['payload_size' => count($payload)]);
+            Log::warning('⚠️ [POWER_AUTOMATE_EMAIL] Payload vazio ou inválido', [
+                'payload_keys' => array_keys($payload),
+                'payload_size' => count($payload)
+            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Empty payload.',
+                'message' => 'Empty payload. Please send email with "from", "subject" and "body" fields.',
+                'received_keys' => array_keys($payload),
             ], 422);
         }
 
@@ -155,14 +162,47 @@ class SolicitacaoEmailController extends Controller
         ]);
     }
 
+    private function extractSubject(array $payload): string
+    {
+        // Tentar várias formas de extrair subject
+        $subject = $payload['subject'] ?? $payload['Subject'] ?? '';
+        
+        if ($subject === '' && isset($payload['email'])) {
+            $subject = $payload['email']['subject'] ?? '';
+        }
+        
+        return $this->stringValue($subject);
+    }
+
+    private function extractFrom(array $payload): array
+    {
+        // Tentar extrair from de várias formas
+        $from = $payload['from'] ?? $payload['From'] ?? null;
+        
+        // Se from vier vazio mas tiver "sender"
+        if (empty($from) && isset($payload['sender'])) {
+            $from = $payload['sender'];
+        }
+        
+        // Se tiver estrutura de email Microsoft Graph
+        if (empty($from) && isset($payload['email'])) {
+            $from = $payload['email']['from'] ?? $payload['email']['sender'] ?? null;
+        }
+        
+        return $this->normalizeFrom($from);
+    }
+
     private function extractBody(array $payload): string
     {
-        $body = $payload['body'] ?? '';
+        // Prioridade: body > bodyPreview > body_preview
+        $body = $payload['body'] ?? $payload['Body'] ?? '';
 
+        // Se body é array (Microsoft Graph format)
         if (is_array($body)) {
             $body = $body['content'] ?? $body['body'] ?? '';
         }
 
+        // Fallback para bodyPreview
         if ($body === '' && isset($payload['bodyPreview'])) {
             $body = $payload['bodyPreview'];
         }
@@ -173,6 +213,11 @@ class SolicitacaoEmailController extends Controller
 
         if ($body === '' && isset($payload['bodyPreviewText'])) {
             $body = $payload['bodyPreviewText'];
+        }
+        
+        // Se tiver estrutura email.body
+        if ($body === '' && isset($payload['email']['body'])) {
+            $body = $payload['email']['body'];
         }
 
         $body = $this->stringValue($body);
