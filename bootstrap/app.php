@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tela.access' => \App\Http\Middleware\CheckTelaAccess::class,
             'can.delete' => \App\Http\Middleware\CheckDeletePermission::class,
             'session.expiration' => \App\Http\Middleware\CheckSessionExpiration::class,
+            'power.automate' => \App\Http\Middleware\VerifyPowerAutomateToken::class,
         ]);
 
         // Adicionar middleware global para verificar expiração da sessão

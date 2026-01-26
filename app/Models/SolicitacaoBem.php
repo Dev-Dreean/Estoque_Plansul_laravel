@@ -22,6 +22,8 @@ class SolicitacaoBem extends Model
         'solicitante_id',
         'solicitante_nome',
         'solicitante_matricula',
+        'email_origem',
+        'email_assunto',
         'projeto_id',
         'uf',
         'setor',
@@ -73,4 +75,3 @@ class SolicitacaoBem extends Model
         return $this->belongsTo(Tabfant::class, 'projeto_id', 'id');
     }
 }
-

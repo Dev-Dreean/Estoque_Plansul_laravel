@@ -17,6 +17,7 @@ use App\Http\Controllers\ProjetoController;
 use App\Http\Controllers\RemovidosController;
 use App\Http\Controllers\SolicitacaoBemController;
 use App\Http\Controllers\SolicitacaoBemPatrimonioController;
+use App\Http\Controllers\SolicitacaoEmailController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -44,6 +45,8 @@ Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
 
 // API para obter clima - PÚBLICA (para usuários não autenticados)
 Route::get('/api/weather', [MenuController::class, 'getWeather'])->name('api.weather');
+Route::post('/api/solicitacoes/email', [SolicitacaoEmailController::class, 'store'])
+    ->middleware('power.automate');
 
 // Templates de busca/massa (sem restricao)
 Route::get('/patrimonios/bulk-update/template/{tipo}', [PatrimonioBulkController::class, 'downloadTemplate'])
