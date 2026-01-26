@@ -20,7 +20,21 @@ class SolicitacaoEmailController extends Controller
         $body = $this->extractBody($payload);
         $from = $this->normalizeFrom($payload['from'] ?? null);
 
+        // DEBUG LOG: Detalhado
+        Log::info('🚀 [POWER_AUTOMATE_EMAIL] Requisição recebida', [
+            'payload_keys_count' => count($payload),
+            'payload_keys' => array_slice(array_keys($payload), 0, 15), // primeiras 15 chaves
+            'has_subject' => isset($payload['subject']),
+            'has_from' => isset($payload['from']),
+            'has_body' => isset($payload['body']),
+            'has_bodyPreview' => isset($payload['bodyPreview']),
+            'subject_length' => strlen($subject),
+            'body_length' => strlen($body),
+            'body_preview' => substr($body, 0, 150),
+        ]);
+
         if ($subject === '' && $body === '') {
+            Log::warning('⚠️ [POWER_AUTOMATE_EMAIL] Payload vazio', ['payload_size' => count($payload)]);
             return response()->json([
                 'success' => false,
                 'message' => 'Empty payload.',
@@ -30,13 +44,11 @@ class SolicitacaoEmailController extends Controller
         $parsed = $this->parseEmail($body);
 
         // DEBUG: Log detalhado do parsing
-        Log::info('🔍 [DEBUG parseEmail] Payload received', [
-            'payload_keys' => array_keys($payload),
-            'subject_value' => $payload['subject'] ?? 'VAZIO',
-            'from_value' => $payload['from'] ?? 'VAZIO',
-            'body_length' => strlen($payload['body'] ?? ''),
-            'bodyPreview_exists' => isset($payload['bodyPreview']),
-            'parsed_result' => $parsed,
+        Log::info('🔍 [PARSING_RESULT] Email parseado com sucesso', [
+            'parsed_solicitante_nome' => $parsed['solicitante_nome'] ?? null,
+            'parsed_projeto' => $parsed['projeto'] ?? null,
+            'parsed_uf' => $parsed['uf'] ?? null,
+            'parsed_itens_count' => count($parsed['itens'] ?? []),
         ]);
 
         $emailOrigem = $this->cleanValue($from['email'] ?? null, 200);
