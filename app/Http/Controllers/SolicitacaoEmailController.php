@@ -126,6 +126,8 @@ class SolicitacaoEmailController extends Controller
             $solicitanteId,
             $solicitanteNome,
             $solicitanteMatricula,
+            $emailOrigem,
+            $emailAssunto,
             $projetoId,
             $uf,
             $setor,
