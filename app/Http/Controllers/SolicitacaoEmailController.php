@@ -505,10 +505,9 @@ class SolicitacaoEmailController extends Controller
             }
         }
 
-        $email = $this->cleanValue($email, 200);
-        if ($email !== null) {
-            return User::where('email', $email)->first();
-        }
+        // Não buscar por email pois a tabela usuario não tem coluna 'email'
+        // Se quiser, poderia buscar por NMLOGIN extraindo do email
+        // Por enquanto, apenas retornar null se não encontrou por matrícula
 
         return null;
     }
