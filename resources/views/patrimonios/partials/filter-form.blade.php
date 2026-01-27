@@ -632,7 +632,7 @@
           <div class="flex items-center gap-2">
             <input type="date" name="dtaquisicao_de" value="{{ request('dtaquisicao_de') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de Aquisição" />
             <template x-if="range">
-              <span class="text-xs text-gray-500 dark:text-gray-300">at�</span>
+              <span class="text-xs text-gray-500 dark:text-gray-300">até</span>
             </template>
             <input x-show="range" x-cloak type="date" name="dtaquisicao_ate" value="{{ request('dtaquisicao_ate') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de Aquisição Até" />
           </div>

@@ -71,8 +71,8 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-[13px] font-semibold text-gray-900 dark:text-white">Detalhes da Solicita&ccedil;&atilde;o</h3>
-                                    <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5">Resumo das informa&ccedil;&otilde;es principais</p>
+                                    <h3 class="text-[13px] font-semibold text-gray-900 dark:text-white">Detalhes da Solicitação</h3>
+                                    <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5">Resumo das informações principais</p>
                                 </div>
                             </div>
                         </div>
@@ -90,7 +90,7 @@
                                     <div>
                                         <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Solicitante</div>
                                         <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->solicitante_nome ?? '-' }}</div>
-                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Matr&iacute;cula: <span class="font-mono text-gray-700 dark:text-slate-200">{{ $solicitacao->solicitante_matricula ?? '-' }}</span></div>
+                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Matrícula: <span class="font-mono text-gray-700 dark:text-slate-200">{{ $solicitacao->solicitante_matricula ?? '-' }}</span></div>
                                     </div>
                                 </div>
 
@@ -106,7 +106,7 @@
                                         <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Local / UF</div>
                                         <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->local_destino ?? '-' }}</div>
                                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">UF: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->uf ?? '-' }}</span></div>
-                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Setor: <span class="text-gray-700 dark:text-slate-200">{{ $solicitacao->setor ?? 'Setor n&atilde;o informado' }}</span></div>
+                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Setor: <span class="text-gray-700 dark:text-slate-200">{{ $solicitacao->setor ?? 'Setor não informado' }}</span></div>
                                     </div>
                                 </div>
 
@@ -120,7 +120,7 @@
                                     <div>
                                         <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Projeto</div>
                                         <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->projeto?->NOMEPROJETO ?? '-' }}</div>
-                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">C&oacute;d: <span class="font-mono text-gray-700 dark:text-slate-200">{{ $solicitacao->projeto?->CDPROJETO ?? '-' }}</span></div>
+                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cód: <span class="font-mono text-gray-700 dark:text-slate-200">{{ $solicitacao->projeto?->CDPROJETO ?? '-' }}</span></div>
                                     </div>
                                 </div>
 
@@ -182,7 +182,7 @@
                             <!-- Observacao -->
                             @if($solicitacao->observacao)
                                 <div class="mx-4 mt-2 mb-4 pt-3 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)]">
-                                    <h4 class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Observa&ccedil;&atilde;o do Solicitante</h4>
+                                    <h4 class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Observação do Solicitante</h4>
                                     <div class="bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] rounded-lg p-3 text-xs text-gray-700 dark:text-slate-200 italic whitespace-pre-line border border-[color:var(--solicitacao-modal-border,#d6dde6)]">
                                         {{ $solicitacao->observacao }}
                                     </div>
@@ -205,10 +205,10 @@
                             <table class="w-full text-xs text-left">
                                 <thead class="text-[10px] text-gray-700 uppercase bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:text-slate-400 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)]">
                                     <tr>
-                                        <th class="px-3 py-2 font-semibold tracking-wide">Descri&ccedil;&atilde;o / Patrim&ocirc;nio</th>
+                                        <th class="px-3 py-2 font-semibold tracking-wide">Descrição / Patrimônio</th>
                                         <th class="px-3 py-2 font-semibold tracking-wide text-center">Qtd</th>
                                         <th class="px-3 py-2 font-semibold tracking-wide text-center">Unidade</th>
-                                        <th class="px-3 py-2 font-semibold tracking-wide">Observa&ccedil;&atilde;o</th>
+                                        <th class="px-3 py-2 font-semibold tracking-wide">Observação</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-[color:var(--solicitacao-modal-border,#d6dde6)]">
@@ -222,7 +222,7 @@
                                     @empty
                                         <tr>
                                             <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-slate-400">
-                                                Nenhum item registrado para esta solicita&ccedil;&atilde;o.
+                                                Nenhum item registrado para esta solicitação.
                                             </td>
                                         </tr>
                                     @endforelse
@@ -276,7 +276,7 @@
 
                             <div class="bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] p-3 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)]">
                                 <h3 class="text-sm font-bold text-indigo-600 dark:text-indigo-300">Painel de Controle</h3>
-                                <p class="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5">Gerenciamento da Solicita&ccedil;&atilde;o #{{ $solicitacao->id }}</p>
+                                <p class="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5">Gerenciamento da Solicitação #{{ $solicitacao->id }}</p>
                             </div>
 
                             <div class="p-3">
@@ -300,7 +300,7 @@
                                     <!-- Recebedor Info -->
                                     <div class="space-y-3">
                                         <div>
-                                            <label for="recebedor_search" class="block text-[10px] font-medium text-gray-700 dark:text-slate-300 mb-1">Respons&aacute;vel Recebedor * <span class="text-red-500">*</span></label>
+                                            <label for="recebedor_search" class="block text-[10px] font-medium text-gray-700 dark:text-slate-300 mb-1">Responsável Recebedor * <span class="text-red-500">*</span></label>
                                             <x-user-autocomplete 
                                                 id="recebedor_search"
                                                 name="recebedor_matricula"
@@ -393,7 +393,7 @@
                                             <label for="observacao_controle" class="block text-[10px] font-medium text-gray-700 dark:text-slate-300 mb-1">Notas Internas</label>
                                             <textarea id="observacao_controle" name="observacao_controle"
                                                 class="block w-full rounded-lg border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs"
-                                                rows="2" placeholder="Anota&ccedil;&otilde;es do almoxarifado...">{{ old('observacao_controle', $solicitacao->observacao_controle) }}</textarea>
+                                                rows="2" placeholder="Anotações do almoxarifado...">{{ old('observacao_controle', $solicitacao->observacao_controle) }}</textarea>
                                             <x-input-error :messages="$errors->get('observacao_controle')" class="mt-1" />
                                         </div>
 
@@ -402,18 +402,18 @@
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                                                 </svg>
-                                                Salvar Altera&ccedil;&otilde;es
+                                                Salvar Alterações
                                             </button>
                                         </div>
                                     </form>
                                 @else
                                 <div class="rounded-lg border border-dashed border-slate-600/60 bg-slate-900/60 px-3 py-2 text-[11px] text-slate-400">
-                                    Sem permiss&atilde;o para atualizar dados de entrega.
+                                    Sem permissão para atualizar dados de entrega.
                                 </div>
                                 @endif
                             </div>
                             <div class="bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] px-4 py-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] text-center">
-                                <p class="text-[10px] text-gray-400 uppercase tracking-wide">&Uacute;ltima atualiza&ccedil;&atilde;o: {{ $solicitacao->updated_at->diffForHumans() }}</p>
+                                <p class="text-[10px] text-gray-400 uppercase tracking-wide">Última atualização: {{ $solicitacao->updated_at->diffForHumans() }}</p>
                             </div>
                         </div>
                     </div>

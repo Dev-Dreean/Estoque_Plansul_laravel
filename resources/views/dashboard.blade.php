@@ -11,6 +11,22 @@
             </div>
           </div>
 
+          @if(!empty($verificadosStats))
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6 text-gray-900 dark:text-gray-100">
+              <p class="text-xs uppercase tracking-wide font-semibold text-gray-600 dark:text-gray-400 mb-2">Verificados</p>
+              <p class="text-3xl font-bold text-gray-900 dark:text-white">
+                {{ number_format($verificadosStats['verificados'] ?? 0, 0, ',', '.') }} /
+                {{ number_format($verificadosStats['total'] ?? 0, 0, ',', '.') }}
+              </p>
+              <div class="mt-3 h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+                <div class="h-2 rounded-full bg-emerald-500" style="width: {{ (int) ($verificadosStats['percent'] ?? 0) }}%"></div>
+              </div>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ (int) ($verificadosStats['percent'] ?? 0) }}% conferidos</p>
+            </div>
+          </div>
+          @endif
+
           <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 text-gray-900 dark:text-gray-100">
               <h3 class="font-semibold text-lg mb-4">Top 5 Usu&aacute;rios com Mais Cadastros</h3>
@@ -26,6 +42,8 @@
               </ul>
             </div>
           </div>
+
+          
 
           <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 text-gray-900 dark:text-gray-100">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Patrimonio;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -13,6 +14,18 @@ class DashboardController extends Controller
     public function index(): View
     {
         $cadastrosHoje = Patrimonio::whereDate('DTOPERACAO', Carbon::today())->count();
+        $verificadosStats = null;
+        $user = Auth::user();
+        if ($this->canViewVerificadosIndicator($user)) {
+            $total = Patrimonio::count();
+            $verificados = Patrimonio::whereRaw("UPPER(COALESCE(NULLIF(TRIM(FLCONFERIDO), ''), 'N')) = 'S'")->count();
+            $percent = $total > 0 ? (int) round(($verificados / $total) * 100) : 0;
+            $verificadosStats = [
+                'total' => $total,
+                'verificados' => $verificados,
+                'percent' => $percent,
+            ];
+        }
 
         // Busca os 5 usuários que mais cadastraram (Top 5)
         $topCadastradores = Patrimonio::query()
@@ -40,6 +53,7 @@ class DashboardController extends Controller
             'topCadastradores' => $topCadastradores,
             'cadastrosSemanaLabels' => $cadastrosSemanaLabels,
             'cadastrosSemanaData' => $cadastrosSemanaData,
+            'verificadosStats' => $verificadosStats,
         ]);
     }
 
@@ -152,6 +166,25 @@ class DashboardController extends Controller
             'data' => $values,
             'period' => 'all',
         ]);
+    }
+
+    private function canViewVerificadosIndicator($user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        if (method_exists($user, 'isAdmin') && $user->isAdmin()) {
+            return true;
+        }
+
+        $allowlist = array_filter(array_map('trim', explode(',', (string) env('DASHBOARD_VERIFICADOS_LOGINS', ''))));
+        if (!$allowlist) {
+            return false;
+        }
+
+        $login = strtolower((string) ($user->NMLOGIN ?? $user->NOMEUSER ?? ''));
+        return $login !== '' && in_array($login, array_map('strtolower', $allowlist), true);
     }
 }
 

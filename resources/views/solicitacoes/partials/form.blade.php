@@ -125,7 +125,7 @@
                         </div>
                     </div>
 
-                    <!-- SECAO 2: Item Solicitado -->
+                    <!-- SEÇÃO 2: Item Solicitado -->
                     <div x-show="step === 2" class="space-y-3">
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">Item Solicitado</h3>
                         <p class="text-xs text-gray-600 dark:text-gray-400">Digite 2+ caracteres para buscar no estoque disponível.</p>
