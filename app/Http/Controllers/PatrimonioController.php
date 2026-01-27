@@ -1152,6 +1152,7 @@ class PatrimonioController extends Controller
         // Detectar alteraÃ§Ãµes relevantes
 
         $oldProjeto = $patrimonio->CDPROJETO;
+        $oldNumero = $patrimonio->NUPATRIMONIO;
 
         $oldSituacao = $patrimonio->SITUACAO;
 
@@ -1190,6 +1191,7 @@ class PatrimonioController extends Controller
         $newLocal = $patrimonio->CDLOCAL;
 
         $newConferido = $this->normalizeConferidoFlag($patrimonio->FLCONFERIDO) ?? 'N';
+        $newNumero = $patrimonio->NUPATRIMONIO;
 
 
 
@@ -1214,6 +1216,15 @@ class PatrimonioController extends Controller
             'SITUACAO_after' => $newSituacao,
 
         ]);
+
+        // Evitar retorno de dados antigos no formulÃ¡rio (cache da API /api/patrimonios/buscar/{numero})
+        foreach (array_filter([
+            'patrimonio_id_' . $patrimonio->NUSEQPATR,
+            'patrimonio_numero_' . $oldNumero,
+            'patrimonio_numero_' . $newNumero,
+        ]) as $cacheKey) {
+            Cache::forget($cacheKey);
+        }
 
 
 
