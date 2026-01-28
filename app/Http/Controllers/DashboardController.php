@@ -173,10 +173,6 @@ class DashboardController extends Controller
      */
     public function totalData(Request $request)
     {
-        if (!$this->canViewVerificadosIndicator(Auth::user())) {
-            return response()->json(['error' => 'nao autorizado'], 403);
-        }
-
         $query = DB::table('patr');
 
         $expr = "UPPER(COALESCE(NULLIF(TRIM(FLCONFERIDO), ''), 'N'))";

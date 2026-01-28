@@ -81,11 +81,9 @@
                     <button data-view="cadastros" class="view-btn px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-orange">
                       Cadastros
                     </button>
-                    @if(!empty($verificadosStats))
                     <button data-view="total" class="view-btn px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-orange">
                       Total
                     </button>
-                    @endif
                   </div>
                 </div>
 
