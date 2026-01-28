@@ -127,13 +127,13 @@ class DashboardController extends Controller
         // Prioridade: patr.UF (se preenchido) -> locais_projeto.UF -> tabfant.UF
         $ufExpr = "UPPER(TRIM(COALESCE(NULLIF(patr.UF,''), NULLIF(locais_projeto.UF,''), NULLIF(tabfant.UF,''))))";
 
-        $rows = DB::table('patr')
+        $rowsQuery = DB::table('patr')
             ->leftJoin('locais_projeto', 'locais_projeto.cdlocal', '=', 'patr.CDLOCAL')
             ->leftJoin('tabfant', 'tabfant.CDPROJETO', '=', 'patr.CDPROJETO')
             ->selectRaw("$ufExpr as uf, COUNT(*) as total")
             ->groupBy('uf')
-            ->orderBy('total', 'desc')
-            ->get();
+            ->orderBy('total', 'desc');
+        $rows = $rowsQuery->get();
 
         $labels = [];
         $values = [];
@@ -168,6 +168,36 @@ class DashboardController extends Controller
         ]);
     }
 
+    /**
+     * Retorna totais gerais (verificados x nao verificados) no periodo.
+     */
+    public function totalData(Request $request)
+    {
+        if (!$this->canViewVerificadosIndicator(Auth::user())) {
+            return response()->json(['error' => 'nao autorizado'], 403);
+        }
+
+        $query = DB::table('patr');
+
+        $expr = "UPPER(COALESCE(NULLIF(TRIM(FLCONFERIDO), ''), 'N'))";
+        $row = $query->selectRaw(
+            "SUM(CASE WHEN {$expr} = 'S' THEN 1 ELSE 0 END) as verificados,
+             SUM(CASE WHEN {$expr} <> 'S' THEN 1 ELSE 0 END) as nao_verificados"
+        )->first();
+
+        $verificados = (int) ($row->verificados ?? 0);
+        $naoVerificados = (int) ($row->nao_verificados ?? 0);
+
+        $labels = ['Verificados', 'Nao verificados'];
+        $values = [$verificados, $naoVerificados];
+
+        return response()->json([
+            'labels' => $labels,
+            'data' => $values,
+            'period' => 'all',
+        ]);
+    }
+
     private function canViewVerificadosIndicator($user): bool
     {
         if (!$user) {
@@ -186,6 +216,7 @@ class DashboardController extends Controller
         $login = strtolower((string) ($user->NMLOGIN ?? $user->NOMEUSER ?? ''));
         return $login !== '' && in_array($login, array_map('strtolower', $allowlist), true);
     }
+
 }
 
 

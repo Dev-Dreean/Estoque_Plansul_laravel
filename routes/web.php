@@ -156,6 +156,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('tela.access:1001');
     Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data')->middleware('tela.access:1001');
     Route::get('/dashboard/uf-data', [DashboardController::class, 'ufData'])->name('dashboard.uf-data')->middleware('tela.access:1001');
+    Route::get('/dashboard/total-data', [DashboardController::class, 'totalData'])->name('dashboard.total-data')->middleware('tela.access:1001');
 
     // Rotas do CRUD de Patrimônios e suas APIs (NUSEQTELA: 1000)
     Route::resource('patrimonios', PatrimonioController::class)->middleware(['tela.access:1000']);

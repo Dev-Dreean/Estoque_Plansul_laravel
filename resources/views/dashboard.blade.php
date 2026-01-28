@@ -70,32 +70,36 @@
             </div>
 
             <!-- Controles principais -->
-            <div class="mb-8 space-y-5">
-              <!-- Seletor de Visão -->
-              <div>
-                <label class="text-xs uppercase tracking-wide font-semibold text-gray-600 dark:text-gray-400 mb-2 block">Visualizar por</label>
-                <div class="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                  <button data-view="uf" class="view-btn px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 bg-plansul-orange text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-plansul-orange focus:ring-offset-2 dark:focus:ring-offset-gray-800">
-                    Estados
-                  </button>
-                  <button data-view="cadastros" class="view-btn px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-orange">
-                    Cadastros
-                  </button>
+            <div class="mb-8">
+              <div class="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <label class="text-xs uppercase tracking-wide font-semibold text-gray-600 dark:text-gray-400 mb-2 block">Visualizar por</label>
+                  <div class="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                    <button data-view="uf" class="view-btn px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 bg-plansul-orange text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-plansul-orange focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                      Estados
+                    </button>
+                    <button data-view="cadastros" class="view-btn px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-orange">
+                      Cadastros
+                    </button>
+                    @if(!empty($verificadosStats))
+                    <button data-view="total" class="view-btn px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-orange">
+                      Total
+                    </button>
+                    @endif
+                  </div>
                 </div>
-              </div>
 
-              <!-- Filtros de Período -->
-              <div id="periodWrap">
-                <label class="text-xs uppercase tracking-wide font-semibold text-gray-600 dark:text-gray-400 mb-3 block">Período</label>
-                <div class="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                  <button data-period="day" class="filter-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-800 border border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-blue focus:ring-offset-2 dark:focus:ring-offset-gray-800">Dia</button>
-                  <button data-period="week" class="filter-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-800 border border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-blue focus:ring-offset-2 dark:focus:ring-offset-gray-800">Semana</button>
-                  <button data-period="month" class="filter-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-800 border border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-blue focus:ring-offset-2 dark:focus:ring-offset-gray-800">Mês</button>
-                  <button data-period="year" class="filter-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-800 border border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-blue focus:ring-offset-2 dark:focus:ring-offset-gray-800">Ano</button>
+                <div id="periodWrap" class="hidden">
+                  <label class="text-xs uppercase tracking-wide font-semibold text-gray-600 dark:text-gray-400 mb-2 block">Período</label>
+                  <div class="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                    <button data-period="day" class="filter-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-800 border border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-blue focus:ring-offset-2 dark:focus:ring-offset-gray-800">Dia</button>
+                    <button data-period="week" class="filter-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-800 border border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-blue focus:ring-offset-2 dark:focus:ring-offset-gray-800">Semana</button>
+                    <button data-period="month" class="filter-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-800 border border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-blue focus:ring-offset-2 dark:focus:ring-offset-gray-800">Mês</button>
+                    <button data-period="year" class="filter-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-800 border border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-blue focus:ring-offset-2 dark:focus:ring-offset-gray-800">Ano</button>
+                  </div>
                 </div>
               </div>
             </div>
-
             <!-- Gráfico -->
             <div class="mb-6">
               <canvas id="cadastrosChart" class="max-h-96"
@@ -201,6 +205,25 @@
       };
 
       const getColorSet = (labels, highlightUf) => {
+        if (currentView === 'total') {
+          const bg = [];
+          const border = [];
+          labels.forEach(label => {
+            const upper = String(label || '').toUpperCase();
+            if (upper.includes('NAO VERIFICADOS') || upper.includes('NÃO VERIFICADOS')) {
+              bg.push('rgba(234, 179, 8, 0.76)');
+              border.push('rgba(234, 179, 8, 1)');
+            } else if (upper.includes('VERIFICADOS')) {
+              bg.push('rgba(16, 185, 129, 0.76)');
+              border.push('rgba(16, 185, 129, 1)');
+            } else {
+              bg.push('rgba(59, 130, 246, 0.76)');
+              border.push('rgba(59, 130, 246, 1)');
+            }
+          });
+          return { bg, border };
+        }
+
         const bg = [];
         const border = [];
         const normalized = (highlightUf || 'ALL').toUpperCase();
@@ -244,6 +267,27 @@
         }
       };
 
+      const getViewLabels = () => {
+        if (currentView === 'uf') {
+          return {
+            title: 'Lancamentos por Estado (UF)',
+            dataset: 'Lancamentos por UF',
+          };
+        }
+
+        if (currentView === 'total') {
+          return {
+            title: 'Totais (Verificados x Nao verificados)',
+            dataset: 'Verificados x Nao verificados',
+          };
+        }
+
+        return {
+          title: 'Cadastros',
+          dataset: 'Patrimonios Cadastrados',
+        };
+      };
+
       const updateCharts = (labels, data, labelText) => {
         currentLabels = labels;
         currentValues = data;
@@ -283,7 +327,7 @@
           ].join(' ');
           btn.addEventListener('click', () => {
             selectedUf = label === 'Todos' ? 'ALL' : label;
-            updateCharts(currentLabels, currentValues, currentView === 'uf' ? 'Lançamentos por UF' : 'Patrimônios Cadastrados');
+            updateCharts(currentLabels, currentValues, getViewLabels().dataset);
             renderUfButtons(labels);
           });
           return btn;
@@ -297,8 +341,8 @@
       };
 
       const applyViewUi = () => {
-        if (chartTitleEl) chartTitleEl.textContent = currentView === 'uf' ? 'Lançamentos por Estado (UF)' : 'Cadastros';
-        if (periodWrapEl) periodWrapEl.style.display = currentView === 'uf' ? 'none' : 'flex';
+        if (chartTitleEl) chartTitleEl.textContent = getViewLabels().title;
+        if (periodWrapEl) periodWrapEl.style.display = currentView === 'cadastros' ? 'block' : 'none';
         if (ufButtonsWrapEl) ufButtonsWrapEl.classList.toggle('hidden', currentView !== 'uf');
       };
 
@@ -320,6 +364,15 @@
         return { labels: json.labels || [], data: json.data || [] };
       };
 
+      const fetchTotal = async () => {
+        const res = await fetch(`/dashboard/total-data`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        if (!res.ok) throw new Error('Erro ao buscar totais');
+        const json = await res.json();
+        return { labels: json.labels || [], data: json.data || [] };
+      };
+
       const updateData = async () => {
         try {
           applyViewUi();
@@ -327,13 +380,18 @@
             selectedUf = 'ALL';
             const { labels, data } = await fetchUf();
             renderUfButtons(labels);
-            updateCharts(labels, data, 'Lançamentos por UF');
+            updateCharts(labels, data, getViewLabels().dataset);
             if (ufButtonsWrapEl && data.length === 0) {
               ufButtonsWrapEl.classList.add('hidden');
             }
+          } else if (currentView === 'total') {
+            selectedUf = 'ALL';
+            const { labels, data } = await fetchTotal();
+            updateCharts(labels, data, getViewLabels().dataset);
+            if (ufButtonsEl) ufButtonsEl.innerHTML = '';
           } else {
             const { labels, data } = await fetchCadastros(currentPeriod);
-            updateCharts(labels, data, 'Patrimônios Cadastrados');
+            updateCharts(labels, data, getViewLabels().dataset);
             if (ufButtonsEl) ufButtonsEl.innerHTML = '';
           }
 
@@ -367,9 +425,10 @@
         btn.addEventListener('click', () => {
           currentPeriod = btn.getAttribute('data-period') || 'week';
           setActive(periodButtons, btn, periodButtonStyle);
-          if (currentView === 'cadastros') updateData();
+          if (currentView !== 'uf') updateData();
         });
       });
+
 
       const barChart = new Chart(barCtx, {
         type: 'bar',
@@ -392,7 +451,7 @@
             if (label) {
               selectedUf = String(label);
               renderUfButtons(currentLabels);
-              updateCharts(currentLabels, currentValues, 'Lançamentos por UF');
+              updateCharts(currentLabels, currentValues, getViewLabels().dataset);
             }
           },
           scales: {
