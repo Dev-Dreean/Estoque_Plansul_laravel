@@ -50,7 +50,8 @@ class RelatorioController extends Controller
                 'projeto_busca' => 'nullable|string', // lista de códigos separados por vírgula
                 'oc_busca' => 'nullable|string',
                 'uf_busca' => 'nullable|string|size:2', // UF com 2 caracteres
-                'situacao_busca' => 'nullable|string',
+                'situacao_busca' => 'nullable|array', // múltiplas situações
+                'situacao_busca.*' => 'nullable|string',
                 'voltagem' => 'nullable|string|max:50',
                 'cdprojeto' => 'nullable|string',
                 'cdlocal' => 'nullable|string',
@@ -189,7 +190,8 @@ class RelatorioController extends Controller
             'conferido' => 'nullable|string|in:S,N,1,0',
             'oc_busca' => 'nullable|string',
             'uf_busca' => 'nullable|string|size:2',
-            'situacao_busca' => 'nullable|string',
+            'situacao_busca' => 'nullable|array', // múltiplas situações
+            'situacao_busca.*' => 'nullable|string',
             'voltagem' => 'nullable|string|max:50',
             'numero_busca' => 'nullable|integer',
             'descricao_busca' => 'nullable|string',
@@ -324,9 +326,15 @@ class RelatorioController extends Controller
         }
     }
 
-    private function applySituacaoFilter($query, ?string $raw): void
+    private function applySituacaoFilter($query, $raw): void
     {
-        $situacoes = $this->normalizeSituacoes($raw);
+        // Aceita string (compatibilidade) ou array (novo)
+        if (is_array($raw)) {
+            $situacoes = array_filter(array_map('trim', $raw));
+        } else {
+            $situacoes = $this->normalizeSituacoes($raw);
+        }
+        
         if (!$situacoes) {
             return;
         }

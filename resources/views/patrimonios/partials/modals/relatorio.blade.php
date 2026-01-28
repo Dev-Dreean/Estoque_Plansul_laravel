@@ -91,22 +91,6 @@
                     </select>
                   </div>
                   <div>
-                    <label for="situacao_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Situacao</label>
-                    <select id="situacao_busca" name="situacao_busca" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
-                      <option value="">Todas</option>
-                      <option value="A DISPOSICAO">A disposicao</option>
-                      <option value="BAIXA">Baixa</option>
-                      <option value="MANUTENCAO">Manutencao</option>
-                      <option value="CONSERTO">Conserto</option>
-                      <option value="EM USO">Em uso</option>
-                      <option value="EMPRESTADO">Emprestado</option>
-                      <option value="DANIFICADO">Danificado</option>
-                      <option value="INATIVO">Inativo</option>
-                      <option value="DESAPARECIDO">Desaparecido</option>
-                    </select>
-                    <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.situacao_busca" x-text="relatorioErrors.situacao_busca"></p>
-                  </div>
-                  <div>
                     <label for="relatorio_voltagem" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Voltagem</label>
                     <input type="text" id="relatorio_voltagem" name="voltagem" placeholder="Ex: 110V, 220V" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
                   </div>
@@ -154,6 +138,36 @@
                   </div>
                 </div>
               </div>
+              
+              <!-- Campo de Situação (checkboxes) quando tipo = situacao -->
+              <div x-show="tipoRelatorio === 'situacao'" class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-lg border-2 border-blue-200 dark:border-blue-700" style="display:none;">
+                <p class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-3">Selecione as situações desejadas:</p>
+                <div class="flex flex-wrap gap-3">
+                  <label class="flex items-center space-x-2 cursor-pointer group">
+                    <input type="checkbox" name="situacao_busca[]" value="EM USO" checked
+                      class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600">
+                    <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Em uso</span>
+                  </label>
+                  <label class="flex items-center space-x-2 cursor-pointer group">
+                    <input type="checkbox" name="situacao_busca[]" value="A DISPOSICAO"
+                      class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600">
+                    <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">À disposição</span>
+                  </label>
+                  <label class="flex items-center space-x-2 cursor-pointer group">
+                    <input type="checkbox" name="situacao_busca[]" value="CONSERTO"
+                      class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600">
+                    <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Conserto</span>
+                  </label>
+                  <label class="flex items-center space-x-2 cursor-pointer group">
+                    <input type="checkbox" name="situacao_busca[]" value="BAIXA"
+                      class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600">
+                    <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Baixa</span>
+                  </label>
+                </div>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-3">✓ Marque uma ou mais situações. Deixe todas desmarcadas para incluir todas.</p>
+                <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.situacao_busca" x-text="relatorioErrors.situacao_busca"></p>
+              </div>
+
               <hr class="dark:border-gray-600 my-4">
               <div x-show="tipoRelatorio === 'aquisicao'"
                 class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">

@@ -959,7 +959,8 @@ class PatrimonioController extends Controller
         // Carregar relaÃ§Ãµes para exibir dados corretos no formulário
         // FONTE DE VERDADE: Carregar projeto diretamente via CDPROJETO
 
-        $patrimonio->load(['local', 'projeto', 'funcionario']);
+        $patrimonio->load(['local.projeto', 'projeto', 'funcionario']);
+        $this->attachLocalCorreto($patrimonio);
 
 
 
@@ -1069,7 +1070,8 @@ class PatrimonioController extends Controller
                 $errors = new \Illuminate\Support\MessageBag($e->errors());
 
                 // FONTE DE VERDADE: Carregar projeto diretamente via CDPROJETO
-                $patrimonio->load(['local', 'projeto', 'funcionario']);
+                $patrimonio->load(['local.projeto', 'projeto', 'funcionario']);
+                $this->attachLocalCorreto($patrimonio);
                 $ultimaVerificacao = null;
                 try {
                     $ultimaVerificacao = HistoricoMovimentacao::query()
@@ -1893,11 +1895,8 @@ class PatrimonioController extends Controller
 
 
     public function buscarPorNumero($numero): JsonResponse
-
     {
-
         try {
-
             // FONTE DE VERDADE: Carregar projeto diretamente via CDPROJETO
             $cacheKey = 'patrimonio_numero_' . intval($numero);
             $ttl = 300; // 5 minutos
@@ -1905,6 +1904,7 @@ class PatrimonioController extends Controller
             if (!$patrimonio) {
                 $patrimonio = Patrimonio::with(['local.projeto', 'projeto', 'funcionario'])->where('NUPATRIMONIO', $numero)->first();
                 if ($patrimonio) {
+                    $this->attachLocalCorreto($patrimonio);
                     Cache::put($cacheKey, $patrimonio, $ttl);
                     Log::info('📡 [PATRIMONIO] Cache: Buscado #' . $numero);
                 } else {
@@ -1914,45 +1914,24 @@ class PatrimonioController extends Controller
                 Log::info('⚡ [PATRIMONIO] Cache: Hit #' . $numero);
             }
 
-
-
-
-
-            //  VERIFICAR AUTORIZAÃÃO: O usuÃ¡rio pode ver este Patrimônio?
-
-            $user = Auth::user();
-
-            if (!$user) {
-
-                // não autenticado
-
-                return response()->json(['error' => 'não autorizado'], 403);
-
+            if ($patrimonio) {
+                $this->attachLocalCorreto($patrimonio);
             }
 
-
+            //  VERIFICAR AUTORIZAÃÃO: O usuÃ¡rio pode ver este Patrimônio?
+            $user = Auth::user();
+            if (!$user) {
+                // não autenticado
+                return response()->json(['error' => 'não autorizado'], 403);
+            }
 
             // TODOS os usuários autenticados podem ver patrimônio (sem restrição de supervisão)
-
             return response()->json($patrimonio);
-
         } catch (\Throwable $e) {
-
             Log::error('Erro ao buscar Patrimônio por número: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-
             return response()->json(['error' => 'Erro ao buscar Patrimônio'], 500);
-
         }
-
     }
-
-
-
-    /**
-
-     * Retorna dados de verificação de um patrimônio
-
-     */
 
     public function getVerificacao($numero): JsonResponse
 
@@ -2023,11 +2002,8 @@ class PatrimonioController extends Controller
      */
 
     public function buscarPorId($id): JsonResponse
-
     {
-
         try {
-
             // FONTE DE VERDADE: Carregar projeto diretamente via CDPROJETO, não via local
 
             $cacheKey = 'patrimonio_id_' . intval($id);
@@ -2036,47 +2012,33 @@ class PatrimonioController extends Controller
             if (!$patrimonio) {
                 $patrimonio = Patrimonio::with(['local.projeto', 'projeto', 'funcionario'])->where('NUSEQPATR', $id)->first();
                 if ($patrimonio) {
+                    $this->attachLocalCorreto($patrimonio);
                     Cache::put($cacheKey, $patrimonio, $ttl);
                 } else {
                     return response()->json(['success' => false, 'error' => 'Patrimônio não encontrado'], 404);
                 }
             }
 
-            
+            if ($patrimonio) {
+                $this->attachLocalCorreto($patrimonio);
+            }
 
             if (!$patrimonio) {
-
                 return response()->json(['success' => false, 'error' => 'Patrimônio não encontrado'], 404);
-
             }
-
-
 
             // TODOS os usuários autenticados podem ver patrimônio (sem restrição de supervisão)
-
             $user = Auth::user();
-
             if (!$user) {
-
                 return response()->json(['success' => false, 'error' => 'Não autenticado'], 403);
-
             }
 
-
-
             return response()->json(['success' => true, 'patrimonio' => $patrimonio]);
-
         } catch (\Throwable $e) {
-
             Log::error('🔴 [PATRIMONIOS] Erro buscarPorId: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-
             return response()->json(['success' => false, 'error' => 'Erro ao buscar patrimônio'], 500);
-
         }
-
     }
-
-
 
     public function bulkSituacao(Request $request): JsonResponse
 
@@ -6708,6 +6670,33 @@ class PatrimonioController extends Controller
 
         return;
 
+    }
+
+    /**
+     * Resolve o local correto considerando CDLOCAL e CDPROJETO (evita ambiguidade por cdlocal repetido).
+     */
+    private function attachLocalCorreto(Patrimonio $patrimonio): void
+    {
+        $cdlocal = $patrimonio->CDLOCAL;
+        if ($cdlocal === null || $cdlocal === '') {
+            return;
+        }
+
+        $query = LocalProjeto::with('projeto')->where('cdlocal', $cdlocal);
+        if (!empty($patrimonio->CDPROJETO)) {
+            $query->whereHas('projeto', function ($q) use ($patrimonio) {
+                $q->where('CDPROJETO', $patrimonio->CDPROJETO);
+            });
+        }
+
+        $local = $query->first();
+        if (!$local) {
+            $local = LocalProjeto::with('projeto')->where('cdlocal', $cdlocal)->first();
+        }
+
+        if ($local) {
+            $patrimonio->setRelation('local', $local);
+        }
     }
 
 
