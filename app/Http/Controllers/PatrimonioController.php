@@ -5502,34 +5502,29 @@ class PatrimonioController extends Controller
 
 
 
-        // 5) Sincroniza??o projeto-local: sempre alinhar projeto e gravar o cdlocal (n?mero do local)
+        // 5) Sincroniza??o projeto-local: alinhar projeto e gravar o cdlocal (n?mero do local)
+        $shouldValidateLocal = true;
+        if ($patrimonio) {
+            $incomingCdProjeto = $data['CDPROJETO'] ?? $patrimonio->CDPROJETO;
+            $incomingCdLocal = $data['CDLOCAL'] ?? $patrimonio->CDLOCAL;
+            $shouldValidateLocal =
+                (string) $incomingCdLocal !== (string) $patrimonio->CDLOCAL
+                || (string) $incomingCdProjeto !== (string) $patrimonio->CDPROJETO;
+        }
 
-        if (!empty($data['CDLOCAL'])) {
-
+        if ($shouldValidateLocal && !empty($data['CDLOCAL'])) {
             $localProjeto = $this->validateLocalBelongsToProjeto(
-
                 $data['CDPROJETO'] ?? null,
-
                 $data['CDLOCAL'],
-
                 'atualiza??o de patrim?nio'
-
             );
 
-
-
             if ($localProjeto) {
-
                 $data['CDLOCAL'] = (int) $localProjeto->cdlocal;
-
                 if ($localProjeto->projeto) {
-
                     $data['CDPROJETO'] = (int) $localProjeto->projeto->CDPROJETO;
-
                 }
-
             }
-
         }
 
 
@@ -6801,24 +6796,28 @@ class PatrimonioController extends Controller
 
 
 
-        // Tentar resolver primeiro como ID (PK) e depois como c?digo (cdlocal)
+        // Preferir busca por c?digo (cdlocal) dentro do projeto quando CDPROJETO informado.
+        // Isso evita confundir cdlocal com o ID (PK) de outro projeto.
+        $local = null;
+        if ($projeto) {
+            $local = LocalProjeto::with('projeto')
+                ->where('cdlocal', $cdlocal)
+                ->where('tabfant_id', $projeto->id)
+                ->first();
+        }
 
-        $local = LocalProjeto::with('projeto')->find($cdlocal);
-
-
-
+        // Fallback: tentar como ID (PK)
         if (!$local) {
+            $local = LocalProjeto::with('projeto')->find($cdlocal);
+        }
 
+        // Fallback final: tentar como cdlocal (com ou sem projeto)
+        if (!$local) {
             $query = LocalProjeto::with('projeto')->where('cdlocal', $cdlocal);
-
             if ($projeto) {
-
                 $query->where('tabfant_id', $projeto->id);
-
             }
-
             $local = $query->first();
-
         }
 
 

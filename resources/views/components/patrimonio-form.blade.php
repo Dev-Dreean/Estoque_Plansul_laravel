@@ -882,6 +882,7 @@
         config.old = {};
       }
     }
+    const initialLocalInfo = config.patrimonio?.local || null;
     return {
       // == DADOS DO FORMULÁRIO ==
       formData: {
@@ -960,6 +961,7 @@
       mostrarDropdownBusca: false, // Controla visibilidade do dropdown de busca
       resultadosBusca: [], // Resultados brutos da busca (lupa ou digitação)
       resultadosBuscaGrouped: [], // Resultados agrupados por cdlocal
+      initialLocalInfo,
 
       // Dropdown de Códigos Locais (Novo)
       codigosLocaisFiltrados: [],
@@ -1201,14 +1203,16 @@
               // Primeiro tentar usar o objeto 'local' que vem do eager loading
               if (data.local && data.local.id) {
                 const local = data.local;
-                this.codigoLocalDigitado = local.CDLOCAL || local.cdlocal || '';
+                const cdlocalOriginal = data.CDLOCAL || local.cdlocal || local.CDLOCAL || '';
+                const cdlocalExibicao = isEdicao ? cdlocalOriginal : (local.CDLOCAL || local.cdlocal || cdlocalOriginal);
+                this.codigoLocalDigitado = String(cdlocalExibicao || '');
                 this.nomeLocalBusca = local.NOMELOCAL || local.LOCAL || local.delocal || '';
                 this.localNome = this.nomeLocalBusca;
                 this.localSelecionadoId = local.id;
                 this.locaisEncontrados = [local];
                 // Em edição, manter CDLOCAL original (cdlocal) para não alterar o projeto/local ao salvar
-                const cdlocalOriginal = data.CDLOCAL || local.cdlocal || local.CDLOCAL;
                 this.formData.CDLOCAL = isEdicao ? String(cdlocalOriginal) : String(local.id);
+                this.codigoLocalSelecionado = String(cdlocalOriginal || local.cdlocal || '');
                 // Opcional: manter dropdown alinhado ao projeto
                 this.codigosLocaisFiltrados = [local];
 
@@ -1225,15 +1229,18 @@
                   const localResp = await fetch(`/api/locais/buscar?termo=&cdprojeto=${encodeURIComponent(this.formData.CDPROJETO || '')}`, { credentials: 'same-origin' });
                   if (localResp.ok) {
                     const todosLocais = await localResp.json();
-                    const local = todosLocais.find(l => String(l.id) === String(data.CDLOCAL));
+                    const local = todosLocais.find(l => String(l.id) === String(data.CDLOCAL))
+                      || todosLocais.find(l => String(l.cdlocal) === String(data.CDLOCAL));
 
                     if (local) {
-                      this.codigoLocalDigitado = local.cdlocal;
+                      const cdlocalOriginal = data.CDLOCAL || local.cdlocal || local.CDLOCAL || '';
+                      const cdlocalExibicao = isEdicao ? cdlocalOriginal : (local.cdlocal || cdlocalOriginal);
+                      this.codigoLocalDigitado = String(cdlocalExibicao || '');
                       this.nomeLocalBusca = local.LOCAL || local.delocal || '';
                       this.localNome = this.nomeLocalBusca;
                       this.localSelecionadoId = local.id;
-                      const cdlocalOriginal = data.CDLOCAL || local.cdlocal || local.CDLOCAL;
                       this.formData.CDLOCAL = isEdicao ? String(cdlocalOriginal) : String(local.id);
+                      this.codigoLocalSelecionado = String(cdlocalOriginal || local.cdlocal || '');
                       this.locaisEncontrados = [local];
                       this.codigosLocaisFiltrados = [local];
 
@@ -3773,6 +3780,20 @@
 
         // Se é modo EDIÇÃO e há patrimônio carregado
         if (this.isEditMode()) {
+          // Pré-preencher nome/código do local a partir do payload inicial (evita fallback incorreto)
+          if (this.initialLocalInfo && !this.nomeLocalBusca) {
+            const cdlocalInit = String(
+              this.formData.CDLOCAL ||
+              this.initialLocalInfo?.cdlocal ||
+              this.initialLocalInfo?.CDLOCAL ||
+              ''
+            );
+            const nomeInit = this.initialLocalInfo?.LOCAL || this.initialLocalInfo?.delocal || '';
+            this.codigoLocalDigitado = cdlocalInit;
+            this.codigoLocalSelecionado = cdlocalInit;
+            this.nomeLocalBusca = nomeInit;
+            this.localNome = nomeInit;
+          }
           await this.carregarDadosEdicao();
 
           // Após carregar o patrimônio, garantir que a lista de locais do projeto seja carregada em segundo plano
@@ -3877,13 +3898,15 @@
             try {
               const buscarLocalFallback = async () => {
                 try {
-                  const resp = await fetch(`/api/locais/${encodeURIComponent(this.formData.CDLOCAL)}`, {
+                  const cdProjetoAtual = String(this.formData.CDPROJETO || '').trim();
+                  const query = cdProjetoAtual ? `?cdprojeto=${encodeURIComponent(cdProjetoAtual)}` : '';
+                  const resp = await fetch(`/api/locais/${encodeURIComponent(this.formData.CDLOCAL)}${query}`, {
                     credentials: 'same-origin',
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                   });
                   if (resp.ok) {
                     const localFallback = await resp.json();
-                    this.preencherDadosLocal(localFallback, { preservarProjeto: true, preservarCdlocal: true });
+                    this.preencherDadosLocal(localFallback, { preservarProjeto: true, preservarCdlocal: true, preservarCodigoDigitado: true });
                     console.log('ℹ️  [CARREGA EDIÇÃO] Local carregado via fallback (sem validar projeto).');
                     return true;
                   }
@@ -3923,12 +3946,19 @@
                   }
 
                   if (local) {
-                    this.preencherDadosLocal(local, { preservarProjeto: true, preservarCdlocal: true });
+                    if (this.isEditMode() && this.formData.CDLOCAL) {
+                      const cdlocalAtual = String(this.formData.CDLOCAL);
+                      this.codigoLocalDigitado = cdlocalAtual;
+                      this.codigoLocalSelecionado = cdlocalAtual;
+                    }
+                    this.preencherDadosLocal(local, { preservarProjeto: true, preservarCdlocal: true, preservarCodigoDigitado: true });
                     // Dropdown deve conter SOMENTE os locais do projeto
                     this.codigosLocaisFiltrados = locaisDoProjeto;
                   } else {
-                    console.warn(`?? [CARREGA EDIÇÃO] Local ${this.formData.CDLOCAL} não pertence ao projeto ${this.formData.CDPROJETO}; mantendo seleção e usando fallback.`);
-                    await buscarLocalFallback();
+                    console.warn(`?? [CARREGA EDIÇÃO] Local ${this.formData.CDLOCAL} não pertence ao projeto ${this.formData.CDPROJETO}; mantendo seleção.`);
+                    if (!this.nomeLocalBusca && !this.codigoLocalDigitado) {
+                      await buscarLocalFallback();
+                    }
                   }
                 }
               }
@@ -4002,10 +4032,13 @@
         if (!local) return;
         const preservarProjeto = Boolean(options.preservarProjeto);
         const preservarCdlocal = Boolean(options.preservarCdlocal);
+        const preservarCodigoDigitado = Boolean(options.preservarCodigoDigitado);
 
         // Preencher o novo sistema de dropdown de Local
-        this.codigoLocalDigitado = String(local.cdlocal);
-        this.codigoLocalSelecionado = String(local.cdlocal);
+        if (!preservarCodigoDigitado) {
+          this.codigoLocalDigitado = String(local.cdlocal);
+          this.codigoLocalSelecionado = String(local.cdlocal);
+        }
         this.nomeLocalBusca = local.LOCAL || local.delocal || '';
         this.nomeLocal = this.nomeLocalBusca;
         this.localNome = this.nomeLocalBusca;

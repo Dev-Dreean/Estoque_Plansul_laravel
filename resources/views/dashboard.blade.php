@@ -20,7 +20,7 @@
                 {{ number_format($verificadosStats['total'] ?? 0, 0, ',', '.') }}
               </p>
               <div class="mt-3 h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                <div class="h-2 rounded-full bg-emerald-500" style="width: {{ (int) ($verificadosStats['percent'] ?? 0) }}%"></div>
+                <div id="progressBar" class="h-2 rounded-full bg-emerald-500" data-percent="{{ (int) ($verificadosStats['percent'] ?? 0) }}"></div>
               </div>
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ (int) ($verificadosStats['percent'] ?? 0) }}% conferidos</p>
             </div>
@@ -125,6 +125,13 @@
 
   @push('scripts')
   <script>
+    // Configurar barra de progresso
+    const progressBar = document.getElementById('progressBar');
+    if (progressBar) {
+      const percent = progressBar.getAttribute('data-percent') || 0;
+      progressBar.style.width = percent + '%';
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       const barCanvas = document.getElementById('cadastrosChart');
       if (!barCanvas) return;
