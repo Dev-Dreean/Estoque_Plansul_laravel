@@ -37,6 +37,8 @@ class RelatorioController extends Controller
     public function gerar(Request $request)
     {
         try {
+            $this->normalizeSituacaoInput($request);
+
             if (!$request->filled('tipo_relatorio')) {
                 $request->merge(['tipo_relatorio' => 'numero']);
             }
@@ -174,6 +176,8 @@ class RelatorioController extends Controller
 
     private function getQueryFromRequest(Request $request)
     {
+        $this->normalizeSituacaoInput($request);
+
         if (!$request->filled('tipo_relatorio')) {
             $request->merge(['tipo_relatorio' => 'numero']);
         }
@@ -364,6 +368,26 @@ class RelatorioController extends Controller
             ->unique()
             ->values()
             ->all();
+    }
+
+    private function normalizeSituacaoInput(Request $request): void
+    {
+        if (!$request->has('situacao_busca')) {
+            return;
+        }
+
+        $value = $request->input('situacao_busca');
+        if (is_array($value)) {
+            return;
+        }
+
+        if ($value === null || $value === '') {
+            $request->merge(['situacao_busca' => []]);
+            return;
+        }
+
+        $list = array_filter(array_map('trim', explode(',', (string) $value)));
+        $request->merge(['situacao_busca' => $list]);
     }
 
     public function exportarExcel(Request $request)
@@ -629,5 +653,4 @@ class RelatorioController extends Controller
         return response()->download($tempPath)->deleteFileAfterSend(true);
     }
 }
-
 
