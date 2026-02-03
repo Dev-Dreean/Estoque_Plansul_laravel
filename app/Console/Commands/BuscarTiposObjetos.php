@@ -16,10 +16,10 @@ class BuscarTiposObjetos extends Command
         
         $tipos = DB::table('objetopatr')
             ->whereRaw("DEOBJETO LIKE '%GABINETE%' OR DEOBJETO LIKE '%CPU%' OR DEOBJETO LIKE '%ESCADA%' OR DEOBJETO LIKE '%APARADOR%' OR DEOBJETO LIKE '%NOTEBOOK%'")
-            ->get(['NUSEQOBJ', 'DEOBJETO']);
+            ->get(['NUSEQOBJETO', 'DEOBJETO']);
 
         foreach ($tipos as $tipo) {
-            $this->line($tipo->NUSEQOBJ . " | " . trim($tipo->DEOBJETO));
+            $this->line($tipo->NUSEQOBJETO . " | " . trim($tipo->DEOBJETO));
         }
 
         $this->info("\n=== BEATRIZ.SC ===\n");
