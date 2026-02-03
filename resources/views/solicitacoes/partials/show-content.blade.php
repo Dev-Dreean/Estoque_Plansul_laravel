@@ -644,11 +644,16 @@
                     <!-- 1. Stepper Visual Simplificado -->
                     @if(!$isCancelado)
                         <div class="max-w-4xl mx-auto mb-10 px-4">
+                            @php
+                                $maxStepIndex = max(1, count($steps) - 1);
+                                $progressClass = $currentStepIndex <= 0
+                                    ? 'w-0'
+                                    : ($currentStepIndex >= $maxStepIndex ? 'w-full' : 'w-1/2');
+                            @endphp
                             <div class="relative flex items-center justify-between w-full">
                                 <!-- Line Line Behind -->
                                 <div class="absolute top-1/2 left-0 w-full h-0.5 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 z-0"></div>
-                                <div class="absolute top-1/2 left-0 h-0.5 bg-indigo-500 transition-all duration-1000 -translate-y-1/2 z-0" 
-                                     style="width: {{ ($currentStepIndex / (count($steps) - 1)) * 100 }}%"></div>
+                                <div class="absolute top-1/2 left-0 h-0.5 bg-indigo-500 transition-all duration-1000 -translate-y-1/2 z-0 {{ $progressClass }}"></div>
 
                                 @foreach($steps as $index => $step)
                                     @php
