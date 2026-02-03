@@ -1,4 +1,4 @@
-@php
+﻿@php
   $isModal = $isModal ?? false;
   $ultimaVerificacao = $ultimaVerificacao ?? null;
 @endphp
@@ -57,7 +57,7 @@
     'DENOMELOCAL' => $nomeLocalOriginal,
     'CDMATRFUNCIONARIO' => $patrimonio->CDMATRFUNCIONARIO ?? '',
     'NOMEFUNCIONARIOORIGINAL' => $nomeFuncionarioOriginal,
-    'SITUACAO' => $patrimonio->SITUACAO ?? '',
+    'SITUACAO' => $patrimonio->SituaÃ§Ã£o ?? '',
     'FLCONFERIDO' => $patrimonio->FLCONFERIDO ?? '',
     'MARCA' => $patrimonio->MARCA ?? '',
     'MODELO' => $patrimonio->MODELO ?? '',

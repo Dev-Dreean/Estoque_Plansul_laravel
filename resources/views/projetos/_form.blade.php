@@ -1,4 +1,4 @@
-{{-- Este código deve estar no arquivo resources/views/projetos/_form.blade.php --}}
+﻿{{-- Este código deve estar no arquivo resources/views/projetos/_form.blade.php --}}
 
 @if ($errors->any())
 <div class="mb-4 text-sm text-red-600 dark:text-red-400">
@@ -74,7 +74,7 @@
             carregandoBusca: false,
             mensagemBusca: '',
             async buscarPorCodigo(e) {
-                const codigo = e.target.value.trim();
+                const CÃ³digo = e.target.value.trim();
                 const duplicando = document.getElementById('cdlocal')?.readOnly;
                 if (!codigo || duplicando) { // não busca em modo duplicação
                     return;

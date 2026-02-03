@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
   <x-patrimonio-nav-tabs />
 
   @php
@@ -277,7 +277,7 @@
                       <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">2</span>
                       <p class="text-sm font-semibold">Preencha o que quiser</p>
                     </div>
-                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Coloque o <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">numero do patrimonio</span> e altere so o necessario. Em <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Conferido</span> use <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">S</span> ou <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">N</span>.</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Coloque o <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">NÃºmero do patrimonio</span> e altere so o necessario. Em <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Conferido</span> use <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">S</span> ou <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">N</span>.</p>
                   </div>
                   <div class="rounded-lg border border-emerald-200 dark:border-emerald-700 bg-transparent p-3">
                     <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
@@ -379,7 +379,7 @@
                       <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">2</span>
                       <p class="text-sm font-semibold">Preencha os numeros</p>
                     </div>
-                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Coloque um <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">numero de patrimonio</span> por linha.</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Coloque um <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">NÃºmero de patrimonio</span> por linha.</p>
                   </div>
                   <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-3">
                     <div class="flex items-center gap-2 text-orange-600 dark:text-orange-300">
@@ -967,7 +967,7 @@
 
           if (!situacao) return;
 
-          postJson(bulkEndpoint, { ids, situacao })
+          postJson(bulkEndpoint, { ids, SituaÃ§Ã£o })
             .then(() => {
               if (pendingConferido === 'S') {
                 return postJson(bulkVerifyEndpoint, { ids, conferido: pendingConferido });
@@ -998,7 +998,7 @@
         };
 
                 const openConfirmModal = (situacao) => {
-          pendingSituacao = situacao || null;
+          pendingSituacao = SituaÃ§Ã£o || null;
           const hasSituacao = !!pendingSituacao;
           const hasConferido = pendingConferido !== null;
           if (!bulkConfirmModal || !bulkConfirmList || !bulkConfirmNew) {
@@ -1090,13 +1090,13 @@
         };
 
                 const applyBulkSituacao = () => {
-          const situacao = bulkSelect?.value || '';
+          const SituaÃ§Ã£o = bulkSelect?.value || '';
           if (selectedIds.size === 0) {
             alert('Selecione ao menos um patrimonio.');
             return;
           }
           if (!situacao && !pendingConferido) {
-            alert('Escolha a situacao ou verificacao para aplicar.');
+            alert('Escolha a SituaÃ§Ã£o ou verificacao para aplicar.');
             return;
           }
           openConfirmModal(situacao);
@@ -1367,7 +1367,7 @@
             closeConfirmModal();
             runBulkDelete();
           } else {
-            const situacao = pendingSituacao;
+            const SituaÃ§Ã£o = pendingSituacao;
             closeConfirmModal();
             runBulkUpdate(situacao);
           }
@@ -1877,7 +1877,7 @@
                     this.relatorioGlobalError = data.message || 'Erros de validacao.';
                     throw new Error('validation');
                   }
-                  this.relatorioGlobalError = data.message || 'Falha ao gerar relatorio.';
+                  this.relatorioGlobalError = data.message || 'Falha ao gerar relatÃ³rio.';
                   throw new Error('erro');
                 }
                 return data;
@@ -1893,7 +1893,7 @@
               })
               .catch((err) => {
                 if (err.message !== 'validation') {
-                  console.error('Erro ao gerar relatorio', err);
+                  console.error('Erro ao gerar relatÃ³rio', err);
                 }
                 this.reportLoading = false;
               })
@@ -1973,16 +1973,16 @@
           },
           getFilterLabel(tipo) {
             const labels = {
-              numero: 'Relatorio por Numero de Patrimonio',
-              descricao: 'Relatorio por Descricao',
-              aquisicao: 'Relatorio por Periodo de Aquisicao',
-              cadastro: 'Relatorio por Periodo de Cadastro',
-              projeto: 'Relatorio por Projeto',
-              oc: 'Relatorio por OC',
-              uf: 'Relatorio por UF',
-              situacao: 'Relatorio por Situacao',
+              numero: 'RelatÃ³rio por NÃºmero de Patrimonio',
+              descricao: 'RelatÃ³rio por DescriÃ§Ã£o',
+              aquisicao: 'RelatÃ³rio por Periodo de Aquisicao',
+              cadastro: 'RelatÃ³rio por PerÃ­odo de Cadastro',
+              projeto: 'RelatÃ³rio por Projeto',
+              oc: 'RelatÃ³rio por OC',
+              uf: 'RelatÃ³rio por UF',
+              situacao: 'RelatÃ³rio por Situacao',
             };
-            return labels[tipo || this.tipoRelatorio] || 'Relatorio';
+            return labels[tipo || this.tipoRelatorio] || 'RelatÃ³rio';
           },
           getColumnColor(tipo) {
             const colors = {
@@ -2009,7 +2009,7 @@
             const direto = patrimonio.CDPROJETO || null;
             const viaProjeto = patrimonio.projeto ? (patrimonio.projeto.CDPROJETO || null) : null;
             const viaLocal = patrimonio.local && patrimonio.local.projeto ? (patrimonio.local.projeto.CDPROJETO || null) : null;
-            const codigo = direto || viaProjeto || viaLocal;
+            const CÃ³digo = direto || viaProjeto || viaLocal;
             const nomeProjeto = patrimonio.projeto
               ? (patrimonio.projeto.NOMEPROJETO || patrimonio.projeto.NMPROJETO || null)
               : (patrimonio.local && patrimonio.local.projeto
@@ -2017,11 +2017,11 @@
                 : null);
             if (!codigo && !nomeProjeto) return 'N/A';
             if (codigo && nomeProjeto) return `${codigo} - ${nomeProjeto}`;
-            return codigo || nomeProjeto;
+            return CÃ³digo || nomeProjeto;
           },
           openDelete(id, name) {
             this.deleteItemId = id;
-            this.deleteItemName = name || 'este patrimonio';
+            this.deleteItemName = name || 'este patrimÃ´nio';
             this.deleteModalOpen = true;
           },
           confirmDelete() {

@@ -505,8 +505,8 @@
       <input x-model="formData.MODELO" id="MODELO" name="MODELO" type="text" tabindex="14" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
     <div>
-      <label for="SITUACAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Situação do Patrimônio *</label>
-      <select id="SITUACAO" name="SITUACAO" x-model="formData.SITUACAO" required tabindex="15"
+      <label for="SituaÃ§Ã£o" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Situação do Patrimônio *</label>
+      <select id="SituaÃ§Ã£o" name="SituaÃ§Ã£o" x-model="formData.SITUACAO" required tabindex="15"
         class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500">
         <option value="EM USO">EM USO</option>
         <option value="CONSERTO">CONSERTO</option>
@@ -2148,7 +2148,7 @@
           // Agrupar por CDLOCAL para detectar múltiplos locais com mesmo código
           const grupos = {};
           todosLocais.forEach(local => {
-            const codigo = String(local.cdlocal);
+            const CÃ³digo = String(local.cdlocal);
             if (!grupos[codigo]) grupos[codigo] = [];
             grupos[codigo].push(local);
           });
@@ -2468,7 +2468,7 @@
       // ?? NOVAS FUNÇÕES - SISTEMA DROPDOWN SEMPRE
       // ? FUNÇÃO SIMPLES: Buscar local por código
       async buscarLocalPorCodigo() {
-        const codigo = String(this.codigoLocalDigitado || '').trim();
+        const CÃ³digo = String(this.codigoLocalDigitado || '').trim();
 
         // Limpar se vazio
         if (codigo === '') {
@@ -2595,7 +2595,7 @@
 
         // Calcular score para cada item
         const itemsComScore = items.map(item => {
-          const codigo = String(item[fieldCodigo] || '').toLowerCase().trim();
+          const CÃ³digo = String(item[fieldCodigo] || '').toLowerCase().trim();
           const nome = String(item[fieldNome] || '').toLowerCase().trim();
 
           let score = 1000; // Default alto (pior)
@@ -2691,7 +2691,7 @@
       async salvarNovoBem() {
         const tipoCodigo = String(this.novoBem.NUSEQTIPOPATR || '').trim();
         const tipoNome = String(this.novoBem.DETIPOPATR || '').trim();
-        const descricao = String(this.novoBem.DEOBJETO || '').trim();
+        const DescriÃ§Ã£o = String(this.novoBem.DEOBJETO || '').trim();
 
         if (!tipoCodigo) {
           this.erroCriacaoBem = 'Informe o c?digo do tipo.';
@@ -3287,7 +3287,7 @@
       // FUNÇÃO ANTIGA (COMPLEXA) - MANTIDA PARA NÃO QUEBRAR
       // ========================================
       async buscarLocaisPorCodigoDigitado() {
-        const codigo = String(this.codigoLocalDigitado || '').trim();
+        const CÃ³digo = String(this.codigoLocalDigitado || '').trim();
 
         console.log('? [DEBUG buscarLocais] -------------------------------');
         console.log('?? [DEBUG buscarLocais] Função chamada');
@@ -3986,7 +3986,7 @@
             try {
               const codResp = await fetch(`/api/codigos/buscar/${this.formData.NUSEQOBJ}`);
               if (codResp.ok) {
-                const codigo = await codResp.json();
+                const CÃ³digo = await codResp.json();
                 if (codigo && codigo.descricao) {
                   this.descricaoSearch = codigo.descricao;
                   this.formData.DEOBJETO = codigo.descricao;

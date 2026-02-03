@@ -1,4 +1,4 @@
-@php
+﻿@php
     $containerClass = $isModal ? 'bg-transparent' : 'py-8 px-4 sm:px-6';
     $innerClass = $isModal ? 'w-full' : 'max-w-3xl mx-auto';
     $cardClass = $isModal ? 'w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm' : 'bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden';
@@ -29,7 +29,7 @@
                     <input type="hidden" name="solicitante_matricula" value="{{ $defaultMatricula }}" />
                     <input type="hidden" name="uf" value="{{ $defaultUf }}" />
                     
-                    <!-- SECAO 1: Dados da Solicitacao -->
+                    <!-- SEÃ‡ÃƒO 1: Dados da SolicitaÃ§Ã£o -->
                     <div x-show="step === 1" class="space-y-3">
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">Dados da Solicitação</h3>
                         
@@ -108,8 +108,8 @@
 
                         <!-- Observação -->
                         <div>
-                            <label for="observacao" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
-                            <textarea id="observacao" name="observacao" 
+                            <label for="ObservaÃ§Ã£o" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
+                            <textarea id="ObservaÃ§Ã£o" name="ObservaÃ§Ã£o" 
                                 class="block w-full text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" 
                                 rows="2" placeholder="Digite suas observações...">{{ old('observacao') }}</textarea>
                             <x-input-error :messages="$errors->get('observacao')" class="mt-1" />

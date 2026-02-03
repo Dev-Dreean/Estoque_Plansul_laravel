@@ -43,8 +43,8 @@
                                 <div class="grid gap-3 sm:gap-4" style="grid-template-columns: repeat(auto-fit,minmax(180px,1fr));">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Descri√ß√£o</label>
-                                        <input type="text" name="descricao" placeholder="Parte da descri√ß√£o"
-                                            value="{{ request('descricao') }}"
+                                        <input type="text" name="descriÁ„o" placeholder="Parte da descri√ß√£o"
+                                            value="{{ request('descriÁ„o') }}"
                                             class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                     </div>
 
@@ -57,11 +57,11 @@
 
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">C√≥d. Tipo</label>
-                                        <select name="codigo_tipo"
+                                        <select name="cÛdigo_tipo"
                                             class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md">
                                             <option value="">Todos</option>
                                             @foreach($tipos as $t)
-                                            <option value="{{ $t->NUSEQTIPOPATR }}" @selected(request('codigo_tipo')==$t->NUSEQTIPOPATR)>
+                                            <option value="{{ $t->NUSEQTIPOPATR }}" @selected(request('cÛdigo_tipo')==$t->NUSEQTIPOPATR)>
                                                 {{ $t->NUSEQTIPOPATR }} ‚Äî {{ $t->DETIPOPATR }}
                                             </option>
                                             @endforeach

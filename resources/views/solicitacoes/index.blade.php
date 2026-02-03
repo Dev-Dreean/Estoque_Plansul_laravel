@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-2xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Solicitações de Bens') }}
@@ -84,7 +84,7 @@
                             <div>
                                 <button type="button" @click="openCreateModal()" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
                                     <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
-                                    <span>Nova solicitacao</span>
+                                    <span>Nova solicitação</span>
                                 </button>
                             </div>
                         @endif
@@ -110,7 +110,7 @@
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
-                                    <th class="px-4 py-3">Numero</th>
+                                    <th class="px-4 py-3">Número</th>
                                     <th class="px-4 py-3">Solicitante</th>
                                     <th class="px-4 py-3">Setor</th>
                                     <th class="px-4 py-3">Local destino</th>
@@ -118,7 +118,7 @@
                                     <th class="px-4 py-3">Status</th>
                                     <th class="px-4 py-3">Itens</th>
                                     <th class="px-4 py-3">Criado</th>
-                                    <th class="px-4 py-3">Acoes</th>
+                                    <th class="px-4 py-3">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -314,7 +314,7 @@
             </div>
         </div>
 
-        <!-- Modal para criar solicitacao -->
+        <!-- Modal para criar SolicitaÃ§Ã£o -->
         <style>
             html[data-theme='light'] .solicitacao-modal-theme {
                 --solicitacao-modal-bg: #fcfdff;
@@ -475,7 +475,7 @@
                 </div>
             </div>
         </div>
-        <!-- Modal de detalhes da solicitacao -->
+        <!-- Modal de detalhes da SolicitaÃ§Ã£o -->
         <div
             x-show="showModalOpen"
             x-cloak
@@ -1021,7 +1021,7 @@
                         this.formModalId = id;
                         this.formModalTitle = mode === 'create' ? 'Nova Solicita\u00e7\u00e3o de Bens' : 'Editar Solicita\u00e7\u00e3o';
                         this.formModalSubtitle = mode === 'create'
-                            ? 'Crie uma nova solicitacao de bens.'
+                            ? 'Crie uma Nova solicitaÃ§Ã£o de bens.'
                             : 'Atualize os dados da solicitacao.';
                         this.formModalOpen = true;
                         this.formModalLoading = true;

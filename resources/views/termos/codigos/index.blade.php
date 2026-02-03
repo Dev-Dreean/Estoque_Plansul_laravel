@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
             Gerenciar Códigos de Termo
@@ -25,7 +25,7 @@
                 <div class="flex items-end gap-2 mb-4">
                     <div>
                         <label class="text-sm text-gray-700">Novo código</label>
-                        <input type="number" name="codigo" form="formNovoCodigo" value="{{ old('codigo', $sugestao) }}" class="h-10 px-3 border border-gray-300 rounded w-40" />
+                        <input type="number" name="CÃ³digo" form="formNovoCodigo" value="{{ old('codigo', $sugestao) }}" class="h-10 px-3 border border-gray-300 rounded w-40" />
                     </div>
                     <form method="POST" action="{{ route('termos.codigos.salvar') }}" id="formNovoCodigo">
                         @csrf

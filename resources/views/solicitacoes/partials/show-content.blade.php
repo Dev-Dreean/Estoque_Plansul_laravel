@@ -1,4 +1,4 @@
-@php
+﻿@php
     $isModal = $isModal ?? false;
     $containerClass = $isModal ? 'p-4 sm:p-5' : 'py-12';
     $wrapperClass = $isModal ? 'w-full' : 'max-w-6xl mx-auto sm:px-6 lg:px-8';
@@ -144,7 +144,7 @@
                                     </div>
                                 @endif
 
-                                <!-- Situacao -->
+                                <!-- SituaÃ§Ã£o -->
                                 <div class="flex items-start gap-3 sm:col-span-2 lg:col-span-3">
                                     <div class="mt-1 p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400 flex-shrink-0">
                                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -189,12 +189,12 @@
                                 @endif
                             </div>
 
-                            <!-- Observacao -->
+                            <!-- ObservaÃ§Ã£o -->
                             @if($solicitacao->observacao)
                                 <div class="mx-4 mt-2 mb-4 pt-3 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)]">
                                     <h4 class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Observação do Solicitante</h4>
                                     <div class="bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] rounded-lg p-3 text-xs text-gray-700 dark:text-slate-200 italic whitespace-pre-line border border-[color:var(--solicitacao-modal-border,#d6dde6)]">
-                                        {{ $solicitacao->observacao }}
+                                        {{ $solicitacao->ObservaÃ§Ã£o }}
                                     </div>
                                 </div>
                             @endif
@@ -220,10 +220,10 @@
                                         <tbody class="divide-y divide-[color:var(--solicitacao-modal-border,#d6dde6)]">
                                             @forelse($solicitacao->itens as $item)
                                                 <tr class="hover:bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] transition-colors">
-                                                    <td class="px-3 py-2 font-medium text-gray-900 dark:text-white">{{ $item->descricao }}</td>
+                                                    <td class="px-3 py-2 font-medium text-gray-900 dark:text-white">{{ $item->DescriÃ§Ã£o }}</td>
                                                     <td class="px-3 py-2 text-center text-gray-600 dark:text-slate-300">{{ $item->quantidade }}</td>
                                                     <td class="px-3 py-2 text-center text-gray-500 dark:text-slate-400">{{ $item->unidade ?: '-' }}</td>
-                                                    <td class="px-3 py-2 text-gray-500 dark:text-slate-400 italic">{{ $item->observacao ?: '-' }}</td>
+                                                    <td class="px-3 py-2 text-gray-500 dark:text-slate-400 italic">{{ $item->ObservaÃ§Ã£o ?: '-' }}</td>
                                                 </tr>
                                             @empty
                                                 <tr>
@@ -247,7 +247,7 @@
                     <div class="sm:col-span-1">
                         <div class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] shadow-lg rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] overflow-hidden sticky top-4">
 
-                            <!-- Header Acoes -->
+                            <!-- Header AÃ§Ãµes -->
                             <!-- Botões de Ação Rápida (Acima do Painel) -->
                             <div class="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 p-3 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)] space-y-2">
                                 <!-- Botão Confirmar (Tiago/Beatriz) -->
@@ -586,7 +586,7 @@
                 @endif
             </div>
 
-            <!-- Card de Historico (Abaixo dos Outros) -->
+            <!-- Card de HistÃ³rico (Abaixo dos Outros) -->
             <div class="mt-4 bg-[color:var(--solicitacao-modal-bg,#fcfdff)] shadow-sm rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] overflow-hidden">
                 <div class="px-4 py-3 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)] bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] flex items-center justify-between gap-2">
                     <h3 class="text-[13px] font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -603,7 +603,7 @@
                     </button>
                 </div>
 
-                <!-- Body do Historico -->
+                <!-- Body do HistÃ³rico -->
                 <div class="p-6 overflow-x-auto" x-show="openSection === 'history'" x-transition.duration.300ms>
                     @php
                         // Dados do histórico - ORDENADO CRONOLOGICAMENTE

@@ -1,4 +1,4 @@
-@php
+﻿@php
   use Carbon\Carbon;
   $filterKeys = ['nupatrimonio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','conferido','matr_responsavel','cadastrado_por','numof','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate','uf'];
   $badgeColors = [
@@ -29,11 +29,11 @@
   });
   $projetosOptions = ($projetos ?? collect())->map(fn($p) => [
     'code' => (string) $p->codigo,
-    'label' => trim((string) ($p->codigo . ' - ' . $p->descricao)),
+    'label' => trim((string) ($p->CÃ³digo . ' - ' . $p->descricao)),
   ])->toArray();
   $locaisOptions = ($locais ?? collect())->map(fn($l) => [
     'code' => (string) $l->codigo,
-    'label' => trim((string) ($l->codigo . ' - ' . $l->descricao)),
+    'label' => trim((string) ($l->CÃ³digo . ' - ' . $l->descricao)),
   ])->toArray();
   $modelosOptions = ($modelos ?? collect())->pluck('MODELO')->filter()->unique()->values()->map(fn($m) => ['code' => $m, 'label' => $m])->toArray();
   $marcasOptions = ($marcas ?? collect())->pluck('MARCA')->filter()->unique()->values()->map(fn($m) => ['code' => $m, 'label' => $m])->toArray();
@@ -471,7 +471,7 @@
           </div>
         </div>
         <div class="flex-1 min-w-[130px] max-w-[170px] basis-[140px]">
-          <input type="text" name="descricao" placeholder="Descrição" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
+          <input type="text" name="DescriÃ§Ã£o" placeholder="Descrição" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
         </div>
         <div class="flex-1 min-w-[130px] max-w-[170px] basis-[140px]">
           <div

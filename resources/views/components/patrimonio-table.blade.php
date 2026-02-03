@@ -1,4 +1,4 @@
-{{--
+﻿{{--
   Componente de Tabela de Patrimônios Reutilizável
   
   USO GERAL:
@@ -130,7 +130,7 @@
     <tbody class="text-[13px] sm:text-sm md:text-[15px] lg:text-base font-semibold">
       @forelse ($data as $item)
         @php
-          $rowSituacao = trim(preg_replace('/[\r\n]+/', ' ', (string)($item->SITUACAO ?? '')));
+          $rowSituacao = trim(preg_replace('/[\r\n]+/', ' ', (string)($item->SituaÃ§Ã£o ?? '')));
           $rowPatrimonio = $item->NUPATRIMONIO ?? $item->NUSEQPATR ?? $item->id;
           $rowConferidoRaw = is_string($item->FLCONFERIDO ?? null) ? strtoupper(trim((string) $item->FLCONFERIDO)) : ($item->FLCONFERIDO ?? '');
           $rowConferido = in_array($rowConferidoRaw, ['S', '1', 'T', 'Y'], true) ? 'S' : 'N';
@@ -260,7 +260,7 @@
             @elseif($col === 'situacao')
               <td class="{{ $headerPadding }}">
                 @php
-                  $situacao = $item->SITUACAO ?? '';
+                  $situacao = $item->SituaÃ§Ã£o ?? '';
                   $raw = preg_replace('/[\r\n]+/', ' ', trim($situacao));
                   $norm = strtoupper(Illuminate\Support\Str::ascii($raw));
                   $norm = preg_replace('/\s+/', ' ', $norm);

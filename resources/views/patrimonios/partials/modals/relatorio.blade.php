@@ -1,4 +1,4 @@
-<div x-show="relatorioModalOpen" x-transition
+﻿<div x-show="relatorioModalOpen" x-transition
       class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center" style="display: none;">
       <div @click.outside="relatorioModalOpen = false"
         class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl p-6">
@@ -28,11 +28,11 @@
             <div class="space-y-4">
               <div class="grid grid-cols-2 gap-x-6 gap-y-4">
                 <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="numero" x-model="tipoRelatorio"
+                    name="tipo_relatorio" value="NÃºmero" x-model="tipoRelatorio"
                     class="form-radio text-indigo-600"><span
                     class="text-gray-700 dark:text-gray-300">Por Número</span></label>
                 <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="descricao" x-model="tipoRelatorio"
+                    name="tipo_relatorio" value="DescriÃ§Ã£o" x-model="tipoRelatorio"
                     class="form-radio text-indigo-600"><span
                     class="text-gray-700 dark:text-gray-300">Por Descrição</span></label>
                 <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
@@ -57,11 +57,11 @@
                     class="form-radio text-indigo-600"><span
                     class="text-gray-700 dark:text-gray-300">Por UF</span></label>
                 <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="situacao" x-model="tipoRelatorio"
+                    name="tipo_relatorio" value="SituaÃ§Ã£o" x-model="tipoRelatorio"
                     class="form-radio text-indigo-600"><span
                     class="text-gray-700 dark:text-gray-300">Por Situação</span></label>
               </div>
-              <!-- Campo de busca de descrição quando tipo descricao -->
+              <!-- Campo de busca de descrição quando tipo DescriÃ§Ã£o -->
               <div x-data="{ open: false }" @click.outside="open = false" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                 <div class="flex items-center justify-between gap-3">
                   <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-300">Filtros adicionais</p>
@@ -75,11 +75,11 @@
                 <div x-cloak x-show="open" x-transition class="mt-3">
                   <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
                   <div>
-                    <label for="relatorio_cdprojeto" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Projeto (codigo)</label>
+                    <label for="relatorio_cdprojeto" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Projeto (cÃ³digo)</label>
                     <input type="text" id="relatorio_cdprojeto" name="cdprojeto" list="relatorio_projetos" placeholder="Ex: 101" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
                   </div>
                   <div>
-                    <label for="relatorio_cdlocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Local fisico (codigo)</label>
+                    <label for="relatorio_cdlocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Local fÃ­sico (cÃ³digo)</label>
                     <input type="text" id="relatorio_cdlocal" name="cdlocal" list="relatorio_locais" placeholder="Ex: 2002" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
                   </div>
                   <div>
@@ -98,12 +98,12 @@
                 </div>
                 <datalist id="relatorio_projetos">
                   @foreach(($projetos ?? collect()) as $p)
-                    <option value="{{ $p->codigo }}">{{ $p->codigo }} - {{ $p->descricao }}</option>
+                    <option value="{{ $p->CÃ³digo }}">{{ $p->CÃ³digo }} - {{ $p->DescriÃ§Ã£o }}</option>
                   @endforeach
                 </datalist>
                 <datalist id="relatorio_locais">
                   @foreach(($locais ?? collect()) as $l)
-                    <option value="{{ $l->codigo }}">{{ $l->codigo }} - {{ $l->descricao }}</option>
+                    <option value="{{ $l->CÃ³digo }}">{{ $l->CÃ³digo }} - {{ $l->DescriÃ§Ã£o }}</option>
                   @endforeach
                 </datalist>
               </div>
@@ -139,7 +139,7 @@
                 </div>
               </div>
               
-              <!-- Campo de Situação (checkboxes) quando tipo = situacao -->
+              <!-- Campo de Situação (checkboxes) quando tipo = SituaÃ§Ã£o -->
               <div x-show="tipoRelatorio === 'situacao'" class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-lg border-2 border-blue-200 dark:border-blue-700" style="display:none;">
                 <p class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-3">Selecione as situações desejadas:</p>
                 <div class="flex flex-wrap gap-3">
@@ -383,7 +383,7 @@
           </template>
           <template x-if="reportFilters.situacao_busca && tipoRelatorio !== 'situacao'">
             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-slate-200 dark:border-gray-600">
-              <span class="font-semibold">Situacao</span>
+              <span class="font-semibold">SituaÃ§Ã£o</span>
               <span x-text="reportFilters.situacao_busca"></span>
             </span>
           </template>
@@ -428,7 +428,7 @@
                 <!-- Colunas fixas (sempre aparecem depois) -->
                 <th scope="col" class="px-6 py-3">N? Patrim?nio</th>
                 <th scope="col" class="px-6 py-3">Descri??o</th>
-                {{-- Colunas extras para contexto do relatorio --}}
+                {{-- Colunas extras para contexto do RelatÃ³rio --}}
                 <th scope="col" class="px-6 py-3">Projeto</th>
                 <th scope="col" class="px-6 py-3">Modelo</th>
                 <th scope="col" class="px-6 py-3 text-xs">Situa??o</th>

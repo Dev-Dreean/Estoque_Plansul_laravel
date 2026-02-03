@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
   {{-- Abas de navegação do patrimônio --}}
   <x-patrimonio-nav-tabs />
 
@@ -43,7 +43,7 @@
                     this.open = true;
                     this.$nextTick(() => {
                       const termo = document.getElementById('filtro_termo');
-                      const numero = document.getElementById('filtro_numero');
+                      const NÃºmero = document.getElementById('filtro_numero');
                       const el = termo || numero;
                       if (el) {
                         el.focus();
@@ -255,7 +255,7 @@
               </form>
               <form id="form-atribuir-codigo" method="POST" action="{{ route('patrimonios.atribuirCodigo') }}" class="hidden">
                 @csrf
-                <input type="hidden" name="codigo" x-model="codigoTermo">
+                <input type="hidden" name="CÃ³digo" x-model="codigoTermo">
               </form>
               <form method="POST" action="{{ route('patrimonios.atribuir.processar') }}" id="form-atribuir-lote">
                 @csrf
@@ -698,8 +698,8 @@
             'sort',
             'direction',
           ].forEach(k => params.delete(k));
-          const numero = document.getElementById('filtro_numero')?.value;
-          const descricao = document.getElementById('filtro_descricao')?.value;
+          const NÃºmero = document.getElementById('filtro_numero')?.value;
+          const DescriÃ§Ã£o = document.getElementById('filtro_descricao')?.value;
           const modelo = document.getElementById('filtro_modelo')?.value;
           const projeto = document.getElementById('filtro_projeto')?.value;
           const termo = document.getElementById('filtro_termo')?.value;
