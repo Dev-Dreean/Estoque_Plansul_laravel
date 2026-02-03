@@ -505,8 +505,8 @@
       <input x-model="formData.MODELO" id="MODELO" name="MODELO" type="text" tabindex="14" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
     <div>
-      <label for="SituaÃ§Ã£o" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Situação do Patrimônio *</label>
-      <select id="SituaÃ§Ã£o" name="SituaÃ§Ã£o" x-model="formData.SITUACAO" required tabindex="15"
+      <label for="SITUACAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Situação do Patrimônio *</label>
+      <select id="SITUACAO" name="SITUACAO" x-model="formData.SITUACAO" required tabindex="15"
         class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500">
         <option value="EM USO">EM USO</option>
         <option value="CONSERTO">CONSERTO</option>
