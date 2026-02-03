@@ -25,12 +25,12 @@ class BuscarTiposObjetos extends Command
         $this->info("\n=== BEATRIZ.SC ===\n");
         
         $beatriz = DB::table('funcionarios')
-            ->whereRaw("NOMEABREVIADO LIKE '%BEATRIZ%' OR NOMEABREVIADO LIKE 'BEATRIZ.SC%'")
-            ->first(['CDMATRFUNCIONARIO', 'NOMEABREVIADO']);
+            ->whereRaw("NMFUNCIONARIO LIKE '%BEATRIZ%' OR CDMATRFUNCIONARIO LIKE 'BEATRIZ.SC%'")
+            ->first(['CDMATRFUNCIONARIO', 'NMFUNCIONARIO']);
 
         if ($beatriz) {
             $this->line("Matrícula: " . $beatriz->CDMATRFUNCIONARIO);
-            $this->line("Nome: " . $beatriz->NOMEABREVIADO);
+            $this->line("Nome: " . $beatriz->NMFUNCIONARIO);
         } else {
             $this->error("NÃO ENCONTRADO");
         }
