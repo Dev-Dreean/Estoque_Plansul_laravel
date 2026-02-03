@@ -2148,7 +2148,7 @@
           // Agrupar por CDLOCAL para detectar múltiplos locais com mesmo código
           const grupos = {};
           todosLocais.forEach(local => {
-            const CÃ³digo = String(local.cdlocal);
+            const codigo = String(local.cdlocal);
             if (!grupos[codigo]) grupos[codigo] = [];
             grupos[codigo].push(local);
           });
@@ -2468,7 +2468,7 @@
       // ?? NOVAS FUNÇÕES - SISTEMA DROPDOWN SEMPRE
       // ? FUNÇÃO SIMPLES: Buscar local por código
       async buscarLocalPorCodigo() {
-        const CÃ³digo = String(this.codigoLocalDigitado || '').trim();
+        const codigo = String(this.codigoLocalDigitado || '').trim();
 
         // Limpar se vazio
         if (codigo === '') {
@@ -2595,7 +2595,7 @@
 
         // Calcular score para cada item
         const itemsComScore = items.map(item => {
-          const CÃ³digo = String(item[fieldCodigo] || '').toLowerCase().trim();
+          const codigo = String(item[fieldCodigo] || '').toLowerCase().trim();
           const nome = String(item[fieldNome] || '').toLowerCase().trim();
 
           let score = 1000; // Default alto (pior)
@@ -2691,7 +2691,7 @@
       async salvarNovoBem() {
         const tipoCodigo = String(this.novoBem.NUSEQTIPOPATR || '').trim();
         const tipoNome = String(this.novoBem.DETIPOPATR || '').trim();
-        const DescriÃ§Ã£o = String(this.novoBem.DEOBJETO || '').trim();
+        const descricao = String(this.novoBem.DEOBJETO || '').trim();
 
         if (!tipoCodigo) {
           this.erroCriacaoBem = 'Informe o c?digo do tipo.';
@@ -3287,7 +3287,7 @@
       // FUNÇÃO ANTIGA (COMPLEXA) - MANTIDA PARA NÃO QUEBRAR
       // ========================================
       async buscarLocaisPorCodigoDigitado() {
-        const CÃ³digo = String(this.codigoLocalDigitado || '').trim();
+        const codigo = String(this.codigoLocalDigitado || '').trim();
 
         console.log('? [DEBUG buscarLocais] -------------------------------');
         console.log('?? [DEBUG buscarLocais] Função chamada');
@@ -3986,7 +3986,7 @@
             try {
               const codResp = await fetch(`/api/codigos/buscar/${this.formData.NUSEQOBJ}`);
               if (codResp.ok) {
-                const CÃ³digo = await codResp.json();
+                const codigo = await codResp.json();
                 if (codigo && codigo.descricao) {
                   this.descricaoSearch = codigo.descricao;
                   this.formData.DEOBJETO = codigo.descricao;

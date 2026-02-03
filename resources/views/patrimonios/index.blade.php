@@ -967,7 +967,7 @@
 
           if (!situacao) return;
 
-          postJson(bulkEndpoint, { ids, SituaÃ§Ã£o })
+          postJson(bulkEndpoint, { ids, situacao })
             .then(() => {
               if (pendingConferido === 'S') {
                 return postJson(bulkVerifyEndpoint, { ids, conferido: pendingConferido });
@@ -998,7 +998,7 @@
         };
 
                 const openConfirmModal = (situacao) => {
-          pendingSituacao = SituaÃ§Ã£o || null;
+          pendingSituacao = situacao || null;
           const hasSituacao = !!pendingSituacao;
           const hasConferido = pendingConferido !== null;
           if (!bulkConfirmModal || !bulkConfirmList || !bulkConfirmNew) {
@@ -1090,7 +1090,7 @@
         };
 
                 const applyBulkSituacao = () => {
-          const SituaÃ§Ã£o = bulkSelect?.value || '';
+          const situacao = bulkSelect?.value || '';
           if (selectedIds.size === 0) {
             alert('Selecione ao menos um patrimonio.');
             return;
@@ -1367,7 +1367,7 @@
             closeConfirmModal();
             runBulkDelete();
           } else {
-            const SituaÃ§Ã£o = pendingSituacao;
+            const situacao = pendingSituacao;
             closeConfirmModal();
             runBulkUpdate(situacao);
           }
@@ -2009,7 +2009,7 @@
             const direto = patrimonio.CDPROJETO || null;
             const viaProjeto = patrimonio.projeto ? (patrimonio.projeto.CDPROJETO || null) : null;
             const viaLocal = patrimonio.local && patrimonio.local.projeto ? (patrimonio.local.projeto.CDPROJETO || null) : null;
-            const CÃ³digo = direto || viaProjeto || viaLocal;
+            const codigo = direto || viaProjeto || viaLocal;
             const nomeProjeto = patrimonio.projeto
               ? (patrimonio.projeto.NOMEPROJETO || patrimonio.projeto.NMPROJETO || null)
               : (patrimonio.local && patrimonio.local.projeto
@@ -2017,7 +2017,7 @@
                 : null);
             if (!codigo && !nomeProjeto) return 'N/A';
             if (codigo && nomeProjeto) return `${codigo} - ${nomeProjeto}`;
-            return CÃ³digo || nomeProjeto;
+            return codigo || nomeProjeto;
           },
           openDelete(id, name) {
             this.deleteItemId = id;
