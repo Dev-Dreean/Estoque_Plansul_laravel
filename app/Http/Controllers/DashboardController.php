@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -17,8 +18,22 @@ class DashboardController extends Controller
         $verificadosStats = null;
         $user = Auth::user();
         if ($this->canViewVerificadosIndicator($user)) {
-            $total = Patrimonio::count();
-            $verificados = Patrimonio::whereRaw("UPPER(COALESCE(NULLIF(TRIM(FLCONFERIDO), ''), 'N')) = 'S'")->count();
+            $baseQuery = Patrimonio::query();
+            if (Schema::hasColumn('patr', 'CDSITUACAO')) {
+                $baseQuery->where(function ($q) {
+                    $q->whereNull('CDSITUACAO')
+                        ->orWhere('CDSITUACAO', '<>', 2);
+                });
+            } elseif (Schema::hasColumn('patr', 'SITUACAO')) {
+                $baseQuery->where(function ($q) {
+                    $q->whereNull('SITUACAO')
+                        ->orWhereRaw("UPPER(TRIM(SITUACAO)) NOT LIKE '%BAIXA%'");
+                });
+            }
+            $total = (clone $baseQuery)->count();
+            $verificados = (clone $baseQuery)
+                ->whereRaw("UPPER(COALESCE(NULLIF(TRIM(FLCONFERIDO), ''), 'N')) = 'S'")
+                ->count();
             $percent = $total > 0 ? (int) round(($verificados / $total) * 100) : 0;
             $verificadosStats = [
                 'total' => $total,
@@ -174,6 +189,17 @@ class DashboardController extends Controller
     public function totalData(Request $request)
     {
         $query = DB::table('patr');
+        if (Schema::hasColumn('patr', 'CDSITUACAO')) {
+            $query->where(function ($q) {
+                $q->whereNull('CDSITUACAO')
+                    ->orWhere('CDSITUACAO', '<>', 2);
+            });
+        } elseif (Schema::hasColumn('patr', 'SITUACAO')) {
+            $query->where(function ($q) {
+                $q->whereNull('SITUACAO')
+                    ->orWhereRaw("UPPER(TRIM(SITUACAO)) NOT LIKE '%BAIXA%'");
+            });
+        }
 
         $expr = "UPPER(COALESCE(NULLIF(TRIM(FLCONFERIDO), ''), 'N'))";
         $row = $query->selectRaw(

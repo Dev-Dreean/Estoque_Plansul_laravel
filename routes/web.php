@@ -18,6 +18,7 @@ use App\Http\Controllers\RemovidosController;
 use App\Http\Controllers\SolicitacaoBemController;
 use App\Http\Controllers\SolicitacaoBemPatrimonioController;
 use App\Http\Controllers\SolicitacaoEmailController;
+use App\Http\Controllers\SyncRemoteController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -46,6 +47,8 @@ Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
 // API para obter clima - PÚBLICA (para usuários não autenticados)
 Route::get('/api/weather', [MenuController::class, 'getWeather'])->name('api.weather');
 Route::post('/api/solicitacoes/email', [SolicitacaoEmailController::class, 'store'])
+    ->middleware('power.automate');
+Route::post('/api/sync/remote', [SyncRemoteController::class, 'sync'])
     ->middleware('power.automate');
 
 // Templates de busca/massa (sem restricao)
@@ -257,6 +260,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
             [SolicitacaoBemController::class, 'confirm'])->name('solicitacoes-bens.confirm');
         Route::post('/solicitacoes-bens/{solicitacao}/approve', 
             [SolicitacaoBemController::class, 'approve'])->name('solicitacoes-bens.approve');
+        Route::post('/solicitacoes-bens/{solicitacao}/return-to-analysis',
+            [SolicitacaoBemController::class, 'returnToAnalysis'])->name('solicitacoes-bens.return-to-analysis');
         Route::post('/solicitacoes-bens/{solicitacao}/cancel', 
             [SolicitacaoBemController::class, 'cancel'])->name('solicitacoes-bens.cancel');
 

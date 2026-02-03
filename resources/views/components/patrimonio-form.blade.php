@@ -511,7 +511,7 @@
         <option value="EM USO">EM USO</option>
         <option value="CONSERTO">CONSERTO</option>
         <option value="BAIXA">BAIXA</option>
-        <option value="À DISPOSIÇÃO">À DISPOSIÇÃO</option>
+        <option value="A DISPOSICAO">A DISPOSIÇÃO</option>
       </select>
     </div>
   </div>
@@ -883,6 +883,18 @@
       }
     }
     const initialLocalInfo = config.patrimonio?.local || null;
+    const normalizeSituacaoValue = (value) => {
+      if (value === null || value === undefined) return '';
+      const raw = String(value).trim();
+      if (!raw) return '';
+      const ascii = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const upper = ascii.toUpperCase().replace(/\s+/g, ' ');
+      if (upper === 'DISPONIVEL') return 'A DISPOSICAO';
+      if (upper === 'A DISPOSICAO') return 'A DISPOSICAO';
+      if (upper === 'MANUTENCAO') return 'CONSERTO';
+      if (upper === 'BAIXADO') return 'BAIXA';
+      return upper;
+    };
     return {
       // == DADOS DO FORMULÁRIO ==
       formData: {
@@ -900,7 +912,7 @@
         NMPLANTA: (config.old?.NMPLANTA ?? config.patrimonio?.NMPLANTA) || '',
         MARCA: (config.old?.MARCA ?? config.patrimonio?.MARCA) || '',
         MODELO: (config.old?.MODELO ?? config.patrimonio?.MODELO) || '',
-        SITUACAO: (config.old?.SITUACAO ?? config.patrimonio?.SITUACAO) || 'EM USO',
+        SITUACAO: normalizeSituacaoValue(config.old?.SITUACAO ?? config.patrimonio?.SITUACAO) || 'EM USO',
         DTAQUISICAO: (config.old?.DTAQUISICAO ?? (config.patrimonio?.DTAQUISICAO ? (() => {
           const d = config.patrimonio.DTAQUISICAO;
           return d.includes('T') ? d.split('T')[0] : (d.includes(' ') ? d.split(' ')[0] : d);

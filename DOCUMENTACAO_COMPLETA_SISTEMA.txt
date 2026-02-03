@@ -1,0 +1,1773 @@
+================================================================================
+DOCUMENTAÇÃO COMPLETA DO SISTEMA ESTOQUE_PLANSUL_LARAVEL
+Versão: 2.0 (Atualizado 2026-02-02)
+Autor: Equipe de Desenvolvimento Plansul
+Objetivo: Referência única e completa para desenvolvimento e manutenção
+================================================================================
+
+ÍNDICE GERAL:
+1. Visão Geral do Sistema
+2. Stack Tecnológico Completo
+3. Arquitetura da Aplicação
+4. Banco de Dados e Modelos
+5. Padrões de Código Obrigatórios
+6. Design e Interface do Usuário
+7. Componentes Reutilizáveis
+8. Fluxos de Negócio Principais
+9. Integração com KingHost
+10. Scripts e Utilitários
+11. Segurança e Permissões
+12. Checklist de Desenvolvimento
+
+================================================================================
+1. VISÃO GERAL DO SISTEMA
+================================================================================
+
+NOME OFICIAL: Estoque_Plansul_Laravel
+TIPO: Aplicação Web de Gerenciamento de Patrimônio Corporativo
+PROPÓSITO: Controlar, rastrear e gerenciar bens patrimoniais da empresa Plansul
+AMBIENTE ALVO: KingHost (servidor Linux compartilhado)
+VERSÃO LARAVEL: 11.x
+VERSÃO PHP: 8.2+
+
+FUNCIONALIDADES PRINCIPAIS:
+- Cadastro e manutenção de patrimônios (bens)
+- Atribuição de patrimônios a funcionários e locais
+- Auditoria e rastreabilidade de movimentações
+- Importação em lote de dados (CSV/TXT)
+- Exportação de relatórios (PDF, Excel)
+- Gerenciamento de projetos (células organizacionais)
+- Controle de locais físicos por projeto
+- Histórico completo de movimentações (tabela movpartr)
+- Integração com dados do KingHost (sincronização)
+- Dark mode (tema claro e escuro)
+
+USUÁRIOS-ALVO:
+- Consultores: Acesso total ao sistema, gerenciam patrimônios e usuários
+- Supervisores: Acesso a relatórios e movimentações de seu setor
+- Funcionários: Visualizam e confirmam patrimônios atribuídos a eles
+- Administradores: Gerenciam usuários, permissões e sistema
+
+================================================================================
+2. STACK TECNOLÓGICO COMPLETO
+================================================================================
+
+BACKEND:
+├─ Framework: Laravel 11.x (Framework web PHP)
+├─ Linguagem: PHP 8.2+ (Tipagem forte, attributes, etc)
+├─ Gerenciador de Dependências: Composer
+├─ Banco de Dados: MySQL 5.7+ (InnoDB, suporta transações)
+├─ Autenticação: Laravel Sanctum + Auth Nativa
+├─ Cache: Redis/File (configurável em .env)
+├─ Fila de Jobs: Database Queue
+├─ Logs: Storage/logs (PSR-3 compliant)
+└─ ORM: Eloquent (abstração de BD)
+
+FRONTEND:
+├─ Templating: Blade (Templates Laravel)
+├─ Styling: Tailwind CSS 3.x (utility-first CSS)
+├─ Dark Mode: Tailwind dark: prefix (automático com JS)
+├─ Interatividade: Alpine.js 3.x (reatividade leve, sem build step obrigatório)
+├─ Build Tool: Vite (bundler ES modules moderno)
+├─ JavaScript: ES6+ moderno
+└─ Pacotes CSS: @tailwindcss/forms (para inputs)
+
+TOOLING & CI/CD:
+├─ Version Control: Git (GitHub)
+├─ Linting PHP: PHPStan + Laravel Pint
+├─ Code Style: PSR-12 (Laravel padrão)
+├─ NPM Scripts: build (prod), dev (watch), lint
+├─ Environment: .env (Laravel padrão, com DB_HOST_KINGHOST separado)
+└─ Deployment: SSH manual para KingHost (não automatizado)
+
+DEPENDENCIES PRINCIPAIS (composer.json):
+- laravel/framework (11.x)
+- laravel/sanctum (autenticação API)
+- laravel/tinker (REPL interativo)
+- barryvdh/laravel-dompdf (PDF generation)
+- maatwebsite/excel (Excel export)
+- predis/predis (cliente Redis, se usar cache)
+
+DEPENDENCIES NPM (package.json):
+- tailwindcss
+- alpinejs
+- vite
+- @vitejs/plugin-laravel
+- @tailwindcss/forms
+
+================================================================================
+3. ARQUITETURA DA APLICAÇÃO
+================================================================================
+
+ESTRUTURA DE DIRETÓRIOS:
+
+app/
+├─ Console/Commands/         [Comandos Artisan customizados]
+│  ├─ ImportarTodosPatrimonios.php
+│  ├─ SincronizarKinghost.php
+│  ├─ users:unify.php        [Merge de usuários duplicados]
+│  └─ ... (outros comandos)
+├─ Http/
+│  ├─ Controllers/            [Lógica de roteamento HTTP]
+│  │  ├─ PatrimonioController.php     (CRUD patrimônios)
+│  │  ├─ UserController.php           (Gerenciar usuários)
+│  │  ├─ ProjetoController.php        (Projetos/células)
+│  │  ├─ LocalController.php          (Locais físicos)
+│  │  ├─ RelatorioController.php      (Relatórios/Exports)
+│  │  └─ ... (outros)
+│  ├─ Requests/               [Form Request Validation]
+│  │  ├─ StorePatrimonioRequest.php
+│  │  ├─ UpdatePatrimonioRequest.php
+│  │  └─ ...
+│  └─ Middleware/             [Filtros HTTP]
+│     ├─ Authenticate.php
+│     ├─ CheckPermission.php   (Autorização por permissão)
+│     └─ ...
+├─ Models/                    [Eloquent Models (ORM)]
+│  ├─ Patrimonio.php          (PK: NUSEQPATR)
+│  ├─ User.php                (Usuários)
+│  ├─ Projeto.php             (Células/Projetos)
+│  ├─ Local.php               (Locais físicos)
+│  ├─ Funcionario.php         (Dados de RH)
+│  ├─ MovPartr.php            (Histórico de movimentos)
+│  ├─ ObjetoPatr.php          (Tipos de objeto)
+│  └─ ... (outros)
+├─ Services/                  [Lógica de Negócio Encapsulada]
+│  ├─ PatrimonioService.php   (Operações complexas em patrimônios)
+│  ├─ ImportacaoService.php   (Importação em lote)
+│  ├─ RelatorioService.php    (Geração de relatórios)
+│  └─ ...
+├─ Observers/                 [Event Listeners para modelos]
+│  ├─ PatrimonioObserver.php  (Log de criação/update/delete)
+│  └─ ...
+├─ Policies/                  [Autorização granular]
+│  ├─ PatrimonioPolicy.php    (Quem pode editar qual patrimônio)
+│  └─ ...
+├─ Helpers/                   [Funções auxiliares]
+│  ├─ FormatarHelpers.php     (Formatação de dados)
+│  └─ ...
+├─ Providers/                 [Service Providers]
+│  ├─ AppServiceProvider.php  (Registro de serviços globais)
+│  └─ ...
+└─ View/                      [View Composers e variáveis globais]
+
+routes/
+├─ web.php                   [Rotas autenticadas (web)]
+├─ auth.php                  [Rotas de autenticação (login/logout)]
+├─ console.php               [Comandos CLI]
+└─ api.php                   [APIs (se houver)]
+
+resources/
+├─ views/
+│  ├─ components/            [Componentes Blade reutilizáveis]
+│  │  ├─ action-button.blade.php      (Botões edit/delete/view/add/export)
+│  │  ├─ status-badge.blade.php       (Badges coloridas de status)
+│  │  ├─ table-header.blade.php       (Headers com sort)
+│  │  ├─ patrimonio-form.blade.php    (Form edição/criação)
+│  │  ├─ search-filter.blade.php      (Barra de busca)
+│  │  └─ ...
+│  ├─ layouts/               [Layouts base]
+│  │  ├─ app.blade.php       (Layout padrão com navbar)
+│  │  └─ guest.blade.php     (Layout login)
+│  ├─ patrimonios/           [Views de patrimônios]
+│  │  ├─ index.blade.php     (Listagem com filtros)
+│  │  ├─ show.blade.php      (Visualizar 1 patrimônio)
+│  │  ├─ edit.blade.php      (Editar patrimônio)
+│  │  ├─ create.blade.php    (Criar novo patrimônio)
+│  │  └─ ...
+│  ├─ usuarios/              [Views de usuários]
+│  ├─ projetos/              [Views de projetos]
+│  ├─ relatórios/            [Views de relatórios]
+│  └─ ...
+├─ css/
+│  └─ app.css                (CSS global, imports de Tailwind)
+├─ js/
+│  ├─ app.js                 (Entry point Vite)
+│  ├─ modules/               [Módulos JavaScript reutilizáveis]
+│  │  ├─ PatrimonioActions.js (CRUD de patrimônios via AJAX)
+│  │  ├─ SearchFilter.js     (Busca com debounce)
+│  │  └─ ...
+│  └─ ...
+└─ sass/                     (Preprocessador SCSS, se usado)
+
+config/
+├─ app.php                   [Configuração geral]
+├─ database.php              [Conexões BD (local + KingHost)]
+├─ auth.php                  [Guards e Providers de autenticação]
+├─ cache.php                 [Cache driver]
+├─ mail.php                  [Email driver]
+├─ filesystems.php           [Storage disks]
+├─ telas.php                 [CUSTOM: Mapeamento de telas/células]
+├─ historico.php             [CUSTOM: Config de logs históricos]
+├─ solicitacoes_bens.php     [CUSTOM: Config de workflow]
+└─ logging.php               [Logging PSR-3]
+
+database/
+├─ migrations/               [Versionamento de schema]
+│  ├─ 2014_10_12_000000_create_users_table.php
+│  ├─ 2025_09_01_add_patrimonio_fields.php
+│  └─ ...
+├─ seeders/                  [Dados iniciais]
+│  ├─ DatabaseSeeder.php
+│  ├─ ProjetoSeeder.php
+│  └─ ...
+└─ imports/                  [Dados de seed em TXT/JSON]
+
+storage/
+├─ logs/                     [Logs de aplicação]
+│  └─ laravel.log
+├─ backups/                  [Backups de BD e dados]
+│  ├─ patrimonio_*.json
+│  ├─ usuarios_*.json
+│  └─ ...
+└─ app/
+   ├─ exports/              [Arquivos exportados (PDF, Excel)]
+   ├─ imports/              [Arquivos importados/processados]
+   └─ ...
+
+public/
+├─ index.php                 [Entry point Laravel]
+├─ js/                       [JavaScript compilado (Vite build output)]
+├─ css/                      [CSS compilado (Vite build output)]
+├─ img/                      [Imagens estáticas]
+└─ build/                    [Artefatos Vite (buildado automaticamente)]
+
+scripts/                      [One-offs, scripts de manutenção, não ficam no deploy]
+├─ kinghost_sync_master.php
+├─ criar_backup.ps1
+├─ start_laravel_server.ps1
+└─ ... (ferramenta temporários)
+
+archive/
+└─ backups/                  [Backups históricos e arquivos preservados]
+
+FLUXO ARQUITETURAL:
+
+Requisição HTTP
+    ↓
+routes/web.php (Match de rota)
+    ↓
+app/Http/Controllers/XController.php
+    ├─ Valida com Form Request
+    └─ Chama Service ou Model
+        ↓
+    app/Services/XService.php (Lógica de negócio)
+        └─ Manipula Models
+            ↓
+        app/Models/X.php (Eloquent)
+            └─ Dispara Observers
+            ├─ Executa logs via Log::info()
+            └─ Retorna dados
+        ↓
+    Controller retorna View ou JSON
+        ↓
+resources/views/X/show.blade.php
+    └─ Inclui componentes: <x-action-button>, <x-status-badge>, etc
+    ↓
+HTML + Alpine.js (interatividade)
+    └─ public/js/modules/XActions.js
+    ↓
+Browser renderiza
+
+================================================================================
+4. BANCO DE DADOS E MODELOS
+================================================================================
+
+FONTE DE VERDADE: KingHost (mysql07-farm10.kinghost.net)
+BANCO LOCAL: plansul (sincronizado periodicamente)
+
+TABELAS CRÍTICAS:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ PATR (Patrimônios - Core da aplicação)                           │
+├─────────────────────────────────────────────────────────────────┤
+│ PK: NUSEQPATR (int)        - Sequencial único
+│ FK: CODOBJETO → objetopatr.NUSEQOBJ
+│ FK: CDMATRFUNCIONARIO → funcionarios.CDMATRFUNCIONARIO
+│ FK: CDPROJETO + CDLOCAL → locais_projeto
+│
+│ Colunas principais:
+│ - NUPATRIMONIO (varchar 20)    - Código visual do bem (ex: "PAT-2025-001")
+│ - DEPATRIMONIO (varchar 300)   - Descrição do bem
+│ - CODOBJETO (int)              - Tipo/Objeto do patrimônio
+│ - CDPROJETO (varchar 4)        - Projeto/Célula
+│ - CDLOCAL (varchar 4)          - Local físico
+│ - CDMATRFUNCIONARIO (varchar)  - Funcionário responsável
+│ - SITUACAO (varchar 20)        - Status (Ativo, Inativo, Baixado, etc)
+│ - DTAQUISICAO (date)           - Data de aquisição
+│ - DTBAIXA (date)               - Data de baixa (se retirado)
+│ - USUARIO (varchar 20)         - Último usuário a editar
+│ - DTOPERACAO (datetime)        - Timestamp última operação
+│
+│ Indices:
+│ - PRIMARY (NUSEQPATR)
+│ - INDEX (CDPROJETO, CDLOCAL)
+│ - INDEX (CDMATRFUNCIONARIO)
+│ - INDEX (SITUACAO)
+│ - INDEX (DTOPERACAO DESC)
+│
+│ Registros: ~11.394 (em produção)
+│ Eloquent Model: app/Models/Patrimonio.php
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ LOCAIS_PROJETO (Mapeamento de locais por projeto)               │
+├─────────────────────────────────────────────────────────────────┤
+│ PK: id (int)
+│ FK: tabfant_id → tabfant.id
+│
+│ Colunas:
+│ - id (int)
+│ - cdlocal (varchar 4)          - Código do local
+│ - delocal (varchar 150)        - Nome/descrição
+│ - tabfant_id (int)             - ID do projeto (SEED = 10000002)
+│
+│ Registros: ~1.939
+│ Eloquent Model: app/Models/Local.php
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ TABFANT (Projetos/Células)                                       │
+├─────────────────────────────────────────────────────────────────┤
+│ PK: id (int)
+│
+│ Colunas:
+│ - id (int)                     - Sequencial (ex: 10000002 = SEDE)
+│ - CDPROJETO (varchar 4)        - Código projeto (ex: "8" = SEDE)
+│ - NOMEPROJETO (varchar 100)    - Nome projeto (ex: "SEDE PLANSUL")
+│ - (outros campos conforme KingHost)
+│
+│ Registros: ~877
+│ Eloquent Model: app/Models/Projeto.php
+│ ESPECIAL: ID 10000002 é "SEDE" (33 locais)
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ OBJETOPATR (Tipos/Objetos de patrimônios)                        │
+├─────────────────────────────────────────────────────────────────┤
+│ PK: NUSEQOBJ (int)
+│ FK: NUSEQTIPOPATR → tipopatr.id
+│
+│ Colunas:
+│ - NUSEQOBJ (int)               - Sequencial
+│ - NUSEQTIPOPATR (int)          - Tipo
+│ - DEOBJETO (varchar 300)       - Descrição (expandida em 2025-12-11)
+│
+│ Registros: ~1.208 (restaurados em 2025-12-11)
+│ Eloquent Model: app/Models/ObjetoPatr.php
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ USERS (Usuários do sistema)                                      │
+├─────────────────────────────────────────────────────────────────┤
+│ PK: id (int)
+│
+│ Colunas:
+│ - id (int)
+│ - name (varchar 255)
+│ - email (varchar 255)          - Único
+│ - password (hashed)
+│ - email_verified_at (datetime)
+│ - remember_token
+│ - created_at, updated_at
+│ - (custom fields podem ser adicionados)
+│
+│ Eloquent Model: app/Models/User.php
+│ Autenticação: Laravel Auth + Sanctum (tokens)
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ MOVPARTR (Histórico de movimentações)                            │
+├─────────────────────────────────────────────────────────────────┤
+│ PK: id (int)
+│
+│ Colunas:
+│ - id (int)
+│ - patrimonio_id → patr.NUSEQPATR
+│ - de_cdlocal (varchar 4)       - Local de origem
+│ - para_cdlocal (varchar 4)     - Local destino
+│ - de_funcionario (varchar)     - Funcionário origem
+│ - para_funcionario (varchar)   - Funcionário destino
+│ - data_movimento (datetime)
+│ - usuario (varchar)            - Quem registrou
+│ - motivo (text)                - Motivo da movimentação
+│
+│ Registros: ~4.619
+│ Eloquent Model: app/Models/MovPartr.php
+│ Propósito: Auditoria e rastreabilidade
+└─────────────────────────────────────────────────────────────────┘
+
+RELACIONAMENTOS (Eloquent):
+
+Patrimonio
+├─ belongs to ObjetoPatr (CODOBJETO → NUSEQOBJ)
+├─ belongs to Projeto (CDPROJETO)
+├─ belongs to Local (CDLOCAL)
+├─ belongs to User (CDMATRFUNCIONARIO via FK customizada)
+├─ has many MovPartr (movimentos históricos)
+└─ has many Auditoria (logs de mudança)
+
+User
+├─ has many Patrimonio (patrimônios atribuídos)
+└─ has many AuditoriaLog (ações do usuário)
+
+Local
+├─ belongs to Projeto (tabfant_id)
+└─ has many Patrimonio
+
+Projeto
+└─ has many Local
+
+INDICES CRÍTICOS (Performance):
+
+CREATE INDEX idx_patr_cdprojeto_cdlocal ON patr(CDPROJETO, CDLOCAL);
+CREATE INDEX idx_patr_cdmatrfuncionario ON patr(CDMATRFUNCIONARIO);
+CREATE INDEX idx_patr_situacao ON patr(SITUACAO);
+CREATE INDEX idx_patr_dtoperacao ON patr(DTOPERACAO DESC);
+CREATE INDEX idx_patr_codobjeto ON patr(CODOBJETO);
+CREATE INDEX idx_locais_tabfant_id ON locais_projeto(tabfant_id);
+
+================================================================================
+5. PADRÕES DE CÓDIGO OBRIGATÓRIOS
+================================================================================
+
+PRINCÍPIO FUNDAMENTAL:
+"Todo código deve ser manutenível, escalável, de fácil evolução e seguir as
+convenções do projeto para que qualquer desenvolvedor compreenda rapidamente."
+
+5.1 NOMENCLATURA
+
+PHP/Classes/Métodos:
+├─ Classes: PascalCase (PatrimonioService, MovPartrController)
+├─ Métodos: camelCase (criarPatrimonio, validarDados)
+├─ Constantes: UPPER_SNAKE_CASE (DB_HOST_KINGHOST)
+├─ Variáveis: camelCase (numSequencial, patrimonios)
+└─ Namespaces: PSR-4 (App\Models, App\Http\Controllers)
+
+Banco de Dados:
+├─ Tabelas: snake_case (patr, movpartr, locais_projeto, tabfant)
+├─ Colunas: UPPER_SNAKE_CASE com prefixo (NUSEQPATR, DEPATRIMONIO)
+├─ PKs: NUSEQ* ou id (sequencial)
+├─ FKs: ColumnName_id (patrimonio_id)
+└─ Booleans: is_* ou tem_* (is_ativo, tem_permissao)
+
+Blade/Frontend:
+├─ Componentes: kebab-case (<x-action-button>, <x-status-badge>)
+├─ IDs/Classes Tailwind: kebab-case (sort-patrimonio-name)
+├─ Dados customizados: data-* (data-delete-patrimonio)
+└─ Variáveis JS: camelCase (formData, searchFilter)
+
+5.2 COMENTÁRIOS E DOCUMENTAÇÃO
+
+PHPDoc para Classes (Obrigatório):
+```
+/**
+ * PatrimonioService
+ *
+ * Encapsula lógica de negócio de patrimônios: criação, atualização,
+ * deleção, pesquisa e estatísticas. Integra com banco local e KingHost.
+ *
+ * @package App\Services
+ * @author Equipe Plansul
+ * @version 2.0
+ */
+class PatrimonioService
+{
+    // ...
+}
+```
+
+PHPDoc para Métodos (Obrigatório):
+```
+/**
+ * Criar novo patrimônio com validação e log
+ *
+ * @param array $dados Dados do patrimônio (NUPATRIMONIO, DEPATRIMONIO, etc)
+ * @param User $usuario Usuário responsável
+ * @return Patrimonio
+ * @throws ValidationException Se dados inválidos
+ */
+public function criar(array $dados, User $usuario): Patrimonio
+{
+    // ...
+}
+```
+
+Comentários Inline (Explicativos, não óbvios):
+```
+// Ordem por DTOPERACAO DESC para trazer edições recentes primeiro
+$query->orderBy('DTOPERACAO', 'desc');
+```
+
+Comentários BLOQUEADOS (Não fazer):
+```
+// ❌ Óbvio demais
+$name = $user->name; // pega o nome do usuário
+
+// ❌ Código comentado (remover)
+// $patrimonio->delete();
+// Patrimonio::where('id', $id)->delete();
+
+// ❌ Redundante
+$data = [];  // array vazio
+```
+
+5.3 LOGS PADRONIZADOS COM EMOJIS
+
+Formato:
+Log::LEVEL('🚀 [CONTEXTO] mensagem descritiva', ['chave' => $valor]);
+
+Emojis Padrão:
+├─ 🚀 Inicialização / Start
+├─ 📋 Listagem / Consulta
+├─ ➕ Criação / Insert
+├─ ✏️ Atualização / Update
+├─ 🗑️ Deleção / Delete
+├─ ✅ Sucesso / Confirmação
+├─ ⚠️ Aviso / Warning
+├─ ❌ Erro / Failure
+├─ 🔍 Busca / Search
+├─ 📊 Estatísticas / Analytics
+├─ 📡 HTTP Request
+├─ 📥 HTTP Response
+├─ 🔐 Segurança / Authorization
+├─ 💾 Backup / Storage
+├─ 🔄 Sincronização / Sync
+└─ 📧 Notificação / Email
+
+Exemplos:
+```
+Log::info('✅ [PatrimonioService] patrimônio criado', [
+    'nuseqpatr' => $patrimonio->NUSEQPATR,
+    'usuario' => Auth::user()->email,
+]);
+
+Log::warning('⚠️ [ImportService] 5 registros com erro', [
+    'linha' => 42,
+    'erro' => 'CDLOCAL inválido',
+    'arquivo' => 'patrimonio_import.txt',
+]);
+
+Log::error('❌ [KingHostSync] falha ao conectar', [
+    'host' => config('database.kinghost_host'),
+    'exception' => $e->getMessage(),
+]);
+```
+
+5.4 TRATAMENTO DE ERROS
+
+Sempre encapsular em try-catch:
+```
+try {
+    $patrimonio = $this->criar($dados);
+    Log::info('✅ [Patrimonio] criado', ['id' => $patrimonio->NUSEQPATR]);
+    return response()->json(['success' => true, 'patrimonio' => $patrimonio]);
+} catch (ValidationException $e) {
+    Log::warning('⚠️ [Patrimonio] validação falhou', ['errors' => $e->errors()]);
+    return response()->json(['errors' => $e->errors()], 422);
+} catch (Exception $e) {
+    Log::error('❌ [Patrimonio] erro inesperado', ['exception' => $e->getMessage()]);
+    return response()->json(['error' => 'Erro interno'], 500);
+}
+```
+
+Nunca deixar Exception sem log e sem resposta adequada ao cliente.
+
+5.5 SEPARAÇÃO DE RESPONSABILIDADES
+
+Controllers: Apenas HTTP
+```
+// ✅ CORRETO
+public function store(StorePatrimonioRequest $request)
+{
+    $patrimonio = $this->patrimonioService->criar($request->validated());
+    return redirect()->route('patrimonios.show', $patrimonio)->with('success', 'Criado!');
+}
+
+// ❌ ERRADO (lógica no controller)
+public function store(Request $request)
+{
+    DB::beginTransaction();
+    $patr = Patrimonio::create($request->all());
+    MovPartr::create(['patrimonio_id' => $patr->id, ...]);
+    // ... 50 linhas de lógica
+}
+```
+
+Services: Lógica de Negócio
+```
+// ✅ CORRETO em PatrimonioService
+public function criar(array $dados): Patrimonio
+{
+    DB::beginTransaction();
+    try {
+        $patrimonio = Patrimonio::create($dados);
+        MovPartr::create(['patrimonio_id' => $patrimonio->id, 'acao' => 'CRIACAO']);
+        $this->notificarFuncionario($patrimonio);
+        DB::commit();
+        Log::info('✅ [Service] patrimônio criado', ['id' => $patrimonio->NUSEQPATR]);
+        return $patrimonio;
+    } catch (Exception $e) {
+        DB::rollBack();
+        Log::error('❌ [Service] erro ao criar', ['exception' => $e->getMessage()]);
+        throw $e;
+    }
+}
+```
+
+Models: Apenas Relacionamentos e Escopos
+```
+// ✅ CORRETO em Patrimonio Model
+class Patrimonio extends Model
+{
+    public function objeto() {
+        return $this->belongsTo(ObjetoPatr::class, 'CODOBJETO');
+    }
+
+    public function scopeAtivos($query) {
+        return $query->where('SITUACAO', 'Ativo');
+    }
+
+    public function scopeNoPeriodo($query, $de, $ate) {
+        return $query->whereBetween('DTOPERACAO', [$de, $ate]);
+    }
+}
+```
+
+5.6 REUTILIZAÇÃO DE CÓDIGO (DRY)
+
+Componentes Blade para HTML Repetido:
+```
+// ❌ ERRADO - HTML duplicado em várias views
+<a href="/patrimonios/{{ $p->id }}/edit" class="...">Editar</a>
+<a href="/patrimonios/{{ $p->id }}/edit" class="...">Editar</a>
+
+// ✅ CORRETO - Criar componente
+// resources/views/components/action-button.blade.php
+<x-action-button :href="route('patrimonios.edit', $patrimonio)" action="edit" />
+
+// Usar em views:
+<x-action-button :href="route('patrimonios.edit', $patrimonio)" action="edit" />
+```
+
+Módulos JavaScript para Lógica Repetida:
+```
+// ✅ public/js/modules/PatrimonioActions.js
+window.PatrimonioActions = (() => {
+    const delete = (id) => fetch(`/api/patrimonios/${id}`, { method: 'DELETE' });
+    const rebind = (id, user) => fetch(`/api/patrimonios/${id}/rebind`, { method: 'POST', body: JSON.stringify({user}) });
+    return { delete, rebind };
+})();
+
+// Em views:
+<button @click="PatrimonioActions.delete(patrimonio.id)">Deletar</button>
+```
+
+Services para Lógica Compartilhada:
+```
+// ✅ app/Services/BuscaPatrimonioService.php
+class BuscaPatrimonioService
+{
+    public function buscar(string $termo): Collection {
+        return Patrimonio::where('NUPATRIMONIO', 'like', "%$termo%")
+            ->orWhere('DEPATRIMONIO', 'like', "%$termo%")
+            ->orderBy('DTOPERACAO', 'desc')
+            ->get();
+    }
+}
+
+// Usar em múltiplos controllers:
+$resultados = app(BuscaPatrimonioService::class)->buscar($termo);
+```
+
+5.7 VALIDAÇÃO E FORM REQUESTS
+
+Criar FormRequest para cada operação:
+```
+// ✅ app/Http/Requests/StorePatrimonioRequest.php
+class StorePatrimonioRequest extends FormRequest
+{
+    public function authorize(): bool {
+        return auth()->check() && auth()->user()->can('create', Patrimonio::class);
+    }
+
+    public function rules(): array {
+        return [
+            'NUPATRIMONIO' => 'required|string|unique:patr',
+            'DEPATRIMONIO' => 'required|string|max:300',
+            'CODOBJETO' => 'required|exists:objetopatr,NUSEQOBJ',
+            'CDPROJETO' => 'required|exists:tabfant,CDPROJETO',
+            'CDLOCAL' => 'required|string',
+            'SITUACAO' => 'in:Ativo,Inativo,Baixado',
+        ];
+    }
+
+    public function messages(): array {
+        return [
+            'NUPATRIMONIO.required' => 'Número do patrimônio é obrigatório',
+            'NUPATRIMONIO.unique' => 'Este número já existe no banco',
+            'CODOBJETO.exists' => 'Objeto selecionado não existe',
+        ];
+    }
+}
+```
+
+Usar em Controller:
+```
+public function store(StorePatrimonioRequest $request) {
+    $patrimonio = $this->service->criar($request->validated());
+    // ...
+}
+```
+
+================================================================================
+6. DESIGN E INTERFACE DO USUÁRIO
+================================================================================
+
+FILOSOFIA DE DESIGN: Simplicidade, clareza, consistência
+
+TECNOLOGIA: Tailwind CSS 3.x (utility-first) + Alpine.js (interatividade)
+TEMAS: Light mode (padrão) + Dark mode (automático com toggle)
+
+6.1 PALETA DE CORES
+
+Cores Primárias:
+├─ Indigo: #4F46E5 (ação principal, botões primários)
+├─ Blue: #3B82F6 (informação, links)
+├─ Green: #10B981 (sucesso, ativa)
+├─ Red: #EF4444 (perigo, deletar, erro)
+├─ Amber: #F59E0B (aviso, atenção)
+└─ Gray: #6B7280 (neutro, texto secundário)
+
+Backgrounds:
+├─ Light mode: white (#FFFFFF), gray-50 (#F9FAFB), gray-100 (#F3F4F6)
+├─ Dark mode: gray-900 (#111827), gray-800 (#1F2937), gray-700 (#374151)
+└─ Borders: gray-200 (light), gray-700 (dark)
+
+Obrigação ABSOLUTA (Dark Mode):
+TODA COR DEVE TER SEU EQUIVALENTE dark:
+
+❌ ERRADO:
+<div class="bg-white">
+  <p class="text-gray-900">Texto</p>
+</div>
+
+✅ CORRETO:
+<div class="bg-white dark:bg-gray-900">
+  <p class="text-gray-900 dark:text-gray-100">Texto</p>
+</div>
+
+6.2 LAYOUT E GRIDS
+
+Mobile-first (padrão):
+- 1 coluna em mobile
+- Expandir em md: (768px) e lg: (1024px)
+
+Exemplo de grid de formulário:
+```html
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2">Projeto (2 colunas em lg)</div>
+    <div>Situação (1 coluna em lg)</div>
+    <div>Peso</div>
+    <div>Tamanho</div>
+    <div>Data Aquisição</div>
+</div>
+```
+
+6.3 COMPONENTES PADRÃO
+
+Inputs:
+```html
+<label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+    Label
+</label>
+<input type="text" placeholder="..."
+    class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+```
+
+Selects:
+```html
+<select class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500">
+    <option>Opção 1</option>
+</select>
+```
+
+Botões:
+```html
+<!-- Primário (ação principal) -->
+<button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:hover:bg-indigo-500 text-white text-xs font-medium rounded-md">
+    Ação Principal
+</button>
+
+<!-- Secundário (ação menos importante) -->
+<button class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 text-xs font-medium rounded-md">
+    Ação Secundária
+</button>
+
+<!-- Perigo (delete) -->
+<button class="px-4 py-2 bg-red-600 hover:bg-red-700 dark:hover:bg-red-500 text-white text-xs font-medium rounded-md">
+    Deletar
+</button>
+```
+
+Badges/Status:
+```html
+<!-- Verde (ativo) -->
+<span class="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-xs font-medium rounded">
+    Ativo
+</span>
+
+<!-- Vermelho (inativo) -->
+<span class="px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 text-xs font-medium rounded">
+    Inativo
+</span>
+```
+
+Tabelas:
+```html
+<table class="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
+    <thead class="bg-gray-100 dark:bg-gray-800">
+        <tr>
+            <th class="border border-gray-200 dark:border-gray-700 px-4 py-2 text-left text-xs font-medium text-gray-900 dark:text-gray-100">
+                Coluna
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="border border-gray-200 dark:border-gray-700 px-4 py-2 text-xs text-gray-900 dark:text-gray-100">
+                Dado
+            </td>
+        </tr>
+    </tbody>
+</table>
+```
+
+Modais:
+```html
+<div x-show="open" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md w-full">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Título</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Conteúdo</p>
+        <div class="flex gap-2">
+            <button @click="open = false" class="...">Cancelar</button>
+            <button @click="confirmar()" class="...">Confirmar</button>
+        </div>
+    </div>
+</div>
+```
+
+6.4 RESPONSIVIDADE
+
+Breakpoints Tailwind:
+├─ sm: 640px
+├─ md: 768px
+├─ lg: 1024px
+├─ xl: 1280px
+└─ 2xl: 1536px
+
+Usar: md:col-span-2, lg:grid-cols-3, sm:text-xs, etc
+
+6.5 ACESSIBILIDADE
+
+Obrigações:
+- Todos inputs devem ter <label>
+- Usar aria-label para ícones sem texto
+- Cores não devem ser única forma de comunicação (adicionar ícones)
+- Contraste mínimo 4.5:1 (já garantido pelo Tailwind)
+- Teclado navegável (tabindex, focus outline)
+
+================================================================================
+7. COMPONENTES REUTILIZÁVEIS
+================================================================================
+
+LOCALIZAÇÃO: resources/views/components/
+
+7.1 ACTION-BUTTON
+
+Arquivo: action-button.blade.php
+
+Props:
+- href (string): URL da ação
+- action (string): Tipo (edit, delete, view, add, export, download)
+- label (string): Texto do botão (opcional, auto se não passar)
+- classe (string): Classes Tailwind adicionais (opcional)
+- confirm (boolean): Pede confirmação antes (padrão: false para delete)
+- data (array): Atributos data-* customizados (opcional)
+
+Exemplos:
+```html
+<!-- Editar -->
+<x-action-button :href="route('patrimonios.edit', $patrimonio)" action="edit" />
+
+<!-- Deletar com confirmação -->
+<x-action-button :href="route('patrimonios.destroy', $patrimonio)" action="delete" method="POST" confirm="true" />
+
+<!-- Exportar -->
+<x-action-button :href="route('patrimonios.export')" action="export" label="Exportar Relatório" />
+
+<!-- Adicionar -->
+<x-action-button :href="route('patrimonios.create')" action="add" label="Novo Patrimônio" />
+```
+
+7.2 STATUS-BADGE
+
+Arquivo: status-badge.blade.php
+
+Props:
+- status (string): Status (Ativo, Inativo, Baixado, Pendente, Conferido, etc)
+- size (string): Tamanho (xs, sm, md) - padrão: sm
+- classe (string): Classes adicionais (opcional)
+
+Cores Automáticas:
+├─ Ativo → green
+├─ Inativo → gray
+├─ Baixado → red
+├─ Pendente → amber
+├─ Conferido → blue
+└─ (extendível)
+
+Exemplos:
+```html
+<x-status-badge status="Ativo" />
+<x-status-badge status="Baixado" size="lg" />
+<x-status-badge :status="$patrimonio->SITUACAO" />
+```
+
+7.3 TABLE-HEADER
+
+Arquivo: table-header.blade.php
+
+Props:
+- label (string): Texto da coluna
+- sortable (boolean): Permite sort (padrão: true)
+- sortField (string): Campo no BD para ordenar (ex: NUPATRIMONIO)
+- currentSort (string): Campo atualmente ordenado
+- currentDirection (string): asc ou desc
+
+Exemplo:
+```html
+<table>
+    <thead>
+        <tr>
+            <th>
+                <x-table-header label="Patrimônio" sortField="NUPATRIMONIO" :currentSort="$sort" :currentDirection="$direction" />
+            </th>
+            <th>
+                <x-table-header label="Descrição" sortField="DEPATRIMONIO" :currentSort="$sort" :currentDirection="$direction" />
+            </th>
+        </tr>
+    </thead>
+</table>
+```
+
+7.4 PATRIMONIO-FORM
+
+Arquivo: patrimonio-form.blade.php (Componente grande para reutilizar em create/edit)
+
+Props:
+- patrimonio (Patrimonio|null): Objeto patrimônio (null para create)
+- action (string): create ou edit
+- método (string): POST ou PATCH
+
+Gerencia:
+- Campos de entrada (NUPATRIMONIO, DEPATRIMONIO, CODOBJETO, etc)
+- Validação no frontend (Alpine.js)
+- Modal de confirmação de mudanças
+- Logs de campo alterado
+
+Exemplo em create.blade.php:
+```html
+<x-patrimonio-form :patrimonio="null" action="create" />
+```
+
+Exemplo em edit.blade.php:
+```html
+<x-patrimonio-form :patrimonio="$patrimonio" action="edit" />
+```
+
+================================================================================
+8. FLUXOS DE NEGÓCIO PRINCIPAIS
+================================================================================
+
+8.1 CRIAR NOVO PATRIMÔNIO
+
+Ator: Consultor ou Admin
+Objetivo: Registrar novo bem no sistema
+
+Passos:
+1. Acessar /patrimonios/create
+2. Preencher formulário (NUPATRIMONIO, DEPATRIMONIO, CODOBJETO, CDPROJETO, etc)
+3. Clicar "Salvar"
+4. Validações no lado do cliente (Alpine.js)
+5. POST /patrimonios com dados
+6. Validações no servidor (StorePatrimonioRequest)
+7. PatrimonioService::criar() executado
+   a. DB::beginTransaction()
+   b. Patrimonio::create($dados)
+   c. MovPartr::create(['acao' => 'CRIACAO'])
+   d. Notificar funcionário (se atribuído)
+   e. Log info ✅
+   f. DB::commit()
+8. Redirect para show com mensagem "Patrimônio criado com sucesso!"
+9. Tabela movpartr registra a ação
+
+Dados Salvos:
+- patr: novo registro NUSEQPATR gerado
+- movpartr: nova entrada com acao=CRIACAO
+- auditoria: log de quem criou, quando
+
+Possíveis Erros:
+- NUPATRIMONIO duplicado → Erro 422
+- CODOBJETO inválido → Erro 422
+- Sem permissão → Erro 403
+
+8.2 EDITAR PATRIMÔNIO
+
+Ator: Consultor ou Admin
+Objetivo: Atualizar informações de bem existente
+
+Passos:
+1. Acessar /patrimonios/{id}/edit
+2. Formulário preenchido com dados atuais
+3. Alterar campos desejados
+4. Sistema detecta mudanças (JavaScript comparar objeto original)
+5. Clicar "Salvar"
+6. Modal mostra: "Você alterou: [DEPATRIMONIO, CDLOCAL]" com antes e depois
+7. Confirmar
+8. PATCH /patrimonios/{id} com dados
+9. PatrimonioService::atualizar() executado
+   a. DB::beginTransaction()
+   b. Carregar Patrimonio::find($id)
+   c. Registrar valores antigos em auditoria
+   d. $patrimonio->update($dados)
+   e. MovPartr::create(['acao' => 'ATUALIZACAO', 'de' => ..., 'para' => ...])
+   f. Log info ✅
+   g. DB::commit()
+10. Redirect para show com "Patrimônio atualizado!"
+11. Histórico (movpartr) exibe todas as alterações
+
+Dados Salvos:
+- patr: registro NUSEQPATR atualizado
+- movpartr: nova entrada com acao=ATUALIZACAO
+- auditoria: log completo de mudanças
+
+Possíveis Erros:
+- CDLOCAL inválido → Erro 422
+- Conflito (outro usuário editou) → Aviso
+
+8.3 DELETAR PATRIMÔNIO
+
+Ator: Consultor ou Admin
+Objetivo: Remover bem do sistema
+
+Passos:
+1. Acessar /patrimonios/{id}
+2. Clicar botão "Deletar"
+3. Modal pede confirmação: "Tem certeza? Isto não pode ser desfeito."
+4. Confirmar
+5. DELETE /patrimonios/{id}
+6. PatrimonioService::deletar() executado
+   a. DB::beginTransaction()
+   b. Registrar backup em MovPartr com acao=DELECAO + JSON do patrimônio
+   c. Patrimonio::destroy($id)
+   d. Log warn ⚠️ com dados deletados
+   e. DB::commit()
+7. Redirect para /patrimonios com "Patrimônio deletado!"
+8. Arquivo de backup criado em storage/backups/patrimonio_<id>_<timestamp>.json
+
+Dados Afetados:
+- patr: registro NUSEQPATR deletado
+- movpartr: registro com backup (JSON)
+- backups: arquivo JSON com cópia completa
+
+Possíveis Erros:
+- Patrimônio não existe → Erro 404
+- Sem permissão → Erro 403
+
+8.4 LISTAR PATRIMÔNIOS COM FILTROS
+
+Ator: Qualquer usuário autenticado
+Objetivo: Buscar patrimônios com filtros
+
+Passos:
+1. Acessar GET /patrimonios (sem params)
+   - Retorna últimos 50 por DTOPERACAO DESC
+2. Preencher filtros (Projeto, Local, Funcionário, Situação, Data Aquisição)
+3. Cada mudança de filtro dispara busca por AJAX
+4. JavaScript usa SearchFilter.js para debounce (500ms)
+5. GET /patrimonios?projeto=8&local=001&funcionario=123&situacao=Ativo
+6. PatrimonioController::index() executa
+   a. Construir Eloquent query com joins
+   b. Aplicar where's de cada filtro
+   c. Order by DTOPERACAO desc
+   d. Paginar (50 por página)
+   e. Retornar JSON ou HTML (depends on Accept header)
+7. Tabela atualiza com resultados
+8. Total de registros exibido no topo
+
+Performance:
+- Índices em (CDPROJETO, CDLOCAL), CDMATRFUNCIONARIO, SITUACAO
+- Cache de projetos/locais (30min)
+- Paginação (máx 50 registros por request)
+
+8.5 IMPORTAR PATRIMÔNIOS EM LOTE
+
+Ator: Consultor
+Objetivo: Carregar múltiplos patrimônios via arquivo TXT/CSV
+
+Passos:
+1. Acessar /patrimonios/import
+2. Fazer upload de arquivo TXT (formato específico)
+3. Preview dos dados (primeiras 5 linhas)
+4. Clicar "Confirmar Importação"
+5. POST /patrimonios/import com arquivo
+6. ImportacaoService::processar() executado
+   a. Ler arquivo linha por linha
+   b. Parsear cada linha (split por tab ou vírgula)
+   c. Validar cada registro
+   d. DB::beginTransaction()
+   e. Para cada linha válida:
+      - Patrimonio::firstOrCreate(['NUPATRIMONIO' => ...])
+      - MovPartr::create(['acao' => 'IMPORT'])
+   f. Para cada erro, registrar em log
+   g. DB::commit()
+   h. Gerar relatório: "Importados: 150, Erros: 5"
+   i. Log info ✅
+7. Arquivo backup criado em storage/backups/import_<timestamp>.json
+8. Relatório exibido com opção de baixar erros
+
+Dados Processados:
+- patr: múltiplos inserts ou updates
+- movpartr: entrada para cada importação
+- logs: arquivo de erros em storage/logs/
+
+Possíveis Erros:
+- Formato inválido → Skip linha
+- CODOBJETO não existe → Skip linha + log erro
+- Arquivo vazio → Erro
+
+================================================================================
+9. INTEGRAÇÃO COM KINGHOST
+================================================================================
+
+SERVIDOR: KingHost (SSH: plansul@ftp.plansul.info)
+APP REMOTE: ~/www/estoque-laravel
+PHP VERSION: php82 (OBRIGATÓRIO, não usar php padrão)
+DATABASE: mysql07-farm10.kinghost.net:3306
+
+9.1 CREDENCIAIS E ACESSO
+
+Arquivo: .env (NÃO commitar, valores locais)
+
+Local (.env):
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=plansul
+DB_USERNAME=root
+DB_PASSWORD=
+
+KingHost (.env):
+DB_HOST_KINGHOST=mysql07-farm10.kinghost.net
+DB_USERNAME_KINGHOST=plansul004_add2
+DB_PASSWORD_KINGHOST=A33673170a
+DB_DATABASE_KINGHOST=plansul04
+
+SSH:
+KINGHOST_USER=plansul
+KINGHOST_HOST=ftp.plansul.info
+KINGHOST_KEY=/path/to/private_key (se usar SSH key)
+
+9.2 FLUXO DE SINCRONIZAÇÃO
+
+Banco Local ← Banco KingHost (unidirecional)
+
+Procedimento:
+1. Conectar via SSH ao KingHost
+2. Executar query no BD remoto
+3. Receber resultado em TSV (tab-separated values)
+4. Parse no Laravel (explode("\t"))
+5. Upsert em banco local (INSERT ... ON DUPLICATE UPDATE)
+6. Log de quantidades sincronizadas
+7. Auditoria em database.log
+
+Script One-off: scripts/kinghost_sync_master.php
+
+Uso:
+```bash
+php artisan tinker
+> include_once('scripts/kinghost_sync_master.php');
+> syncPatrimonios(); // Sincroniza patr
+> syncLocais();      // Sincroniza locais_projeto
+```
+
+Ou via SSH direto:
+```bash
+ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && php82 artisan sync:kinghost --table=patr"
+```
+
+9.3 CAMPOS SINCRONIZADOS
+
+Tabelas Críticas:
+├─ patr (patrimônios)
+├─ locais_projeto
+├─ tabfant (projetos)
+├─ objetopatr (tipos)
+├─ funcionarios
+├─ tipopatr
+└─ movpartr
+
+Mapeamento de Colunas KingHost → Local:
+```
+KingHost.patr.NUSEQPATR → Local.patr.NUSEQPATR
+KingHost.patr.NUPATRIMONIO → Local.patr.NUPATRIMONIO
+... (1:1 naming)
+```
+
+9.4 BACKUPS E RECUPERAÇÃO
+
+Backup Automático Antes de Sync:
+```php
+$backup = DB::table('patr')->get();
+Storage::put("backups/pre_sync_patr_" . now()->format('Y-m-d_Hms') . ".json", 
+            json_encode($backup));
+```
+
+Restaurar Backup:
+```bash
+php artisan restore:backup --file=pre_sync_patr_2025-01-15_140530.json
+```
+
+9.5 TROUBLESHOOTING KingHost
+
+Erro: "Parse error: unexpected ':'"
+Solução: Usar `php82` em vez de `php`
+
+Erro: "root composer.json requires php ^8.2"
+Solução: `php82 ~/composer.phar install`
+
+Erro: "Connection refused" ao conectar BD
+Solução: Verificar DNS, checar se acesso SSH está ativo
+
+Erro: "untracked files would be overwritten by merge"
+Solução: `git stash` antes de `git pull`
+
+================================================================================
+10. SCRIPTS E UTILITÁRIOS
+================================================================================
+
+LOCALIZAÇÃO: scripts/ (diretório, não parte do deploy permanente)
+
+CLASSIFICAÇÃO:
+
+One-off (Executar uma vez):
+├─ kinghost_sync_master.php - Sincronização completa
+├─ criar_backup.ps1 - Backup antes de operação
+├─ buscar_locais_por_projeto.php - Diagnóstico
+└─ verificar_datas_aquisicao.php - Auditoria
+
+Reutilizável (Permanente):
+├─ scripts/analisar_estrutura_uf.php - Análise de UFs
+└─ start_laravel_server.ps1 - Iniciar dev server
+
+10.1 PROCEDIMENTO ONE-OFF
+
+Quando criar:
+1. Adicionar comentário na primeira linha: // one-off
+2. Descrever objetivo e parâmetros
+3. Avisar no chat: "Vou executar script one-off: <nome> que <objetivo>"
+4. Executar com --dry-run se possível
+5. Gerar LOG em storage/logs/
+6. Documentar resultado
+7. DELETAR arquivo do repositório
+
+Exemplo:
+```php
+// one-off: Sincronizar patrimônios do KingHost para local
+// Objetivo: Restaurar dados após perda
+// Uso: php artisan tinker > include_once('scripts/sync_patrimonio.php');
+
+$count = 0;
+try {
+    // SSH query ...
+    // Process ...
+    Log::info("✅ [sync_patrimonio] Sincronizados $count registros");
+    echo "Sucesso! $count patrimônios sincronizados\n";
+} catch (Exception $e) {
+    Log::error("❌ [sync_patrimonio] Erro: " . $e->getMessage());
+    echo "Erro: " . $e->getMessage() . "\n";
+}
+```
+
+10.2 SCRIPTS PERMANENTES
+
+Documentar em `.txt` dentro de scripts/README_SCRIPTS.txt:
+
+```
+SCRIPTS REUTILIZÁVEIS
+=====================
+
+start_laravel_server.ps1
+- Objetivo: Iniciar servidor de desenvolvimento
+- Uso: .\scripts\start_laravel_server.ps1
+- Output: Servidor rodando em http://localhost:8000
+
+criar_backup.ps1
+- Objetivo: Backup full antes de operação crítica
+- Uso: .\scripts\criar_backup.ps1
+- Output: ZIP em archive/backups/pre_action_<timestamp>.zip
+```
+
+================================================================================
+11. SEGURANÇA E PERMISSÕES
+================================================================================
+
+11.1 AUTENTICAÇÃO
+
+Método: Laravel Auth + Sanctum (tokens)
+
+Fluxo:
+1. Usuário faz login em /login
+2. Credenciais validadas contra tabela users
+3. Session criada (cookie)
+4. Redirect para /patrimonios ou dashboard
+
+Guard Padrão: web (session-based)
+Guard API: sanctum (token-based, se usar API)
+
+11.2 AUTORIZAÇÃO
+
+Método: Policies + Permissions (Laravel Policies)
+
+Estrutura:
+- Policy (app/Policies/PatrimonioPolicy.php) define "view", "create", "update", "delete"
+- Middleware CheckPermission valida antes de controller
+
+Exemplo de Policy:
+```php
+class PatrimonioPolicy
+{
+    public function view(User $user, Patrimonio $patrimonio): bool {
+        // Apenas proprietário ou admin pode ver
+        return $user->id === $patrimonio->user_id || $user->is_admin;
+    }
+
+    public function create(User $user): bool {
+        return $user->hasRole('consultor') || $user->hasRole('admin');
+    }
+}
+```
+
+Uso em Controller:
+```php
+$this->authorize('view', $patrimonio);
+```
+
+Ou em Blade:
+```blade
+@can('edit', $patrimonio)
+    <x-action-button :href="route('patrimonios.edit', $patrimonio)" action="edit" />
+@endcan
+```
+
+11.3 PROTEÇÃO CSRF
+
+Automática em Laravel:
+- Form inclui @csrf (token)
+- Middleware VerifyCsrfToken valida
+
+Todas as views Blade devem incluir:
+```blade
+<form method="POST" action="/patrimonios">
+    @csrf
+    <!-- campos -->
+</form>
+```
+
+11.4 VALIDAÇÃO DE ENTRADA
+
+Obrigatório em FormRequests:
+
+```php
+public function rules(): array {
+    return [
+        'NUPATRIMONIO' => 'required|string|max:20|unique:patr',
+        'DEPATRIMONIO' => 'required|string|max:300',
+        'CODOBJETO' => 'required|integer|exists:objetopatr,NUSEQOBJ',
+    ];
+}
+```
+
+NUNCA confiar em dados do cliente.
+SEMPRE validar no servidor.
+
+11.5 PROTEÇÃO DE DADOS
+
+Passwords:
+- Hash com bcrypt (Laravel padrão)
+- NUNCA armazenar em plain text
+
+Dados Sensíveis:
+- Usar .env para credenciais
+- .env nunca commitar
+- HTTPS em produção (KingHost = HTTPS automático)
+
+Backup:
+- Senhas não incluídas em backups (removidas antes)
+- Backups armazenados seguro (archive/backups/)
+
+11.6 LOGGING E AUDITORIA
+
+Toda ação crítica deve ser logada:
+- Criação de patrimônio
+- Edição de patrimônio
+- Deleção
+- Login/Logout
+- Acesso a relatórios
+- Exportações
+
+Formato:
+```
+[2025-02-02 14:30:45] INFO ✅ [PatrimonioService] patrimônio criado
+    usuario: consultor@plansul.com
+    nuseqpatr: 12345
+    acao: CRIACAO
+```
+
+Retenção: Logs rodam por 30 dias (configure em config/logging.php)
+
+================================================================================
+12. CHECKLIST DE DESENVOLVIMENTO
+================================================================================
+
+ANTES DE INICIAR QUALQUER TAREFA:
+
+Leitura:
+[ ] Li este documento completo
+[ ] Li .github/copilot-instructions.md
+[ ] Entendi a arquitetura (fluxo Controllers → Services → Models)
+[ ] Identifiquei componentes/módulos relacionados
+
+Preparação:
+[ ] Git branch criado (git checkout -b feature/nome)
+[ ] Backup criado (scripts/criar_backup.ps1)
+[ ] Banco local atualizado (php artisan migrate)
+[ ] npm run dev ou npm run build executado
+
+DURANTE IMPLEMENTAÇÃO:
+
+Código:
+[ ] Separação de responsabilidades respeitada
+[ ] Componentes Blade reutilizados (se houver)
+[ ] Módulos JS modularizados
+[ ] Logs com emojis padronizados
+[ ] Tratamento de erros completo (try-catch)
+[ ] Validação no servidor (FormRequest)
+[ ] PHPDoc adicionado em classes/métodos
+
+Estilo:
+[ ] Sem CSS customizado (APENAS Tailwind)
+[ ] TODOS os estilos têm dark: correspondente
+[ ] Responsivo testado (mobile, tablet, desktop)
+[ ] Tema claro E escuro testados
+[ ] Nenhuma classe inventada
+
+Testes Locais:
+[ ] Funcionalidade testada em navegador
+[ ] Console sem erros (F12)
+[ ] Network sem 404s ou 500s
+[ ] Validação do formulário funciona
+[ ] Pagination funciona
+[ ] Filtros funcionam
+[ ] Edição registra auditoria
+[ ] Dark mode comutável
+
+ANTES DE COMMITAR:
+
+Validação:
+[ ] php -l app/**/*.php (sem erros de sintaxe)
+[ ] npm run build (sem erros de build)
+[ ] Database migrations up-to-date
+[ ] Logs limpos de erros críticos
+
+Git:
+[ ] git status (verificar arquivos não esperados)
+[ ] Não incluir: vendor/, node_modules/, .env
+[ ] Incluir: migrations, models, views, componentes
+[ ] git add . (ou git add <arquivos>)
+[ ] git commit -m "Descrição clara da mudança"
+
+Exemplo de commit:
+```
+✅ Feature: Adicionar campo CODIGO_BARRAS em patrimônios
+- Nova migration para expandir coluna
+- Componente form atualizado
+- Dark mode suportado
+- Logs implementados
+```
+
+ANTES DE PUSH (se tiver permissão):
+
+[ ] git log --oneline -5 (verificar histórico)
+[ ] git push origin feature/nome
+[ ] Criar Pull Request no GitHub
+[ ] Aguardar review
+
+APÓS DEPLOY EM KINGHOST (quando aplicável):
+
+SSH Verification:
+```bash
+ssh plansul@ftp.plansul.info
+cd ~/www/estoque-laravel
+php82 artisan migrate
+php82 artisan cache:clear
+php82 artisan view:clear
+ls -la storage/logs/
+tail -20 storage/logs/laravel.log
+```
+
+Testes Produção:
+[ ] Login funciona
+[ ] Listar patrimônios funciona
+[ ] Filtros funcionam
+[ ] Criar patrimônio funciona
+[ ] Editar patrimônio funciona
+[ ] Deletar patrimônio funciona
+[ ] Exportar relatório funciona
+[ ] Dark mode funciona
+[ ] Mobile responsivo
+
+================================================================================
+APÊNDICE A: REFERÊNCIA RÁPIDA DE COMANDOS
+================================================================================
+
+Laravel/PHP:
+php artisan serve                    # Inicia dev server (http://localhost:8000)
+php artisan migrate                  # Aplica migrations
+php artisan migrate:rollback         # Desfaz última migration
+php artisan db:seed                  # Roda seeders
+php artisan tinker                   # REPL interativo
+php artisan cache:clear              # Limpa cache
+php artisan view:clear               # Limpa views compiladas
+php artisan make:model Nome          # Cria novo model
+php artisan make:controller NomeController    # Cria controller
+php artisan make:command Nome        # Cria comando Artisan
+php -l arquivo.php                   # Valida sintaxe PHP
+
+NPM/Vite:
+npm install                          # Instala dependências
+npm run dev                          # Watch mode (Vite + Tailwind)
+npm run build                        # Build produção
+npm run lint                         # Lint JavaScript (se configurado)
+
+Git:
+git clone <repo>                     # Clona repositório
+git checkout -b feature/nome         # Cria branch
+git add .                            # Stage files
+git commit -m "msg"                  # Commit
+git push origin branch               # Push (se tiver permissão)
+git log --oneline                    # Ver histórico
+
+SSH KingHost:
+ssh plansul@ftp.plansul.info         # Conecta
+cd ~/www/estoque-laravel             # Vai para app
+php82 --version                      # Verifica PHP
+php82 artisan command                # Roda artisan
+
+MySQL:
+mysql -h localhost -u root plansul   # Conecta BD local
+SELECT * FROM patr LIMIT 5;          # Query exemplo
+EXIT;                                # Sai do MySQL
+
+================================================================================
+APÊNDICE B: GLOSSÁRIO DE TERMOS TÉCNICOS
+================================================================================
+
+API: Application Programming Interface - Interface para comunicação entre sistemas
+Artisan: CLI (Command Line Interface) do Laravel
+Atomic Transaction: Operação "tudo ou nada" no banco (BEGIN, COMMIT, ROLLBACK)
+Audit Log: Registro de quem fez o quê e quando
+Blade: Template engine do Laravel (views dinâmicas em PHP)
+Cache: Armazenamento rápido em memória ou arquivo
+CSRF: Cross-Site Request Forgery - proteção contra requisições não autorizadas
+Dark Mode: Tema escuro da interface
+DRY: Don't Repeat Yourself - evitar duplicação de código
+Entity Relationship: Relacionamento entre tabelas (1:1, 1:N, M:N)
+Eloquent: ORM (Object-Relational Mapping) do Laravel
+FK (Foreign Key): Chave estrangeira (referência entre tabelas)
+FormRequest: Classe Laravel que valida formulários
+Guard: Sistema de autenticação (web, api, etc)
+Hash: Criptografia de password com bcrypt
+Middleware: Filtro HTTP antes/depois de requisição
+Migration: Versionamento de schema do banco (up/down)
+Model: Classe Eloquent que representa tabela do banco
+Observable: Padrão de observer (events em modelos)
+ORM: Object-Relational Mapping (Eloquent é um ORM)
+PHPDoc: Documentação em PHP (/** ... */)
+PK (Primary Key): Chave primária (identificador único)
+Policy: Classe que autoriza ações em modelos (Laravel)
+Refactoring: Melhorar código sem mudar funcionalidade
+Repository Pattern: Abstração de acesso a dados
+Route: Mapeamento de URL para Controller
+Seed: Dados iniciais no banco (fixtures)
+Service Layer: Classe que encapsula lógica de negócio
+Transaction: Grupo de operações de banco (atômicas)
+Utility-first CSS: Tailwind - classes pequenas que combinam (não componentes)
+Vite: Bundler moderno e rápido para assets (CSS, JS)
+Webpacking: Bundling de assets (Vite = ferramenta moderna)
+
+================================================================================
+APÊNDICE C: ESTRUTURA DE DIRETÓRIOS COMPLETA
+================================================================================
+
+plansul/
+├─ .env (NÃO COMMITAR - local)
+├─ .env.example (template)
+├─ .gitignore
+├─ .github/
+│  └─ copilot-instructions.md (Instruções para Copilot - LEIA)
+├─ app/
+│  ├─ Console/Commands/ (Comandos artisan)
+│  ├─ Http/
+│  │  ├─ Controllers/ (Rotas → Lógica HTTP)
+│  │  ├─ Middleware/ (Filtros HTTP)
+│  │  └─ Requests/ (Validação de formulário)
+│  ├─ Models/ (Eloquent ORM)
+│  ├─ Services/ (Lógica de negócio)
+│  ├─ Observers/ (Event listeners)
+│  ├─ Policies/ (Autorização granular)
+│  ├─ Helpers/ (Funções auxiliares)
+│  └─ Providers/ (Service providers)
+├─ archive/backups/ (Backups históricos)
+├─ bootstrap/
+│  ├─ app.php (Inicialização do framework)
+│  └─ cache/ (Configuração compilada)
+├─ config/ (Configurações da app)
+├─ database/
+│  ├─ migrations/ (Versionamento de schema)
+│  ├─ seeders/ (Dados iniciais)
+│  └─ imports/ (Arquivos TXT/JSON para seed)
+├─ docs/ (Documentação estática)
+├─ lang/
+│  └─ pt-br/ (Traduções português)
+├─ Massa/ (Dados para testes)
+├─ public/ (Arquivos públicos - index.php, css, js compilados)
+│  ├─ build/ (Vite output - NOT EDIT)
+│  ├─ img/ (Imagens estáticas)
+│  └─ js/ (Módulos JavaScript e compilados)
+├─ resources/
+│  ├─ views/
+│  │  ├─ components/ (Componentes Blade reutilizáveis)
+│  │  ├─ layouts/ (Layout base)
+│  │  ├─ patrimonios/ (Views de patrimônios)
+│  │  └─ ... (outros módulos)
+│  ├─ css/ (CSS fonte)
+│  ├─ js/ (JavaScript fonte)
+│  └─ sass/ (SCSS source)
+├─ routes/ (Mapeamento de URLs)
+│  ├─ web.php (Rotas web)
+│  └─ auth.php (Autenticação)
+├─ scripts/ (One-offs e utilitários, NÃO permitem no deploy)
+├─ storage/
+│  ├─ logs/ (Logs da aplicação)
+│  ├─ backups/ (Backups de dados)
+│  └─ app/ (Dados processados)
+├─ tests/ (Testes automatizados, se houver)
+├─ vendor/ (Dependências Composer - NÃO COMMITAR)
+├─ artisan (CLI Laravel)
+├─ composer.json (Dependências PHP)
+├─ composer.lock (Lock file - COMMITAR)
+├─ package.json (Dependências NPM)
+├─ package-lock.json (Lock file - COMMITAR)
+├─ vite.config.js (Configuração do bundler)
+├─ tailwind.config.js (Configuração Tailwind)
+├─ phpstan.neon (Análise estática PHP)
+└─ DOCUMENTACAO_COMPLETA_SISTEMA.txt (Este arquivo - referência 100%)
+
+================================================================================
+APÊNDICE D: TEMPLATE PARA NOVA FEATURE
+================================================================================
+
+Quando adicionar nova feature ao sistema:
+
+1. MIGRATION (database/migrations/YYYY_MM_DD_*.php)
+```php
+Schema::table('patr', function (Blueprint $table) {
+    $table->string('NOVO_CAMPO', 100)->nullable()->comment('Descrição');
+    $table->index('NOVO_CAMPO');
+});
+```
+
+2. MODEL (app/Models/Patrimonio.php)
+```php
+protected $fillable = [
+    // ... existing
+    'NOVO_CAMPO',
+];
+
+protected $casts = [
+    // ... existing
+    'NOVO_CAMPO' => 'string',
+];
+```
+
+3. FORM COMPONENT (resources/views/components/patrimonio-form.blade.php)
+```blade
+<div class="md:col-span-2">
+    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+        Label Novo Campo
+    </label>
+    <input x-model="formData.NOVO_CAMPO" type="text" 
+        class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+</div>
+```
+
+4. SHOW VIEW (resources/views/patrimonios/show.blade.php)
+```blade
+<div>
+    <x-input-label value="Novo Campo" />
+    <input type="text" value="{{ $patrimonio->NOVO_CAMPO ?? '-' }}" readonly 
+        class="mt-1 block w-full bg-gray-100 dark:bg-gray-700" />
+</div>
+```
+
+5. EDIT VIEW (resources/views/patrimonios/edit.blade.php)
+```blade
+// Adicionar ao labelCampos JS
+'NOVO_CAMPO': 'Novo Campo',
+```
+
+6. VALIDATION (app/Http/Requests/StorePatrimonioRequest.php)
+```php
+'NOVO_CAMPO' => 'nullable|string|max:100',
+```
+
+7. SERVICE (app/Services/PatrimonioService.php)
+```php
+Log::info('✅ [PatrimonioService] patrimônio atualizado', [
+    'NOVO_CAMPO' => $patrimonio->NOVO_CAMPO,
+]);
+```
+
+8. TEST CHECKLIST
+[ ] Migration roda (php artisan migrate)
+[ ] Formulário aceita valor
+[ ] Valor salva no banco
+[ ] Valor exibido no show
+[ ] Edit mostra mudança no modal
+[ ] Dark mode sem problemas
+[ ] Mobile responsivo
+
+================================================================================
+FIM DA DOCUMENTAÇÃO COMPLETA
+================================================================================
+
+Versão: 2.0
+Data: 2 de fevereiro de 2026
+Próxima revisão: 2026-04-02
+
+Para atualizar este documento, solicite modificações via chat.
+Qualquer dúvida, consulte .github/copilot-instructions.md ou este arquivo.
+
+================================================================================

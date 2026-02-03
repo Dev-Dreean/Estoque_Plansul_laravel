@@ -17,6 +17,7 @@
     @include('solicitacoes.partials.show-content', [
         'solicitacao' => $solicitacao,
         'statusOptions' => $statusOptions,
+        'canManage' => $canManage,
         'isModal' => $isModal,
     ])
 @unless($isModal)

@@ -23,14 +23,24 @@
     $canManage = $canManage ?? false;
     $canUpdateData = auth()->user()?->temAcessoTela('1012') ?? false;
 
-    // Se pode atualizar, usa colunas lateral. Se nao, full width.
-    $gridClass = $canManage ? 'lg:grid-cols-3' : 'lg:grid-cols-1';
-    $leftColClass = $canManage ? 'lg:col-span-2' : '';
+    // Se pode gerenciar, usa duas colunas (1/1) a partir de md.
+    $gridClass = $canManage ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1';
+    $leftColClass = '';
 @endphp
 
 <div data-solicitacao-modal-content>
     <div class="{{ $containerClass }}">
-        <div class="{{ $wrapperClass }}">
+        <div class="{{ $wrapperClass }}" x-data="{
+                showUpdate: true,
+                showConfirmModal: false,
+                showApproveModal: false,
+                showReturnModal: false,
+                showCancelModal: false,
+                openSection: 'history',
+                toggleSection(section) {
+                    this.openSection = this.openSection === section ? '' : section;
+                }
+            }">
             <!-- Alerts -->
             @if(session('success'))
                 <div class="mb-6 bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300 px-4 py-3 rounded-lg flex items-center gap-2" role="alert">
@@ -54,7 +64,7 @@
                 </div>
             @endif
 
-            <div class="grid gap-3 {{ $gridClass }}" x-data="{ showUpdate: true, showConfirmModal: false, showApproveModal: false, showCancelModal: false }">
+            <div class="grid gap-3 {{ $gridClass }}">
 
                 <!-- Coluna Principal (Detalhes + Itens) -->
                 <div class="{{ $leftColClass }} space-y-3">
@@ -188,53 +198,53 @@
                                     </div>
                                 </div>
                             @endif
+
+                            <!-- Itens Solicitados (dentro de Detalhes) -->
+                            <div class="mx-4 mt-2 mb-4 pt-3 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)]">
+                                <h4 class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-2">
+                                    <svg class="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    </svg>
+                                    Itens Solicitados
+                                </h4>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-xs text-left">
+                                        <thead class="text-[10px] text-gray-700 uppercase bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:text-slate-400 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)]">
+                                            <tr>
+                                                <th class="px-3 py-2 font-semibold tracking-wide">Descrição / Patrimônio</th>
+                                                <th class="px-3 py-2 font-semibold tracking-wide text-center">Qtd</th>
+                                                <th class="px-3 py-2 font-semibold tracking-wide text-center">Unidade</th>
+                                                <th class="px-3 py-2 font-semibold tracking-wide">Observação</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-[color:var(--solicitacao-modal-border,#d6dde6)]">
+                                            @forelse($solicitacao->itens as $item)
+                                                <tr class="hover:bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] transition-colors">
+                                                    <td class="px-3 py-2 font-medium text-gray-900 dark:text-white">{{ $item->descricao }}</td>
+                                                    <td class="px-3 py-2 text-center text-gray-600 dark:text-slate-300">{{ $item->quantidade }}</td>
+                                                    <td class="px-3 py-2 text-center text-gray-500 dark:text-slate-400">{{ $item->unidade ?: '-' }}</td>
+                                                    <td class="px-3 py-2 text-gray-500 dark:text-slate-400 italic">{{ $item->observacao ?: '-' }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-slate-400">
+                                                        Nenhum item registrado para esta solicitação.
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Card de Itens -->
-                    <div class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] shadow-sm rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] overflow-hidden">
-                        <div class="px-4 py-2.5 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)] bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)]">
-                            <h3 class="text-[13px] font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                </svg>
-                                Itens Solicitados
-                            </h3>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-xs text-left">
-                                <thead class="text-[10px] text-gray-700 uppercase bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:text-slate-400 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)]">
-                                    <tr>
-                                        <th class="px-3 py-2 font-semibold tracking-wide">Descrição / Patrimônio</th>
-                                        <th class="px-3 py-2 font-semibold tracking-wide text-center">Qtd</th>
-                                        <th class="px-3 py-2 font-semibold tracking-wide text-center">Unidade</th>
-                                        <th class="px-3 py-2 font-semibold tracking-wide">Observação</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-[color:var(--solicitacao-modal-border,#d6dde6)]">
-                                    @forelse($solicitacao->itens as $item)
-                                        <tr class="hover:bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] transition-colors">
-                                            <td class="px-3 py-2 font-medium text-gray-900 dark:text-white">{{ $item->descricao }}</td>
-                                            <td class="px-3 py-2 text-center text-gray-600 dark:text-slate-300">{{ $item->quantidade }}</td>
-                                            <td class="px-3 py-2 text-center text-gray-500 dark:text-slate-400">{{ $item->unidade ?: '-' }}</td>
-                                            <td class="px-3 py-2 text-gray-500 dark:text-slate-400 italic">{{ $item->observacao ?: '-' }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-slate-400">
-                                                Nenhum item registrado para esta solicitação.
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+
                 </div>
 
                 <!-- Coluna Lateral (Acoes) -->
                 @if($canManage)
-                    <div class="lg:col-span-1">
+                    <div class="sm:col-span-1">
                         <div class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] shadow-lg rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] overflow-hidden sticky top-4">
 
                             <!-- Header Acoes -->
@@ -261,6 +271,18 @@
                                         Aprovar Solicitação
                                     </button>
                                 @endif
+
+                                <!-- Botao Voltar para An&aacute;lise (Solicitante) - aparece em AGUARDANDO_CONFIRMACAO -->
+                                @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && auth()->user()->temAcessoTela('1014'))
+                                    <button type="button" @click="showReturnModal = true" 
+                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all dark:focus:ring-offset-slate-900">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12a9 9 0 1015.364-6.364M3 12H9m-6 0l3-3m-3 3l3 3" />
+                                        </svg>
+                                        Voltar para an&aacute;lise
+                                    </button>
+                                @endif
+
 
                                 <!-- Botão Cancelar - APENAS em PENDENTE (desaparece após confirmar) -->
                                 @if($solicitacao->status === 'PENDENTE' && auth()->user()->temAcessoTela('1015'))
@@ -493,6 +515,41 @@
                         </div>
                     </div>
 
+                    <!-- MODAL: Retornar para An&aacute;lise -->
+                    <div x-show="showReturnModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-amber-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Voltar para An&aacute;lise</h3>
+                                <button @click="showReturnModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.return-to-analysis', $solicitacao->id) }}" class="p-6 space-y-4">
+                                @csrf
+                                @method('POST')
+
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Descreva o problema para retornar a solicita&ccedil;&atilde;o para an&aacute;lise.</p>
+
+                                <div>
+                                    <label for="motivo_retorno" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo *</label>
+                                    <textarea id="motivo_retorno" name="motivo_retorno" required rows="3"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        placeholder="Descreva o motivo do retorno..."></textarea>
+                                </div>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showReturnModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition border border-amber-700/70">
+                                        Voltar para an&aacute;lise
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                     <!-- MODAL: Cancelar Solicitação -->
                     <div x-show="showCancelModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
@@ -527,6 +584,212 @@
                         </div>
                     </div>
                 @endif
+            </div>
+
+            <!-- Card de Historico (Abaixo dos Outros) -->
+            <div class="mt-4 bg-[color:var(--solicitacao-modal-bg,#fcfdff)] shadow-sm rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] overflow-hidden">
+                <div class="px-4 py-3 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)] bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] flex items-center justify-between gap-2">
+                    <h3 class="text-[13px] font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                        Acompanhamento do Pedido
+                    </h3>
+                    <button type="button" @click="toggleSection('history')" class="ml-auto inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors">
+                        <span x-text="openSection === 'history' ? 'Contrair' : 'Expandir'"></span>
+                        <svg class="w-3 h-3 transition-transform" :class="openSection === 'history' ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Body do Historico -->
+                <div class="p-6 overflow-x-auto" x-show="openSection === 'history'" x-transition.duration.300ms>
+                    @php
+                        // Dados do histórico - ORDENADO CRONOLOGICAMENTE
+                        $historicoStatus = $solicitacao->historicoStatus
+                            ? $solicitacao->historicoStatus->sortBy('created_at')
+                            : collect();
+
+                        $statusAtual = $solicitacao->status;
+                        
+                        // Definição dos steps (Mantendo icones padrão Laravel/Tailwind)
+                        $steps = [
+                            [
+                                'id' => 'PENDENTE',
+                                'label' => 'Criado',
+                                'desc' => 'Solicitação Aberta',
+                                'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                            ],
+                            [
+                                'id' => 'AGUARDANDO_CONFIRMACAO',
+                                'label' => 'Em Análise',
+                                'desc' => 'Aguardando Aprovação',
+                                'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'
+                            ],
+                            [
+                                'id' => 'CONFIRMADO',
+                                'label' => 'Concluído',
+                                'desc' => 'Finalizado',
+                                'icon' => 'M5 13l4 4L19 7'
+                            ]
+                        ];
+
+                        $currentStepIndex = 0;
+                        if ($statusAtual === 'AGUARDANDO_CONFIRMACAO') $currentStepIndex = 1;
+                        if ($statusAtual === 'CONFIRMADO') $currentStepIndex = 2;
+                        $isCancelado = ($statusAtual === 'CANCELADO');
+                    @endphp
+
+                    <!-- 1. Stepper Visual Simplificado -->
+                    @if(!$isCancelado)
+                        <div class="max-w-4xl mx-auto mb-10 px-4">
+                            <div class="relative flex items-center justify-between w-full">
+                                <!-- Line Line Behind -->
+                                <div class="absolute top-1/2 left-0 w-full h-0.5 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 z-0"></div>
+                                <div class="absolute top-1/2 left-0 h-0.5 bg-indigo-500 transition-all duration-1000 -translate-y-1/2 z-0" 
+                                     style="width: {{ ($currentStepIndex / (count($steps) - 1)) * 100 }}%"></div>
+
+                                @foreach($steps as $index => $step)
+                                    @php
+                                        $isActive = $index <= $currentStepIndex;
+                                        $isCurrent = $index === $currentStepIndex;
+                                        
+                                        // Classes padrão Tailwind para consistência
+                                        $bgClass = $isActive 
+                                            ? 'bg-indigo-600 border-indigo-600 text-white' 
+                                            : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500';
+                                            
+                                        $textClass = $isActive
+                                            ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+                                            : 'text-gray-500 dark:text-gray-400 font-medium';
+                                    @endphp
+                                    
+                                    <div class="relative z-10 flex flex-col items-center bg-transparent group">
+                                        <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center transition-colors duration-200 {{ $bgClass }} {{ $isCurrent ? 'ring-4 ring-indigo-100 dark:ring-indigo-900/40' : '' }}">
+                                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $step['icon'] }}" />
+                                            </svg>
+                                        </div>
+                                        <div class="absolute top-12 w-32 text-center">
+                                            <p class="text-[11px] uppercase tracking-wider {{ $textClass }}">{{ $step['label'] }}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <!-- Estado Cancelado - Padrão de Erro do Sistema -->
+                        <div class="mb-8 mx-auto max-w-2xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center justify-center gap-3 text-red-700 dark:text-red-400">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <h4 class="font-bold text-sm">Solicitação Cancelada</h4>
+                                <p class="text-xs opacity-80">Este processo foi encerrado.</p>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- 2. Timeline de Eventos (Cards Padrão) -->
+                    <div class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+                        <h4 class="mb-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            Linha do Tempo
+                        </h4>
+                        
+                        <div class="relative group/scroll">
+                            <div class="flex overflow-x-auto pb-4 gap-4 scrollbar-thin scrollbar-track-gray-50 scrollbar-thumb-gray-200 dark:scrollbar-track-slate-800 dark:scrollbar-thumb-slate-600 snap-x">
+                                @foreach($historicoStatus as $index => $hist)
+                                    @php
+                                        $dataHist = optional($hist->created_at)->format('d/m/Y');
+                                        $horaHist = optional($hist->created_at)->format('H:i');
+                                        $usuarioNome = array_values(array_filter(explode(' ', $hist->usuario?->NOMEUSER ?? $hist->usuario?->NMLOGIN ?? "-")))[0];
+                                        
+                                        $statusNovo = $hist->status_novo;
+                                        $acao       = $hist->acao;
+                                        
+                                        // Padrão de cores consistente com o sistema (Alertas/Sucesso/Neutro)
+                                        $isSuccess = ($statusNovo === 'CONFIRMADO' || $acao === 'aprovar');
+                                        $isDanger  = ($statusNovo === 'CANCELADO' || $acao === 'retornar' || $acao === 'cancelar');
+                                        $isWarning = ($statusNovo === 'AGUARDANDO_CONFIRMACAO');
+                                        
+                                        if($isSuccess) {
+                                            $borderClass = 'border-l-4 border-l-emerald-500';
+                                            $iconClass   = 'text-emerald-500';
+                                            $badgeClass  = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300';
+                                        } elseif($isDanger) {
+                                            $borderClass = 'border-l-4 border-l-red-500';
+                                            $iconClass   = 'text-red-500';
+                                            $badgeClass  = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+                                        } elseif($isWarning) {
+                                            $borderClass = 'border-l-4 border-l-amber-500';
+                                            $iconClass   = 'text-amber-500';
+                                            $badgeClass  = 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
+                                        } else {
+                                            $borderClass = 'border-l-4 border-l-gray-400';
+                                            $iconClass   = 'text-gray-400';
+                                            $badgeClass  = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+                                        }
+
+                                        $isLast = $loop->last;
+                                    @endphp
+
+                                    <!-- Card Timeline -->
+                                    <div class="min-w-[200px] max-w-[200px] snap-start bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden {{ $borderClass }}">
+                                        <!-- Header -->
+                                        <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
+                                            <span class="text-[10px] font-bold text-gray-600 dark:text-gray-300">{{ $dataHist }}</span>
+                                            <span class="text-[9px] text-gray-400">{{ $horaHist }}</span>
+                                        </div>
+
+                                        <!-- Body -->
+                                        <div class="p-3">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <div class="{{ $iconClass }}">
+                                                    @if($isSuccess) <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                    @elseif($isDanger) <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                    @else <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> 
+                                                    @endif
+                                                </div>
+                                                <p class="text-xs font-bold text-gray-800 dark:text-gray-100 truncate" title="{{ $acao }}">
+                                                    {{ $hist->acao ? ucfirst($hist->acao) : 'Atualização' }}
+                                                </p>
+                                            </div>
+                                            
+                                            <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold mb-3 {{ $badgeClass }}">
+                                                {{ str_replace('_', ' ', $statusNovo) }}
+                                            </span>
+
+                                            <div class="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                                                <div class="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-[9px] font-bold text-gray-600 dark:text-gray-300">
+                                                    {{ substr($usuarioNome, 0, 1) }}
+                                                </div>
+                                                <span class="text-[10px] text-gray-600 dark:text-gray-400 truncate">{{ $usuarioNome }}</span>
+                                            </div>
+                                            
+                                            @if(!empty($hist->motivo))
+                                                <div class="mt-2 text-[9px] italic text-gray-400 dark:text-gray-500 truncate" title="{{ $hist->motivo }}">
+                                                    "{{ $hist->motivo }}"
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Seta de conexão (exceto no último) -->
+                                    @if(!$isLast)
+                                        <div class="flex items-center text-gray-300 dark:text-gray-600">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </div>
+                                    @endif
+
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

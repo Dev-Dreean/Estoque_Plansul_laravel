@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Tabfant;
 use App\Models\SolicitacaoBem;
+use App\Models\SolicitacaoBemStatusHistorico;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -139,6 +141,13 @@ class SolicitacaoBemController extends Controller
         });
 
         if ($solicitacao) {
+            $this->registrarHistoricoStatus(
+                $solicitacao,
+                null,
+                SolicitacaoBem::STATUS_PENDENTE,
+                'criado',
+                null
+            );
             $this->sendConfirmacaoEmail($solicitacao);
         }
 
@@ -165,13 +174,14 @@ class SolicitacaoBemController extends Controller
         }
 
         $isModal = $request->input('modal') === '1';
-        $solicitacao->load(['itens', 'projeto']);
+        $solicitacao->load(['itens', 'projeto', 'historicoStatus.usuario']);
         $statusOptions = SolicitacaoBem::statusOptions();
 
         $canManage = $this->canUpdateSolicitacao($user)
             || $this->canConfirmSolicitacao($user)
             || $this->canApproveSolicitacao($user)
-            || $this->canCancelSolicitacao($user);
+            || $this->canCancelSolicitacao($user)
+            || $this->canReturnSolicitacao($user);
 
         if ($isModal) {
             return view('solicitacoes.partials.show-content', compact('solicitacao', 'statusOptions', 'isModal', 'canManage'));
@@ -188,12 +198,13 @@ class SolicitacaoBemController extends Controller
             abort(403, 'Você não tem permissão para visualizar esta solicitacao.');
         }
 
-        $solicitacao->load(['itens', 'projeto']);
+        $solicitacao->load(['itens', 'projeto', 'historicoStatus.usuario']);
         $statusOptions = SolicitacaoBem::statusOptions();
         $canManage = $this->canUpdateSolicitacao($user)
             || $this->canConfirmSolicitacao($user)
             || $this->canApproveSolicitacao($user)
-            || $this->canCancelSolicitacao($user);
+            || $this->canCancelSolicitacao($user)
+            || $this->canReturnSolicitacao($user);
         $isModal = true;
 
         return view('solicitacoes.partials.show-content', compact('solicitacao', 'statusOptions', 'isModal', 'canManage'));
@@ -390,6 +401,17 @@ class SolicitacaoBemController extends Controller
         return $user->temAcessoTela((string) User::TELA_SOLICITACOES_CANCELAR);
     }
 
+    private function canReturnSolicitacao(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+        return $user->temAcessoTela((string) User::TELA_SOLICITACOES_APROVAR);
+    }
+
     private function applyOwnerScope($query, ?User $user): void
     {
         if (!$user) {
@@ -457,6 +479,29 @@ class SolicitacaoBemController extends Controller
         }
     }
 
+    private function registrarHistoricoStatus(
+        SolicitacaoBem $solicitacao,
+        ?string $statusAnterior,
+        string $statusNovo,
+        ?string $acao = null,
+        ?string $motivo = null
+    ): void {
+        if (!Schema::hasTable('solicitacoes_bens_status_historico')) {
+            return;
+        }
+
+        $userId = Auth::user()?->getAuthIdentifier();
+
+        SolicitacaoBemStatusHistorico::create([
+            'solicitacao_id' => $solicitacao->id,
+            'status_anterior' => $statusAnterior,
+            'status_novo' => $statusNovo,
+            'acao' => $acao,
+            'motivo' => $motivo,
+            'usuario_id' => $userId,
+        ]);
+    }
+
     /**
      * Confirmar solicitação (primeira confirmação)
      * Somente Tiago, Beatriz e Admin
@@ -495,7 +540,15 @@ class SolicitacaoBemController extends Controller
             }
         }
 
+        $statusAnterior = $solicitacao->status;
         $solicitacao->update($data);
+        $this->registrarHistoricoStatus(
+            $solicitacao,
+            $statusAnterior,
+            SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO,
+            'confirmar',
+            null
+        );
 
         Log::info('✅ [SOLICITACOES] Solicitação confirmada (1º nível)', [
             'solicitacao_id' => $solicitacao->id,
@@ -531,11 +584,19 @@ class SolicitacaoBemController extends Controller
             return $this->denyAccess($request, 'Apenas solicitações aguardando confirmação podem ser aprovadas.');
         }
 
+        $statusAnterior = $solicitacao->status;
         $solicitacao->update([
             'status' => SolicitacaoBem::STATUS_CONFIRMADO,
             'confirmado_por_id' => $user->getAuthIdentifier(),
             'confirmado_em' => now(),
         ]);
+        $this->registrarHistoricoStatus(
+            $solicitacao,
+            $statusAnterior,
+            SolicitacaoBem::STATUS_CONFIRMADO,
+            'aprovar',
+            null
+        );
 
         Log::info('✅ [SOLICITACOES] Solicitação aprovada (2º nível)', [
             'solicitacao_id' => $solicitacao->id,
@@ -576,12 +637,20 @@ class SolicitacaoBemController extends Controller
             'justificativa_cancelamento' => ['required', 'string', 'max:1000'],
         ]);
 
+        $statusAnterior = $solicitacao->status;
         $solicitacao->update([
             'status' => SolicitacaoBem::STATUS_CANCELADO,
             'justificativa_cancelamento' => $validated['justificativa_cancelamento'],
             'cancelado_por_id' => $user->getAuthIdentifier(),
             'cancelado_em' => now(),
         ]);
+        $this->registrarHistoricoStatus(
+            $solicitacao,
+            $statusAnterior,
+            SolicitacaoBem::STATUS_CANCELADO,
+            'cancelar',
+            $validated['justificativa_cancelamento']
+        );
 
         Log::info('🚫 [SOLICITACOES] Solicitação cancelada', [
             'solicitacao_id' => $solicitacao->id,
@@ -597,5 +666,65 @@ class SolicitacaoBemController extends Controller
         }
 
         return redirect()->back()->with('success', 'Solicitação cancelada com sucesso!');
+    }
+    /**
+     * Retornar solicitacao para analise (volta para PENDENTE)
+     */
+    public function returnToAnalysis(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canReturnSolicitacao($user)) {
+            return $this->denyAccess($request, 'Voce nao tem permissao para retornar a solicitacao para analise.');
+        }
+
+        if ($solicitacao->status !== SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO) {
+            return $this->denyAccess($request, 'Apenas solicitacoes aguardando confirmacao podem voltar para analise.');
+        }
+
+        $validated = $request->validate([
+            'motivo_retorno' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $motivo = trim((string) $validated['motivo_retorno']);
+        $timestamp = now()->format('d/m/Y H:i');
+        $nota = "[{$timestamp}] Retorno para analise: {$motivo}";
+        $observacaoAtual = trim((string) ($solicitacao->observacao_controle ?? ''));
+        $observacaoNova = $observacaoAtual !== '' ? ($observacaoAtual . "\n\n" . $nota) : $nota;
+        $destinationType = $solicitacao->destination_type ?: SolicitacaoBem::DESTINATION_PROJETO;
+
+        $statusAnterior = $solicitacao->status;
+        $solicitacao->update([
+            "status" => SolicitacaoBem::STATUS_PENDENTE,
+            "observacao_controle" => $observacaoNova,
+            "tracking_code" => null,
+            "destination_type" => $destinationType,
+            "matricula_recebedor" => null,
+            "nome_recebedor" => null,
+            "confirmado_por_id" => null,
+            "confirmado_em" => null,
+        ]);
+        $this->registrarHistoricoStatus(
+            $solicitacao,
+            $statusAnterior,
+            SolicitacaoBem::STATUS_PENDENTE,
+            'retornar',
+            $motivo
+        );
+
+        Log::info('[SOLICITACOES] Solicitacao retornada para analise', [
+            'solicitacao_id' => $solicitacao->id,
+            'retornado_por' => $user?->NMLOGIN,
+            'motivo' => $motivo,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitacao retornada para analise com sucesso!',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Solicitacao retornada para analise com sucesso!');
     }
 }

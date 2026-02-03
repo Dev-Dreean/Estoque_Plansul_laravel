@@ -339,6 +339,38 @@
                 border-color: var(--solicitacao-modal-border);
             }
 
+            .solicitacao-modal-scroll {
+                scrollbar-width: thin;
+                scrollbar-color: #3b82f6 #0f172a;
+            }
+
+            html[data-theme='light'] .solicitacao-modal-scroll {
+                scrollbar-color: #2563eb #e5e7eb;
+            }
+
+            .solicitacao-modal-scroll::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .solicitacao-modal-scroll::-webkit-scrollbar-track {
+                background: #0f172a;
+            }
+
+            html[data-theme='light'] .solicitacao-modal-scroll::-webkit-scrollbar-track {
+                background: #e5e7eb;
+            }
+
+            .solicitacao-modal-scroll::-webkit-scrollbar-thumb {
+                background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+                border-radius: 999px;
+                border: 2px solid #0f172a;
+            }
+
+            html[data-theme='light'] .solicitacao-modal-scroll::-webkit-scrollbar-thumb {
+                background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+                border: 2px solid #e5e7eb;
+            }
+
             .solicitacao-modal-theme .input-base,
             .solicitacao-modal-theme input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]),
             .solicitacao-modal-theme select,
@@ -466,7 +498,7 @@
                     </div>
                     <button type="button" @click="closeShowModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">×</button>
                 </div>
-                <div class="relative flex-1 overflow-y-auto bg-white dark:bg-gray-800 min-h-[320px]">
+                <div class="relative flex-1 overflow-y-auto bg-white dark:bg-gray-800 min-h-[320px] solicitacao-modal-scroll">
                     <div x-show="showModalLoading" class="absolute inset-0 flex items-center justify-center bg-white/90 dark:bg-gray-800/90 z-10">
                         <div class="text-sm text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-800 px-4 py-2 rounded shadow-lg border border-indigo-200 dark:border-indigo-700 animate-pulse">Carregando detalhes...</div>
                     </div>

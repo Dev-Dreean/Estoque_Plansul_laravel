@@ -1,0 +1,1334 @@
+================================================================================
+PADRÕES REAIS DO SISTEMA - GUIA PRÁTICO PARA DESENVOLVIMENTO
+2026-02-02 | Análise de código REAL do projeto
+================================================================================
+
+📌 INTRO:
+Este documento é 100% baseado em análise do código existente. Sem ideais. 
+Sem "deveria ser". É COMO FUNCIONA AGORA. Use como referência absoluta.
+
+================================================================================
+1️⃣ TIPOS DE TELAS (Padrão Real)
+================================================================================
+
+PADRÃO PREDOMINANTE:
+├─ 85% CRUD Simples (Index + Create + Edit + Delete)
+├─ 15% Telas Customizadas (Atribuir, Relatórios, etc)
+
+Estrutura Standard:
+
+INDEX (Listagem):
+├─ Flash messages (success/error)
+├─ Filtro (Form + AJAX) 
+├─ Tabela com paginação
+├─ Ações por linha (Edit, Delete)
+├─ Seleção múltipla (checkboxes)
+├─ Ações em massa (Bulk update, Bulk delete)
+└─ Modais para operações complexas
+
+Exemplo real: patrimonios/index.blade.php
+├─ Flash: @include('patrimonios.partials.flash-messages')
+├─ Filtro: @include('patrimonios.partials.filter-form')
+├─ Botões ação: @include('patrimonios.partials.action-buttons')
+├─ Barra seleção: bulk-status-bar
+├─ Tabela: rows dinâmicas via Alpine
+└─ Modais: deleteModalOpen, showConsultaModal, bulk-confirm-modal
+
+CREATE:
+├─ Form único (patrimonio-form.blade.php)
+├─ Pode ser modal ou página
+├─ Valida no frontend + backend
+└─ Redirect com flash message
+
+EDIT:
+├─ Same form como Create
+├─ Modal OU página (?modal=1 param)
+├─ Detecta mudanças (Alpine compare)
+├─ Modal de confirmação antes de salvar
+└─ Redirect com flash message
+
+DELETE:
+├─ Modal de confirmação obrigatório
+├─ DELETE via AJAX (fetch)
+├─ Resposta 204 ou 200
+├─ Remove row da tabela (animado)
+└─ Flash message NO PRÓXIMO LOAD
+
+================================================================================
+2️⃣ CONVENÇÃO DE ROTAS E PERMISSÕES
+================================================================================
+
+PADRÃO ROTAS:
+
+Route::resource('patrimonios', PatrimonioController::class)
+  ->middleware(['tela.access:1000']);
+
+SIGNIFICA:
+├─ GET /patrimonios → index
+├─ POST /patrimonios → store
+├─ GET /patrimonios/create → create
+├─ GET /patrimonios/{id}/edit → edit
+├─ PUT/PATCH /patrimonios/{id} → update
+├─ DELETE /patrimonios/{id} → destroy
+└─ GET /patrimonios/{id} → show
+
+ROTAS CUSTOMIZADAS (APIs):
+├─ GET /api/patrimonios/id/{id} → buscarPorId (JSON)
+├─ GET /api/patrimonios/pesquisar?q=termo → pesquisar (JSON)
+├─ POST /patrimonios/bulk-update → bulk update (JSON)
+├─ POST /patrimonios/bulk-delete → bulk delete (JSON)
+└─ POST /patrimonios/bulk-verify → bulk verify conferido (JSON)
+
+PREFIXOS:
+├─ /patrimonios (patrimônios)
+├─ /usuarios (usuários)
+├─ /projetos (projetos)
+├─ /api/ (APIs JSON)
+├─ Sem /admin (controle via middleware tela.access)
+└─ Sem /sistema (não é padrão)
+
+PERMISSÕES (Policy + Middleware):
+
+1. MIDDLEWARE tela.access:1000
+   ├─ Checa se user tem acesso à tela NUSEQTELA=1000
+   ├─ Usa tabela acessousuario (BD)
+   └─ Rejeita 403 se não tem acesso
+
+2. POLICY (PatrimonioPolicy.php)
+   ├─ before() → admin/god sempre passa
+   ├─ PERFIL='ADM' → acesso total
+   ├─ PERFIL='C' → visualizar apenas (view, viewAny)
+   ├─ PERFIL='USR' → criar/editar/deletar
+   └─ Autoriza com: $this->authorize('update', $patrimonio)
+
+3. Authorization Exception
+   ├─ Se falhar: throw AuthorizationException
+   ├─ Controller retorna: 403 response
+   └─ Usuário vê: mensagem erro + redirect
+
+Estrutura Real (em código):
+```
+Route::resource('patrimonios', PatrimonioController::class)
+  ->middleware(['auth', 'tela.access:1000']);
+
+public function edit(Patrimonio $patrimonio) {
+    $this->authorize('update', $patrimonio); // Checa policy
+    return view('patrimonios.edit', ['patrimonio' => $patrimonio]);
+}
+
+public function update(Request $request, Patrimonio $patrimonio) {
+    $this->authorize('update', $patrimonio); // Checa policy
+    // ... resto lógica
+}
+```
+
+NUNCA usa:
+├─ spatie/permission
+├─ gates
+├─ middleware customizados para permission (policy é bastante)
+└─ autorização em Blade (@can já funciona com policy)
+
+================================================================================
+3️⃣ PADRÃO DE FEEDBACK PARA USUÁRIO
+================================================================================
+
+FLASH MESSAGES (Após ação no server):
+
+Tipos:
+├─ success: "Patrimônio criado com sucesso!"
+├─ error: "Erro ao deletar patrimônio"
+└─ warning: (raramente usado)
+
+Retorno Controller:
+```
+return redirect()->route('patrimonios.index')
+  ->with('success', 'Patrimônio criado!');
+
+return redirect()->back()
+  ->with('error', 'Erro ao atualizar!');
+```
+
+Render em Blade:
+```
+@if(session('success'))
+  <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+    <strong>Sucesso!</strong> {{ session('success') }}
+  </div>
+@endif
+
+@if(session('error'))
+  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+    <strong>Erro!</strong> {{ session('error') }}
+  </div>
+@endif
+```
+
+PADRÃO: Componente reutilizável
+```
+@include('patrimonios.partials.flash-messages')
+```
+
+Toast Notification (Modal em tempo real via Alpine):
+├─ Fixed top-right / bottom-right
+├─ Auto-dismiss (3-5s)
+├─ Tipo: 'sucesso' ou 'erro'
+├─ Alpine x-data com show/hide
+└─ Triggers via @click ou em response AJAX
+
+Real example (projetos/_table_partial.blade.php):
+```
+<div x-show="toast.show" x-transition class="fixed top-4 right-4 z-50">
+  <div :class="toast.tipo === 'sucesso' ? 'bg-green-50' : 'bg-red-50'">
+    <p x-text="toast.mensagem"></p>
+  </div>
+</div>
+
+// Em Alpine:
+mostrarToast(mensagem, tipo = 'sucesso', duracao = 3000) {
+  this.toast.mensagem = mensagem;
+  this.toast.tipo = tipo;
+  this.toast.show = true;
+  setTimeout(() => { this.toast.show = false; }, duracao);
+}
+```
+
+Alert em JS puro (backup):
+```
+alert('Erro ao excluir: ' + error.message);
+```
+
+NUNCA usa:
+├─ Toastr.js ou similares (Alpine é bastante)
+├─ SweetAlert (use modal Alpine)
+└─ Notificação por socket (não há WebSocket)
+
+================================================================================
+4️⃣ PADRÃO DE JAVASCRIPT (IMPORTANTE!)
+================================================================================
+
+ALPINE.JS:
+├─ Inline em Blade (x-data direto)
+├─ Sem separate files (raramente)
+├─ Reatividade simples (data-binding x-model)
+├─ Event handling (@click, @submit, etc)
+└─ Transições (x-transition)
+
+FETCH (Não axios):
+├─ Native fetch() API
+├─ Headers: X-CSRF-TOKEN, Accept, Content-Type
+├─ Method: DELETE, POST, PATCH
+├─ Response: .json() ou .text()
+└─ Error handling: try/catch ou .catch()
+
+Padrão para DELETE com confirmação:
+```javascript
+openDelete(id, name) {
+  this.deleteItemId = id;
+  this.deleteItemName = name;
+  this.deleteModalOpen = true; // Abre modal
+}
+
+confirmDelete() {
+  if (!this.deleteItemId) return;
+  this.deleting = true;
+  
+  fetch(`/patrimonios/${this.deleteItemId}`, {
+    method: 'DELETE',
+    headers: {
+      'X-CSRF-TOKEN': this.csrf(),
+      'Accept': 'application/json',
+    },
+  })
+    .then(resp => {
+      if (resp.ok || resp.status === 204) return;
+      throw new Error(`HTTP ${resp.status}`);
+    })
+    .then(() => {
+      this.removeRow(this.deleteItemId);
+      this.deleteModalOpen = false;
+    })
+    .catch(err => alert(err.message));
+}
+
+removeRow(id) {
+  const row = document.querySelector(`[data-row-id="${id}"]`);
+  if (row) {
+    row.style.opacity = '0';
+    setTimeout(() => row.remove(), 300);
+  }
+}
+```
+
+Padrão para Modal (AJAX):
+```javascript
+openFormModal(mode, id = null) {
+  const url = mode === 'create' 
+    ? '/solicitacoes-bens/create?modal=1'
+    : `/solicitacoes-bens/${id}/edit?modal=1`;
+
+  fetch(url, {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+  })
+    .then(resp => resp.text())
+    .then(html => {
+      this.formModalContent = html;
+      this.formModalOpen = true;
+    })
+    .catch(err => alert(err.message));
+}
+```
+
+Padrão para Pesquisa/Filtro (debounce):
+```javascript
+// Em Alpine x-data:
+filter: {
+  termo: '',
+  resultados: [],
+  loading: false,
+},
+
+async buscar(termo) {
+  if (termo.length < 2) {
+    this.filter.resultados = [];
+    return;
+  }
+
+  this.filter.loading = true;
+  
+  fetch(`/api/patrimonios/pesquisar?q=${termo}`)
+    .then(r => r.json())
+    .then(data => {
+      this.filter.resultados = data.patrimonios || [];
+    })
+    .finally(() => this.filter.loading = false);
+},
+
+// Com debounce:
+onFilterInput() {
+  clearTimeout(this.filterTimeout);
+  this.filterTimeout = setTimeout(() => {
+    this.buscar(this.filter.termo);
+  }, 500); // 500ms debounce
+}
+```
+
+MÓDULOS JS (reutilizáveis):
+├─ public/js/patrimonio-actions.js (delete/rebind)
+├─ Padrão IIFE (Immediately Invoked Function Expression)
+├─ window.PatrimonioActions = (() => { ... })()
+├─ Métodos públicos (init, delete, rebind)
+└─ Lógica privada (funções internas)
+
+Real example:
+```javascript
+const PatrimonioActions = (function() {
+  const defaults = { deleteUrl: '/patrimonios' };
+  let config = { ...defaults };
+
+  async function deletarPatrimonio(id, nome) {
+    const confirmar = confirm(`Deletar "${nome}"?`);
+    if (!confirmar) return;
+
+    try {
+      const response = await fetch(`${config.deleteUrl}/${id}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': getCsrfToken() },
+      });
+      if (!response.ok) throw new Error('Erro ao deletar');
+      window.location.reload();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  return {
+    init(options = {}) {
+      config = { ...defaults, ...options };
+    },
+    delete(id, nome) {
+      return deletarPatrimonio(id, nome);
+    },
+  };
+})();
+
+// Usar:
+PatrimonioActions.init({ deleteUrl: '/patrimonios' });
+PatrimonioActions.delete(123, 'Patrimônio X');
+```
+
+NUNCA:
+├─ JavaScript em arquivo separado (só IIFE ou Alpine)
+├─ jQuery (não há jQuery)
+├─ Axios (use fetch)
+├─ VueJS ou React (use Alpine)
+└─ Webpack (use Vite)
+
+================================================================================
+5️⃣ PADRÃO DE DADOS "SENSÍVEIS" / CRÍTICOS
+================================================================================
+
+SOFT DELETE:
+├─ Não é padrão no projeto
+├─ Deletar é permanente (físico)
+├─ Backup feito ANTES em storage/backups/
+
+LOG OBRIGATÓRIO para:
+├─ ✅ CREATE: Log::info('✅ [Service] patrimônio criado', [...])
+├─ ✅ UPDATE: Log::info('✏️ [Service] patrimônio atualizado', [...])
+├─ ✅ DELETE: Log::error('🗑️ [Service] patrimônio deletado', [...])
+├─ ✅ AUTH: Login/logout/failed attempts
+├─ ✅ BULK: Operações em massa
+├─ ✅ IMPORT: Importação arquivo
+└─ ✅ EXPORT: Exportação relatório
+
+Campos NUNCA editáveis após criação:
+├─ NUSEQPATR (PK patrimônio)
+├─ NUPATRIMONIO (número patrimônio)
+├─ DTAQUISICAO (se já tem valor)
+└─ created_at, updated_by (sistema)
+
+Campos CRITICOS:
+├─ CDMATRFUNCIONARIO (funcionário responsável)
+├─ CDLOCAL (local físico)
+├─ SITUACAO (ativo/inativo/baixado)
+├─ Password (hashed bcrypt)
+└─ Email (validado único)
+
+Auditoria Implementada:
+├─ updated_by (quem atualizou) - raramente usado
+├─ created_at / updated_at (timestamps)
+├─ Tabela movpartr (histórico de movimentação)
+├─ Tabela historico_movimentacao (alterações)
+└─ Logs em storage/logs/laravel.log
+
+IMPORTANTE: Backups MANUAIS:
+├─ Não há backup automático
+├─ SEMPRE fazer antes de operação em massa:
+   
+   php artisan backup:database
+   
+├─ Arquivo em: storage/backups/patrimonio_*.json
+└─ Restaurar manualmente se necessário
+
+================================================================================
+6️⃣ MAPA DE DOR (Onde dá ruim)
+================================================================================
+
+PROBLEMAS CRÔNICOS:
+
+🔴 VALIDAÇÃO DUPLICADA:
+├─ Valida em FormRequest (server)
+├─ Valida NOVAMENTE em Alpine (client)
+├─ Resultado: código repetido, bugs
+├─ Solução: Server-side rules (única fonte verdade)
+
+🔴 FILTRO SEMPRE QUEBRA:
+├─ Filtro funciona AJAX
+├─ Pagination volta pra página 1
+├─ Status de seleção se perde
+├─ Resultado: usuário vê "sumiu meu registro"
+├─ Causa: .withQueryString() só funciona GET
+├─ Solução: Manter estado no localStorage ou session
+
+🔴 MODAL CREATE vs EDIT:
+├─ Sometimes form é inline blade
+├─ Sometimes form é carregado via AJAX
+├─ Resultado: inconsistência
+├─ Solução: Usar create.blade.php e edit.blade.php (páginas)
+
+🔴 PERMISSION CHECK FALTANDO:
+├─ Policy não cobre todos controllers
+├─ Usuário consegue acessar URL direto
+├─ Resultado: 500 erro ao invés de 403
+├─ Solução: @authorize() SEMPRE após carregar model
+
+🔴 JAVASCRIPT NÃO REBIND APÓS AJAX:
+├─ Delete funciona primeira vez
+├─ Depois de AJAX refresh, delete não funciona
+├─ Causa: DOM mudou, event listeners se perderam
+├─ Solução: MutationObserver ou observer padrão
+
+🔴 FLASH MESSAGE NÃO APARECE EM AJAX:
+├─ Flash salvo em session
+├─ AJAX retorna HTML sem flash
+├─ Resultado: "cliquei e nada aconteceu"
+├─ Solução: Retornar JSON + toast Alpine
+
+🔴 DATA-ROW-ID MISMATCH:
+├─ HTML tem: data-row-id="123"
+├─ JavaScript procura: data-row-id="456"
+├─ Resultado: row não deleta
+├─ Solução: Usar NUSEQPATR (int) como ID
+
+🔴 DARK MODE INCONSISTÊNCIA:
+├─ Alguns componentes esquecen "dark:"
+├─ Resultado: branco em fundo branco
+├─ Solução: TODA cor precisa dark: par
+
+🔴 PERFORMANCE NA LISTA:
+├─ Pagina com 10k patrimônios carrega lento
+├─ Cause: Sem índices ou N+1 queries
+├─ Solução: eager load (->with()) e índices BD
+
+🔴 MODAL NÃO FECHA DEPOIS:
+├─ @click="close=false" não funciona sempre
+├─ Cause: event.stopPropagation() ou @click.self
+├─ Solução: @click.outside + testar ESC key
+
+================================================================================
+7️⃣ O QUE NUNCA QUER VER DE NOVO
+================================================================================
+
+❌ NUNCA CRIAR CSS NOVO:
+├─ Sempre usar classes Tailwind existentes
+├─ Se precisa cor, adicione em tailwind.config.js
+├─ Nunca: <style> tags inline
+├─ Nunca: classes customizadas .minha-class
+
+❌ NUNCA LÓGICA EM BLADE:
+├─ Lógica complexa vai em Service
+├─ Blade = apenas apresentação
+├─ Nunca: @php com loops/cálculos complexos
+├─ Nunca: $patrimonio->delete() direto em view
+
+❌ NUNCA QUERY NO CONTROLLER:
+├─ Controllers usam Services
+├─ Services usam Models
+├─ Nunca: DB::table() no controller
+├─ Nunca: Patrimonio::where()->get() inline
+
+❌ NUNCA DUPLICAR COMPONENTE:
+├─ Se existe action-button, usa ele
+├─ Se precisa variação, modifica componente
+├─ Nunca: copiar/colar um componente
+
+❌ NUNCA SEM AUTORIZAÇÃO:
+├─ TODO controller precisa $this->authorize()
+├─ TODO CRUD precisa check permissão
+├─ Nunca: assumir user já é autorizado
+├─ Nunca: saltar @can em Blade
+
+❌ NUNCA VALIDAÇÃO INCONSISTENTE:
+├─ Rules = mesmo FormRequest (tanto create quanto update)
+├─ Se precisar diferente, cria novo FormRequest
+├─ Nunca: validação diferente em controller
+
+❌ NUNCA FETCH SEM ERROR HANDLING:
+├─ Todo fetch precisa .catch()
+├─ Todo response precisa status check
+├─ Nunca: "if (resp.ok) continue"
+├─ Nunca: await fetch sem try/catch
+
+❌ NUNCA LOG SEM CONTEXTO:
+├─ Log SEMPRE com array de dados
+├─ Nunca: Log::info('algo aconteceu')
+├─ Sempre: Log::info('algo', ['user' => $id, 'patrimonio' => $patr])
+
+❌ NUNCA HARDCODE URL:
+├─ Use route() helper
+├─ Nunca: href="/patrimonios/123"
+├─ Sempre: :href="route('patrimonios.edit', $patr)"
+
+❌ NUNCA SEM X-CSRF-TOKEN:
+├─ TODO fetch POST/DELETE/PATCH precisa token
+├─ Nunca: <form> sem @csrf
+├─ Nunca: fetch sem 'X-CSRF-TOKEN' header
+
+❌ NUNCA ALERT() EM PRODUÇÃO:
+├─ alert() é para debug rápido
+├─ Use toast/modal para usuários
+├─ Nunca: deixar alert em código final
+
+❌ NUNCA CONSOLE.LOG SENSÍVEL:
+├─ Não logar passwords/tokens
+├─ Não logar dados PII
+├─ Log públicas/estruturais só
+
+================================================================================
+8️⃣ EXEMPLO PRÁTICO COMPLETO (NEW FEATURE)
+================================================================================
+
+TAREFA: Adicionar campo "CODIGO_BARRAS" em Patrimônio
+
+1️⃣ DATABASE:
+```php
+// database/migrations/2025_02_02_add_codigo_barras.php
+Schema::table('patr', function (Blueprint $table) {
+    $table->string('CODIGO_BARRAS', 50)->nullable();
+    $table->index('CODIGO_BARRAS'); // Para busca rápida
+});
+```
+
+2️⃣ MODEL:
+```php
+// app/Models/Patrimonio.php
+class Patrimonio extends Model {
+    protected $fillable = [
+        // ... existing
+        'CODIGO_BARRAS',
+    ];
+}
+```
+
+3️⃣ FORMREQUEST:
+```php
+// app/Http/Requests/StorePatrimonioRequest.php
+public function rules(): array {
+    return [
+        // ... existing
+        'CODIGO_BARRAS' => 'nullable|string|max:50|unique:patr',
+    ];
+}
+```
+
+4️⃣ CONTROLLER (padrão):
+```php
+public function create(): View {
+    $this->authorize('create', Patrimonio::class);
+    $projetos = Tabfant::select('CDPROJETO', 'NOMEPROJETO')->get();
+    return view('patrimonios.create', compact('projetos'));
+}
+
+public function store(StorePatrimonioRequest $request): RedirectResponse {
+    $patrimonio = Patrimonio::create($request->validated());
+    Log::info('✅ [Patrimonio] criado', ['id' => $patrimonio->NUSEQPATR]);
+    return redirect()->route('patrimonios.show', $patrimonio)
+        ->with('success', 'Patrimônio criado!');
+}
+```
+
+5️⃣ BLADE VIEW:
+```blade
+<!-- resources/views/patrimonios/partials/form.blade.php -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  {{-- Campos existentes --}}
+  
+  {{-- NEW FIELD --}}
+  <div>
+    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+      Código de Barras
+    </label>
+    <input type="text" name="CODIGO_BARRAS" 
+      value="{{ old('CODIGO_BARRAS', $patrimonio?->CODIGO_BARRAS) }}"
+      class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md" />
+  </div>
+</div>
+```
+
+6️⃣ TESTAR:
+```
+✅ Cria patrimônio com código_barras
+✅ Busca por código_barras funciona
+✅ Dark mode funciona
+✅ Mobile responsivo
+✅ Validação funciona (único)
+✅ DELETE propaga
+✅ Logs aparecem
+```
+
+================================================================================
+9️⃣ CHECKLIST RÁPIDO (Quando criar TUDO novo)
+================================================================================
+
+ANTES:
+[ ] Leia este arquivo completo (você chegou até aqui!)
+[ ] Analise tela SIMILAR existente como referência
+[ ] Crie branch git: git checkout -b feature/nome
+
+DURANTE IMPLEMENTAÇÃO:
+
+Banco/Model:
+[ ] Migration criada (se precisa campo novo)
+[ ] Model fillable atualizado
+[ ] Índices adicionados (se busca)
+[ ] Relacionamentos testados
+
+Backend:
+[ ] FormRequest com regras validação
+[ ] Controller com authorize TODOS os métodos
+[ ] Service encapsula lógica complexa
+[ ] Logs com emoji + contexto
+[ ] Error handling (try/catch) existente
+
+Frontend:
+[ ] Flash messages aparecem
+[ ] Validação client SIMPLES (não duplica server)
+[ ] Modal confirmação para delete
+[ ] Fetch com headers CSRF
+[ ] Dark mode COMPLETO (toda cor tem dark:)
+[ ] Mobile testado
+
+DEPOIS:
+[ ] Nenhum CSS customizado
+[ ] Nenhuma lógica em Blade
+[ ] Nenhuma query no Controller
+[ ] Nenhuma autorização faltando
+[ ] Nenhuma fetch sem catch
+[ ] Nenhum log sem contexto
+[ ] Testado create/edit/delete
+[ ] Testado filtros/busca
+[ ] Testado permissões (403 aparece)
+
+GIT:
+[ ] git add .
+[ ] git commit -m "✅ Feature: Nome da feature"
+[ ] (Aguardar push autorização)
+
+================================================================================
+🔥 QUICK REFERENCE (Copiar/colar quando escrever novo código)
+================================================================================
+
+FLASH + REDIRECT:
+return redirect()->route('patrimonios.index')
+    ->with('success', 'Operação bem-sucedida!');
+
+LOG COM EMOJI:
+Log::info('✅ [PatrimonioService] ação concluída', [
+    'user' => Auth::user()->NMLOGIN,
+    'id' => $patrimonio->NUSEQPATR,
+]);
+
+FETCH COM TRATAMENTO:
+fetch('/api/endpoint', {
+    method: 'POST',
+    headers: {
+        'X-CSRF-TOKEN': document.querySelector('[name="_token"]').value,
+        'Accept': 'application/json',
+    },
+    body: JSON.stringify({ data: value }),
+})
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      this.mostrarToast('Sucesso!', 'sucesso');
+    } else {
+      alert(data.error || 'Erro desconhecido');
+    }
+  })
+  .catch(err => alert('Erro: ' + err.message));
+
+AUTHORIZE + DELETE:
+$this->authorize('delete', $patrimonio);
+try {
+    $patrimonio->delete();
+    return response('', 204);
+} catch (Exception $e) {
+    Log::error('❌ Erro delete', ['error' => $e->getMessage()]);
+    return response()->json(['error' => 'Erro ao deletar'], 500);
+}
+
+TOAST ALPINE:
+mostrarToast(msg, tipo = 'sucesso') {
+  this.toast.msg = msg;
+  this.toast.tipo = tipo;
+  this.toast.show = true;
+  setTimeout(() => { this.toast.show = false; }, 3000);
+}
+
+VALIDAÇÃO FORMREQUEST:
+public function rules(): array {
+    return [
+        'campo' => 'required|string|max:100|unique:tabela,coluna',
+    ];
+}
+
+public function messages(): array {
+    return [
+        'campo.required' => 'Este campo é obrigatório',
+        'campo.unique' => 'Este valor já existe',
+    ];
+}
+
+POLICY:
+public function before(User $user, string $ability): bool|null {
+    if ($user->isGod()) return true;
+    if ($user->PERFIL === 'ADM') return true;
+    return null; // continua checking método específico
+}
+
+public function update(User $user, Patrimonio $p): bool {
+    return true; // admin já passou no before
+}
+
+DARK MODE (TAILWIND):
+class="
+  bg-white dark:bg-gray-800
+  text-gray-900 dark:text-gray-100
+  border-gray-200 dark:border-gray-700
+  hover:bg-gray-100 dark:hover:bg-gray-700
+"
+
+================================================================================
+🔐 CONTRATOS IRREVOGÁVEIS (Sem discussão, sem exceção)
+================================================================================
+
+Estes padrões NÃO têm alternativa. Codex segue EXATAMENTE como descrito.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#1: MODAL vs PÁGINA (Contrato)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REGRA ABSOLUTA:
+
+Create:
+├─ PÁGINA: GET /patrimonios/create → resources/views/patrimonios/create.blade.php
+├─ Flash message após store
+├─ Redirect para show/index
+└─ NUNCA modal por padrão
+
+Edit:
+├─ PÁGINA: GET /patrimonios/{id}/edit → resources/views/patrimonios/edit.blade.php
+├─ Flash message após update
+├─ Redirect para show
+└─ Modal pode ser carregado via ?modal=1 (opt-in)
+
+Modal é APENAS para:
+├─ Ações secundárias (confirm delete, preview, mini-form)
+├─ Operações rápidas dentro da mesma página (não navigate)
+├─ Bulk operations (select multiple → apply action)
+└─ NUNCA para criar/editar registro completo (use página)
+
+Implementação Modal:
+```blade
+<!-- NUNCA abrir modal automático em create/edit -->
+<!-- Modal deve vir do usuário clicar em botão -->
+<button @click="deleteModalOpen = true">Deletar</button>
+
+<!-- Modal structure padrão -->
+<div x-show="deleteModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+  <div @click.stop class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6">
+    <h3 class="text-lg font-semibold">Confirmar ação</h3>
+    <p class="text-gray-600 dark:text-gray-300 mt-2">Mensagem aqui</p>
+    <div class="mt-6 flex gap-3 justify-end">
+      <button @click="deleteModalOpen = false">Cancelar</button>
+      <button @click="confirmar()">Confirmar</button>
+    </div>
+  </div>
+</div>
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#2: JSON SHAPE (Contrato de API Responses)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PADRÃO ÚNICO para TODAS as respostas JSON:
+
+✅ SUCESSO (GET / list):
+{
+  "success": true,
+  "data": {
+    "patrimonios": [ { ... } ],
+    "total": 150,
+    "per_page": 30,
+    "current_page": 1,
+    "last_page": 5
+  },
+  "message": "Listagem carregada"
+}
+
+✅ SUCESSO (POST / create or update):
+{
+  "success": true,
+  "data": {
+    "NUSEQPATR": 123,
+    "NUPATRIMONIO": "PAT-2025-001",
+    "DEPATRIMONIO": "Monitor 27\""
+  },
+  "message": "Patrimônio criado com sucesso!"
+}
+
+✅ SUCESSO (DELETE / single):
+{
+  "success": true,
+  "message": "Patrimônio deletado",
+  "data": null
+}
+
+✅ SUCESSO (Bulk operation):
+{
+  "success": true,
+  "data": {
+    "processados": 50,
+    "erros": 2,
+    "detalhes": [
+      { "id": 1, "status": "ok" },
+      { "id": 2, "status": "erro", "motivo": "sem permissão" }
+    ]
+  },
+  "message": "50 itens processados, 2 com erro"
+}
+
+❌ ERRO (Validação):
+{
+  "success": false,
+  "errors": {
+    "NUPATRIMONIO": ["Já existe"],
+    "DEPATRIMONIO": ["Obrigatório"]
+  },
+  "message": "Validação falhou"
+}
+
+❌ ERRO (Geral):
+{
+  "success": false,
+  "error": "Erro ao processar",
+  "message": "Tente novamente"
+}
+
+REGRAS:
+├─ SEMPRE "success" (boolean)
+├─ SEMPRE "message" ou "error" (string)
+├─ "data" = null se sem dados
+├─ "errors" = array key=>message APENAS validação
+├─ HTTP status: 200 ok, 422 validação, 403 permissão, 500 erro
+└─ NUNCA "resultado", "payload", "info" (sempre "data")
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#3: FILTRO STATE (Contrato de persistência)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PADRÃO ÚNICO: URL Query String (fonte única verdade)
+
+Estrutura:
+GET /patrimonios?cdprojeto=8&cdlocal=001&situacao=Ativo&page=2
+
+Controller:
+```php
+public function index(Request $request): View {
+    $cdprojeto = $request->input('cdprojeto');
+    $cdlocal = $request->input('cdlocal');
+    $situacao = $request->input('situacao');
+    
+    $patrimonios = Patrimonio::query()
+        ->when($cdprojeto, fn($q) => $q->where('CDPROJETO', $cdprojeto))
+        ->when($cdlocal, fn($q) => $q->where('CDLOCAL', $cdlocal))
+        ->when($situacao, fn($q) => $q->where('SITUACAO', $situacao))
+        ->paginate(30)
+        ->withQueryString(); // ← IMPORTANTE: mantém query na paginação
+    
+    return view('patrimonios.index', compact('patrimonios'));
+}
+```
+
+Blade (Form):
+```blade
+<form action="{{ route('patrimonios.index') }}" method="GET" class="flex gap-2">
+    <input type="text" name="cdprojeto" value="{{ request('cdprojeto') }}" placeholder="Projeto" />
+    <input type="text" name="cdlocal" value="{{ request('cdlocal') }}" placeholder="Local" />
+    <select name="situacao">
+        <option value="">Todas</option>
+        <option value="Ativo" {{ request('situacao') === 'Ativo' ? 'selected' : '' }}>Ativo</option>
+        <option value="Inativo" {{ request('situacao') === 'Inativo' ? 'selected' : '' }}>Inativo</option>
+    </select>
+    <button type="submit">Filtrar</button>
+</form>
+```
+
+AJAX Filtro (Optional, para UX melhor):
+```javascript
+function applyFilter() {
+    const params = new URLSearchParams({
+        cdprojeto: document.querySelector('[name="cdprojeto"]').value,
+        cdlocal: document.querySelector('[name="cdlocal"]').value,
+        situacao: document.querySelector('[name="situacao"]').value,
+    });
+    window.location = `{{ route('patrimonios.index') }}?${params}`;
+}
+```
+
+NUNCA:
+├─ localStorage para filtro
+├─ Session state
+├─ JavaScript state machine
+├─ Cookies
+└─ URL hash (#)
+
+SEMPRE:
+├─ Query string (?param=value)
+├─ .withQueryString() em pagination
+├─ request('param') no controller
+└─ value="{{ request('param') }}" no input
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#4: CATÁLOGO DE COMPONENTES (Contrato de disponibilidade)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Todos BLADE COMPONENTS em resources/views/components/:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ action-button.blade.php                                         │
+├─────────────────────────────────────────────────────────────────┤
+│ @props(['href', 'action', 'label', 'confirm' => false])         │
+│ @props(['method' => 'GET', 'data' => []])                       │
+│                                                                 │
+│ <a :href="href" class="...">                                   │
+│   @if (action === 'edit') ✏️ @endif                             │
+│   @if (action === 'delete') 🗑️ @endif                          │
+│   @if (action === 'view') 👁️ @endif                            │
+│   {{ label ?? ucfirst(action) }}                                │
+│ </a>                                                           │
+│                                                                 │
+│ USO:                                                            │
+│ <x-action-button :href="route('patrimonios.edit', $p)" action="edit" />
+│ <x-action-button :href="route('patrimonios.destroy', $p)"      │
+│   action="delete" confirm="true" />                             │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ status-badge.blade.php                                          │
+├─────────────────────────────────────────────────────────────────┤
+│ @props(['status', 'size' => 'sm'])                              │
+│                                                                 │
+│ <span class="px-2 py-1 rounded text-xs font-medium"            │
+│   :class="statusColor(status)">                                │
+│   {{ status }}                                                 │
+│ </span>                                                        │
+│                                                                 │
+│ Cores automáticas:                                             │
+│ Ativo → green-100 / green-800                                  │
+│ Inativo → gray-100 / gray-800                                  │
+│ Baixado → red-100 / red-800                                    │
+│ Pendente → amber-100 / amber-800                               │
+│                                                                 │
+│ USO:                                                            │
+│ <x-status-badge status="Ativo" />                              │
+│ <x-status-badge :status="$patrimonio->SITUACAO" />             │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ table-header.blade.php                                          │
+├─────────────────────────────────────────────────────────────────┤
+│ @props(['label', 'sortable' => true, 'sortField'])              │
+│ @props(['currentSort' => '', 'currentDirection' => 'asc'])      │
+│                                                                 │
+│ <th>                                                           │
+│   @if (sortable)                                               │
+│     <a href="?sort={{ sortField }}&direction=...">             │
+│       {{ label }}                                              │
+│       @if ($currentSort === $sortField)                        │
+│         {{ $currentDirection === 'asc' ? '↑' : '↓' }}           │
+│       @endif                                                   │
+│     </a>                                                       │
+│   @else                                                        │
+│     {{ label }}                                                │
+│   @endif                                                       │
+│ </th>                                                          │
+│                                                                 │
+│ USO:                                                            │
+│ <x-table-header label="Patrimônio" sortField="NUPATRIMONIO"    │
+│   :currentSort="request('sort')" :currentDirection="request('direction')" />
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ pagination.blade.php (Laravel padrão)                           │
+├─────────────────────────────────────────────────────────────────┤
+│ {{ $items->withQueryString()->links() }}                        │
+│                                                                 │
+│ SEMPRE usa .withQueryString() para manter filtros              │
+└─────────────────────────────────────────────────────────────────┘
+
+RESTRIÇÃO:
+├─ NÃO criar novo componente se existe similar
+├─ NÃO duplicar componente com variação menor
+├─ SE precisa variação, estender o existente (@props)
+└─ Listar acima ANTES de criar novo
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#5: ASSINATURAS DE SERVICE (Contrato de métodos)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TODO Service segue padrão rígido:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ PatrimonioService (Template padrão)                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│ class PatrimonioService {                                       │
+│                                                                 │
+│   // LEITURA                                                    │
+│   public function listar(Request $req): Collection;             │
+│   public function buscarPorId(int $id): Model;                  │
+│   public function pesquisar(string $termo): Collection;         │
+│   public function estatisticas(): array;                        │
+│                                                                 │
+│   // ESCRITA                                                    │
+│   public function criar(array $dados): Model;                   │
+│   public function atualizar(int $id, array $dados): Model;      │
+│   public function deletar(int $id): bool;                       │
+│                                                                 │
+│   // OPERAÇÕES ESPECIAIS                                        │
+│   public function importar(File $arquivo): array;               │
+│   public function exportar(Collection $items): string;          │
+│   public function aplicarEmMassa(array $ids, array $acao): array;
+│                                                                 │
+│ }                                                              │
+│                                                                 │
+│ REGRAS:                                                         │
+│ ├─ Retorno SEMPRE tipado (Model, Collection, array, bool)      │
+│ ├─ Parâmetros SEMPRE explícitos (não $request)                 │
+│ ├─ Exception handling DENTRO service (try/catch)               │
+│ ├─ Log SEMPRE com emoji + contexto                             │
+│ ├─ DB::transaction() para operações críticas                   │
+│ └─ Nunca retorna response/redirect                             │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+Exemplo CONCRETO (PatrimonioService.php):
+
+```php
+class PatrimonioService {
+
+    /**
+     * Listar patrimônios com filtros
+     */
+    public function listar(
+        string $cdprojeto = null,
+        string $cdlocal = null,
+        string $situacao = null,
+        int $page = 1,
+        int $perPage = 30
+    ): LengthAwarePaginator {
+        Log::info('[PatrimonioService] listar iniciado', [
+            'cdprojeto' => $cdprojeto,
+            'page' => $page,
+        ]);
+
+        $query = Patrimonio::query()
+            ->when($cdprojeto, fn($q) => $q->where('CDPROJETO', $cdprojeto))
+            ->when($cdlocal, fn($q) => $q->where('CDLOCAL', $cdlocal))
+            ->when($situacao, fn($q) => $q->where('SITUACAO', $situacao))
+            ->orderBy('DTOPERACAO', 'desc');
+
+        return $query->paginate($perPage, ['*'], 'page', $page);
+    }
+
+    /**
+     * Buscar por ID
+     */
+    public function buscarPorId(int $id): Patrimonio {
+        Log::info('[PatrimonioService] buscarPorId', ['id' => $id]);
+        
+        $patrimonio = Patrimonio::findOrFail($id);
+        return $patrimonio;
+    }
+
+    /**
+     * Criar novo patrimônio
+     */
+    public function criar(array $dados): Patrimonio {
+        Log::info('[PatrimonioService] criar iniciado', ['nupatrimonio' => $dados['NUPATRIMONIO'] ?? null]);
+
+        DB::beginTransaction();
+        try {
+            $patrimonio = Patrimonio::create($dados);
+            
+            // Registrar movimento
+            MovPartr::create([
+                'patrimonio_id' => $patrimonio->NUSEQPATR,
+                'acao' => 'CRIACAO',
+                'usuario' => Auth::user()->NMLOGIN,
+            ]);
+
+            DB::commit();
+            Log::info('✅ [PatrimonioService] criado', ['id' => $patrimonio->NUSEQPATR]);
+            return $patrimonio;
+            
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('❌ [PatrimonioService] erro ao criar', ['erro' => $e->getMessage()]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Atualizar patrimônio
+     */
+    public function atualizar(int $id, array $dados): Patrimonio {
+        Log::info('[PatrimonioService] atualizar iniciado', ['id' => $id]);
+
+        DB::beginTransaction();
+        try {
+            $patrimonio = Patrimonio::findOrFail($id);
+            $original = $patrimonio->getOriginal(); // Valor antes
+            
+            $patrimonio->update($dados);
+            
+            // Registrar o que mudou
+            MovPartr::create([
+                'patrimonio_id' => $id,
+                'acao' => 'ATUALIZACAO',
+                'campo' => array_keys(array_diff($dados, $original)),
+                'usuario' => Auth::user()->NMLOGIN,
+            ]);
+
+            DB::commit();
+            Log::info('✅ [PatrimonioService] atualizado', ['id' => $id]);
+            return $patrimonio;
+            
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('❌ [PatrimonioService] erro ao atualizar', ['erro' => $e->getMessage()]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Deletar patrimônio
+     */
+    public function deletar(int $id): bool {
+        Log::info('[PatrimonioService] deletar iniciado', ['id' => $id]);
+
+        DB::beginTransaction();
+        try {
+            $patrimonio = Patrimonio::findOrFail($id);
+            
+            // Backup antes de deletar
+            MovPartr::create([
+                'patrimonio_id' => $id,
+                'acao' => 'DELECAO',
+                'backup_json' => json_encode($patrimonio->toArray()),
+                'usuario' => Auth::user()->NMLOGIN,
+            ]);
+
+            $patrimonio->delete();
+            
+            DB::commit();
+            Log::info('✅ [PatrimonioService] deletado', ['id' => $id]);
+            return true;
+            
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('❌ [PatrimonioService] erro ao deletar', ['erro' => $e->getMessage()]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Pesquisar por termo
+     */
+    public function pesquisar(string $termo): Collection {
+        Log::info('[PatrimonioService] pesquisar', ['termo' => $termo]);
+        
+        return Patrimonio::where('NUPATRIMONIO', 'like', "%{$termo}%")
+            ->orWhere('DEPATRIMONIO', 'like', "%{$termo}%")
+            ->orderBy('DTOPERACAO', 'desc')
+            ->get();
+    }
+
+    /**
+     * Operação em massa
+     */
+    public function aplicarEmMassa(array $ids, string $acao, array $dados = []): array {
+        Log::info('[PatrimonioService] operação em massa', [
+            'acao' => $acao,
+            'count' => count($ids),
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $processados = 0;
+            $erros = [];
+
+            foreach ($ids as $id) {
+                try {
+                    $patrimonio = Patrimonio::findOrFail($id);
+                    
+                    if ($acao === 'atualizar_situacao') {
+                        $this->atualizar($id, ['SITUACAO' => $dados['SITUACAO'] ?? 'Ativo']);
+                    } elseif ($acao === 'deletar') {
+                        $this->deletar($id);
+                    }
+                    
+                    $processados++;
+                } catch (Exception $e) {
+                    $erros[] = ['id' => $id, 'erro' => $e->getMessage()];
+                }
+            }
+
+            DB::commit();
+            Log::info('✅ [PatrimonioService] operação em massa concluída', [
+                'processados' => $processados,
+                'erros' => count($erros),
+            ]);
+
+            return [
+                'processados' => $processados,
+                'erros' => $erros,
+                'sucesso' => count($erros) === 0,
+            ];
+            
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('❌ [PatrimonioService] erro em massa', ['erro' => $e->getMessage()]);
+            throw $e;
+        }
+    }
+}
+```
+
+CONTRATO DE ASSINATURA (Todos services devem ter):
+```
+listar(filters...): Paginator
+buscarPorId(id): Model
+criar(dados): Model
+atualizar(id, dados): Model
+deletar(id): bool
+pesquisar(termo): Collection
+aplicarEmMassa(ids, acao, dados): array
+```
+
+Uso no CONTROLLER:
+```php
+class PatrimonioController {
+    public function __construct(private PatrimonioService $service) {}
+
+    public function index(Request $request): View {
+        $patrimonios = $this->service->listar(
+            $request->input('cdprojeto'),
+            $request->input('cdlocal'),
+            $request->input('situacao'),
+        );
+        return view('patrimonios.index', compact('patrimonios'));
+    }
+
+    public function store(StorePatrimonioRequest $request): RedirectResponse {
+        try {
+            $patrimonio = $this->service->criar($request->validated());
+            return redirect()->route('patrimonios.show', $patrimonio)
+                ->with('success', 'Criado!');
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function update(UpdatePatrimonioRequest $request, Patrimonio $patrimonio): RedirectResponse {
+        try {
+            $this->service->atualizar($patrimonio->NUSEQPATR, $request->validated());
+            return back()->with('success', 'Atualizado!');
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function destroy(Patrimonio $patrimonio): RedirectResponse {
+        try {
+            $this->service->deletar($patrimonio->NUSEQPATR);
+            return redirect()->route('patrimonios.index')
+                ->with('success', 'Deletado!');
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+}
+```
+
+================================================================================
+PRONTO! Agora você tem CONTRATOS IRREVOGÁVEIS.
+
+Codex não vai questionar. Não vai "sugerir alternativa". Simplesmente segue.
+
+Com esses 5 contratos + 2 documentos anteriores, o assistente trabalha 100%
+autonomamente sem supervisão a cada mudança.
+
+Good luck! 🚀
+================================================================================

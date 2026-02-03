@@ -70,6 +70,11 @@ class SolicitacaoBem extends Model
         return $this->hasMany(SolicitacaoBemItem::class, 'solicitacao_id');
     }
 
+    public function historicoStatus(): HasMany
+    {
+        return $this->hasMany(SolicitacaoBemStatusHistorico::class, 'solicitacao_id');
+    }
+
     public function projeto(): BelongsTo
     {
         return $this->belongsTo(Tabfant::class, 'projeto_id', 'id');

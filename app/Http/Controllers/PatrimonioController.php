@@ -753,7 +753,7 @@ class PatrimonioController extends Controller
 
                 'DEOBJETO' => 'nullable|string|max:350', // obrigatória apenas quando código for novo
 
-                'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,À DISPOSIÇÃO',
+                'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,A DISPOSICAO,À DISPOSIÇÃO,A DISPOSIÇÃO,DISPONIVEL',
 
                 'CDMATRFUNCIONARIO' => 'nullable|integer|exists:funcionarios,CDMATRFUNCIONARIO',
 
@@ -5375,7 +5375,7 @@ class PatrimonioController extends Controller
 
             'FLCONFERIDO' => 'nullable|string|in:S,N,1,0',
 
-            'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,À DISPOSIÇÃO',
+            'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,A DISPOSICAO,À DISPOSIÇÃO,A DISPOSIÇÃO,DISPONIVEL',
 
             'DTAQUISICAO' => 'nullable|date',
 
