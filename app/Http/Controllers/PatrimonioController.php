@@ -1070,6 +1070,15 @@ class PatrimonioController extends Controller
                 );
             }
         } catch (ValidationException $e) {
+            // 🔴 LOG DETALHADO DO ERRO DE VALIDAÇÃO
+            Log::error('❌ [UPDATE 422] Erro de validação', [
+                'NUSEQPATR' => $patrimonio->NUSEQPATR,
+                'NUPATRIMONIO' => $patrimonio->NUPATRIMONIO,
+                'errors' => $e->errors(),
+                'request_all' => $request->all(),
+                'validation_message' => $e->getMessage(),
+            ]);
+
             if ($isModal) {
                 $request->flash();
                 $errors = new \Illuminate\Support\MessageBag($e->errors());
