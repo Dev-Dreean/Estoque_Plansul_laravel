@@ -865,6 +865,11 @@ class PatrimonioController extends Controller
 
         } catch (ValidationException $e) {
             if ($isModal) {
+                Log::warning('⚠️ [UPDATE] Falha de validação no patrimônio', [
+                    'NUSEQPATR' => $patrimonio->NUSEQPATR ?? null,
+                    'NUPATRIMONIO' => $patrimonio->NUPATRIMONIO ?? null,
+                    'errors' => $e->errors(),
+                ]);
                 $request->flash();
                 $errors = new \Illuminate\Support\MessageBag($e->errors());
                 $projetos = Tabfant::select('CDPROJETO', 'NOMEPROJETO')->distinct()->orderBy('NOMEPROJETO')->get();

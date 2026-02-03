@@ -1817,6 +1817,19 @@
               if (resp.status === 422) {
                 const html = await resp.text();
                 this.applyFormModalHtml(html);
+                try {
+                  const doc = new DOMParser().parseFromString(html, 'text/html');
+                  const alert = doc.querySelector('[role="alert"]');
+                  const items = alert
+                    ? Array.from(alert.querySelectorAll('li')).map(li => li.textContent.trim()).filter(Boolean)
+                    : [];
+                  if (items.length) {
+                    console.warn('[PATRI] Erros de validação (modal):', items);
+                    window.__patrimonioLastErrors = items;
+                  }
+                } catch (e) {
+                  console.warn('[PATRI] Falha ao extrair erros do HTML', e);
+                }
                 return;
               }
               if (contentType.includes('application/json')) {
