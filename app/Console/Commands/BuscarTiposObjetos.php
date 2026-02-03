@@ -38,7 +38,7 @@ class BuscarTiposObjetos extends Command
         $this->info("\n=== LOCAIS PROJETO 940 ===\n");
         
         $locais = DB::table('locais_projeto')
-            ->where('CDPROJETO', 940)
+            ->where('tabfant_id', 940)
             ->get(['id', 'cdlocal', 'delocal']);
 
         foreach ($locais as $local) {
