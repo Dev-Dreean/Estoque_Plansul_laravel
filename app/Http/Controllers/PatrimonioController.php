@@ -5463,27 +5463,29 @@ class PatrimonioController extends Controller
             $objeto = ObjetoPatr::find($codigo);
 
             if (!$objeto) {
-
                 $descricao = trim((string) $request->input('DEOBJETO', ''));
+                $isSameCodigoAtual = $patrimonio && (string) $patrimonio->CODOBJETO === (string) $codigo;
 
+                // Em modo UPDATE, não bloquear alterações simples (ex.: SITUACAO) por causa de legado
+                // onde o código existe em PATR mas ainda não está em OBJETOPATR.
                 if ($descricao === '') {
+                    if (!$isSameCodigoAtual) {
+                        throw ValidationException::withMessages([
+                            'DEOBJETO' => 'Informe a descrição do novo código.',
+                        ]);
+                    }
 
-                    throw ValidationException::withMessages([
-
-                        'DEOBJETO' => 'Informe a descrição do novo código.'
-
+                    Log::warning('⚠️ [VALIDATE] Código do objeto não encontrado em OBJETOPATR; mantendo legado sem criar', [
+                        'NUSEQPATR' => $patrimonio?->NUSEQPATR,
+                        'NUPATRIMONIO' => $patrimonio?->NUPATRIMONIO,
+                        'CODOBJETO' => $codigo,
                     ]);
-
+                } else {
+                    $objeto = ObjetoPatr::create([
+                        'NUSEQOBJ' => $codigo,
+                        'DEOBJETO' => $descricao,
+                    ]);
                 }
-
-                $objeto = ObjetoPatr::create([
-
-                    'NUSEQOBJ' => $codigo,
-
-                    'DEOBJETO' => $descricao,
-
-                ]);
-
             }
         }
 
@@ -5492,8 +5494,10 @@ class PatrimonioController extends Controller
         // 4) Mapear para os campos reais da tabela PATR
 
         $data['CODOBJETO'] = $codigo;
-        if ($codigo !== null) {
-            $data['DEPATRIMONIO'] = $objeto ? $objeto->DEOBJETO : null; // mantÃ©m compatibilidade de exibiÃ§Ã£o no index/relatÃ³rios
+        // Só atualizar DEPATRIMONIO quando conseguimos resolver/criar o objeto.
+        // Isso evita apagar a descrição ao editar campos não relacionados (ex.: SITUACAO).
+        if ($objeto) {
+            $data['DEPATRIMONIO'] = $objeto->DEOBJETO; // mantém compatibilidade de exibição no index/relatórios
         }
 
         unset($data['NUSEQOBJ'], $data['DEOBJETO']);

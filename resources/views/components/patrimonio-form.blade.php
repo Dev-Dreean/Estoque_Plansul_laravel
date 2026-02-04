@@ -236,6 +236,7 @@
         </button>
         <div class="relative flex-grow min-w-0" @click.away="showCodigoDropdown=false">
           <input id="DEOBJETO"
+            name="DEOBJETO"
             x-model="descricaoSearch"
             @focus="abrirDropdownCodigos()"
             @blur.debounce.150ms="(function(){ showCodigoDropdown=false; buscarCodigo(); })()"
