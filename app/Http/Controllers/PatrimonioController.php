@@ -5459,31 +5459,36 @@ class PatrimonioController extends Controller
         // 3) Garantir existÃªncia do registro em OBJETOPATR (se código informado)
 
         $objeto = null;
+        $isSameCodigoAtual = $patrimonio && (string) $patrimonio->CODOBJETO === (string) $codigo;
+        
         if ($codigo !== null) {
             $objeto = ObjetoPatr::find($codigo);
 
             if (!$objeto) {
                 $descricao = trim((string) $request->input('DEOBJETO', ''));
-                $isSameCodigoAtual = $patrimonio && (string) $patrimonio->CODOBJETO === (string) $codigo;
 
                 // Em modo UPDATE, não bloquear alterações simples (ex.: SITUACAO) por causa de legado
                 // onde o código existe em PATR mas ainda não está em OBJETOPATR.
-                if ($descricao === '') {
-                    if (!$isSameCodigoAtual) {
-                        throw ValidationException::withMessages([
-                            'DEOBJETO' => 'Informe a descrição do novo código.',
-                        ]);
-                    }
-
-                    Log::warning('⚠️ [VALIDATE] Código do objeto não encontrado em OBJETOPATR; mantendo legado sem criar', [
-                        'NUSEQPATR' => $patrimonio?->NUSEQPATR,
-                        'NUPATRIMONIO' => $patrimonio?->NUPATRIMONIO,
-                        'CODOBJETO' => $codigo,
+                if (!$isSameCodigoAtual && $descricao === '') {
+                    // ❌ Tentando CRIAR um novo objeto SEM descrição → erro
+                    throw ValidationException::withMessages([
+                        'DEOBJETO' => 'Informe a descrição do novo código.',
                     ]);
-                } else {
+                }
+
+                if ($descricao !== '') {
+                    // ✅ Criar novo objeto com descrição fornecida
                     $objeto = ObjetoPatr::create([
                         'NUSEQOBJ' => $codigo,
                         'DEOBJETO' => $descricao,
+                    ]);
+                } else {
+                    // ⚠️ Código legado: existe em PATR mas não em OBJETOPATR
+                    // Manter o patrimônio como está, sem criar objeto
+                    Log::warning('⚠️ [VALIDATE] Código legado não em OBJETOPATR; mantendo sem criar', [
+                        'NUSEQPATR' => $patrimonio?->NUSEQPATR,
+                        'NUPATRIMONIO' => $patrimonio?->NUPATRIMONIO,
+                        'CODOBJETO' => $codigo,
                     ]);
                 }
             }
