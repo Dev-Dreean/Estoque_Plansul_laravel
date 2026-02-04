@@ -5480,8 +5480,19 @@ class PatrimonioController extends Controller
                     // ✅ Criar novo objeto com descrição fornecida
                     // Usar o nome da PK resolvido dinamicamente pelo Model (NUSEQOBJETO no KingHost, NUSEQOBJ local)
                     $pkName = (new ObjetoPatr())->getKeyName();
+                    
+                    // Buscar NUSEQTIPOPATR do patrimônio atual (se existe) ou definir valor padrão
+                    $nuseqTipoPatr = null;
+                    if ($patrimonio && $patrimonio->CODOBJETO) {
+                        $objetoExistente = ObjetoPatr::find($patrimonio->CODOBJETO);
+                        $nuseqTipoPatr = $objetoExistente?->NUSEQTIPOPATR;
+                    }
+                    // Fallback: tipo genérico (1 = "OUTROS" ou valor default)
+                    $nuseqTipoPatr = $nuseqTipoPatr ?? 1;
+                    
                     $objeto = ObjetoPatr::create([
                         $pkName => $codigo,
+                        'NUSEQTIPOPATR' => $nuseqTipoPatr,
                         'DEOBJETO' => $descricao,
                     ]);
                 } else {
