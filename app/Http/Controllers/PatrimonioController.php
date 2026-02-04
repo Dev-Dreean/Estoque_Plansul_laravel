@@ -5478,8 +5478,10 @@ class PatrimonioController extends Controller
 
                 if ($descricao !== '') {
                     // ✅ Criar novo objeto com descrição fornecida
+                    // Usar o nome da PK resolvido dinamicamente pelo Model (NUSEQOBJETO no KingHost, NUSEQOBJ local)
+                    $pkName = (new ObjetoPatr())->getKeyName();
                     $objeto = ObjetoPatr::create([
-                        'NUSEQOBJ' => $codigo,
+                        $pkName => $codigo,
                         'DEOBJETO' => $descricao,
                     ]);
                 } else {
