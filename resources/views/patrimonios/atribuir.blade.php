@@ -43,7 +43,7 @@
                     this.open = true;
                     this.$nextTick(() => {
                       const termo = document.getElementById('filtro_termo');
-                      const NÃºmero = document.getElementById('filtro_numero');
+                      const numero = document.getElementById('filtro_numero');
                       const el = termo || numero;
                       if (el) {
                         el.focus();
@@ -698,8 +698,8 @@
             'sort',
             'direction',
           ].forEach(k => params.delete(k));
-          const NÃºmero = document.getElementById('filtro_numero')?.value;
-          const DescriÃ§Ã£o = document.getElementById('filtro_descricao')?.value;
+          const numero = document.getElementById('filtro_numero')?.value;
+          const descricao = document.getElementById('filtro_descricao')?.value;
           const modelo = document.getElementById('filtro_modelo')?.value;
           const projeto = document.getElementById('filtro_projeto')?.value;
           const termo = document.getElementById('filtro_termo')?.value;
