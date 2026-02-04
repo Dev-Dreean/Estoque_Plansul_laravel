@@ -98,12 +98,12 @@
                 </div>
                 <datalist id="relatorio_projetos">
                   @foreach(($projetos ?? collect()) as $p)
-                    <option value="{{ $p->CÃ³digo }}">{{ $p->CÃ³digo }} - {{ $p->DescriÃ§Ã£o }}</option>
+                    <option value="{{ $p->codigo }}">{{ $p->codigo }} - {{ $p->descricao }}</option>
                   @endforeach
                 </datalist>
                 <datalist id="relatorio_locais">
                   @foreach(($locais ?? collect()) as $l)
-                    <option value="{{ $l->CÃ³digo }}">{{ $l->CÃ³digo }} - {{ $l->DescriÃ§Ã£o }}</option>
+                    <option value="{{ $l->codigo }}">{{ $l->codigo }} - {{ $l->descricao }}</option>
                   @endforeach
                 </datalist>
               </div>

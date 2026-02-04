@@ -29,11 +29,11 @@
   });
   $projetosOptions = ($projetos ?? collect())->map(fn($p) => [
     'code' => (string) $p->codigo,
-    'label' => trim((string) ($p->CÃ³digo . ' - ' . $p->descricao)),
+    'label' => trim((string) ($p->codigo . ' - ' . $p->descricao)),
   ])->toArray();
   $locaisOptions = ($locais ?? collect())->map(fn($l) => [
     'code' => (string) $l->codigo,
-    'label' => trim((string) ($l->CÃ³digo . ' - ' . $l->descricao)),
+    'label' => trim((string) ($l->codigo . ' - ' . $l->descricao)),
   ])->toArray();
   $modelosOptions = ($modelos ?? collect())->pluck('MODELO')->filter()->unique()->values()->map(fn($m) => ['code' => $m, 'label' => $m])->toArray();
   $marcasOptions = ($marcas ?? collect())->pluck('MARCA')->filter()->unique()->values()->map(fn($m) => ['code' => $m, 'label' => $m])->toArray();

@@ -255,7 +255,7 @@
               </form>
               <form id="form-atribuir-codigo" method="POST" action="{{ route('patrimonios.atribuirCodigo') }}" class="hidden">
                 @csrf
-                <input type="hidden" name="CÃ³digo" x-model="codigoTermo">
+                <input type="hidden" name="codigo" x-model="codigoTermo">
               </form>
               <form method="POST" action="{{ route('patrimonios.atribuir.processar') }}" id="form-atribuir-lote">
                 @csrf
