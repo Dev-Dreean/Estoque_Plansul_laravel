@@ -103,7 +103,7 @@
                 ? request()->fullUrlWithQuery(array_merge($baseQuery, ['sort' => $col, 'direction' => $nextDir]))
                 : null;
             @endphp
-            <th class="{{ $headerPadding }} {{ $col === 'situacao' ? 'text-[10px] sm:text-[11px] md:text-xs' : '' }} {{ $col === 'conferido' ? 'text-center w-12' : '' }} whitespace-nowrap">
+            <th class="{{ $headerPadding }} {{ $col === 'situacao' ? 'text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs' : '' }} {{ $col === 'conferido' ? 'text-center w-12' : '' }} whitespace-nowrap">
               @if($sortable)
                 <a href="{{ $sortUrl }}"
                   data-ajax-sort
@@ -130,7 +130,7 @@
     <tbody class="text-[13px] sm:text-sm md:text-[15px] lg:text-base font-semibold">
       @forelse ($data as $item)
         @php
-          $rowSituacao = trim(preg_replace('/[\r\n]+/', ' ', (string)($item->SituaÃ§Ã£o ?? '')));
+          $rowSituacao = trim(preg_replace('/[\r\n]+/', ' ', (string)($item->SITUACAO ?? '')));
           $rowPatrimonio = $item->NUPATRIMONIO ?? $item->NUSEQPATR ?? $item->id;
           $rowConferidoRaw = is_string($item->FLCONFERIDO ?? null) ? strtoupper(trim((string) $item->FLCONFERIDO)) : ($item->FLCONFERIDO ?? '');
           $rowConferido = in_array($rowConferidoRaw, ['S', '1', 'T', 'Y'], true) ? 'S' : 'N';
@@ -260,7 +260,7 @@
             @elseif($col === 'situacao')
               <td class="{{ $headerPadding }}">
                 @php
-                  $situacao = $item->SituaÃ§Ã£o ?? '';
+                  $situacao = $item->SITUACAO ?? '';
                   $raw = preg_replace('/[\r\n]+/', ' ', trim($situacao));
                   $norm = strtoupper(Illuminate\Support\Str::ascii($raw));
                   $norm = preg_replace('/\s+/', ' ', $norm);

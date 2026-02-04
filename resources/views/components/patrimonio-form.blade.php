@@ -3677,12 +3677,12 @@
           '#TAMANHO', // 7. Dimens?es
           '#projetoSelect', // 8. Projeto
           '#CDLOCAL_INPUT', // 9. Local F?sico
-          '#NMPLANTA', // 10. C?digo do Termo
+          '#NMPLANTA', // 10. Código do Termo
           '#MARCA', // 11. Marca
           '#MODELO', // 12. Modelo
-          '#SITUACAO', // 13. Situa??o
-          '#matricula_busca', // 14. Matr?cula Respons?vel
-          '#DTAQUISICAO', // 15. Data de Aquisi??o
+          '#SITUACAO', // 13. Situação
+          '#matricula_busca', // 14. Matrícula Responsável
+          '#DTAQUISICAO', // 15. Data de Aquisição
           '#DTBAIXA', // 16. Data de Baixa
         ];
 
