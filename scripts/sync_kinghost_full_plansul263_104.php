@@ -177,19 +177,19 @@ log_msg("✅ Conectado: KingHost (plansul04)");
 log_msg("");
 
 // ═══════════════════════════════════════════════════════════════
-// SINCRONIZAÇÃO 1: TABFANT (PROJETOS)
+// SINCRONIZAÇÃO 1: TABFANTASIA (PROJETOS from plansul263)
 // ═══════════════════════════════════════════════════════════════
 
-log_msg("📋 SINCRONIZAÇÃO 1: TABFANT (Projetos - plansul263 → KingHost)");
+log_msg("📋 SINCRONIZAÇÃO 1: TABFANTASIA → tabfant (Projetos - plansul263 → KingHost)");
 
 try {
-    $countSource = contar_registros($plansul263, 'tabfant');
+    $countSource = contar_registros($plansul263, 'TABFANTASIA');
     $countDest = contar_registros($kinghost, 'tabfant');
     
-    log_msg("   Origem (plansul263): $countSource registros");
-    log_msg("   Destino (KingHost): $countDest registros");
+    log_msg("   Origem (plansul263.TABFANTASIA): $countSource registros");
+    log_msg("   Destino (KingHost.tabfant): $countDest registros");
     
-    $stmt = $plansul263->query("SELECT * FROM tabfant ORDER BY id ASC");
+    $stmt = $plansul263->query("SELECT CDFANTASIA, DEFANTASIA FROM TABFANTASIA ORDER BY CDFANTASIA ASC");
     $registros = $stmt->fetchAll();
     
     $added = 0;
@@ -198,37 +198,36 @@ try {
     
     foreach ($registros as $row) {
         try {
-            // Preparar dados
-            $id = $row['id'];
-            $cdprojeto = $row['CDPROJETO'] ?? null;
-            $nomeprojeto = $row['NOMEPROJETO'] ?? null;
+            // Mapear campos: TABFANTASIA → tabfant
+            $cdprojeto = $row['CDFANTASIA'];  // ID do projeto
+            $nomeprojeto = $row['DEFANTASIA']; // Nome do projeto
             
-            // Verificar se existe
-            $checkStmt = $kinghost->prepare("SELECT id FROM tabfant WHERE id = ?");
-            $checkStmt->execute([$id]);
+            // Verificar se existe (usar CDPROJETO como chave, não id)
+            $checkStmt = $kinghost->prepare("SELECT id FROM tabfant WHERE CDPROJETO = ?");
+            $checkStmt->execute([$cdprojeto]);
             $exists = $checkStmt->rowCount() > 0;
             
             if ($exists) {
                 // UPDATE
                 if (!$isDryRun) {
                     $updateStmt = $kinghost->prepare(
-                        "UPDATE tabfant SET CDPROJETO = ?, NOMEPROJETO = ? WHERE id = ?"
+                        "UPDATE tabfant SET NOMEPROJETO = ? WHERE CDPROJETO = ?"
                     );
-                    $updateStmt->execute([$cdprojeto, $nomeprojeto, $id]);
+                    $updateStmt->execute([$nomeprojeto, $cdprojeto]);
                 }
                 $updated++;
             } else {
                 // INSERT
                 if (!$isDryRun) {
                     $insertStmt = $kinghost->prepare(
-                        "INSERT INTO tabfant (id, CDPROJETO, NOMEPROJETO) VALUES (?, ?, ?)"
+                        "INSERT INTO tabfant (CDPROJETO, NOMEPROJETO) VALUES (?, ?)"
                     );
-                    $insertStmt->execute([$id, $cdprojeto, $nomeprojeto]);
+                    $insertStmt->execute([$cdprojeto, $nomeprojeto]);
                 }
                 $added++;
             }
         } catch (Exception $e) {
-            log_msg("   ⚠️ Erro ao processar projeto id={$id}: " . $e->getMessage(), "⚠️");
+            log_msg("   ⚠️ Erro ao processar projeto CDFANTASIA={$cdprojeto}: " . $e->getMessage(), "⚠️");
             $errors++;
         }
     }
@@ -237,11 +236,11 @@ try {
     log_msg("");
     
 } catch (Exception $e) {
-    log_msg("ERRO na sincronização TABFANT: " . $e->getMessage(), "❌");
+    log_msg("ERRO na sincronização TABFANTASIA: " . $e->getMessage(), "❌");
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SINCRONIZAÇÃO 2: FUNCIONARIOS
+// SINCRONIZAÇÃO 2: FUNCIONARIOS (plansul104 → KingHost)
 // ═══════════════════════════════════════════════════════════════
 
 log_msg("👥 SINCRONIZAÇÃO 2: FUNCIONARIOS (plansul104 → KingHost)");
@@ -250,75 +249,78 @@ try {
     $countSource = contar_registros($plansul104, 'funcionarios');
     $countDest = contar_registros($kinghost, 'funcionarios');
     
-    log_msg("   Origem (plansul104): $countSource registros");
-    log_msg("   Destino (KingHost): $countDest registros");
+    log_msg("   Origem (plansul104.funcionarios): $countSource registros");
+    log_msg("   Destino (KingHost.funcionarios): $countDest registros");
     
-    $stmt = $plansul104->query("SELECT * FROM funcionarios ORDER BY CDMATRFUNCIONARIO ASC");
+    // Buscar funcionários da origem (plansul104)
+    $stmt = $plansul104->query("
+        SELECT 
+            matricula, nome, cpf, projeto, cargo, dtadmissao, 
+            estado, nmmunicipio, deendereco, telefone, local
+        FROM funcionarios 
+        ORDER BY matricula ASC
+    ");
     $registros = $stmt->fetchAll();
     
     $added = 0;
     $updated = 0;
     $errors = 0;
     
-    // Campos a sincronizar
-    $campos_sync = [
-        'CDMATRFUNCIONARIO', 'NMFUNCIONARIO', 'DTADMISSAO', 'CDCARGO', 
-        'CODFIL', 'UFPROJ', 'DESETOR', 'DESITUACAO'
-    ];
-    
     foreach ($registros as $row) {
         try {
-            $cdmatr = $row['CDMATRFUNCIONARIO'];
+            // Mapear campos: plansul104 → KingHost
+            $cdmatr = trim($row['matricula'] ?? '');
+            $nmelements = $row['nome'] ?? null;
+            $cpf = $row['cpf'] ?? null;
+            $projeto = $row['projeto'] ?? null;
+            $cargo = $row['cargo'] ?? null;
+            $dtadmissao = $row['dtadmissao'] ?? null;
+            $estado = $row['estado'] ?? null;
+            $local = $row['local'] ?? null;
             
-            // Verificar se existe
-            $checkStmt = $kinghost->prepare("SELECT CDMATRFUNCIONARIO FROM funcionarios WHERE CDMATRFUNCIONARIO = ?");
+            // Pular se matrícula vazia
+            if (empty($cdmatr)) {
+                $errors++;
+                continue;
+            }
+            
+            // Verificar se existe (usar CDMATRFUNCIONARIO como chave)
+            $checkStmt = $kinghost->prepare(
+                "SELECT CDMATRFUNCIONARIO FROM funcionarios WHERE CDMATRFUNCIONARIO = ?"
+            );
             $checkStmt->execute([$cdmatr]);
             $exists = $checkStmt->rowCount() > 0;
             
             if ($exists) {
-                // UPDATE - apenas campos existentes
-                $updates = [];
-                $valores = [];
-                foreach ($campos_sync as $col) {
-                    if ($col !== 'CDMATRFUNCIONARIO' && isset($row[$col])) {
-                        $updates[] = "$col = ?";
-                        $valores[] = $row[$col];
-                    }
-                }
-                
-                if (!empty($updates)) {
-                    if (!$isDryRun) {
-                        $sql = "UPDATE funcionarios SET " . implode(", ", $updates) . " WHERE CDMATRFUNCIONARIO = ?";
-                        $valores[] = $cdmatr;
-                        $updateStmt = $kinghost->prepare($sql);
-                        $updateStmt->execute($valores);
-                    }
-                    $updated++;
-                }
-            } else {
-                // INSERT
-                $cols = ['CDMATRFUNCIONARIO'];
-                $vals = [$cdmatr];
-                $placeholders = ['?'];
-                
-                foreach ($campos_sync as $col) {
-                    if ($col !== 'CDMATRFUNCIONARIO' && isset($row[$col])) {
-                        $cols[] = $col;
-                        $vals[] = $row[$col];
-                        $placeholders[] = '?';
-                    }
-                }
-                
+                // UPDATE - sincronizar campos disponibilizados
                 if (!$isDryRun) {
-                    $sql = "INSERT INTO funcionarios (" . implode(", ", $cols) . ") 
-                            VALUES (" . implode(", ", $placeholders) . ")";
-                    $insertStmt = $kinghost->prepare($sql);
-                    $insertStmt->execute($vals);
+                    $updateStmt = $kinghost->prepare("
+                        UPDATE funcionarios 
+                        SET NMFUNCIONARIO = ?, DTADMISSAO = ?, 
+                            CDCARGO = ?, UFPROJ = ?, DESENDERECIARIO = ?
+                        WHERE CDMATRFUNCIONARIO = ?
+                    ");
+                    $updateStmt->execute([$nmelements, $dtadmissao, $cargo, $estado, $deendereco, $cdmatr]);
+                }
+                $updated++;
+            } else {
+                // INSERT - criar novo funcionário
+                if (!$isDryRun) {
+                    $insertStmt = $kinghost->prepare("
+                        INSERT INTO funcionarios 
+                        (CDMATRFUNCIONARIO, NMFUNCIONARIO, DTADMISSAO, 
+                         CDCARGO, UFPROJ, DESENDERECIARIO, SITUACAO)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ");
+                    $insertStmt->execute([
+                        $cdmatr, $nmelements, $dtadmissao, 
+                        $cargo, $estado, $deendereco ?? '', 'ATIVO'
+                    ]);
                 }
                 $added++;
             }
         } catch (Exception $e) {
-            log_msg("   ⚠️ Erro ao processar funcionário cdmatr={$cdmatr}: " . $e->getMessage(), "⚠️");
+            log_msg("   ⚠️ Erro ao processar funcionário matricula={$cdmatr}: " . $e->getMessage(), "⚠️");
             $errors++;
         }
     }
