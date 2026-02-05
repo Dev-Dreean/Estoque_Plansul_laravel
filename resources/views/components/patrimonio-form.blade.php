@@ -3911,6 +3911,9 @@
             try {
               const buscarLocalFallback = async () => {
                 try {
+                  if (!this.formData.CDLOCAL) {
+                    return false;
+                  }
                   const cdProjetoAtual = String(this.formData.CDPROJETO || '').trim();
                   const query = cdProjetoAtual ? `?cdprojeto=${encodeURIComponent(cdProjetoAtual)}` : '';
                   const resp = await fetch(`/api/locais/${encodeURIComponent(this.formData.CDLOCAL)}${query}`, {
@@ -4181,7 +4184,6 @@
     }
   }
 </script>
-
 
 
 
