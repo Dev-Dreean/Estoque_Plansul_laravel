@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
   {{-- Abas de navegação do patrimônio --}}
   <x-patrimonio-nav-tabs />
 
@@ -531,13 +531,13 @@
     </div>
   </div>
 
-  <!-- Modal de Desatribuição removido no novo fluxo -->
+  <!-- Modal de Desatribuicao removido no novo fluxo -->
 
-  <!-- Modal de CÃ³digos removido (simplificaÃ§Ã£o solicitada) -->
+  <!-- Modal de Codigos removido (simplificacao solicitada) -->
 
   </div>
 
-  <!-- Forms auxiliares invisíveis removidos: geração de código via fetch -->
+  <!-- Forms auxiliares invisiveis removidos: geracao de codigo via fetch -->
 
   <script>
     const patrimonioAtribuirSelection = (() => {
@@ -742,14 +742,14 @@
           const gridContainer = document.getElementById('atribuir-grid-container');
           if (!gridContainer) {
             const query = params.toString();
-            window.location.href = query ? `{{ route('patrimonios.atribuir.codigos') }}?${query}` : '{{ route('patrimonios.atribuir.codigos') }}';
+            window.location.href = query ? `{{ route('patrimonios.atribuir.codigos') }}?${query}` : `{{ route('patrimonios.atribuir.codigos') }}`;
             return;
           }
           if (this.selectionEnabled) {
             this.saveSelection();
           }
           const query = params.toString();
-          const url = query ? `{{ route('patrimonios.atribuir.codigos') }}?${query}` : '{{ route('patrimonios.atribuir.codigos') }}';
+          const url = query ? `{{ route('patrimonios.atribuir.codigos') }}?${query}` : `{{ route('patrimonios.atribuir.codigos') }}`;
           gridContainer.classList.add('opacity-60');
           fetch(url, {
             headers: {
