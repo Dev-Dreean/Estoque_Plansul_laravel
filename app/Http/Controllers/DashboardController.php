@@ -232,19 +232,27 @@ class DashboardController extends Controller
         $colSituacao = $prefix . 'SITUACAO';
         $colCdSituacao = $prefix . 'CDSITUACAO';
 
-        if (Schema::hasColumn('patr', 'CDSITUACAO')) {
-            $query->where(function ($q) use ($colCdSituacao) {
-                $q->whereNull($colCdSituacao)
-                    ->orWhere($colCdSituacao, '<>', 2);
-            });
-            return;
+        try {
+            if (Schema::hasColumn('patr', 'CDSITUACAO')) {
+                $query->where(function ($q) use ($colCdSituacao) {
+                    $q->whereNull($colCdSituacao)
+                        ->orWhere($colCdSituacao, '<>', 2);
+                });
+                return;
+            }
+        } catch (\Exception $e) {
+            // MySQL antigo não suporta generation_expression, pular CDSITUACAO
         }
 
-        if (Schema::hasColumn('patr', 'SITUACAO')) {
-            $query->where(function ($q) use ($colSituacao) {
-                $q->whereNull($colSituacao)
-                    ->orWhereRaw("UPPER(TRIM({$colSituacao})) NOT LIKE '%BAIXA%'");
-            });
+        try {
+            if (Schema::hasColumn('patr', 'SITUACAO')) {
+                $query->where(function ($q) use ($colSituacao) {
+                    $q->whereNull($colSituacao)
+                        ->orWhereRaw("UPPER(TRIM({$colSituacao})) NOT LIKE '%BAIXA%'");
+                });
+            }
+        } catch (\Exception $e) {
+            // MySQL antigo não suporta generation_expression, pular SITUACAO
         }
     }
 }
