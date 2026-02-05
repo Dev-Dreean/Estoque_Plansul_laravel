@@ -74,7 +74,7 @@
             carregandoBusca: false,
             mensagemBusca: '',
             async buscarPorCodigo(e) {
-                const CÃ³digo = e.target.value.trim();
+                const codigo = e.target.value.trim();
                 const duplicando = document.getElementById('cdlocal')?.readOnly;
                 if (!codigo || duplicando) { // não busca em modo duplicação
                     return;

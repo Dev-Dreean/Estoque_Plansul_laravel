@@ -1,0 +1,144 @@
+================================================================================
+RELATÓRIO: STATUS DA SINCRONIZAÇÃO FUNCIONARIOS/PROJETOS
+Data: 2026-02-05 10:56:48
+================================================================================
+
+⚠️ DESCOBERTA CRÍTICA: ESTRUTURAS DE TABELAS COMPLETAMENTE DIFERENTES
+================================================================================
+
+RESUMO EXECUTIVO:
+O script de sincronização falhou porque as tabelas "funcionarios" no banco local
+e no KingHost têm estruturas COMPLETAMENTE DIFERENTES.
+
+   Local (6 colunas):          KingHost (21 colunas):
+   ✓ CDMATRFUNCIONARIO    ↔    matricula
+   ✓ NMFUNCIONARIO        ↔    nome
+   ✓ DTADMISSAO           ↔    dtadmissao
+   ✓ CDCARGO              ↔    cargo
+   ❌ CODFIL              ↔    ??? (SEM MAPEAMENTO)
+   ❌ UFPROJ              ↔    estado (INFERIDO)
+   ❌ -                   ↔    (15 colunas extras no KingHost)
+
+COLUNAS EXTRAS KINGHOST (sem equivalente local):
+• cpf, numcpf, numcid
+• projeto, cdfantasia
+• nmmunicipio, nmbairro, deendereco, decomplemento, cep, estado
+• nuseqagencia, nucontabanco
+• nmmae, NASC, local, telefone
+
+================================================================================
+PROBLEMA: POR QUÊ OS ERROS OCORRERAM?
+================================================================================
+
+O script `/scripts/sincronizar_funcionarios_projetos_kinghost.php` tentava
+executar a query:
+
+   INSERT INTO funcionarios (CDMATRFUNCIONARIO, NMFUNCIONARIO, DTADMISSAO, ...)
+   VALUES (?, ?, ?, ...)
+
+MAS a tabela funcionarios em KingHost não tem coluna "CDMATRFUNCIONARIO" —
+ela tem "matricula" ao invés.
+
+Resultado: "SQLSTATE[42S22]: Column not found: 1054 Unknown column"
+(Erro em ~6000+ registros, aproximadamente 6% dos 95.800 funcionários)
+
+================================================================================
+O QUE NÃO FOI SINCRONIZADO?
+================================================================================
+
+❌ Funcionários: 0 registros sincronizados (todos falharam na inserção)
+❌ Projetos (tabfant): NÃO TESTADO (script parou no primeiro objetivo)
+⚠️ Status: DRY-RUN (modo seguro; nenhum dado foi realmente modificado)
+
+================================================================================
+PRÓXIMOS PASSOS NECESSÁRIOS:
+================================================================================
+
+⚠️ AÇÃO NECESSÁRIA DO USUÁRIO:
+
+Antes de continuar, preciso de CLAREZA sobre:
+
+1) QUAL É O OBJETIVO REAL?
+   a) Atualizar dados LOCAIS com dados do KingHost? (PULL)
+   b) Enviar dados LOCAIS para KingHost? (PUSH)
+   c) Sincronizar BIDIRECIONAL?
+
+2) QUAL É O MAPEAMENTO CORRETO DE COLUNAS?
+   Qual coluna local corresponde ao quê em KingHost?
+
+   Exemplo (seu input necessário):
+   • LOCAL: CDMATRFUNCIONARIO    →  KINGHOST: matricula    ✓
+   • LOCAL: NMFUNCIONARIO        →  KINGHOST: nome         ✓
+   • LOCAL: DTADMISSAO           →  KINGHOST: dtadmissao   ✓
+   • LOCAL: CDCARGO              →  KINGHOST: cargo        ✓
+   • LOCAL: CODFIL               →  KINGHOST: ???          (QUAL?)
+   • LOCAL: UFPROJ               →  KINGHOST: estado       (CORRETO?)
+
+3) As colunas extras em KingHost (cpf, nmmunicipio, etc):
+   • Você quer preencher com valores locais (se possível)?
+   • Ou deixar NULL?
+   • Ou obter de outra fonte?
+
+================================================================================
+ARQUIVOS AFETADOS:
+================================================================================
+
+✅ CORRIGIDO:
+   /scripts/sincronizar_funcionarios_projetos_kinghost.php
+   → Credenciais agora carregam corretamente via Dotenv
+   → Conexões a KingHost funcionando
+   → MAS lógica de mapeamento de colunas estava errada
+
+📝 CRIADO:
+   RELATORIO_SINCRONIZACAO_STATUS.txt (este arquivo)
+
+================================================================================
+LOGS GERADOS:
+================================================================================
+
+storage/logs/sincronizacao_2026-02-05_1056.log
+   → Contém 6000+ erros de "Unknown column"
+   → Mode: DRY-RUN (sem modificações reais)
+   → Início: 2026-02-05 10:56:48
+   → Duração: ~1 segundo
+
+================================================================================
+VALIDAÇÃO DE CREDENCIAIS:
+================================================================================
+
+✅ Banco Local:
+   Host: localhost:3306
+   DB: cadastros_plansul
+   Usuário: root
+   Status: CONECTADO ✓
+   Registros `funcionarios`: 95.800
+
+✅ KingHost Funcionarios:
+   Host: mysql.plansul2.kinghost.net:3306
+   DB: plansul104
+   Usuário: plansul104
+   Status: CONECTADO ✓
+   Registros `funcionarios`: ??? (não verificado; estrutura diferente)
+
+⚠️ KingHost Projetos:
+   Host: mysql.plansul2.kinghost.net:3306
+   DB: plansul263
+   Usuário: plansul263
+   Status: CONECTADO ↔ (não testado)
+   Registros `tabfant`: ??? (não verificado)
+
+================================================================================
+RECOMENDAÇÕES:
+================================================================================
+
+1. Listar o mapeamento EXATO de que coluna local → coluna KingHost
+2. Validar se as tabelas têm a mesma finalidade (parecam ser diferentes)
+3. Decidir sobre colunas "extras" em KingHost (como preencher?)
+4. Após resolver (1-3), recriarei o script com mapeamento correto
+
+================================================================================
+FIM DO RELATÓRIO
+================================================================================
+Gerado em 2026-02-05 10:56:48
+Próximas ações: Aguardando input do usuário para mapeamento de colunas
+================================================================================

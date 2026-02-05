@@ -255,7 +255,7 @@ try {
     // Buscar funcionários da origem (plansul104)
     $stmt = $plansul104->query("
         SELECT 
-            matricula, nome, cpf, projeto, cargo, dtadmissao, 
+            matricula, nome, cpf, projeto, cdfantasia, cargo, dtadmissao, 
             estado, nmmunicipio, deendereco, telefone, local
         FROM funcionarios 
         ORDER BY matricula ASC
@@ -273,10 +273,12 @@ try {
             $nmelements = $row['nome'] ?? null;
             $cpf = $row['cpf'] ?? null;
             $projeto = $row['projeto'] ?? null;
+            $cdfantasia = $row['cdfantasia'] ?? null;
             $cargo = $row['cargo'] ?? null;
             $dtadmissao = $row['dtadmissao'] ?? null;
             $estado = $row['estado'] ?? null;
             $local = $row['local'] ?? null;
+            $deendereco = $row['deendereco'] ?? null;
             
             // Pular se matrícula vazia
             if (empty($cdmatr)) {
@@ -297,10 +299,10 @@ try {
                     $updateStmt = $kinghost->prepare("
                         UPDATE funcionarios 
                         SET NMFUNCIONARIO = ?, DTADMISSAO = ?, 
-                            CDCARGO = ?, UFPROJ = ?, DESENDERECIARIO = ?
+                            CDCARGO = ?, CODFIL = ?, UFPROJ = ?
                         WHERE CDMATRFUNCIONARIO = ?
                     ");
-                    $updateStmt->execute([$nmelements, $dtadmissao, $cargo, $estado, $deendereco, $cdmatr]);
+                    $updateStmt->execute([$nmelements, $dtadmissao, $cargo, $cdfantasia, $estado, $cdmatr]);
                 }
                 $updated++;
             } else {
@@ -309,12 +311,12 @@ try {
                     $insertStmt = $kinghost->prepare("
                         INSERT INTO funcionarios 
                         (CDMATRFUNCIONARIO, NMFUNCIONARIO, DTADMISSAO, 
-                         CDCARGO, UFPROJ, DESENDERECIARIO, SITUACAO)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                         CDCARGO, CODFIL, UFPROJ)
+                        VALUES (?, ?, ?, ?, ?, ?)
                     ");
                     $insertStmt->execute([
                         $cdmatr, $nmelements, $dtadmissao, 
-                        $cargo, $estado, $deendereco ?? '', 'ATIVO'
+                        $cargo, $cdfantasia, $estado
                     ]);
                 }
                 $added++;

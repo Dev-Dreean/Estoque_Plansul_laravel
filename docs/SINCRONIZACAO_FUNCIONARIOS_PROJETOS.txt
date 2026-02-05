@@ -1,0 +1,234 @@
+================================================================================
+DOCUMENTAÇÃO: SINCRONIZAÇÃO DE FUNCIONÁRIOS E PROJETOS PARA KINGHOST
+================================================================================
+
+OBJETIVO
+--------
+Sincronizar dados de funcionários (tabela 'funcionarios') e projetos (tabela 'tabfant')
+do banco local (cadastros_plansul) para o servidor KingHost (mysql.plansul2.kinghost.net).
+
+TABELAS SINCRONIZADAS
+---------------------
+
+1. FUNCIONÁRIOS
+   - Tabela Local: funcionarios
+   - Banco KingHost: plansul104
+   - Host: mysql.plansul2.kinghost.net:3306
+   - Colunas Sincronizadas:
+     * CDMATRFUNCIONARIO (chave primária, string)
+     * NMFUNCIONARIO (nome do funcionário)
+     * DTADMISSAO (data de admissão)
+     * CDCARGO (código do cargo)
+     * CODFIL (código da filial)
+     * UFPROJ (unidade federativa do projeto)
+
+2. PROJETOS (TABFANT)
+   - Tabela Local: tabfant
+   - Banco KingHost: plansul263
+   - Host: mysql.plansul2.kinghost.net:3306
+   - Colunas Sincronizadas:
+     * id (chave primária, inteiro)
+     * NOMEPROJETO (nome do projeto)
+     * CDPROJETO (código do projeto)
+     * LOCAL (local/endereço do projeto)
+     * UF (unidade federativa)
+
+CONFIGURAÇÃO PRÉVIA
+-------------------
+
+Certifique-se de que o arquivo .env contém:
+
+  # Banco Local (automático)
+  DB_CONNECTION=mysql
+  DB_HOST=127.0.0.1
+  DB_PORT=3306
+  DB_DATABASE=cadastros_plansul
+  DB_USERNAME=root
+  DB_PASSWORD=
+
+  # KingHost - Funcionários (REQUERIDO)
+  FUNCIONARIOS_SOURCE_HOST=mysql.plansul2.kinghost.net
+  FUNCIONARIOS_SOURCE_PORT=3306
+  FUNCIONARIOS_SOURCE_USER=plansul104
+  FUNCIONARIOS_SOURCE_PASS=plansul104
+  FUNCIONARIOS_SOURCE_DB=plansul104
+
+  # KingHost - Tabfantasia (REQUERIDO)
+  TABFANTASIA_SOURCE_HOST=mysql.plansul2.kinghost.net
+  TABFANTASIA_SOURCE_PORT=3306
+  TABFANTASIA_SOURCE_USER=plansul263
+  TABFANTASIA_SOURCE_PASS=plansul263
+  TABFANTASIA_SOURCE_DB=plansul263
+
+Como Usar
+---------
+
+SINTAXE GERAL:
+  C:\> php scripts/sincronizar_funcionarios_projetos_kinghost.php [opções]
+
+OPÇÕES:
+  (nenhum)           → Sincronizar TUDO
+  --dry-run          → Simular sincronização SEM fazer alterações
+  --log-path=PATH    → Usar caminho customizado para log (padrão: storage/logs/)
+
+EXEMPLOS:
+  1) Sincronizar TUDO:
+     C:\> php scripts/sincronizar_funcionarios_projetos_kinghost.php
+
+  2) Simular antes de executar (DRY-RUN):
+     C:\> php scripts/sincronizar_funcionarios_projetos_kinghost.php --dry-run
+
+  3) Sincronizar com log customizado:
+     C:\> php scripts/sincronizar_funcionarios_projetos_kinghost.php --log-path=storage/logs/meu_sync.log
+
+  4) Combinado:
+     C:\> php scripts/sincronizar_funcionarios_projetos_kinghost.php --dry-run --log-path=storage/logs/teste.log
+
+FLUXO DA SINCRONIZAÇÃO
+----------------------
+
+O script executa os seguintes passos:
+
+1️⃣  CONEXÃO
+   ✓ Conecta ao banco local (cadastros_plansul)
+   ✓ Conecta ao KingHost (plansul104 - funcionários)
+   ✓ Conecta ao KingHost (plansul263 - projetos)
+
+2️⃣  SINCRONIZAR FUNCIONÁRIOS
+   ✓ Busca todos os funcionários do banco local
+   ✓ Para cada funcionário:
+      - Verifica se JÁ existe no KingHost
+      - Se existe → UPDATE (atualizar campos)
+      - Se não existe → INSERT (adicionar novo)
+   ✓ Registra: adicionados, atualizados, erros
+
+3️⃣  SINCRONIZAR PROJETOS
+   ✓ Busca todos os projetos do banco local
+   ✓ Para cada projeto:
+      - Verifica se JÁ existe no KingHost
+      - Se existe → UPDATE (atualizar campos)
+      - Se não existe → INSERT (adicionar novo)
+   ✓ Registra: adicionados, atualizados, erros
+
+4️⃣  VALIDAÇÃO
+   ✓ Compara quantidade de registros:
+      - Funcionários: banco local vs KingHost
+      - Projetos: banco local vs KingHost
+   ✓ Valida se contagens batem (✅ OK ou ⚠️ DIFERENÇA)
+
+5️⃣  LOG
+   ✓ Gera arquivo de log em: storage/logs/sincronizacao_YYYY-MM-DD_HHMM.log
+   ✓ Contém todos os passos, erros e validações
+
+INTERPRETANDO O LOG
+------------------
+
+LOG NORMAL (SUCESSO):
+  [2025-02-05 14:30:45] INFO: Conectado ao banco local: cadastros_plansul
+  [2025-02-05 14:30:45] INFO: ✅ Conectado ao KingHost (Funcionários)
+  [2025-02-05 14:30:45] INFO: ✅ Conectado ao KingHost (Projetos)
+  [2025-02-05 14:30:46] INFO: Encontrados 5227 funcionários locais
+  [2025-02-05 14:30:50] INFO: ✅ Adicionados: 0, Atualizados: 5227, Erros: 0, Ignorados: 0
+  [2025-02-05 14:30:50] INFO: Encontrados 877 projetos locais
+  [2025-02-05 14:30:52] INFO: ✅ Adicionados: 5, Atualizados: 872, Erros: 0, Ignorados: 0
+  [2025-02-05 14:30:52] INFO: 📊 FUNCIONÁRIOS: Local=5227 vs KingHost=5227 [✅ OK]
+  [2025-02-05 14:30:52] INFO: 📊 PROJETOS: Local=877 vs KingHost=877 [✅ OK]
+  [2025-02-05 14:30:52] SUCESSO: ✅ SINCRONIZAÇÃO CONCLUÍDA
+
+ERROS COMUNS
+------------
+
+❌ "Erro ao conectar banco local: SQLSTATE[HY000]: General error"
+   → Verifique se MySQL local está rodando
+   → Comando: mysql -u root (no PowerShell)
+
+❌ "Erro ao conectar KingHost (Funcionários): SQLSTATE[HY000]"
+   → Verifique .env: FUNCIONARIOS_SOURCE_*
+   → Verifique conexão de internet (SSH/acesso remoto)
+   → Teste com: ping mysql.plansul2.kinghost.net
+
+❌ "Erro ao conectar KingHost (Tabfantasia): SQLSTATE[HY000]"
+   → Verifique .env: TABFANTASIA_SOURCE_*
+   → Mesmo teste acima
+
+❌ "Erro ao sincronizar funcionário ABC123: Unknown column 'CDMATRFUNCIONARIO'"
+   → A coluna pode ter nome diferente no KingHost
+   → Verifique estrutura com: DESCRIBE funcionarios;
+
+⚠️  "⚠️ Encontrados X funcionários locais vs Y KingHost [⚠️ DIFERENÇA]"
+   → Há discrepância após sincronização
+   → Verifique log para erros durante inserts
+   → Possível: registro sem chave primária, ou erro de tipo de dado
+
+Como Usar (PASSO A PASSO)
+--------------------------
+
+1) PREPARAR:
+   a) Certifique-se que MySQL local está rodando
+   b) Verifique .env contém credenciais KingHost
+   c) Faça BACKUP: php artisan backup:database
+
+2) TESTE INICIAL (DRY-RUN):
+   C:\> php scripts/sincronizar_funcionarios_projetos_kinghost.php --dry-run
+   
+   ✓ Leia o log em storage/logs/sincronizacao_YYYY-MM-DD_HHMM.log
+   ✓ Verifique se há erros
+
+3) EXECUTAR PRODUÇÃO:
+   C:\> php scripts/sincronizar_funcionarios_projetos_kinghost.php
+   
+   ✓ Aguarde conclusão (pode levar 30-60 segundos)
+   ✓ Verifique linha final: "✅ SINCRONIZAÇÃO CONCLUÍDA"
+
+4) VALIDAR RESULTADO:
+   ✓ Log mostrará contagens antes/depois
+   ✓ Procure por "✅ OK" na seção FUNCIONÁRIOS e PROJETOS
+   ✓ Se houver ⚠️ DIFERENÇA, investigue erros no log
+
+5) PRÓXIMAS EXECUTAÇÕES:
+   ✓ Repita do passo 2
+   ✓ Sempre usar --dry-run antes para produção
+
+RESTAURAR DE BACKUP
+-------------------
+
+Se algo deu errado no KingHost e você precisa re-sincronizar:
+
+1) Verifique backup local foi criado: storage/backups/
+2) O script só faz UPSERT (insert or update), não deleta nada
+3) Para forçar uma sincronização completa:
+   a) Conecte ao KingHost (SSH ou phpMyAdmin)
+   b) Limpe a tabela: TRUNCATE TABLE funcionarios;
+   c) Limpe a tabela: TRUNCATE TABLE tabfant;
+   d) Execute o script novamente
+
+FREQUÊNCIA RECOMENDADA
+----------------------
+
+- DESENVOLVIMENTO: Sempre que adicionar/editar funcionários/projetos localmente
+- PRODUÇÃO: Mensalmente ou quando solicitado pelo gestor
+- EMERGÊNCIA: Imediatamente após alterações em massa / reparos
+
+CONTATO / SUPORTE
+-----------------
+
+Se encontrar problemas:
+1) Verifique .env está correto
+2) Leia o arquivo de log completo
+3) Procure por "ERRO" ou "❌" no log
+4) Contate o desenvolvedor com o arquivo de log
+
+HISTÓRICO DE SINCRONIZAÇÕES
+----------------------------
+
+Todos os logs estão em: storage/logs/sincronizacao_*.log
+
+Exemplo de log histórico:
+  storage/logs/sincronizacao_2025-02-05_143045.log
+  storage/logs/sincronizacao_2025-02-04_100230.log
+  storage/logs/sincronizacao_2025-02-03_154800.log
+
+================================================================================
+Última atualização: 2025-02-05
+Autor: Copilot / AI Agent
+================================================================================

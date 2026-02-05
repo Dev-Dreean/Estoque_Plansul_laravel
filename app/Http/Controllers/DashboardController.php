@@ -14,22 +14,15 @@ class DashboardController extends Controller
 {
     public function index(): View
     {
-        $cadastrosHoje = Patrimonio::whereDate('DTOPERACAO', Carbon::today())->count();
+        $cadastroBase = Patrimonio::query();
+        $this->applyExcludeBaixa($cadastroBase);
+
+        $cadastrosHoje = (clone $cadastroBase)->whereDate('DTOPERACAO', Carbon::today())->count();
         $verificadosStats = null;
         $user = Auth::user();
         if ($this->canViewVerificadosIndicator($user)) {
             $baseQuery = Patrimonio::query();
-            if (Schema::hasColumn('patr', 'CDSITUACAO')) {
-                $baseQuery->where(function ($q) {
-                    $q->whereNull('CDSITUACAO')
-                        ->orWhere('CDSITUACAO', '<>', 2);
-                });
-            } elseif (Schema::hasColumn('patr', 'SITUACAO')) {
-                $baseQuery->where(function ($q) {
-                    $q->whereNull('SITUACAO')
-                        ->orWhereRaw("UPPER(TRIM(SITUACAO)) NOT LIKE '%BAIXA%'");
-                });
-            }
+            $this->applyExcludeBaixa($baseQuery);
             $total = (clone $baseQuery)->count();
             $verificados = (clone $baseQuery)
                 ->whereRaw("UPPER(COALESCE(NULLIF(TRIM(FLCONFERIDO), ''), 'N')) = 'S'")
@@ -42,21 +35,22 @@ class DashboardController extends Controller
             ];
         }
 
-        // Busca os 5 usuários que mais cadastraram (Top 5)
+        // Busca os 5 usuarios que mais cadastraram (Top 5)
         $topCadastradores = Patrimonio::query()
             ->join('usuario', 'patr.CDMATRFUNCIONARIO', '=', 'usuario.CDMATRFUNCIONARIO')
             ->select('usuario.NOMEUSER', DB::raw('count(patr.NUSEQPATR) as total'))
             ->groupBy('usuario.NOMEUSER')
             ->orderBy('total', 'desc')
             ->limit(5)
+            ->tap(fn($q) => $this->applyExcludeBaixa($q, 'patr'))
             ->get();
 
         $cadastrosSemanaLabels = [];
         $cadastrosSemanaData = [];
-        // Construir apenas os dias que tiveram movimentação (> 0)
+        // Construir apenas os dias que tiveram movimentacao (> 0)
         for ($i = 6; $i >= 0; $i--) {
             $data = Carbon::today()->subDays($i);
-            $count = Patrimonio::whereDate('DTOPERACAO', $data)->count();
+            $count = (clone $cadastroBase)->whereDate('DTOPERACAO', $data)->count();
             if ($count > 0) {
                 $cadastrosSemanaLabels[] = $data->format('d/m');
                 $cadastrosSemanaData[] = $count;
@@ -73,8 +67,8 @@ class DashboardController extends Controller
     }
 
     /**
-     * Retorna JSON com labels e data para o gráfico conforme o período solicitado.
-     * Parmetros aceitos via query: period = day|week|month|year (default: week)
+     * Retorna JSON com labels e data para o grafico conforme o periodo solicitado.
+     * Parametros aceitos via query: period = day|week|month|year (default: week)
      */
     public function data(Request $request)
     {
@@ -82,43 +76,45 @@ class DashboardController extends Controller
 
         $labels = [];
         $values = [];
+        $baseQuery = Patrimonio::query();
+        $this->applyExcludeBaixa($baseQuery);
 
         if ($period === 'day') {
-            // últimas 24 horas por hora
+            // ultimas 24 horas por hora
             for ($h = 0; $h < 24; $h++) {
                 $start = Carbon::today()->addHours($h);
                 $end = (clone $start)->addHour();
-                $count = Patrimonio::whereBetween('DTOPERACAO', [$start, $end])->count();
+                $count = (clone $baseQuery)->whereBetween('DTOPERACAO', [$start, $end])->count();
                 if ($count > 0) {
                     $labels[] = $start->format('H:00');
                     $values[] = $count;
                 }
             }
         } elseif ($period === 'month') {
-            // últimos 30 dias
+            // ultimos 30 dias
             for ($i = 29; $i >= 0; $i--) {
                 $d = Carbon::today()->subDays($i);
-                $count = Patrimonio::whereDate('DTOPERACAO', $d)->count();
+                $count = (clone $baseQuery)->whereDate('DTOPERACAO', $d)->count();
                 if ($count > 0) {
                     $labels[] = $d->format('d/m');
                     $values[] = $count;
                 }
             }
         } elseif ($period === 'year') {
-            // últimos 12 meses
+            // ultimos 12 meses
             for ($m = 11; $m >= 0; $m--) {
                 $d = Carbon::now()->subMonths($m)->startOfMonth();
-                $count = Patrimonio::whereBetween('DTOPERACAO', [$d, (clone $d)->endOfMonth()])->count();
+                $count = (clone $baseQuery)->whereBetween('DTOPERACAO', [$d, (clone $d)->endOfMonth()])->count();
                 if ($count > 0) {
                     $labels[] = $d->format('M/Y');
                     $values[] = $count;
                 }
             }
         } else {
-            // semana (default) - últimos 7 dias
+            // semana (default) - ultimos 7 dias
             for ($i = 6; $i >= 0; $i--) {
                 $d = Carbon::today()->subDays($i);
-                $count = Patrimonio::whereDate('DTOPERACAO', $d)->count();
+                $count = (clone $baseQuery)->whereDate('DTOPERACAO', $d)->count();
                 if ($count > 0) {
                     $labels[] = $d->format('d/m');
                     $values[] = $count;
@@ -134,8 +130,8 @@ class DashboardController extends Controller
     }
 
     /**
-     * Retorna JSON com contagem de lançamentos agrupados por UF (estado).
-     * Obs: este gráfico é "geral" (sem filtro por período).
+     * Retorna JSON com contagem de lancamentos agrupados por UF (estado).
+     * Obs: este grafico e "geral" (sem filtro por periodo).
      */
     public function ufData(Request $request)
     {
@@ -148,6 +144,7 @@ class DashboardController extends Controller
             ->selectRaw("$ufExpr as uf, COUNT(*) as total")
             ->groupBy('uf')
             ->orderBy('total', 'desc');
+        $this->applyExcludeBaixa($rowsQuery, 'patr');
         $rows = $rowsQuery->get();
 
         $labels = [];
@@ -189,17 +186,7 @@ class DashboardController extends Controller
     public function totalData(Request $request)
     {
         $query = DB::table('patr');
-        if (Schema::hasColumn('patr', 'CDSITUACAO')) {
-            $query->where(function ($q) {
-                $q->whereNull('CDSITUACAO')
-                    ->orWhere('CDSITUACAO', '<>', 2);
-            });
-        } elseif (Schema::hasColumn('patr', 'SITUACAO')) {
-            $query->where(function ($q) {
-                $q->whereNull('SITUACAO')
-                    ->orWhereRaw("UPPER(TRIM(SITUACAO)) NOT LIKE '%BAIXA%'");
-            });
-        }
+        $this->applyExcludeBaixa($query, 'patr');
 
         $expr = "UPPER(COALESCE(NULLIF(TRIM(FLCONFERIDO), ''), 'N'))";
         $row = $query->selectRaw(
@@ -239,6 +226,25 @@ class DashboardController extends Controller
         return $login !== '' && in_array($login, array_map('strtolower', $allowlist), true);
     }
 
+    private function applyExcludeBaixa($query, ?string $table = null): void
+    {
+        $prefix = $table ? $table . '.' : '';
+        $colSituacao = $prefix . 'SITUACAO';
+        $colCdSituacao = $prefix . 'CDSITUACAO';
+
+        if (Schema::hasColumn('patr', 'CDSITUACAO')) {
+            $query->where(function ($q) use ($colCdSituacao) {
+                $q->whereNull($colCdSituacao)
+                    ->orWhere($colCdSituacao, '<>', 2);
+            });
+            return;
+        }
+
+        if (Schema::hasColumn('patr', 'SITUACAO')) {
+            $query->where(function ($q) use ($colSituacao) {
+                $q->whereNull($colSituacao)
+                    ->orWhereRaw("UPPER(TRIM({$colSituacao})) NOT LIKE '%BAIXA%'");
+            });
+        }
+    }
 }
-
-

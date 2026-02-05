@@ -96,8 +96,8 @@
         <thead>
             <tr>
                 @foreach($cols as $c)
-                <th>{{ str_replace(['NUPATRIMONIO','DEPATRIMONIO','SITUACAO','MARCA','MODELO','NUSERIE','COR','DIMENSAO','CARACTERISTICAS','DEHISTORICO','CDPROJETO','NUMOF','CODOBJETO','DTAQUISICAO','DTOPERACAO','DTGARANTIA','DTBAIXA'],
-              ['Nº Patr.','Descrição','Situação','Marca','Modelo','Nº Série','Cor','Dimensão','Características','Histórico','Cód. Projeto','OF','Cód. Objeto','Dt. Aquisição','Dt. Cadastro','Dt. Garantia','Dt. Baixa'],$c) }}</th>
+                <th>{{ str_replace(['NUPATRIMONIO','DEPATRIMONIO','SITUACAO','MARCA','MODELO','NUSERIE','COR','DIMENSAO','CARACTERISTICAS','DEHISTORICO','CDPROJETO','CDLOCAL','NUMOF','CODOBJETO','DTAQUISICAO','DTOPERACAO','DTGARANTIA','DTBAIXA'],
+              ['Nº Patr.','Descrição','Situação','Marca','Modelo','Nº Série','Cor','Dimensão','Características','Histórico','Cód. Projeto','Cód. Local','OF','Cód. Objeto','Dt. Aquisição','Dt. Cadastro','Dt. Garantia','Dt. Baixa'],$c) }}</th>
                 @endforeach
             </tr>
         </thead>

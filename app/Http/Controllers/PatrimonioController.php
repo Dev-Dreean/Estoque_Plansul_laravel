@@ -1054,21 +1054,26 @@ class PatrimonioController extends Controller
 
 
             $incomingCdProjeto = $validatedData['CDPROJETO'] ?? $patrimonio->CDPROJETO;
-            $incomingCdLocal = $request->input('CDLOCAL');
-            if ($incomingCdLocal === null || $incomingCdLocal === '') {
-                $incomingCdLocal = $validatedData['CDLOCAL'] ?? $patrimonio->CDLOCAL;
+            $incomingCdLocalRaw = $request->input('CDLOCAL');
+            if ($incomingCdLocalRaw === null || $incomingCdLocalRaw === '') {
+                $incomingCdLocalRaw = $validatedData['CDLOCAL'] ?? $patrimonio->CDLOCAL;
             }
-            $localChanged = (string) $incomingCdLocal !== (string) $patrimonio->CDLOCAL;
-            $projetoChanged = (string) $incomingCdProjeto !== (string) $patrimonio->CDPROJETO;
 
-            if ($localChanged || $projetoChanged) {
-                //  VALIDACAO CRITICA: Local deve pertencer ao projeto selecionado
+            $incomingCdLocalResolved = $incomingCdLocalRaw;
+            if ($incomingCdLocalRaw !== null && $incomingCdLocalRaw !== '') {
+                // Validar e resolver CDLOCAL mesmo quando vem como ID (PK) para evitar falso "sem mudança"
                 $localSelecionado = $this->validateLocalBelongsToProjeto(
                     $incomingCdProjeto,
-                    $incomingCdLocal,
+                    (int) $incomingCdLocalRaw,
                     'atualizacao de patrimonio'
                 );
+                if ($localSelecionado) {
+                    $incomingCdLocalResolved = (string) $localSelecionado->cdlocal;
+                }
             }
+
+            $localChanged = (string) $incomingCdLocalResolved !== (string) $patrimonio->CDLOCAL;
+            $projetoChanged = (string) $incomingCdProjeto !== (string) $patrimonio->CDPROJETO;
         } catch (ValidationException $e) {
             // 🔴 LOG DETALHADO DO ERRO DE VALIDAÇÃO
             Log::error('❌ [UPDATE 422] Erro de validação', [
@@ -6957,6 +6962,5 @@ class PatrimonioController extends Controller
 
 
 }
-
 
 

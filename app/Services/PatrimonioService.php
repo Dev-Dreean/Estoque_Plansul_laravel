@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class PatrimonioService
 {
@@ -650,24 +651,37 @@ class PatrimonioService
     protected function aplicarFiltroSituacao(Builder $query, Request $request): void
     {
         $raw = $request->input('situacao');
-        if (is_null($raw)) {
-            return;
-        }
-
-        $values = collect(is_array($raw) ? $raw : [$raw])
+        $values = collect(is_array($raw) ? $raw : ($raw !== null ? [$raw] : []))
             ->map(fn($v) => strtoupper(trim((string) $v)))
             ->filter()
             ->unique()
-            ->map(function ($v) {
-                return $v === 'DISPONIVEL' ? 'A DISPOSICAO' : $v;
-            })
+            ->map(fn($v) => $v === 'DISPONIVEL' ? 'A DISPOSICAO' : $v)
             ->values();
 
         if ($values->isEmpty()) {
+            $this->aplicarExclusaoBaixados($query);
             return;
         }
 
         $query->whereIn('SITUACAO', $values->all());
+    }
+
+    protected function aplicarExclusaoBaixados(Builder $query): void
+    {
+        if (Schema::hasColumn('patr', 'CDSITUACAO')) {
+            $query->where(function ($q) {
+                $q->whereNull('CDSITUACAO')
+                    ->orWhere('CDSITUACAO', '<>', 2);
+            });
+            return;
+        }
+
+        if (Schema::hasColumn('patr', 'SITUACAO')) {
+            $query->where(function ($q) {
+                $q->whereNull('SITUACAO')
+                    ->orWhereRaw("UPPER(TRIM(SITUACAO)) NOT LIKE '%BAIXA%'");
+            });
+        }
     }
 
     protected function aplicarFiltroUf(Builder $query, Request $request): void

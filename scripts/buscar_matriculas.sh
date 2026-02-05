@@ -1,0 +1,7 @@
+#!/bin/bash
+# Buscar matrículas específicas do KingHost
+
+mysql -h mysql07-farm10.kinghost.net -u plansul004_add2 -pA33673170a plansul04 << EOF
+SELECT CDMATRFUNCIONARIO, NMFUNCIONARIO, DTADMISSAO, CDCARGO FROM funcionarios 
+WHERE CDMATRFUNCIONARIO IN (198370,199158,199036,199855,199856,199857,199858,199859);
+EOF

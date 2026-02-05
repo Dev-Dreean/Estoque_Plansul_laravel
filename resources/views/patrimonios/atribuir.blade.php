@@ -80,7 +80,7 @@
                     const matrResp = document.getElementById('filtro_matr_responsavel')?.value || '';
                     const matrCad = document.getElementById('filtro_matr_cadastrador')?.value || '';
 
-                    temFiltroAtivo = !!(num || desc || mod || proj || termo || matrResp || matrCad);
+                    this.temFiltroAtivo = !!(num || desc || mod || proj || termo || matrResp || matrCad);
 
                     const partes = [];
                     if (termo) partes.push('Termo=' + termo);
@@ -90,7 +90,7 @@
                     if (proj) partes.push('Projeto=' + proj);
                     if (matrResp) partes.push('Resp=' + matrResp);
                     if (matrCad) partes.push('Cad=' + matrCad);
-                    textofiltro = partes.join(', ');
+                    this.textofiltro = partes.join(', ');
                   }
                 }"
                 x-init="updateFiltroTexto()"
@@ -239,16 +239,16 @@
                   {{-- Cabeçalho Colapsável do Grupo --}}
                   <tr class="group-header border-b-2 border-gray-200 dark:border-gray-700 transition cursor-pointer bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm"
                     data-group-id="{{ $grupo_id }}"
-                    @click="toggleGroup('{{ $grupo_id }}')"
-                    :data-expanded="groupState['{{ $grupo_id }}'] === true ? 'true' : 'false'">
+                    @click="toggleGroup(@js($grupo_id))"
+                    :data-expanded="groupState[@js($grupo_id)] === true ? 'true' : 'false'">
                     <td colspan="5" class="px-4 py-4 bg-white dark:bg-gray-800 border-l-4 border-indigo-400 dark:border-indigo-400">
                       <div class="flex items-center justify-between gap-4">
                         {{-- Ícone de Expandir + Info do Grupo --}}
                         <div class="flex items-center gap-4 flex-1 min-w-0">
                           <button type="button"
                             class="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-md border-2 border-indigo-400 dark:border-indigo-400 bg-white dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-indigo-700 transition transform"
-                            :class="{ 'rotate-180': groupState['{{ $grupo_id }}'] === true }"
-                            @click.stop="toggleGroup('{{ $grupo_id }}')">
+                            :class="{ 'rotate-180': groupState[@js($grupo_id)] === true }"
+                            @click.stop="toggleGroup(@js($grupo_id))">
                             <svg class="w-4 h-4 text-indigo-400 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
@@ -303,7 +303,7 @@
 
                           {{-- Botão Baixar Planilha Termo (Excel - Verde Office) --}}
                           <button type="button"
-                            @click.stop="downloadPlanilhaTermo([{{ $grupo_patrimonios->pluck('NUSEQPATR')->join(',') }}], '{{ $grupo_codigo }}')"
+                            @click.stop="downloadPlanilhaTermo([{{ $grupo_patrimonios->pluck('NUSEQPATR')->join(',') }}], @js($grupo_codigo))"
                             class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-green-600 dark:text-green-400 bg-white dark:bg-gray-800 rounded-lg border-2 border-green-600 dark:border-green-600 hover:bg-green-50 dark:hover:bg-green-700/10 transition whitespace-nowrap"
                             title="Baixar planilha com todos os itens do termo">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -330,11 +330,11 @@
 
                   {{-- Header do Grupo (Colunas) --}}
                   <tr class="text-xs text-gray-700 dark:text-gray-100 uppercase bg-gray-100 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-600"
-                    x-show="groupState['{{ $grupo_id }}'] === true"
+                    x-show="groupState[@js($grupo_id)] === true"
                     style="display: none;">
                     <th class="px-4 py-3">
                       @if(!request('status') || request('status')=='disponivel')
-                      <input type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600" @change="toggleGroupCheckboxes('{{ $grupo_id }}', $event)">
+                      <input type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600" @change="toggleGroupCheckboxes(@js($grupo_id), $event)">
                       @endif
                     </th>
                     <th class="px-4 py-3">Nº Pat.</th>
@@ -348,12 +348,12 @@
                   <tr class="group-details border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                     data-group-id="{{ $grupo_id }}"
                     data-row-id="{{ $grupo_dados['primeiro']->NUSEQPATR }}"
-                    x-show="groupState['{{ $grupo_id }}'] === true"
+                    x-show="groupState[@js($grupo_id)] === true"
                     style="display: none;">
                     <td class="px-4 py-3 text-gray-500 dark:text-gray-400">
                       <div class="flex items-center justify-center">
                         <input class="grupo-item-checkbox h-4 w-4 rounded border-gray-400 dark:border-gray-400 text-indigo-600 focus:ring-indigo-600"
-                          type="checkbox" data-grupo-id="{{ $grupo_id }}" value="{{ $grupo_dados['primeiro']->NUSEQPATR }}" @change="updateGroupSelection('{{ $grupo_id }}')">
+                          type="checkbox" data-grupo-id="{{ $grupo_id }}" value="{{ $grupo_dados['primeiro']->NUSEQPATR }}" @change="updateGroupSelection(@js($grupo_id))">
                       </div>
                     </td>
                     <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
@@ -372,7 +372,7 @@
                       $fallback = $primeiro->MARCA ?: ($primeiro->MODELO ?: '-');
                       $displayDesc = $semDescricao ? $fallback : $descRaw;
                     @endphp
-                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs truncate" :title="'{{ $displayDesc }}'">
+                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs truncate" :title="@js($displayDesc)">
                       {{ Str::limit($displayDesc, 50) }}
                     </td>
                     <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
@@ -476,7 +476,7 @@
     const patrimonioAtribuirSelection = (() => {
       const params = new URLSearchParams(window.location.search);
       const status = params.get('status') || 'disponivel';
-      const key = `patrimonios.atribuir.selection.${status}`;
+      const key = 'patrimonios.atribuir.selection.' + status;
       const normalize = (ids) => {
         const unique = new Set();
         (ids || []).forEach((id) => {
@@ -511,8 +511,9 @@
       return { key, status, read, write, clear, normalize };
     })();
     window.patrimonioAtribuirSelection = patrimonioAtribuirSelection;
+    const atribuirCodigosBaseUrl = @json(route('patrimonios.atribuir.codigos'));
 
-    function atribuirPage() {
+    window.atribuirPage = function atribuirPage() {
       return {
         // Animação custom: classe usada: animate-fadeInScale
         showFilters: false,
@@ -659,7 +660,7 @@
         updateHistory(params) {
           if (!window.history) return;
           const query = params.toString();
-          const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+          const url = query ? window.location.pathname + '?' + query : window.location.pathname;
           window.history.replaceState(null, '', url);
         },
         parseHrefParams(href) {
@@ -675,14 +676,15 @@
           const gridContainer = document.getElementById('atribuir-grid-container');
           if (!gridContainer) {
             const query = params.toString();
-            window.location.href = query ? `{{ route('patrimonios.atribuir.codigos') }}?${query}` : `{{ route('patrimonios.atribuir.codigos') }}`;
+          const destino = query ? atribuirCodigosBaseUrl + '?' + query : atribuirCodigosBaseUrl;
+          window.location.href = destino;
             return;
           }
           if (this.selectionEnabled) {
             this.saveSelection();
           }
           const query = params.toString();
-          const url = query ? `{{ route('patrimonios.atribuir.codigos') }}?${query}` : `{{ route('patrimonios.atribuir.codigos') }}`;
+          const url = query ? atribuirCodigosBaseUrl + '?' + query : atribuirCodigosBaseUrl;
           gridContainer.classList.add('opacity-60');
           fetch(url, {
             headers: {
@@ -789,7 +791,9 @@
           if (this.selectionEnabled) {
             const selectedSet = new Set((this.selectedPatrimonios || []).map(String));
             const count = selectedSet.size;
-            this.contadorTexto = count === 0 ? '0 patrimônios selecionados' : `${count} patrimônio${count>1?'s':''} selecionado${count>1?'s':''}`;
+            this.contadorTexto = count === 0
+              ? '0 patrimônios selecionados'
+              : count + ' patrimônio' + (count > 1 ? 's' : '') + ' selecionado' + (count > 1 ? 's' : '');
             const selectAll = document.getElementById('selectAll');
             if (selectAll) {
               const allCheckboxes = document.querySelectorAll('.patrimonio-checkbox');
@@ -802,7 +806,9 @@
           }
           const checkboxes = document.querySelectorAll('.patrimonio-checkbox:checked');
           const count = checkboxes.length;
-          this.contadorTexto = count === 0 ? '0 patrimônios selecionados' : `${count} patrimônio${count>1?'s':''} selecionado${count>1?'s':''}`;
+          this.contadorTexto = count === 0
+            ? '0 patrimônios selecionados'
+            : count + ' patrimônio' + (count > 1 ? 's' : '') + ' selecionado' + (count > 1 ? 's' : '');
           const selectAll = document.getElementById('selectAll');
           if (selectAll) {
             const allCheckboxes = document.querySelectorAll('.patrimonio-checkbox');
@@ -1103,7 +1109,7 @@
         },
         updateGroupSelection(grupoId) {
           // Obter todos os checkboxes do grupo
-          const checkboxes = document.querySelectorAll(`input.grupo-item-checkbox[data-grupo-id="${grupoId}"]:checked`);
+          const checkboxes = document.querySelectorAll('input.grupo-item-checkbox[data-grupo-id="' + grupoId + '"]:checked');
           const ids = Array.from(checkboxes).map(cb => cb.value);
 
           // Atualizar o estado de seleção do grupo
@@ -1122,7 +1128,7 @@
           this.groupState[groupId] = !this.groupState[groupId];
           this.$nextTick(() => {
             // Atualizar icone de rotação
-            const header = document.querySelector(`tr[data-group-id="${groupId}"]`);
+            const header = document.querySelector('tr[data-group-id="' + groupId + '"]');
             if (header) {
               header.style.transition = 'background-color 0.2s ease';
             }
@@ -1336,11 +1342,11 @@
               return;
             }
             json.updated_ids.forEach(id => {
-              const row = document.querySelector(`tr[data-row-id='${id}']`);
+              const row = document.querySelector("tr[data-row-id='" + id + "']");
               if (row) {
                 const cell = row.querySelector('[data-col="codigo-termo"]');
                 if (cell) {
-                  cell.innerHTML = `<span class=\\"badge-indigo font-mono\\">${this.generatedCode}</span>`;
+                  cell.innerHTML = '<span class="badge-indigo font-mono">' + this.generatedCode + '</span>';
                 }
                 const cb = row.querySelector("input.patrimonio-checkbox[name='ids[]']");
                 if (cb) {

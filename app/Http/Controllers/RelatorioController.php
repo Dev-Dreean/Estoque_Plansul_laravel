@@ -15,6 +15,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 // Removido uso de Maatwebsite\Excel; usaremos SimpleExcelWriter já presente
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class RelatorioController extends Controller
 {
@@ -107,6 +108,8 @@ class RelatorioController extends Controller
             } else {
                 $query = Patrimonio::query()->with('creator', 'local.projeto');
             }
+
+            $this->applyDefaultExcludeBaixa($query, $request);
 
             switch ($tipo) {
                 case 'numero':
@@ -208,6 +211,8 @@ class RelatorioController extends Controller
         } else {
             $query = Patrimonio::query()->with('creator', 'local.projeto');
         }
+
+        $this->applyDefaultExcludeBaixa($query, $request);
 
         switch ($validated['tipo_relatorio']) {
             case 'numero':
@@ -346,6 +351,35 @@ class RelatorioController extends Controller
         $query->whereIn('SITUACAO', $situacoes);
     }
 
+    private function applyDefaultExcludeBaixa($query, Request $request, string $field = 'situacao_busca'): void
+    {
+        $raw = $request->input($field);
+
+        $values = collect(is_array($raw) ? $raw : ($raw !== null ? [$raw] : []))
+            ->map(fn($v) => strtoupper(trim((string) $v)))
+            ->filter()
+            ->values();
+
+        if ($values->isNotEmpty()) {
+            return;
+        }
+
+        if (Schema::hasColumn('patr', 'CDSITUACAO')) {
+            $query->where(function ($q) {
+                $q->whereNull('CDSITUACAO')
+                    ->orWhere('CDSITUACAO', '<>', 2);
+            });
+            return;
+        }
+
+        if (Schema::hasColumn('patr', 'SITUACAO')) {
+            $query->where(function ($q) {
+                $q->whereNull('SITUACAO')
+                    ->orWhereRaw("UPPER(TRIM(SITUACAO)) NOT LIKE '%BAIXA%'");
+            });
+        }
+    }
+
     private function normalizeSituacoes(?string $raw): array
     {
         if (!$raw) {
@@ -409,6 +443,7 @@ class RelatorioController extends Controller
                 'Características' => $patrimonio->CARACTERISTICAS,
                 'Histórico' => $patrimonio->DEHISTORICO,
                 'Local (Nome)' => $patrimonio->local->LOCAL ?? 'SISTEMA',
+                'Local (Cód)' => $patrimonio->CDLOCAL,
                 'Local Interno (Cód)' => $patrimonio->CDLOCALINTERNO,
                 'Projeto (Cód)' => $patrimonio->CDPROJETO,
                 'Data de Aquisição' => $patrimonio->DTAQUISICAO,
@@ -442,6 +477,7 @@ class RelatorioController extends Controller
                 'Características' => $patrimonio->CARACTERISTICAS,
                 'Histórico' => $patrimonio->DEHISTORICO,
                 'Local (Nome)' => $patrimonio->local->LOCAL ?? 'N/A',
+                'Local (Cód)' => $patrimonio->CDLOCAL,
                 'Local Interno (Cód)' => $patrimonio->CDLOCALINTERNO,
                 'Projeto (Cód)' => $patrimonio->CDPROJETO,
                 'Data de Aquisição' => $patrimonio->DTAQUISICAO,
@@ -475,6 +511,7 @@ class RelatorioController extends Controller
             'MARCA',
             'NUSERIE',
             'CDPROJETO',
+            'CDLOCAL',
             'NUMOF',
             'CODOBJETO',
             'DTAQUISICAO',
@@ -556,6 +593,8 @@ class RelatorioController extends Controller
         // Relações úteis (usuário criador)
         $query->with('creator');
 
+        $this->applyDefaultExcludeBaixa($query, $request, 'situacao');
+
         // Aplica filtros se presentes (ignora campos vazios / null)
         if (filled($validated['nupatrimonio'] ?? null)) {
             $query->where('NUPATRIMONIO', $validated['nupatrimonio']);
@@ -584,6 +623,7 @@ class RelatorioController extends Controller
             'NUPATRIMONIO',
             'CODOBJETO',
             'CDPROJETO',
+            'CDLOCAL',
             'MODELO',
             'DEPATRIMONIO',
             'SITUACAO',
@@ -603,6 +643,7 @@ class RelatorioController extends Controller
             'CARACTERISTICAS',
             'DEHISTORICO',
             'CDPROJETO',
+            'CDLOCAL',
             'NUMOF',
             'CODOBJETO',
             'DTAQUISICAO',
@@ -653,4 +694,9 @@ class RelatorioController extends Controller
         return response()->download($tempPath)->deleteFileAfterSend(true);
     }
 }
+
+
+
+
+
 
