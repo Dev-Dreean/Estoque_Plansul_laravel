@@ -5544,27 +5544,33 @@ class PatrimonioController extends Controller
 
 
         // 5) Sincroniza??o projeto-local: alinhar projeto e gravar o cdlocal (n?mero do local)
+        $resolvedLocal = null;
+        $resolvedCdLocal = $data['CDLOCAL'] ?? null;
+        if (!empty($data['CDLOCAL'])) {
+            $resolvedLocal = $this->validateLocalBelongsToProjeto(
+                $data['CDPROJETO'] ?? null,
+                (int) $data['CDLOCAL'],
+                'atualizacao de patrimonio'
+            );
+
+            if ($resolvedLocal) {
+                $resolvedCdLocal = (int) $resolvedLocal->cdlocal;
+            }
+        }
+
         $shouldValidateLocal = true;
         if ($patrimonio) {
             $incomingCdProjeto = $data['CDPROJETO'] ?? $patrimonio->CDPROJETO;
-            $incomingCdLocal = $data['CDLOCAL'] ?? $patrimonio->CDLOCAL;
+            $incomingCdLocal = $resolvedCdLocal ?? $patrimonio->CDLOCAL;
             $shouldValidateLocal =
                 (string) $incomingCdLocal !== (string) $patrimonio->CDLOCAL
                 || (string) $incomingCdProjeto !== (string) $patrimonio->CDPROJETO;
         }
 
-        if ($shouldValidateLocal && !empty($data['CDLOCAL'])) {
-            $localProjeto = $this->validateLocalBelongsToProjeto(
-                $data['CDPROJETO'] ?? null,
-                $data['CDLOCAL'],
-                'atualiza??o de patrim?nio'
-            );
-
-            if ($localProjeto) {
-                $data['CDLOCAL'] = (int) $localProjeto->cdlocal;
-                if ($localProjeto->projeto) {
-                    $data['CDPROJETO'] = (int) $localProjeto->projeto->CDPROJETO;
-                }
+        if ($resolvedLocal) {
+            $data['CDLOCAL'] = (int) $resolvedLocal->cdlocal;
+            if ($resolvedLocal->projeto) {
+                $data['CDPROJETO'] = (int) $resolvedLocal->projeto->CDPROJETO;
             }
         }
 
@@ -6962,5 +6968,4 @@ class PatrimonioController extends Controller
 
 
 }
-
 
