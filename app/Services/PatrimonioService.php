@@ -668,19 +668,27 @@ class PatrimonioService
 
     protected function aplicarExclusaoBaixados(Builder $query): void
     {
-        if (Schema::hasColumn('patr', 'CDSITUACAO')) {
-            $query->where(function ($q) {
-                $q->whereNull('CDSITUACAO')
-                    ->orWhere('CDSITUACAO', '<>', 2);
-            });
-            return;
+        try {
+            if (Schema::hasColumn('patr', 'CDSITUACAO')) {
+                $query->where(function ($q) {
+                    $q->whereNull('CDSITUACAO')
+                        ->orWhere('CDSITUACAO', '<>', 2);
+                });
+                return;
+            }
+        } catch (\Exception $e) {
+            // MySQL antigo não suporta generation_expression, pular CDSITUACAO
         }
 
-        if (Schema::hasColumn('patr', 'SITUACAO')) {
-            $query->where(function ($q) {
-                $q->whereNull('SITUACAO')
-                    ->orWhereRaw("UPPER(TRIM(SITUACAO)) NOT LIKE '%BAIXA%'");
-            });
+        try {
+            if (Schema::hasColumn('patr', 'SITUACAO')) {
+                $query->where(function ($q) {
+                    $q->whereNull('SITUACAO')
+                        ->orWhereRaw("UPPER(TRIM(SITUACAO)) NOT LIKE '%BAIXA%'");
+                });
+            }
+        } catch (\Exception $e) {
+            // MySQL antigo não suporta generation_expression, pular SITUACAO
         }
     }
 
