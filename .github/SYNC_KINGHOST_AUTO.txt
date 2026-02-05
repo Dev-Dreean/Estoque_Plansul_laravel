@@ -1,0 +1,268 @@
+==================================================================================
+DOCUMENTO: SYNC_KINGHOST_AUTO.txt
+PROPÓSITO: Instruções automáticas para sincronizar plansul263 + plansul104
+DATA DE CRIAÇÃO: 2026-02-05
+ATUALIZADO PELA IA: Sim (para futuras referências - copilot usará este arquivo)
+==================================================================================
+
+RESUMO EXECUTIVO:
+─────────────────
+Sincronizar dados de TWO bancos MySQL remotos para o KingHost:
+  • plansul263 (banco de PROJETOS) → tabfant
+  • plansul104 (banco de FUNCIONÁRIOS) → funcionarios
+
+Tudo via SSH (sem necessidade de explicação manual a cada vez).
+
+==================================================================================
+PARTE 1: ACESSO REMOTO E CREDENCIAIS
+==================================================================================
+
+SERVIDOR SSH (KingHost):
+  Host: ftp.plansul.info
+  User: plansul
+  Path: ~/www/estoque-laravel
+
+BANCOS REMOTOS (Direct MySQL):
+  Servidor: mysql.plansul2.kinghost.net
+  
+  1. plansul263 (Projetos):
+     User: plansul263
+     Pass: plansul263
+     Banco: plansul263
+     Tabela: tabfant
+  
+  2. plansul104 (Funcionários):
+     User: plansul104
+     Pass: plansul104
+     Banco: plansul104
+     Tabela: funcionarios
+
+KINGHOST DESTINO (Produção):
+  Host: mysql07-farm10.kinghost.net
+  User: plansul004_add2
+  Pass: A33673170a
+  Banco: plansul04
+  Tabelas destino: tabfant, funcionarios
+
+BANCO LOCAL (Desenvolvimento):
+  Host: 127.0.0.1
+  User: root
+  Banco: cadastros_plansul
+  (Definido em .env)
+
+==================================================================================
+PARTE 2: SCRIPT PRINCIPAL
+==================================================================================
+
+ARQUIVO: scripts/sync_kinghost_full_plansul263_104.php
+
+DESCRIÇÃO:
+  Script unificado que sincroniza AMBOS os bancos remotos para KingHost.
+  
+  Operações:
+    • Conecta a plansul263, plansul104 e KingHost
+    • Puxa registros de tabfant (projetos)
+    • Puxa registros de funcionarios (funcionários)
+    • Sincroniza via UPSERT (insert se não existe, update se existe)
+    • Gera logs detalhados
+    • Aceita --dry-run para validar antes de aplicar
+
+TABELAS SINCRONIZADAS:
+  1. tabfant
+     Campos: id, CDPROJETO, NOMEPROJETO
+     Chave: id (primary key)
+     Origem: plansul263
+     Destino: KingHost.tabfant
+  
+  2. funcionarios
+     Campos: CDMATRFUNCIONARIO, NMFUNCIONARIO, DTADMISSAO, CDCARGO, 
+             CODFIL, UFPROJ, DESETOR, DESITUACAO
+     Chave: CDMATRFUNCIONARIO (primary key)
+     Origem: plansul104
+     Destino: KingHost.funcionarios
+
+==================================================================================
+PARTE 3: COMO EXECUTAR
+==================================================================================
+
+OPÇÃO 1: LOCAL (máquina Windows/Linux com PHP 8.2+)
+────────────────────────────────────────────────────
+
+# Teste seca (dry-run):
+php82 scripts/sync_kinghost_full_plansul263_104.php --dry-run
+
+# Execução real:
+php82 scripts/sync_kinghost_full_plansul263_104.php
+
+Resultado: Log em storage/logs/sync_kinghost_plansul263_104_YYYY-MM-DD_HHmmss.log
+
+OPÇÃO 2: VIA SSH (KingHost direto - RECOMENDADO)
+──────────────────────────────────────────────────
+
+# Teste seca:
+ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && php82 scripts/sync_kinghost_full_plansul263_104.php --dry-run 2>&1"
+
+# Execução real:
+ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && php82 scripts/sync_kinghost_full_plansul263_104.php 2>&1"
+
+# Verificar log após execução:
+ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && ls -lah storage/logs/sync_kinghost_plansul263_104_*.log | tail -1"
+
+# Ler último log:
+ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && tail -50 storage/logs/sync_kinghost_plansul263_104_*.log | tail -50"
+
+==================================================================================
+PARTE 4: FLUXO RECOMENDADO
+==================================================================================
+
+1. VALIDAÇÃO PRÉ-SINCRONIZAÇÃO
+   ├─ Verificar conectividade SSH
+   ├─ Checar espaço em disco KingHost
+   └─ Fazer backup automático (storage/backups/)
+
+2. TESTE SECO (--dry-run)
+   ├─ Executar com --dry-run
+   ├─ Revisar log de simulação
+   └─ Validar contagem de registros (+added, ~updated)
+
+3. SINCRONIZAÇÃO REAL
+   ├─ Executar sem flags
+   ├─ Aguardar conclusão (< 2 min normalmente)
+   └─ Validar log final
+
+4. AUDITORIA PÓS-SINCRONIZAÇÃO
+   ├─ Comparar contagem de registros
+   ├─ Testar acesso aos dados via interface
+   └─ Documentar no changelog
+
+==================================================================================
+PARTE 5: ARQUIVOS RELACIONADOS
+==================================================================================
+
+SCRIPTS LEGADOS (para referência):
+  • scripts/puxar_funcionarios_kinghost.php
+    → Sincroniza apenas funcionários (plansul104 → local)
+  
+  • scripts/puxar_projetos_kinghost.php
+    → Sincroniza apenas projetos (plansul263 → local)
+  
+  • scripts/sincronizar_funcionarios_projetos_kinghost.php
+    → Sincroniza local → KingHost (direção oposta)
+
+NOVO SCRIPT CONSOLIDADO:
+  • scripts/sync_kinghost_full_plansul263_104.php
+    → Substitui/integra a sincronização de AMBOS (plansul263+plansul104 → KingHost)
+    → Rápido, robusto e bem documentado
+
+==================================================================================
+PARTE 6: LOGS E RASTREABILIDADE
+==================================================================================
+
+LOCAL DOS LOGS:
+  storage/logs/sync_kinghost_plansul263_104_YYYY-MM-DD_HHmmss.log
+
+FORMATO DO LOG:
+  [YYYY-MM-DD HH:mm:ss] NÍVEL MSG
+  
+  Exemplo:
+  [2026-02-05 14:30:45] ✓ Conectado: plansul263 (Projetos)
+  [2026-02-05 14:30:47] 📋 SINCRONIZAÇÃO 1: TABFANT
+  [2026-02-05 14:30:48] ✓ Resultado: +5 novos, ~12 atualizados, 0 erros
+
+CAMPOS REGISTRADOS:
+  • Timestamps de início/fim
+  • Modo (DRY-RUN vs PRODUÇÃO)
+  • Conexões estabelecidas
+  • Contagem de registros (origem vs destino)
+  • Resultados por tabela (adds, updates, errors)
+  • Erros detalhados (se houver)
+
+ACESSAR LOGS (SSH):
+  ssh plansul@ftp.plansul.info "cat ~/www/estoque-laravel/storage/logs/sync_kinghost_plansul263_104_<YYYY-MM-DD_HHmmss>.log"
+
+==================================================================================
+PARTE 7: TRATAMENTO DE ERROS
+==================================================================================
+
+ERRO: "mysql07-farm10.kinghost.net: Connection refused"
+  → Validar credenciais MySQL no .env
+  → Verificar conexão de rede (testar ping)
+  → Contatar suporte KingHost se persistir
+
+ERRO: "Access denied for user 'plansul263@mysql.plansul2.kinghost.net'"
+  → Verificar .env: TABFANTASIA_SOURCE_USER / TABFANTASIA_SOURCE_PASS
+  → Validar que o bannco plansul263 está acessível
+
+ERRO: "Table 'plansul04.tabfant' doesn't exist"
+  → Sincronização prévia não foi concluída
+  → Executar em --dry-run primeiro para validar estrutura
+  → Contatar administrador do banco
+
+ERRO: "1030: Got error 28 from storage engine"
+  → Sem espaço em disco no KingHost
+  → Fazer limpeza de backups ou contatar suporte KingHost
+
+==================================================================================
+PARTE 8: CHECKLIST PRÉ-EXECUÇÃO
+==================================================================================
+
+Antes de sincronizar, validar:
+
+  [ ] SSH conectável: ssh plansul@ftp.plansul.info
+  [ ] PHP 8.2+ disponível: ssh plansul@ftp.plansul.info php82 -v
+  [ ] Diretório storage/logs/ existe
+  [ ] .env carregado corretamente
+  [ ] plansul263 acessível: testar conexão
+  [ ] plansul104 acessível: testar conexão
+  [ ] KingHost acessível: testar conexão
+  [ ] Espaço em disco suficiente (logs + transações)
+  [ ] Nenhum script de sincronização rodando em paralelo
+
+==================================================================================
+PARTE 9: AUTOMAÇÃO FUTURA (PARA IA/COPILOT)
+==================================================================================
+
+INSTRUÇÃO PARA COPILOT (próximas vezes):
+
+Quando usuário pedir: "Sincronizar plansul263 e plansul104 com KingHost"
+  1. LER este arquivo (.github/SYNC_KINGHOST_AUTO.txt)
+  2. Usar script: scripts/sync_kinghost_full_plansul263_104.php
+  3. Executar: ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && php82 scripts/sync_kinghost_full_plansul263_104.php --dry-run 2>&1"
+  4. Exibir resultado do --dry-run
+  5. Aguardar confirmação
+  6. Executar: ssh plansul@ftp.plansul.info "cd ~/www/estoque-laravel && php82 scripts/sync_kinghost_full_plansul263_104.php 2>&1"
+  7. Verificar log
+  8. Relatar status (sucesso/erro)
+
+NÃO PEDIR EXPLICAÇÕES NOVAMENTE - usar este arquivo como referência.
+
+==================================================================================
+HISTÓRICO DE SINCRONIZAÇÕES
+==================================================================================
+
+DATA               OPERAÇÃO              REGISTROS PROCESSADOS    STATUS
+─────────────────────────────────────────────────────────────────────────
+2026-02-05        Teste inicial         tabfant: +0, ~0          ✅ OK
+                                        funcionarios: +0, ~0
+[MANTER ATUALIZADO COM CADA SINCRONIZAÇÃO]
+
+==================================================================================
+CONTATO E SUPORTE
+==================================================================================
+
+Dúvidas sobre estrutura do banco:
+  → Consultar: .github/copilot-instructions.md (seção 14: BANCO DE DADOS)
+
+Problemas técnicos (SSH, MySQL):
+  → Verificar conectividade: ping mysql.plansul2.kinghost.net
+  → Testar MySQL direto: mysql -h mysql.plansul2.kinghost.net -u plansul263 -p
+
+Informações sobre tabelas:
+  → Rodar diagnóstico: php scripts/diagnosticar_estrutura_kinghost.php
+
+==================================================================================
+FIM DO DOCUMENTO
+Criado em: 2026-02-05
+Última atualização: 2026-02-05
+Mantido por: GitHub Copilot (automático)
+==================================================================================
