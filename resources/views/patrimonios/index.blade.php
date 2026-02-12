@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
   <x-patrimonio-nav-tabs />
 
   @php
@@ -89,10 +89,10 @@
                     </div>
                   </div>
 
-                  {{-- Lista de patrimônios compacta --}}
+                  {{-- Lista de patrimonios compacta --}}
                   <div class="space-y-2">
                     <div class="flex items-center justify-between">
-                      <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Patrimônios a Alterar:</p>
+                      <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Patrimonios a Alterar:</p>
                       <span class="inline-block px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 text-xs font-bold border border-indigo-200 dark:border-indigo-700/60">
                         <span id="bulk-confirm-count">0</span> / <span id="bulk-confirm-count-header">0</span>
                       </span>
@@ -214,15 +214,15 @@
           <div class="flex flex-col gap-3 pb-4 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-start justify-between gap-4">
               <div>
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white" x-text="bulkModalMode === 'list' ? 'Buscar patrimonios' : 'Atualizacao em massa'"></h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400" x-text="bulkModalMode === 'list' ? 'Envie apenas os numeros e receba a planilha completa pronta para editar.' : 'Envie a planilha preenchida para atualizar varios patrimonios de uma vez.'"></p>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white" x-text="bulkModalMode === 'list' ? 'Buscar patrimônios' : 'Atualização em massa'"></h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400" x-text="bulkModalMode === 'list' ? 'Envie apenas os números e receba a planilha completa pronta para editar.' : 'Envie a planilha preenchida para atualizar vários patrimônios de uma vez.'"></p>
               </div>
               <button type="button" @click="closeBulkImportModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">x</button>
             </div>
             <div class="flex items-center justify-center">
               <div class="inline-flex rounded-md border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <button type="button" @click="bulkModalMode = 'list'" class="px-3 py-1.5 text-xs font-semibold transition-colors duration-200" :class="bulkModalMode === 'list' ? 'bg-orange-500 text-white' : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-orange-50 dark:hover:bg-gray-800'">Buscar patrimonios</button>
-                <button type="button" @click="bulkModalMode = 'import'" class="px-3 py-1.5 text-xs font-semibold transition-colors duration-200" :class="bulkModalMode === 'import' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-gray-800'">Atualizacao em massa</button>
+                <button type="button" @click="bulkModalMode = 'list'" class="px-3 py-1.5 text-xs font-semibold transition-colors duration-200" :class="bulkModalMode === 'list' ? 'bg-orange-500 text-white' : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-orange-50 dark:hover:bg-gray-800'">Buscar patrimônios</button>
+                <button type="button" @click="bulkModalMode = 'import'" class="px-3 py-1.5 text-xs font-semibold transition-colors duration-200" :class="bulkModalMode === 'import' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-gray-800'">Atualização em massa</button>
               </div>
             </div>
 
@@ -262,7 +262,7 @@
                 class="mt-3"
               >
                 <p class="text-sm text-emerald-900 dark:text-emerald-100">
-                  A <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">atualizacao em massa</span> permite mudar varios patrimonios de uma vez.
+                  A <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">atualização em massa</span> permite mudar vários patrimônios de uma vez.
                 </p>
                 <div class="mt-4 grid grid-cols-3 gap-3 min-w-[520px]" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.75rem;">
                   <div class="rounded-lg border border-emerald-200 dark:border-emerald-700 bg-transparent p-3">
@@ -270,14 +270,14 @@
                       <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">1</span>
                       <p class="text-sm font-semibold">Gere a planilha</p>
                     </div>
-                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Use <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Buscar patrimonios</span> para gerar a planilha.</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Use <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Buscar patrimônios</span> para gerar a planilha.</p>
                   </div>
                   <div class="rounded-lg border border-emerald-200 dark:border-emerald-700 bg-transparent p-3">
                     <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
                       <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">2</span>
                       <p class="text-sm font-semibold">Preencha o que quiser</p>
                     </div>
-                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Coloque o <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">NÃºmero do patrimonio</span> e altere so o necessario. Em <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Conferido</span> use <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">S</span> ou <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">N</span>.</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Coloque o <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Número do patrimônio</span> e altere só o necessário. Em <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Conferido</span> use <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">S</span> ou <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">N</span>.</p>
                   </div>
                   <div class="rounded-lg border border-emerald-200 dark:border-emerald-700 bg-transparent p-3">
                     <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
@@ -364,7 +364,7 @@
                   x-transition:leave-end="opacity-0 -translate-y-1"
                 >
                   <p class="text-sm text-orange-900 dark:text-orange-100">
-                    <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Buscar patrimonios</span> preenche os dados para voce. Assim, voce so edita o que precisar.
+                    <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Buscar patrimônios</span> preenche os dados para você. Assim, você só edita o que precisar.
                   </p>
                   <div class="mt-4 grid grid-cols-3 gap-3 min-w-[520px]" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.75rem;">
                   <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-3">
@@ -372,14 +372,14 @@
                       <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">1</span>
                       <p class="text-sm font-semibold">Baixe a planilha</p>
                     </div>
-                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Clique em <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Baixar planilha de numeros</span>.</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Clique em <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Baixar planilha de números</span>.</p>
                   </div>
                   <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-3">
                     <div class="flex items-center gap-2 text-orange-600 dark:text-orange-300">
                       <span class="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full text-sm font-semibold">2</span>
-                      <p class="text-sm font-semibold">Preencha os numeros</p>
+                      <p class="text-sm font-semibold">Preencha os números</p>
                     </div>
-                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Coloque um <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">NÃºmero de patrimonio</span> por linha.</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-100 mt-2">Coloque um <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Número de patrimônio</span> por linha.</p>
                   </div>
                   <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-3">
                     <div class="flex items-center gap-2 text-orange-600 dark:text-orange-300">
@@ -401,14 +401,14 @@
                     <path d="M12 3a1 1 0 0 1 1 1v9.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42L11 13.59V4a1 1 0 0 1 1-1z"></path>
                     <path d="M5 19a1 1 0 0 1 1-1h12a1 1 0 0 1 0 2H6a1 1 0 0 1-1-1z"></path>
                   </svg>
-                  Baixar planilha de numeros
+                  Baixar planilha de números
                 </a>
                 <span class="text-xs text-gray-500 dark:text-gray-400">Formato: XLSX</span>
               </div>
 
               <form class="space-y-5" @submit.prevent="submitBulkExportList($event)" enctype="multipart/form-data">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Planilha com numeros</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Planilha com números</label>
                   <div
                     class="relative border-2 border-dashed rounded-lg p-4 text-center transition
                       border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800
@@ -506,7 +506,7 @@
             </div>
           </div>
           <div class="text-sm text-gray-700 dark:text-gray-200" x-show="bulkImportResult?.dryRun && !bulkImportError">
-            Modo <span class="font-semibold">Simular</span> ativo: nenhuma alteracao foi salva.
+            Modo <span class="font-semibold">Simular</span> ativo: nenhuma alteração foi salva.
           </div>
           <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg p-3 text-sm text-red-700 dark:text-red-200" x-show="bulkImportError" x-text="bulkImportError"></div>
           <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
@@ -607,7 +607,7 @@
       </div>
     </div>
 
-    {{-- Modal de confirmacao de exclusao --}}
+    {{-- Modal de confirmação de exclusão --}}
     <div
       x-show="deleteModalOpen"
       x-transition:enter="transition ease-out duration-300"
@@ -1092,7 +1092,7 @@
                 const applyBulkSituacao = () => {
           const situacao = bulkSelect?.value || '';
           if (selectedIds.size === 0) {
-            alert('Selecione ao menos um patrimonio.');
+            alert('Selecione ao menos um patrimônio.');
             return;
           }
           if (!situacao && !pendingConferido) {
@@ -1200,7 +1200,7 @@
             });
         };
 
-        // ?o. Expor ajaxFetch globalmente para que possa ser chamada ap??s salvar modal
+        // ?o. Expor ajaxFetch globalmente para que possa ser chamada após salvar modal
         window.ajaxFetchPatrimonios = () => ajaxFetchParams(buildParamsFromForm());
 
         if (form) {
@@ -1323,7 +1323,7 @@
             item.className = 'flex justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-1 last:border-0';
             const left = document.createElement('div');
             left.className = 'font-semibold text-gray-900 dark:text-white';
-            left.textContent = `Nº Patrimônio ${patr}`;
+            left.textContent = `Nº Patrimonio ${patr}`;
             item.appendChild(left);
             bulkConfirmList.appendChild(item);
           });
@@ -1743,7 +1743,7 @@
 
             this.formModalMode = mode;
             this.formModalId = id;
-            this.formModalTitle = mode === 'create' ? 'Cadastrar Patrimônio' : 'Editar Patrimônio';
+            this.formModalTitle = mode === 'create' ? 'Cadastrar Patrimonio' : 'Editar Patrimonio';
             this.formModalSubtitle = mode === 'create'
               ? 'Cadastre um novo patrimônio.'
               : 'Atualize os dados do patrimônio.';
@@ -1859,7 +1859,7 @@
               }
             } catch (err) {
               console.error('[PATRI] Modal submit error', err);
-              alert('Falha ao salvar patrimonio.');
+              alert('Falha ao salvar patrimônio.');
             } finally {
               this.formModalLoading = false;
             }
@@ -1885,7 +1885,7 @@
                 if (!resp.ok) {
                   if (resp.status === 422 && data.errors) {
                     this.relatorioErrors = data.errors;
-                    this.relatorioGlobalError = data.message || 'Erros de validacao.';
+                    this.relatorioGlobalError = data.message || 'Erros de validação.';
                     throw new Error('validation');
                   }
                   this.relatorioGlobalError = data.message || 'Falha ao gerar relatório.';
@@ -1995,7 +1995,7 @@
           },
           getFilterLabel(tipo) {
             const labels = {
-              numero: 'Relatório por Número de Patrimônio',
+              numero: 'Relatório por Número de Patrimonio',
               descricao: 'Relatório por Descrição',
               aquisicao: 'Relatório por Período de Aquisição',
               cadastro: 'Relatório por Período de Cadastro',
@@ -2103,7 +2103,7 @@
             setTimeout(() => row.remove(), 320);
           },
           openModalConsulta(id) {
-            // Fetch dados do patrimônio via API
+            // Fetch dados do patrimonio via API
             fetch(`/api/patrimonios/id/${id}`)
               .then(res => {
                 if (!res.ok) {
@@ -2135,7 +2135,7 @@
             console.log('[PATRI] Preenchendo modal com:', patrimonio);
             
             // Preencher campos com acesso correto às propriedades
-            // FONTE DE VERDADE: Sempre usar CDPROJETO direto do patrimônio, não do local
+            // FONTE DE VERDADE: Sempre usar CDPROJETO direto do patrimonio, não do local
             let projetoTexto = '-';
             if (patrimonio.CDPROJETO && patrimonio.projeto) {
               projetoTexto = `${patrimonio.projeto.CDPROJETO} - ${patrimonio.projeto.NOMEPROJETO || patrimonio.projeto.NMPROJETO || ''}`;
@@ -2190,7 +2190,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full h-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         {{-- Header --}}
         <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4 flex justify-between items-center">
-          <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">📋 Consulta de Patrimônio</h3>
+          <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">📋 Consulta de Patrimonio</h3>
           <button onclick="patrimoniosIndex().fecharConsultaModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none">×</button>
         </div>
 
@@ -2199,7 +2199,7 @@
           {{-- Identificação --}}
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
-              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Nº Patrimônio</p>
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Nº Patrimonio</p>
               <p id="consulta-nupatrimonio" class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white min-h-7 break-words">-</p>
             </div>
             <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">

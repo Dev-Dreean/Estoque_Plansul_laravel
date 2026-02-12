@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
 @php
   $controleItems = [
     ['label' => 'Patrimonio', 'href' => route('patrimonios.index'), 'icon' => 'cube', 'active' => true],
@@ -189,13 +189,13 @@
               <div class="lg:col-span-4">
                 <label class="block text-xs text-slate-400 mb-1">Busca rápida</label>
                 <div class="relative">
-                  <input name="DescriÃ§Ã£o" value="{{ request('descricao') }}" placeholder="Buscar por Nº PAT, nº série, marca..." class="w-full h-11 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-100 placeholder:text-slate-500 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+                  <input name="Descrição" value="{{ request('descricao') }}" placeholder="Buscar por Nº PAT, nº série, marca..." class="w-full h-11 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-100 placeholder:text-slate-500 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-600" />
                   <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">⌕</span>
                 </div>
               </div>
               <div class="lg:col-span-2">
                 <label class="block text-xs text-slate-400 mb-1">Situação</label>
-                <select name="SituaÃ§Ã£o" class="w-full h-11 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-100 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                <select name="Situação" class="w-full h-11 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-100 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-600">
                   <option value="">Todas</option>
                   <option value="EM USO" @selected(request('situacao')==='EM USO')>Em Uso</option>
                   <option value="DISPONIVEL" @selected(request('situacao')==='DISPONIVEL')>Disponível</option>

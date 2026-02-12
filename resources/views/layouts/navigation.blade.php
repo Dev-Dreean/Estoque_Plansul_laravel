@@ -23,6 +23,30 @@
             ->sortBy('ordem')
             ->values();
 
+        // Agrupa telas administrativas em um único item "Painel Adm"
+        $adminRoutes = ['projetos.index', 'usuarios.index', 'cadastro-tela.index', 'settings.theme'];
+        $painelAdmLinks = $telasNav
+            ->filter(fn ($tela) => in_array($tela['route'], $adminRoutes, true))
+            ->values();
+
+        $telasNav = $telasNav
+            ->reject(fn ($tela) => in_array($tela['route'], $adminRoutes, true))
+            ->values();
+
+        $painelAdmChildren = $painelAdmLinks
+            ->map(fn ($tela) => [
+                'route' => $tela['route'],
+                'nome' => $tela['nome'],
+                'activePattern' => $tela['activePattern'],
+            ])
+            ->values()
+            ->all();
+
+        $isPainelAdmActive = collect($painelAdmChildren)
+            ->contains(fn ($child) => request()->routeIs($child['activePattern'] ?? $child['route']));
+
+        $showPainelAdm = (auth()->user()?->PERFIL === 'ADM') && !empty($painelAdmChildren);
+
         $removidosBadgeCount = 0;
         $canSeeRemovidos = auth()->user()?->temAcessoTela(1009) ?? false;
         $solicitacoesBadgeCount = 0;
@@ -100,6 +124,24 @@
                 </div>
 
             <div class="hidden sm:flex sm:items-center ml-auto">
+                @if($showPainelAdm)
+                <div class="relative inline-flex mr-3" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+                    <button type="button" @click="open = !open" class="{{ $isPainelAdmActive ? 'inline-flex items-center px-1 pt-1 border-b-2 border-indigo-400 dark:border-indigo-600 text-sm font-medium leading-5 text-gray-900 dark:text-gray-100' : 'inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700' }}">
+                        <span>Painel Adm</span>
+                        <svg class="ms-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+
+                    <div x-show="open" x-cloak x-transition.opacity class="absolute right-0 top-full mt-1 z-50 min-w-[210px] rounded-lg border border-app bg-surface shadow-lg py-1">
+                        @foreach($painelAdmChildren as $child)
+                            <a href="{{ route($child['route']) }}" class="{{ request()->routeIs($child['activePattern']) ? 'bg-[var(--surface-2)] text-[var(--text)] font-semibold' : 'text-soft hover:bg-[var(--surface-2)] hover:text-[var(--text)]' }} block px-3 py-2 text-sm whitespace-nowrap">
+                                {{ $child['nome'] }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-soft bg-surface hover:text-base-color focus:outline-none transition ease-in-out duration-150">
@@ -180,6 +222,16 @@
             </div>
 
             <div class="mt-3 space-y-1">
+                @if($showPainelAdm)
+                <div class="px-4 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                    Painel Adm
+                </div>
+                @foreach($painelAdmChildren as $child)
+                    <x-responsive-nav-link :href="route($child['route'])" :active="request()->routeIs($child['activePattern'])">
+                        {{ $child['nome'] }}
+                    </x-responsive-nav-link>
+                @endforeach
+                @endif
                 @if(Auth::user()->PERFIL === 'ADM')
                 <x-responsive-nav-link :href="route('settings.theme')">
                     {{ __('Temas') }}

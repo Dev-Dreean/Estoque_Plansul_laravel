@@ -1,7 +1,4 @@
 <x-app-layout>
-  {{-- Abas de navegação do patrimônio --}}
-  <x-patrimonio-nav-tabs />
-
   <div class="py-12">
     <div class="w-full sm:px-6 lg:px-8">
       <div class="section">

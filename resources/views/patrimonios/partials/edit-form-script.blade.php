@@ -6,12 +6,12 @@
       return;
     }
 
-    if (window.__patrimonioEditController) {
-      window.__patrimonioEditController.abort();
+    if (window.__patrimônioEditController) {
+      window.__patrimônioEditController.abort();
     }
 
     const controller = new AbortController();
-    window.__patrimonioEditController = controller;
+    window.__patrimônioEditController = controller;
     const { signal } = controller;
 
     let dadosOriginais = {};
@@ -153,7 +153,7 @@
         }
 
         const locais = await response.json();
-        const local = (locais || []).find(l => String(l.id) === String(cdLocal)) || (locais || []).find(l => String(l.cdlocal) === String(cdLocal));
+        const local = (locais || []).find(l => String(l.cdlocal) === String(cdLocal)) || (locais || []).find(l => String(l.id) === String(cdLocal));
         const nome = local && (local.delocal || local.LOCAL) ? (local.delocal || local.LOCAL) : '';
 
         // Guardar no cache mesmo que vazio
@@ -219,7 +219,7 @@
 
     // Capturar dados do formulário - usando Alpine.js formData diretamente
     function capturarDadosFormulario() {
-      const formRoot = formElement.querySelector('[x-data*="patrimonioForm"]');
+      const formRoot = formElement.querySelector('[x-data*="patrimônioForm"]');
 
       if (!formRoot) {
         console.error('Elemento com Alpine.js não encontrado');
@@ -257,7 +257,7 @@
       return dados;
     }
 
-    // Comparar dados e gerar HTML das alteraÇõÇæes (ASSÇ?NCRONA)
+    // Comparar dados e gerar HTML das alteraÇõÇæes (ASSÍNCRONA)
     async function gerarAlteracoes(novos) {
       let html = '';
       let temAlteracao = false;
@@ -413,7 +413,7 @@
       console.log('ÐY"ú Submetendo formulÇ­rio...');
 
       // Validar se todos os campos obrigatórios estão preenchidos
-      const formRoot = formElement.querySelector('[x-data*="patrimonioForm"]');
+      const formRoot = formElement.querySelector('[x-data*="patrimônioForm"]');
 
       if (!formRoot) {
         alert('❌ Erro: Elemento do formulário não encontrado');
@@ -479,7 +479,7 @@
       console.log('Valores enviados:', JSON.stringify(values, null, 2));
 
       // Tentar acessar o formData do Alpine
-      const formRoot = this.querySelector('[x-data*="patrimonioForm"]');
+      const formRoot = this.querySelector('[x-data*="patrimônioForm"]');
       if (formRoot && formRoot.__x_dataStack && formRoot.__x_dataStack.length > 0) {
         const alpineData = formRoot.__x_dataStack[0];
         console.log('\nÐY"O formData do Alpine:', JSON.stringify(alpineData.formData, null, 2));
@@ -495,9 +495,9 @@
   }
 
   function destroyPatrimonioEditForm() {
-    if (window.__patrimonioEditController) {
-      window.__patrimonioEditController.abort();
-      window.__patrimonioEditController = null;
+    if (window.__patrimônioEditController) {
+      window.__patrimônioEditController.abort();
+      window.__patrimônioEditController = null;
     }
   }
 

@@ -119,6 +119,17 @@
 
   <div class="min-h-screen bg-base with-fixed-footer">
     @include('layouts.navigation')
+    @php
+      $showAdminTabs =
+        request()->routeIs('projetos.*') ||
+        request()->routeIs('usuarios.*') ||
+        request()->routeIs('cadastro-tela.*') ||
+        request()->routeIs('settings.theme') ||
+        request()->routeIs('settings.theme.*');
+    @endphp
+    @if($showAdminTabs)
+      <x-admin-nav-tabs />
+    @endif
 
   @if(session('impersonator_id'))
   <div class="bg-yellow-600 border-b border-yellow-700 text-white p-3 text-sm flex items-center justify-between">

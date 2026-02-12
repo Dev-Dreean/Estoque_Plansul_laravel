@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-2xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Solicitações de Bens') }}
@@ -314,7 +314,7 @@
             </div>
         </div>
 
-        <!-- Modal para criar SolicitaÃ§Ã£o -->
+        <!-- Modal para criar Solicitação -->
         <style>
             html[data-theme='light'] .solicitacao-modal-theme {
                 --solicitacao-modal-bg: #fcfdff;
@@ -475,7 +475,7 @@
                 </div>
             </div>
         </div>
-        <!-- Modal de detalhes da SolicitaÃ§Ã£o -->
+        <!-- Modal de detalhes da Solicitação -->
         <div
             x-show="showModalOpen"
             x-cloak
@@ -888,7 +888,7 @@
                             this.resultados = Array.isArray(data) ? data : [];
                         } catch (err) {
                             if (err.name !== 'AbortError') {
-                                console.error('[SOLICITACAO] Erro ao buscar patrimonios', err);
+                                console.error('[SOLICITACAO] Erro ao buscar patrimônios', err);
                             }
                         } finally {
                             this.loading = false;
@@ -1021,7 +1021,7 @@
                         this.formModalId = id;
                         this.formModalTitle = mode === 'create' ? 'Nova Solicita\u00e7\u00e3o de Bens' : 'Editar Solicita\u00e7\u00e3o';
                         this.formModalSubtitle = mode === 'create'
-                            ? 'Crie uma Nova solicitaÃ§Ã£o de bens.'
+                            ? 'Crie uma Nova solicitação de bens.'
                             : 'Atualize os dados da solicitacao.';
                         this.formModalOpen = true;
                         this.formModalLoading = true;
@@ -1144,10 +1144,10 @@
                             }
 
                             // Se chegou aqui, é HTML.
-                            // Pode ser erro de validacao (422) ou sucesso com redirect seguido (200 com HTML).
+                            // Pode ser erro de validação (422) ou sucesso com redirect seguido (200 com HTML).
                             // Se for sucesso (200 OK) e HTML, pode ser que o controller redirecionou para INDEX ou SHOW page.
                             // Mas se estamos num modal, não queremos renderizar a INDEX inteira dentro do modal.
-                            // ASSUMCAO: Se retornou HTML, é porque deu erro de validacao e o Laravel redirecionou 'back' (para a URL do modal).
+                            // ASSUNÇÃO: Se retornou HTML, é porque deu erro de validação e o Laravel redirecionou 'back' (para a URL do modal).
                             
                             // Se tiver erro, reabrir o modal
                             this.showModalLoading = false;

@@ -1,4 +1,4 @@
-﻿@php
+@php
   $isModal = $isModal ?? false;
   $ultimaVerificacao = $ultimaVerificacao ?? null;
 @endphp
@@ -16,16 +16,30 @@
     }
   }
 
-  // Carregar o nome do local
+  // Carregar o nome do local (sempre priorizar o local já resolvido no patrimônio)
   $nomeLocalOriginal = '';
-  if ($patrimonio->CDLOCAL) {
+  if ($patrimonio->relationLoaded('local') && $patrimonio->local) {
+    $nomeLocalOriginal = $patrimonio->local->LOCAL ?? $patrimonio->local->delocal ?? '';
+  }
+
+  if ($nomeLocalOriginal === '' && $patrimonio->CDLOCAL) {
     try {
-      // Usar a query com lowercase 'cdlocal' pois a tabela usa lowercase
-      $local = App\Models\LocalProjeto::where('id', $patrimonio->CDLOCAL)->first();
-      if (!$local) {
-        // Tentar também com CDLOCAL em uppercase
-        $local = App\Models\LocalProjeto::where('cdlocal', $patrimonio->CDLOCAL)->first();
+      $queryLocal = App\Models\LocalProjeto::query()
+        ->where('cdlocal', $patrimonio->CDLOCAL);
+
+      if ($patrimonio->CDPROJETO) {
+        $tabfant = App\Models\Tabfant::where('CDPROJETO', $patrimonio->CDPROJETO)->first(['id']);
+        if ($tabfant) {
+          $queryLocal->where('tabfant_id', $tabfant->id);
+        }
       }
+
+      $local = $queryLocal->orderBy('id')->first();
+      if (!$local) {
+        // Fallback final: legado que ainda envia ID em CDLOCAL
+        $local = App\Models\LocalProjeto::where('id', $patrimonio->CDLOCAL)->first();
+      }
+
       $nomeLocalOriginal = $local?->delocal ?? $local?->DELOCAL ?? '';
     } catch (\Exception $e) {
       $nomeLocalOriginal = '';
@@ -57,7 +71,7 @@
     'DENOMELOCAL' => $nomeLocalOriginal,
     'CDMATRFUNCIONARIO' => $patrimonio->CDMATRFUNCIONARIO ?? '',
     'NOMEFUNCIONARIOORIGINAL' => $nomeFuncionarioOriginal,
-    'SITUACAO' => $patrimonio->SituaÃ§Ã£o ?? '',
+    'SITUACAO' => $patrimonio->SITUACAO ?? '',
     'FLCONFERIDO' => $patrimonio->FLCONFERIDO ?? '',
     'MARCA' => $patrimonio->MARCA ?? '',
     'MODELO' => $patrimonio->MODELO ?? '',
@@ -71,7 +85,7 @@
   ];
 @endphp
 
-<div class="{{ $isModal ? 'p-3 sm:p-4' : 'py-6' }}" data-patrimonio-edit>
+<div class="{{ $isModal ? 'p-3 sm:p-4' : 'py-6' }}" data-patrimônio-edit>
   <div class="w-full {{ $isModal ? '' : 'sm:px-6 lg:px-8' }}">
     @unless($isModal)
 

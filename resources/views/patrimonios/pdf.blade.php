@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -31,7 +31,7 @@
       <tr>
         <td>{{ $patrimonio->NUPATRIMONIO ?? 'N/A' }}</td>
         <td>{{ $patrimonio->DEPATRIMONIO }}</td>
-        <td>{{ $patrimonio->SituaÃ§Ã£o }}</td>
+        <td>{{ $patrimonio->SITUACAO }}</td>
         <td>{{ $patrimonio->MODELO }}</td>
         <td>{{ $patrimonio->local->LOCAL ?? 'SISTEMA' }}</td>
         <td>{{ $patrimonio->usuario->NOMEUSER ?? 'SISTEMA' }}</td>

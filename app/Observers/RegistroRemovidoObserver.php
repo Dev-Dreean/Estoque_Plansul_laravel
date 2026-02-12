@@ -30,7 +30,7 @@ class RegistroRemovidoObserver
             $request = app()->bound('request') ? request() : null;
             $payload = $model->attributesToArray();
 
-            // Evita armazenar campos sensÃ­veis (ex.: hash de senha do usuÃ¡rio)
+            // Evita armazenar campos sensíveis (ex.: hash de senha do usuário)
             unset(
                 $payload['SENHA'],
                 $payload['senha'],

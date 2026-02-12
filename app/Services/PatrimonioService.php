@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\LocalProjeto;
 use App\Models\Patrimonio;
 use App\Models\User;
 use Carbon\Carbon;
@@ -25,6 +26,7 @@ class PatrimonioService
         $query = $this->montarConsultaFiltrada($request, $user);
 
         $patrimonios = $query->paginate($perPage)->withQueryString();
+        $this->anexarLocaisCorretos($patrimonios->getCollection());
         $showEmpty = (bool) $request->boolean('show_empty_columns', false);
 
         [$visibleColumns, $hiddenColumns] = $this->detectarColunasVisiveis($patrimonios->items(), $showEmpty);
@@ -528,7 +530,7 @@ class PatrimonioService
         $hasSort = !is_null($sortKey) && $sortKey !== '' && isset($sortableMap[$sortKey]);
 
         if ($hasSort) {
-            // Ordenação explícita escolhida no grid
+            // Ordenacao explicita escolhida no grid
             $query->reorder();
             $query->orderBy($sortableMap[$sortKey], $sortDirection);
             return;
@@ -538,18 +540,19 @@ class PatrimonioService
             // Quando houver filtro de data de cadastro, ordenar cronologicamente pelo cadastro (mais antigo primeiro)
             $query->reorder();
             $query->orderBy('DTOPERACAO', 'asc');
-        } else {
-            try {
-                $nmLogin = (string) ($user->NMLOGIN ?? '');
-                $cdMatr = $user->CDMATRFUNCIONARIO ?? null;
-                $query->orderByRaw("CASE WHEN LOWER(USUARIO) = LOWER(?) OR CDMATRFUNCIONARIO = ? THEN 0 ELSE 1 END", [$nmLogin, $cdMatr]);
-                $query->orderBy('DTOPERACAO', 'desc');
-            } catch (\Throwable $e) {
-                Log::warning('Falha ao aplicar ordenacao por usuario/DTOPERACAO: ' . $e->getMessage());
-            }
+            return;
         }
 
-        // Ordem padrÃ£o secundÃ¡ria para consistÃªncia
+        try {
+            $nmLogin = (string) ($user->NMLOGIN ?? '');
+            $cdMatr = $user->CDMATRFUNCIONARIO ?? null;
+            $query->orderByRaw("CASE WHEN LOWER(USUARIO) = LOWER(?) OR CDMATRFUNCIONARIO = ? THEN 0 ELSE 1 END", [$nmLogin, $cdMatr]);
+            $query->orderBy('DTOPERACAO', 'desc');
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao aplicar ordenacao por usuario/DTOPERACAO: ' . $e->getMessage());
+        }
+
+        // Ordem padrao secundaria para consistencia
         $query->orderBy('DTAQUISICAO', 'asc');
     }
 
@@ -610,6 +613,58 @@ class PatrimonioService
     }
 
     /**
+     * Garante consistência entre listagem e edição:
+     * resolve o local usando CDLOCAL + CDPROJETO para evitar ambiguidades.
+     */
+    protected function anexarLocaisCorretos(Collection $patrimonios): void
+    {
+        if ($patrimonios->isEmpty()) {
+            return;
+        }
+
+        $cache = [];
+        foreach ($patrimonios as $patrimonio) {
+            if (!$patrimonio instanceof Patrimonio) {
+                continue;
+            }
+
+            $cacheKey = (string) ($patrimonio->CDLOCAL ?? '') . '|' . (string) ($patrimonio->CDPROJETO ?? '');
+            if (!array_key_exists($cacheKey, $cache)) {
+                $cache[$cacheKey] = $this->resolverLocalCorreto($patrimonio);
+            }
+
+            if ($cache[$cacheKey]) {
+                $patrimonio->setRelation('local', $cache[$cacheKey]);
+            }
+        }
+    }
+
+    protected function resolverLocalCorreto(Patrimonio $patrimonio): ?LocalProjeto
+    {
+        $cdlocal = $patrimonio->CDLOCAL;
+        if ($cdlocal === null || $cdlocal === '') {
+            return null;
+        }
+
+        $query = LocalProjeto::with('projeto')->where('cdlocal', $cdlocal);
+        if (!empty($patrimonio->CDPROJETO)) {
+            $query->whereHas('projeto', function ($q) use ($patrimonio) {
+                $q->where('CDPROJETO', $patrimonio->CDPROJETO);
+            });
+        }
+
+        $local = $query->orderBy('id')->first();
+        if (!$local) {
+            $local = LocalProjeto::with('projeto')
+                ->where('cdlocal', $cdlocal)
+                ->orderBy('id')
+                ->first();
+        }
+
+        return $local;
+    }
+
+    /**
      * Aplica filtro de intervalo de datas usando campos do request.
      */
     protected function aplicarFiltroDataRange(Builder $query, Request $request, string $startKey, string $endKey, string $column, ?string $toggleKey = null): void
@@ -659,7 +714,8 @@ class PatrimonioService
             ->values();
 
         if ($values->isEmpty()) {
-            $this->aplicarExclusaoBaixados($query);
+            // Sem filtro explícito de situação, não restringe BAIXA.
+            // Isso garante que o controle de patrimônio exiba todos os registros por padrão.
             return;
         }
 
@@ -744,4 +800,3 @@ class PatrimonioService
         }
     }
 }
-

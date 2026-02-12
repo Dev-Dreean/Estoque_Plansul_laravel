@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     {{-- Abas de navegação do patrimônio --}}
     <x-patrimonio-nav-tabs />
 
@@ -72,8 +72,8 @@
 
                         {{-- Situação --}}
                         <div>
-                            <x-input-label for="SituaÃ§Ã£o" value="Situação" />
-                            <input type="text" id="SituaÃ§Ã£o" value="{{ $patrimonio->SituaÃ§Ã£o ?? '-' }}" readonly 
+                            <x-input-label for="SITUACAO" value="Situação" />
+                            <input type="text" id="SITUACAO" value="{{ $patrimonio->SITUACAO ?? '-' }}" readonly 
                                 class="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100">
                         </div>
 

@@ -380,7 +380,7 @@ class RelatorioBensController extends Controller
 
 
 
-        return back()->with('success', 'Bem excluÃ­do com sucesso.');
+        return back()->with('success', 'Bem excluído com sucesso.');
 
     }
 

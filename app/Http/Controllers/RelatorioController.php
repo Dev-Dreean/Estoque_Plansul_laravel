@@ -430,12 +430,33 @@ class RelatorioController extends Controller
         $request->merge(['situacao_busca' => $list]);
     }
 
+    private function buildReportDownloadName(Request $request, string $ext): string
+    {
+        $tipo = strtolower((string) $request->input('tipo_relatorio', 'numero'));
+        $tipos = [
+            'numero' => 'numero',
+            'descricao' => 'descrição',
+            'aquisicao' => 'aquisição',
+            'cadastro' => 'cadastro',
+            'projeto' => 'projeto',
+            'oc' => 'oc',
+            'uf' => 'uf',
+            'situacao' => 'situação',
+        ];
+
+        $nomeTipo = $tipos[$tipo] ?? 'numero';
+        $data = now()->format('d_m_y');
+
+        return "Relatorio_{$nomeTipo}({$data}).{$ext}";
+    }
+
     public function exportarExcel(Request $request)
     {
         $this->prepareExportRuntime();
         $query = $this->getQueryFromRequest($request);
         $query->setEagerLoads([]);
         $filePath = storage_path('app/temp_relatorio.xlsx');
+        $downloadName = $this->buildReportDownloadName($request, 'xlsx');
         $writer = SimpleExcelWriter::create($filePath);
         $lookups = $this->getExportLookups();
         $localByCodigo = $lookups['locais'];
@@ -473,7 +494,7 @@ class RelatorioController extends Controller
                 'Cód. Objeto' => $patrimonio->CODOBJETO,
             ]);
         }
-        return response()->download($filePath)->deleteFileAfterSend(true);
+        return response()->download($filePath, $downloadName)->deleteFileAfterSend(true);
     }
 
     public function exportarCsv(Request $request)
@@ -482,6 +503,7 @@ class RelatorioController extends Controller
         $query = $this->getQueryFromRequest($request);
         $query->setEagerLoads([]);
         $filePath = storage_path('app/temp_relatorio.csv');
+        $downloadName = $this->buildReportDownloadName($request, 'csv');
         $writer = SimpleExcelWriter::create($filePath);
         $lookups = $this->getExportLookups();
         $localByCodigo = $lookups['locais'];
@@ -519,7 +541,7 @@ class RelatorioController extends Controller
                 'Cód. Objeto' => $patrimonio->CODOBJETO,
             ]);
         }
-        return response()->download($filePath)->deleteFileAfterSend(true);
+        return response()->download($filePath, $downloadName)->deleteFileAfterSend(true);
     }
 
     public function exportarOds(Request $request)
@@ -527,38 +549,47 @@ class RelatorioController extends Controller
         $this->prepareExportRuntime();
         $query = $this->getQueryFromRequest($request);
         $query->setEagerLoads([]);
+        $filePath = storage_path('app/temp_relatorio.ods');
+        $downloadName = $this->buildReportDownloadName($request, 'ods');
+        $writer = SimpleExcelWriter::create($filePath);
+        $lookups = $this->getExportLookups();
+        $localByCodigo = $lookups['locais'];
+        $userByLogin = $lookups['usuarios'];
 
-        // Proteção simples contra PDFs gigantes (melhor experiência / evita timeout Dompdf)
-        $total = (clone $query)->count();
-        if ($total > 5000) {
-            return back()->withErrors('O PDF excederia 5000 registros (' . $total . '). Refine os filtros antes de exportar.');
+        foreach ($query->cursor() as $patrimonio) {
+            $localNome = $patrimonio->CDLOCAL
+                ? ($localByCodigo[$patrimonio->CDLOCAL] ?? 'N/A')
+                : 'SISTEMA';
+            $cadastradorNome = $patrimonio->USUARIO
+                ? ($userByLogin[$patrimonio->USUARIO] ?? $patrimonio->USUARIO)
+                : 'SISTEMA';
+
+            $writer->addRow([
+                'Nº Patrimônio' => $patrimonio->NUPATRIMONIO,
+                'Descrição' => $patrimonio->DEPATRIMONIO,
+                'Situação' => $patrimonio->SITUACAO,
+                'Marca' => $patrimonio->MARCA,
+                'Modelo' => $patrimonio->MODELO,
+                'Nº Série' => $patrimonio->NUSERIE,
+                'Cor' => $patrimonio->COR,
+                'Dimensão' => $patrimonio->DIMENSAO,
+                'Características' => $patrimonio->CARACTERISTICAS,
+                'Histórico' => $patrimonio->DEHISTORICO,
+                'Local (Nome)' => $localNome,
+                'Local (Cód)' => $patrimonio->CDLOCAL,
+                'Local Interno (Cód)' => $patrimonio->CDLOCALINTERNO,
+                'Projeto (Cód)' => $patrimonio->CDPROJETO,
+                'Data de Aquisição' => $patrimonio->DTAQUISICAO,
+                'Data de Baixa' => $patrimonio->DTBAIXA,
+                'Data de Garantia' => $patrimonio->DTGARANTIA,
+                'Cadastrado por' => $cadastradorNome,
+                'Data de Cadastro' => $patrimonio->DTOPERACAO,
+                'OF' => $patrimonio->NUMOF,
+                'Cód. Objeto' => $patrimonio->CODOBJETO,
+            ]);
         }
 
-        // Seleção básica de colunas (mantém leve). Pode ajustar conforme necessidade.
-        $cols = [
-            'NUPATRIMONIO',
-            'DEPATRIMONIO',
-            'SITUACAO',
-            'MODELO',
-            'MARCA',
-            'NUSERIE',
-            'CDPROJETO',
-            'CDLOCAL',
-            'NUMOF',
-            'CODOBJETO',
-            'DTAQUISICAO',
-            'DTOPERACAO'
-        ];
-        $registros = $query->orderBy('NUPATRIMONIO')->get($cols);
-
-        // Usa template simplificado já existente
-        $modelo = 'simple';
-        $pdf = PDF::loadView('relatorios.patrimonios.pdf-simples', [
-            'modelo' => $modelo,
-            'cols' => $cols,
-            'registros' => $registros,
-        ])->setPaper('a4', 'portrait');
-        return $pdf->stream('relatorio_patrimonios.pdf');
+        return response()->download($filePath, $downloadName)->deleteFileAfterSend(true);
     }
 
     private function prepareExportRuntime(): void
@@ -595,7 +626,8 @@ class RelatorioController extends Controller
         $query->setEagerLoads([]);
         $resultados = $query->get();
         $pdf = PDF::loadView('patrimonios.pdf', compact('resultados'));
-        return $pdf->stream('relatorio_patrimonios.pdf');
+        $downloadName = $this->buildReportDownloadName($request, 'pdf');
+        return $pdf->stream($downloadName);
     }
 
     /**

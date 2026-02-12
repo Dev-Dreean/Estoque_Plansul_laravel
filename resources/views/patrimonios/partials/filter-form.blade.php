@@ -1,8 +1,8 @@
-﻿@php
+@php
   use Carbon\Carbon;
-  $filterKeys = ['nupatrimonio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','conferido','matr_responsavel','cadastrado_por','numof','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate','uf'];
+  $filterKeys = ['nupatrimônio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','conferido','matr_responsavel','cadastrado_por','numof','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate','uf'];
   $badgeColors = [
-    'nupatrimonio' => 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700',
+    'nupatrimônio' => 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700',
     'cdprojeto' => 'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-blue-200 border-gray-400 dark:border-blue-700',
     'cdlocal' => 'bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700',
     'modelo' => 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700',
@@ -101,18 +101,18 @@
   @keydown.window="handleKey($event)"
   @keydown.enter.prevent="handleEnter($event)"
   class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg mb-3"
-  x-id="['filtro-patrimonios']"
+  x-id="['filtro-patrimônios']"
   :aria-expanded="open.toString()"
-  :aria-controls="$id('filtro-patrimonios')"
+  :aria-controls="$id('filtro-patrimônios')"
 >
   <div class="flex justify-between items-center gap-3">
     <div class="flex items-center gap-3">
       <h3 class="font-semibold text-lg">Filtros de Busca</h3>
-      <div x-cloak id="patrimonios-tags" class="flex items-center gap-2 ml-3" x-data="{ tags: @js($selecionados) }" @cadastradores-changed.window="tags = $event.detail">
+      <div x-cloak id="patrimônios-tags" class="flex items-center gap-2 ml-3" x-data="{ tags: @js($selecionados) }" @cadastradores-changed.window="tags = $event.detail">
         @foreach($filterKeys as $k)
           @php
             $labelsMap = [
-              'nupatrimonio' => 'N. Patr.',
+              'nupatrimônio' => 'N. Patr.',
               'cdprojeto' => 'Projeto',
               'cdlocal' => 'Local Físico',
               'modelo' => 'Modelo',
@@ -143,7 +143,7 @@
               }
               if ($k === 'conferido') {
                 $u = strtoupper(trim((string) $display));
-                $display = in_array($u, ['S','1','SIM','TRUE','T','Y','YES','ON'], true) ? 'Verificado' : 'N�o verificado';
+                $display = in_array($u, ['S','1','SIM','TRUE','T','Y','YES','ON'], true) ? 'Verificado' : 'Não verificado';
               }
               if (in_array($k, ['dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate'], true) && $display) {
                 try { $display = Carbon::parse($display)->format('d/m/Y'); } catch (\Throwable $e) {}
@@ -179,21 +179,21 @@
         </template>
       </div>
     </div>
-    <button type="button" @click="open = !open" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimonios')" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-600 dark:border-gray-600 bg-gray-600 dark:bg-gray-800 hover:bg-gray-700 dark:hover:bg-gray-700 text-white transition focus:outline-none focus:ring-2 focus:ring-gray-500">
+    <button type="button" @click="open = !open" :aria-expanded="open.toString()" :aria-controls="$id('filtro-patrimônios')" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-600 dark:border-gray-600 bg-gray-600 dark:bg-gray-800 hover:bg-gray-700 dark:hover:bg-gray-700 text-white transition focus:outline-none focus:ring-2 focus:ring-gray-500">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
       </svg>
       <span class="sr-only">Expandir filtros</span>
     </button>
   </div>
-  <div x-cloak x-show="open" x-transition class="mt-4 bg-gray-200 dark:bg-gray-800 rounded-lg p-4" :id="$id('filtro-patrimonios')">
+  <div x-cloak x-show="open" x-transition class="mt-4 bg-gray-200 dark:bg-gray-800 rounded-lg p-4" :id="$id('filtro-patrimônios')">
     <form id="patrimonio-filter-form" x-ref="filterForm" method="GET" action="{{ route('patrimonios.index') }}" @submit="open=false">
       @if($isBruno)
         <input type="hidden" name="bruno_skip_default" value="{{ $brunoSkipDefault }}">
       @endif
       <div class="flex flex-wrap gap-3 lg:gap-4 overflow-visible pb-2 w-full mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
         <div class="flex-1 min-w-[100px] max-w-[140px] basis-[110px]">
-          <input type="text" name="nupatrimonio" placeholder="N. Patr." value="{{ request('nupatrimonio') }}" x-ref="firstFilterInput" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
+          <input type="text" name="nupatrimônio" placeholder="N. Patr." value="{{ request('nupatrimônio') }}" x-ref="firstFilterInput" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
         </div>
         <div class="flex-1 min-w-[120px] max-w-[170px] basis-[130px]">
           <div
@@ -233,19 +233,19 @@
                 this.search = opt.label;
                 this.open = false;
                 // Avisar o filtro de local para recarregar
-                window.dispatchEvent(new CustomEvent('patrimonio-projeto-selecionado', { detail: this.value }));
+                window.dispatchEvent(new CustomEvent('patrimônio-projeto-selecionado', { detail: this.value }));
               },
               handleManual() {
                 this.syncValue();
                 this.open = false;
-                window.dispatchEvent(new CustomEvent('patrimonio-projeto-selecionado', { detail: this.value }));
+                window.dispatchEvent(new CustomEvent('patrimônio-projeto-selecionado', { detail: this.value }));
               },
               init() {
                 const current = this.options.find(o => o.code === this.value);
                 if (current) this.search = current.label;
-                // Se j� vier com projeto selecionado, notificar locais
+                // Se já vier com projeto selecionado, notificar locais
                 if (this.value) {
-                  window.dispatchEvent(new CustomEvent('patrimonio-projeto-selecionado', { detail: this.value }));
+                  window.dispatchEvent(new CustomEvent('patrimônio-projeto-selecionado', { detail: this.value }));
                 }
               }
             }"
@@ -349,15 +349,15 @@
                 if (initialProj) {
                   this.fetchLocais(initialProj, true);
                 }
-                // Ouvir mudan�as no projeto
-                window.addEventListener('patrimonio-projeto-selecionado', (e) => {
+                // Ouvir mudanças no projeto
+                window.addEventListener('patrimônio-projeto-selecionado', (e) => {
                   const proj = (e.detail || '').toString();
                   this.value = '';
                   this.search = '';
                   this.fetchLocais(proj, false);
                 });
 
-                // Se j� veio com local preenchido e op��es carregadas via servidor, sincronizar o nome
+                // Se já veio com local preenchido e opções carregadas via servidor, sincronizar o nome
                 const current = this.options.find(o => o.code === this.value);
                 if (current) this.search = current.label;
               }
@@ -471,7 +471,7 @@
           </div>
         </div>
         <div class="flex-1 min-w-[130px] max-w-[170px] basis-[140px]">
-          <input type="text" name="DescriÃ§Ã£o" placeholder="Descrição" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
+          <input type="text" name="Descrição" placeholder="Descrição" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
         </div>
         <div class="flex-1 min-w-[130px] max-w-[170px] basis-[140px]">
           <div
@@ -653,7 +653,7 @@
           <div class="flex items-center gap-2">
             <input type="date" name="dtcadastro_de" value="{{ request('dtcadastro_de') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de Cadastro" />
             <template x-if="range">
-              <span class="text-xs text-gray-500 dark:text-gray-300">at�</span>
+              <span class="text-xs text-gray-500 dark:text-gray-300">até</span>
             </template>
             <input x-show="range" x-cloak type="date" name="dtcadastro_ate" value="{{ request('dtcadastro_ate') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de Cadastro Até" />
           </div>
