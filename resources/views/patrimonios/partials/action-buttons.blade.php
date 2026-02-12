@@ -27,11 +27,4 @@
     <span>Gerar Relatório</span>
   </button>
 
-  <a href="{{ route('patrimonios.index', ['situacao' => ['BAIXA']]) }}" class="bg-slate-700 hover:bg-slate-800 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
-    <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m-3-3h6m6 0a9 9 0 1 1-18 0a9 9 0 0 1 18 0Z" />
-    </svg>
-    <span>Baixados</span>
-  </a>
 </div>
-
