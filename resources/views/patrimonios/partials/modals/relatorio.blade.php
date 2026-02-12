@@ -28,11 +28,11 @@
             <div class="space-y-4">
               <div class="grid grid-cols-2 gap-x-6 gap-y-4">
                 <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="NÃºmero" x-model="tipoRelatorio"
+                    name="tipo_relatorio" value="numero" x-model="tipoRelatorio"
                     class="form-radio text-indigo-600"><span
                     class="text-gray-700 dark:text-gray-300">Por Número</span></label>
                 <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="DescriÃ§Ã£o" x-model="tipoRelatorio"
+                    name="tipo_relatorio" value="descricao" x-model="tipoRelatorio"
                     class="form-radio text-indigo-600"><span
                     class="text-gray-700 dark:text-gray-300">Por Descrição</span></label>
                 <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
@@ -43,7 +43,7 @@
                 <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
                     name="tipo_relatorio" value="cadastro" x-model="tipoRelatorio"
                     class="form-radio text-indigo-600"><span
-                    class="text-gray-700 dark:text-gray-300">Por Período Cadastro</span></label>
+                    class="text-gray-700 dark:text-gray-300">Por Período de Cadastro</span></label>
                 <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
                     name="tipo_relatorio" value="projeto" x-model="tipoRelatorio"
                     class="form-radio text-indigo-600"><span
@@ -57,11 +57,11 @@
                     class="form-radio text-indigo-600"><span
                     class="text-gray-700 dark:text-gray-300">Por UF</span></label>
                 <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
-                    name="tipo_relatorio" value="SituaÃ§Ã£o" x-model="tipoRelatorio"
+                    name="tipo_relatorio" value="situacao" x-model="tipoRelatorio"
                     class="form-radio text-indigo-600"><span
                     class="text-gray-700 dark:text-gray-300">Por Situação</span></label>
               </div>
-              <!-- Campo de busca de descrição quando tipo DescriÃ§Ã£o -->
+              <!-- Campo de busca de descrição quando tipo Descrição -->
               <div x-data="{ open: false }" @click.outside="open = false" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                 <div class="flex items-center justify-between gap-3">
                   <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-300">Filtros adicionais</p>
@@ -73,26 +73,26 @@
                   </button>
                 </div>
                 <div x-cloak x-show="open" x-transition class="mt-3">
-                  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                   <div>
-                    <label for="relatorio_cdprojeto" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Projeto (cÃ³digo)</label>
-                    <input type="text" id="relatorio_cdprojeto" name="cdprojeto" list="relatorio_projetos" placeholder="Ex: 101" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
+                    <label for="relatorio_cdprojeto" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Projeto</label>
+                    <input type="text" id="relatorio_cdprojeto" name="cdprojeto" list="relatorio_projetos" placeholder="Ex: 101" class="mt-1 h-11 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
                   </div>
                   <div>
-                    <label for="relatorio_cdlocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Local fÃ­sico (cÃ³digo)</label>
-                    <input type="text" id="relatorio_cdlocal" name="cdlocal" list="relatorio_locais" placeholder="Ex: 2002" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
+                    <label for="relatorio_cdlocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Local físico</label>
+                    <input type="text" id="relatorio_cdlocal" name="cdlocal" list="relatorio_locais" placeholder="Ex: 2002" class="mt-1 h-11 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
                   </div>
                   <div>
                     <label for="relatorio_conferido" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Conferido</label>
-                    <select id="relatorio_conferido" name="conferido" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
+                    <select id="relatorio_conferido" name="conferido" class="mt-1 h-11 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
                       <option value="">Todos</option>
                       <option value="S">Verificado</option>
-                      <option value="N">Nao verificado</option>
+                      <option value="N">Não verificado</option>
                     </select>
                   </div>
                   <div>
                     <label for="relatorio_voltagem" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Voltagem</label>
-                    <input type="text" id="relatorio_voltagem" name="voltagem" placeholder="Ex: 110V, 220V" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
+                    <input type="text" id="relatorio_voltagem" name="voltagem" placeholder="Ex: 110V, 220V" class="mt-1 h-11 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
                   </div>
                   </div>
                 </div>
@@ -126,7 +126,7 @@
               <div x-show="tipoRelatorio === 'projeto'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div class="md:col-span-2">
-                    <label for="projeto_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Codigos de Projeto (separar por virgula, opcional)</label>
+                    <label for="projeto_busca" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Códigos de Projeto (separados por vírgula, opcional)</label>
                     <input type="text" id="projeto_busca" name="projeto_busca" placeholder="Ex: 101, 202, 303" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
                   </div>
                   <div>
@@ -139,7 +139,7 @@
                 </div>
               </div>
               
-              <!-- Campo de Situação (checkboxes) quando tipo = SituaÃ§Ã£o -->
+              <!-- Campo de Situação (checkboxes) quando tipo = Situação -->
               <div x-show="tipoRelatorio === 'situacao'" class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-lg border-2 border-blue-200 dark:border-blue-700" style="display:none;">
                 <p class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-3">Selecione as situações desejadas:</p>
                 <div class="flex flex-wrap gap-3">
@@ -149,12 +149,12 @@
                     <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Em uso</span>
                   </label>
                   <label class="flex items-center space-x-2 cursor-pointer group">
-                    <input type="checkbox" name="situacao_busca[]" value="A DISPOSICAO"
+                    <input type="checkbox" name="situacao_busca[]" value="A DISPOSICAO" checked
                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600">
-                    <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">À disposição</span>
+                    <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Disponível</span>
                   </label>
                   <label class="flex items-center space-x-2 cursor-pointer group">
-                    <input type="checkbox" name="situacao_busca[]" value="CONSERTO"
+                    <input type="checkbox" name="situacao_busca[]" value="CONSERTO" checked
                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600">
                     <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Conserto</span>
                   </label>
@@ -164,7 +164,7 @@
                     <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Baixa</span>
                   </label>
                 </div>
-                <p class="text-xs text-gray-600 dark:text-gray-400 mt-3">✓ Marque uma ou mais situações. Deixe todas desmarcadas para incluir todas.</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-3">✓ Marque uma ou mais situações. Padrão: Em uso, Disponível e Conserto.</p>
                 <p class="text-xs text-red-500 mt-1" x-show="relatorioErrors.situacao_busca" x-text="relatorioErrors.situacao_busca"></p>
               </div>
 
@@ -356,7 +356,7 @@
             <span> → <strong x-text="reportFilters.uf_busca"></strong></span>
           </template>
           <template x-if="tipoRelatorio === 'situacao'">
-            <span> → <strong x-text="reportFilters.situacao_busca"></strong></span>
+            <span> → <strong x-text="formatSituacaoFiltro(reportFilters.situacao_busca)"></strong></span>
           </template>
           <template x-if="['aquisicao', 'cadastro'].includes(tipoRelatorio)">
             <span> → <strong x-text="(reportFilters.data_inicio_aquisicao || reportFilters.data_inicio_cadastro) + ' a ' + (reportFilters.data_fim_aquisicao || reportFilters.data_fim_cadastro)"></strong></span>
@@ -383,8 +383,8 @@
           </template>
           <template x-if="reportFilters.situacao_busca && tipoRelatorio !== 'situacao'">
             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-slate-200 dark:border-gray-600">
-              <span class="font-semibold">SituaÃ§Ã£o</span>
-              <span x-text="reportFilters.situacao_busca"></span>
+              <span class="font-semibold">Situação</span>
+              <span x-text="formatSituacaoFiltro(reportFilters.situacao_busca)"></span>
             </span>
           </template>
           <template x-if="reportFilters.voltagem">
@@ -426,14 +426,14 @@
                 </template>
 
                 <!-- Colunas fixas (sempre aparecem depois) -->
-                <th scope="col" class="px-6 py-3">N? Patrim?nio</th>
-                <th scope="col" class="px-6 py-3">Descri??o</th>
-                {{-- Colunas extras para contexto do RelatÃ³rio --}}
+                <th scope="col" class="px-6 py-3">Nº Patrimônio</th>
+                <th scope="col" class="px-6 py-3">Descrição</th>
+                {{-- Colunas extras para contexto do relatório --}}
                 <th scope="col" class="px-6 py-3">Projeto</th>
                 <th scope="col" class="px-6 py-3">Modelo</th>
-                <th scope="col" class="px-6 py-3 text-xs">Situa??o</th>
+                <th scope="col" class="px-6 py-3 text-xs">Situação</th>
                 <th scope="col" class="px-6 py-3">Conferido</th>
-                <th scope="col" class="px-6 py-3">Local F?sico</th>
+                <th scope="col" class="px-6 py-3">Local Físico</th>
                 <th scope="col" class="px-6 py-3">Cadastrador</th>
               </tr>
             </thead>
@@ -500,9 +500,6 @@
                   <td class="px-6 py-4" x-text="formatConferido(patrimonio.FLCONFERIDO)"></td>
                   <td class="px-6 py-4"
                     x-text="patrimonio.local ? patrimonio.local.LOCAL : 'SISTEMA'"></td>
-                  <td class="px-6 py-4"
-                    x-text="patrimonio.creator ? patrimonio.creator.NOMEUSER : 'SISTEMA'">
-                  </td>
                   <td class="px-6 py-4"
                     x-text="patrimonio.creator ? patrimonio.creator.NOMEUSER : 'SISTEMA'">
                   </td>

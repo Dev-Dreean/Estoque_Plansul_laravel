@@ -38,7 +38,7 @@
                       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 00-1.06 1.06l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
                     </svg>
                   </button>
-                  <button id="bulk-conferido-no" type="button" class="h-9 w-9 rounded-md border border-red-600 bg-red-600 text-white transition flex items-center justify-center" aria-pressed="false" aria-label="Nao verificado" title="Nao verificado">
+                  <button id="bulk-conferido-no" type="button" class="h-9 w-9 rounded-md border border-red-600 bg-red-600 text-white transition flex items-center justify-center" aria-pressed="false" aria-label="Não verificado" title="Não verificado">
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                       <circle cx="12" cy="12" r="9" />
                       <path d="M8 12h8" />
@@ -1024,7 +1024,7 @@
           selectedIds.forEach((id) => {
             const meta = selectedMeta.get(id) || readRowMeta(id) || {};
             const prevSituacao = meta.situacao || '-';
-            const prevConferido = (meta.conferido || 'N') === 'S' ? 'Verificado' : 'Nao verificado';
+            const prevConferido = (meta.conferido || 'N') === 'S' ? 'Verificado' : 'Não verificado';
             const patr = meta.patrimonio || id;
 
             const item = document.createElement('div');
@@ -1075,7 +1075,7 @@
               badgeTo.className = pendingConferido === 'S'
                 ? 'flex-1 px-2.5 py-1.5 rounded-md bg-green-600 text-white font-bold text-xs text-center border border-green-700'
                 : 'flex-1 px-2.5 py-1.5 rounded-md bg-red-600 text-white font-bold text-xs text-center border border-red-700';
-              badgeTo.textContent = pendingConferido === 'S' ? 'Verificado' : 'Nao verificado';
+              badgeTo.textContent = pendingConferido === 'S' ? 'Verificado' : 'Não verificado';
 
               conferidoDiv.appendChild(badgeFrom);
               conferidoDiv.appendChild(arrow);
@@ -1096,7 +1096,7 @@
             return;
           }
           if (!situacao && !pendingConferido) {
-            alert('Escolha a SituaÃ§Ã£o ou verificacao para aplicar.');
+            alert('Escolha a situação ou verificação para aplicar.');
             return;
           }
           openConfirmModal(situacao);
@@ -1443,6 +1443,10 @@
               this.relatorioErrors = {};
               this.relatorioGlobalError = null;
             });
+            this.$watch('relatorioModalOpen', (open) => {
+              if (!open) return;
+              this.$nextTick(() => this.resetSituacaoBuscaDefaults());
+            });
             this.$watch('formModalOpen', (open) => {
               document.documentElement.classList.toggle('overflow-hidden', open);
               document.body.classList.toggle('overflow-hidden', open);
@@ -1467,6 +1471,13 @@
           },
           csrf() {
             return document.querySelector('meta[name=csrf-token]')?.content || '';
+          },
+          resetSituacaoBuscaDefaults() {
+            const defaults = new Set(['EM USO', 'A DISPOSICAO', 'CONSERTO']);
+            document.querySelectorAll('input[name="situacao_busca[]"]').forEach((input) => {
+              if (!(input instanceof HTMLInputElement)) return;
+              input.checked = defaults.has(String(input.value || '').trim().toUpperCase());
+            });
           },
           abrirRelatorio() {
             this.relatorioModalOpen = true;
@@ -1877,7 +1888,7 @@
                     this.relatorioGlobalError = data.message || 'Erros de validacao.';
                     throw new Error('validation');
                   }
-                  this.relatorioGlobalError = data.message || 'Falha ao gerar relatÃ³rio.';
+                  this.relatorioGlobalError = data.message || 'Falha ao gerar relatório.';
                   throw new Error('erro');
                 }
                 return data;
@@ -1893,7 +1904,7 @@
               })
               .catch((err) => {
                 if (err.message !== 'validation') {
-                  console.error('Erro ao gerar relatÃ³rio', err);
+                  console.error('Erro ao gerar relatório', err);
                 }
                 this.reportLoading = false;
               })
@@ -1958,7 +1969,18 @@
             form.appendChild(token);
 
             Object.entries(this.reportFilters || {}).forEach(([key, value]) => {
-              if (value !== null && value !== undefined) {
+              if (Array.isArray(value)) {
+                value.filter((item) => item !== null && item !== undefined && item !== '').forEach((item) => {
+                  const input = document.createElement('input');
+                  input.type = 'hidden';
+                  input.name = `${key}[]`;
+                  input.value = item;
+                  form.appendChild(input);
+                });
+                return;
+              }
+
+              if (value !== null && value !== undefined && value !== '') {
                 const input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = key;
@@ -1973,16 +1995,16 @@
           },
           getFilterLabel(tipo) {
             const labels = {
-              numero: 'RelatÃ³rio por NÃºmero de Patrimonio',
-              descricao: 'RelatÃ³rio por DescriÃ§Ã£o',
-              aquisicao: 'RelatÃ³rio por Periodo de Aquisicao',
-              cadastro: 'RelatÃ³rio por PerÃ­odo de Cadastro',
-              projeto: 'RelatÃ³rio por Projeto',
-              oc: 'RelatÃ³rio por OC',
-              uf: 'RelatÃ³rio por UF',
-              situacao: 'RelatÃ³rio por Situacao',
+              numero: 'Relatório por Número de Patrimônio',
+              descricao: 'Relatório por Descrição',
+              aquisicao: 'Relatório por Período de Aquisição',
+              cadastro: 'Relatório por Período de Cadastro',
+              projeto: 'Relatório por Projeto',
+              oc: 'Relatório por OC',
+              uf: 'Relatório por UF',
+              situacao: 'Relatório por Situação',
             };
-            return labels[tipo || this.tipoRelatorio] || 'RelatÃ³rio';
+            return labels[tipo || this.tipoRelatorio] || 'Relatório';
           },
           getColumnColor(tipo) {
             const colors = {
@@ -2002,7 +2024,25 @@
             if (['S', '1', 'SIM', 'TRUE', 'T', 'Y', 'YES', 'ON'].includes(val)) {
               return 'Verificado';
             }
-            return 'Nao verificado';
+            return 'Não verificado';
+          },
+          formatSituacaoFiltro(value) {
+            const rawValues = Array.isArray(value)
+              ? value
+              : (value ? String(value).split(',') : []);
+
+            const labels = rawValues
+              .map((item) => String(item ?? '').trim().toUpperCase())
+              .filter(Boolean)
+              .map((item) => {
+                if (item === 'A DISPOSICAO' || item === 'DISPONIVEL') return 'Disponível';
+                if (item === 'BAIXA' || item === 'BAIXADO') return 'Baixado';
+                if (item === 'EM USO') return 'Em uso';
+                if (item === 'CONSERTO' || item === 'MANUTENCAO') return 'Conserto';
+                return item;
+              });
+
+            return labels.length ? labels.join(', ') : 'Todos';
           },
           formatProjeto(patrimonio) {
             if (!patrimonio) return 'N/A';
@@ -2021,7 +2061,7 @@
           },
           openDelete(id, name) {
             this.deleteItemId = id;
-            this.deleteItemName = name || 'este patrimÃ´nio';
+            this.deleteItemName = name || 'este patrimônio';
             this.deleteModalOpen = true;
           },
           confirmDelete() {

@@ -8,6 +8,7 @@ use App\Models\Patrimonio;
 use App\Models\Tabfant;
 use App\Models\Funcionario;
 use App\Models\LocalProjeto;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Spatie\SimpleExcel\SimpleExcelWriter;
@@ -337,13 +338,8 @@ class RelatorioController extends Controller
 
     private function applySituacaoFilter($query, $raw): void
     {
-        // Aceita string (compatibilidade) ou array (novo)
-        if (is_array($raw)) {
-            $situacoes = array_filter(array_map('trim', $raw));
-        } else {
-            $situacoes = $this->normalizeSituacoes($raw);
-        }
-        
+        $situacoes = $this->normalizeSituacoes($raw);
+
         if (!$situacoes) {
             return;
         }
@@ -388,11 +384,13 @@ class RelatorioController extends Controller
         }
     }
 
-    private function normalizeSituacoes(?string $raw): array
+    private function normalizeSituacoes($raw): array
     {
-        if (!$raw) {
+        if ($raw === null || $raw === '') {
             return [];
         }
+
+        $values = is_array($raw) ? $raw : explode(',', (string) $raw);
 
         $map = [
             'A DISPOSICAO' => ['A DISPOSICAO', 'DISPONIVEL'],
@@ -403,7 +401,7 @@ class RelatorioController extends Controller
             'CONSERTO' => ['MANUTENCAO', 'CONSERTO'],
         ];
 
-        return collect(explode(',', $raw))
+        return collect($values)
             ->map(fn($value) => strtoupper(trim((string) $value)))
             ->filter()
             ->flatMap(fn($value) => $map[$value] ?? [$value])
@@ -434,30 +432,42 @@ class RelatorioController extends Controller
 
     public function exportarExcel(Request $request)
     {
+        $this->prepareExportRuntime();
         $query = $this->getQueryFromRequest($request);
+        $query->setEagerLoads([]);
         $filePath = storage_path('app/temp_relatorio.xlsx');
         $writer = SimpleExcelWriter::create($filePath);
+        $lookups = $this->getExportLookups();
+        $localByCodigo = $lookups['locais'];
+        $userByLogin = $lookups['usuarios'];
 
         foreach ($query->cursor() as $patrimonio) {
+            $localNome = $patrimonio->CDLOCAL
+                ? ($localByCodigo[$patrimonio->CDLOCAL] ?? 'N/A')
+                : 'SISTEMA';
+            $cadastradorNome = $patrimonio->USUARIO
+                ? ($userByLogin[$patrimonio->USUARIO] ?? $patrimonio->USUARIO)
+                : 'SISTEMA';
+
             $writer->addRow([
-                'N° Patrimônio' => $patrimonio->NUPATRIMONIO,
+                'Nº Patrimônio' => $patrimonio->NUPATRIMONIO,
                 'Descrição' => $patrimonio->DEPATRIMONIO,
                 'Situação' => $patrimonio->SITUACAO,
                 'Marca' => $patrimonio->MARCA,
                 'Modelo' => $patrimonio->MODELO,
-                'N° Série' => $patrimonio->NUSERIE,
+                'Nº Série' => $patrimonio->NUSERIE,
                 'Cor' => $patrimonio->COR,
                 'Dimensão' => $patrimonio->DIMENSAO,
                 'Características' => $patrimonio->CARACTERISTICAS,
                 'Histórico' => $patrimonio->DEHISTORICO,
-                'Local (Nome)' => $patrimonio->local->LOCAL ?? 'SISTEMA',
+                'Local (Nome)' => $localNome,
                 'Local (Cód)' => $patrimonio->CDLOCAL,
                 'Local Interno (Cód)' => $patrimonio->CDLOCALINTERNO,
                 'Projeto (Cód)' => $patrimonio->CDPROJETO,
                 'Data de Aquisição' => $patrimonio->DTAQUISICAO,
                 'Data de Baixa' => $patrimonio->DTBAIXA,
                 'Data de Garantia' => $patrimonio->DTGARANTIA,
-                'Cadastrado Por' => $patrimonio->creator->NOMEUSER ?? 'SISTEMA',
+                'Cadastrado por' => $cadastradorNome,
                 'Data de Cadastro' => $patrimonio->DTOPERACAO,
                 'OF' => $patrimonio->NUMOF,
                 'Cód. Objeto' => $patrimonio->CODOBJETO,
@@ -468,30 +478,42 @@ class RelatorioController extends Controller
 
     public function exportarCsv(Request $request)
     {
+        $this->prepareExportRuntime();
         $query = $this->getQueryFromRequest($request);
+        $query->setEagerLoads([]);
         $filePath = storage_path('app/temp_relatorio.csv');
         $writer = SimpleExcelWriter::create($filePath);
+        $lookups = $this->getExportLookups();
+        $localByCodigo = $lookups['locais'];
+        $userByLogin = $lookups['usuarios'];
 
         foreach ($query->cursor() as $patrimonio) {
+            $localNome = $patrimonio->CDLOCAL
+                ? ($localByCodigo[$patrimonio->CDLOCAL] ?? 'N/A')
+                : 'SISTEMA';
+            $cadastradorNome = $patrimonio->USUARIO
+                ? ($userByLogin[$patrimonio->USUARIO] ?? $patrimonio->USUARIO)
+                : 'SISTEMA';
+
             $writer->addRow([
-                'N° Patrimônio' => $patrimonio->NUPATRIMONIO,
+                'Nº Patrimônio' => $patrimonio->NUPATRIMONIO,
                 'Descrição' => $patrimonio->DEPATRIMONIO,
                 'Situação' => $patrimonio->SITUACAO,
                 'Marca' => $patrimonio->MARCA,
                 'Modelo' => $patrimonio->MODELO,
-                'N° Série' => $patrimonio->NUSERIE,
+                'Nº Série' => $patrimonio->NUSERIE,
                 'Cor' => $patrimonio->COR,
                 'Dimensão' => $patrimonio->DIMENSAO,
                 'Características' => $patrimonio->CARACTERISTICAS,
                 'Histórico' => $patrimonio->DEHISTORICO,
-                'Local (Nome)' => $patrimonio->local->LOCAL ?? 'N/A',
+                'Local (Nome)' => $localNome,
                 'Local (Cód)' => $patrimonio->CDLOCAL,
                 'Local Interno (Cód)' => $patrimonio->CDLOCALINTERNO,
                 'Projeto (Cód)' => $patrimonio->CDPROJETO,
                 'Data de Aquisição' => $patrimonio->DTAQUISICAO,
                 'Data de Baixa' => $patrimonio->DTBAIXA,
                 'Data de Garantia' => $patrimonio->DTGARANTIA,
-                'Cadastrado Por' => $patrimonio->creator->NOMEUSER ?? 'N/A',
+                'Cadastrado por' => $cadastradorNome,
                 'Data de Cadastro' => $patrimonio->DTOPERACAO,
                 'OF' => $patrimonio->NUMOF,
                 'Cód. Objeto' => $patrimonio->CODOBJETO,
@@ -502,7 +524,9 @@ class RelatorioController extends Controller
 
     public function exportarOds(Request $request)
     {
+        $this->prepareExportRuntime();
         $query = $this->getQueryFromRequest($request);
+        $query->setEagerLoads([]);
 
         // Proteção simples contra PDFs gigantes (melhor experiência / evita timeout Dompdf)
         $total = (clone $query)->count();
@@ -537,9 +561,38 @@ class RelatorioController extends Controller
         return $pdf->stream('relatorio_patrimonios.pdf');
     }
 
+    private function prepareExportRuntime(): void
+    {
+        @set_time_limit(300);
+        @ini_set('max_execution_time', '300');
+        DB::disableQueryLog();
+    }
+
+    private function getExportLookups(): array
+    {
+        $locais = LocalProjeto::query()
+            ->select(['cdlocal', 'delocal'])
+            ->get()
+            ->pluck('delocal', 'cdlocal')
+            ->all();
+
+        $usuarios = User::query()
+            ->select(['NMLOGIN', 'NOMEUSER'])
+            ->get()
+            ->pluck('NOMEUSER', 'NMLOGIN')
+            ->all();
+
+        return [
+            'locais' => $locais,
+            'usuarios' => $usuarios,
+        ];
+    }
+
     public function exportarPdf(Request $request)
     {
+        $this->prepareExportRuntime();
         $query = $this->getQueryFromRequest($request);
+        $query->setEagerLoads([]);
         $resultados = $query->get();
         $pdf = PDF::loadView('patrimonios.pdf', compact('resultados'));
         return $pdf->stream('relatorio_patrimonios.pdf');
@@ -702,9 +755,3 @@ class RelatorioController extends Controller
         return response()->download($tempPath)->deleteFileAfterSend(true);
     }
 }
-
-
-
-
-
-
