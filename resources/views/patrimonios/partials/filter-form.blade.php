@@ -1,8 +1,8 @@
 @php
   use Carbon\Carbon;
-  $filterKeys = ['nupatrimônio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','conferido','matr_responsavel','cadastrado_por','numof','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate','uf'];
+  $filterKeys = ['nupatrimonio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','conferido','matr_responsavel','cadastrado_por','numof','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate','uf'];
   $badgeColors = [
-    'nupatrimônio' => 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700',
+    'nupatrimonio' => 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700',
     'cdprojeto' => 'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-blue-200 border-gray-400 dark:border-blue-700',
     'cdlocal' => 'bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700',
     'modelo' => 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700',
@@ -112,7 +112,7 @@
         @foreach($filterKeys as $k)
           @php
             $labelsMap = [
-              'nupatrimônio' => 'N. Patr.',
+              'nupatrimonio' => 'N. Patr.',
               'cdprojeto' => 'Projeto',
               'cdlocal' => 'Local Físico',
               'modelo' => 'Modelo',
@@ -193,7 +193,7 @@
       @endif
       <div class="flex flex-wrap gap-3 lg:gap-4 overflow-visible pb-2 w-full mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
         <div class="flex-1 min-w-[100px] max-w-[140px] basis-[110px]">
-          <input type="text" name="nupatrimônio" placeholder="N. Patr." value="{{ request('nupatrimônio') }}" x-ref="firstFilterInput" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
+          <input type="text" name="nupatrimonio" placeholder="N. Patr." value="{{ request('nupatrimonio') }}" x-ref="firstFilterInput" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
         </div>
         <div class="flex-1 min-w-[120px] max-w-[170px] basis-[130px]">
           <div
@@ -471,7 +471,7 @@
           </div>
         </div>
         <div class="flex-1 min-w-[130px] max-w-[170px] basis-[140px]">
-          <input type="text" name="Descrição" placeholder="Descrição" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
+          <input type="text" name="descricao" placeholder="Descrição" value="{{ request('descricao') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
         </div>
         <div class="flex-1 min-w-[130px] max-w-[170px] basis-[140px]">
           <div
