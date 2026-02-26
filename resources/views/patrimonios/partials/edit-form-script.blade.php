@@ -33,26 +33,25 @@
     if (!btnAtualizar || !btnCancelarModal || !btnConfirmarAtualizacao || !modalConfirmacao || !alteracoesDiv) {
       return;
     }
-
-    // Mapas de traduÇõÇœo para campos
+    // Mapas de traducao para campos
     const labelCampos = {
-      'NUPATRIMONIO': 'NÇ§mero do PatrimÇïnio',
-      'NUSEQOBJ': 'CÇüdigo do Objeto',
-      'DEPATRIMONIO': 'DescriÇõÇœo do Objeto',
+      'NUPATRIMONIO': 'Número do Patrimônio',
+      'NUSEQOBJ': 'Código do Objeto',
+      'DEPATRIMONIO': 'Descrição do Objeto',
       'CDPROJETO': 'Projeto',
-      'CDLOCAL': 'Local FÇðsico',
-      'CDMATRFUNCIONARIO': 'MatrÇðcula ResponsÇ­vel',
-      'SITUACAO': 'SituaÇõÇœo',
+      'CDLOCAL': 'Local Físico',
+      'CDMATRFUNCIONARIO': 'Matrícula Responsável',
+      'SITUACAO': 'Situação',
       'FLCONFERIDO': 'Conferido',
       'MARCA': 'Marca',
       'MODELO': 'Modelo',
-      'DTAQUISICAO': 'Data AquisiÇõÇœo',
+      'DTAQUISICAO': 'Data Aquisição',
       'DTBAIXA': 'Data Baixa',
-      'DEHISTORICO': 'ObservaÇõÇæes',
-      'NUMOF': 'NÇ§mero OC',
+      'DEHISTORICO': 'Observações',
+      'NUMOF': 'Número OC',
       'NMPLANTA': 'Planta',
       'PESO': 'Peso',
-      'TAMANHO': 'DimensÇæes'
+      'TAMANHO': 'Dimensões'
     };
 
     // Cache de nomes de projetos, locais e funcionÇ­rios
@@ -219,7 +218,7 @@
 
     // Capturar dados do formulário - usando Alpine.js formData diretamente
     function capturarDadosFormulario() {
-      const formRoot = formElement.querySelector('[x-data*="patrimônioForm"]');
+      const formRoot = formElement.querySelector('[x-data*="patrimonioForm"]');
 
       if (!formRoot) {
         console.error('Elemento com Alpine.js não encontrado');
@@ -257,7 +256,7 @@
       return dados;
     }
 
-    // Comparar dados e gerar HTML das alteraÇõÇæes (ASSÍNCRONA)
+    // Comparar dados e gerar HTML das alteracoes (assincrona)
     async function gerarAlteracoes(novos) {
       let html = '';
       let temAlteracao = false;
@@ -377,7 +376,7 @@
 
       if (!temAlteracao) {
         html = `<div class="text-center py-8">
-          <p class="text-sm text-gray-500 dark:text-gray-400">Nenhuma alteraÇõÇœo detectada</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Nenhuma alteração detectada</p>
         </div>`;
       }
 
@@ -410,10 +409,10 @@
     btnCancelarModal.addEventListener('click', fecharModal, { signal });
 
     btnConfirmarAtualizacao.addEventListener('click', function() {
-      console.log('ÐY"ú Submetendo formulÇ­rio...');
+      console.log('Submetendo formulario...');
 
       // Validar se todos os campos obrigatórios estão preenchidos
-      const formRoot = formElement.querySelector('[x-data*="patrimônioForm"]');
+      const formRoot = formElement.querySelector('[x-data*="patrimonioForm"]');
 
       if (!formRoot) {
         alert('❌ Erro: Elemento do formulário não encontrado');
@@ -426,18 +425,18 @@
         return;
       }
 
-      // Verificar campos obrigatÇürios
+      // Verificar campos obrigatorios
       const erros = [];
-      if (!alpineData.formData.NUPATRIMONIO) erros.push('NÇ§mero do PatrimÇïnio Ç¸ obrigatÇürio');
+      if (!alpineData.formData.NUPATRIMONIO) erros.push('Número do Patrimônio é obrigatório');
       const requireCodigoOverride = String(formElement.dataset.requireCodobjeto || '').trim().toLowerCase();
       const requireCodigoObjeto = (requireCodigoOverride === '1' || requireCodigoOverride === 'true')
         ? true
         : (requireCodigoOverride === '0' || requireCodigoOverride === 'false')
           ? false
           : Boolean(dadosOriginais.NUSEQOBJ) || Boolean(alpineData.isNovoCodigo);
-      if (requireCodigoObjeto && !alpineData.formData.NUSEQOBJ) erros.push('CÇüdigo do Objeto Ç¸ obrigatÇürio');
-      if (!alpineData.formData.CDMATRFUNCIONARIO) erros.push('MatrÇðcula do ResponsÇ­vel Ç¸ obrigatÇüria');
-      if (!alpineData.formData.SITUACAO) erros.push('SituaÇõÇœo Ç¸ obrigatÇüria');
+      if (requireCodigoObjeto && !alpineData.formData.NUSEQOBJ) erros.push('Código do Objeto é obrigatório');
+      if (!alpineData.formData.CDMATRFUNCIONARIO) erros.push('Matrícula do Responsável é obrigatória');
+      if (!alpineData.formData.SITUACAO) erros.push('Situação é obrigatória');
       if (erros.length > 0) {
         alert('❌ Erros de validação:\n\n' + erros.join('\n'));
         return;
@@ -466,7 +465,7 @@
       }
     }, { signal });
 
-    // Capturar o submit do formulÇ­rio
+    // Capturar o submit do formulario
     formElement.addEventListener('submit', function(e) {
       const formData = new FormData(this);
       const values = {};
@@ -479,7 +478,7 @@
       console.log('Valores enviados:', JSON.stringify(values, null, 2));
 
       // Tentar acessar o formData do Alpine
-      const formRoot = this.querySelector('[x-data*="patrimônioForm"]');
+      const formRoot = this.querySelector('[x-data*="patrimonioForm"]');
       if (formRoot && formRoot.__x_dataStack && formRoot.__x_dataStack.length > 0) {
         const alpineData = formRoot.__x_dataStack[0];
         console.log('\nÐY"O formData do Alpine:', JSON.stringify(alpineData.formData, null, 2));
@@ -487,7 +486,7 @@
       console.log('='.repeat(80) + '\n');
     }, { signal });
 
-    // Detectar erros de validaÇõÇœo (Laravel envia redirect com erros)
+    // Detectar erros de validacao (Laravel envia redirect com erros)
     const hasErrors = root.querySelector('[data-errors]');
     if (hasErrors) {
       console.error('❌ Erros de validação detectados na página');
@@ -507,3 +506,4 @@
   // ❌ Removida inicialização automática para evitar dupla chamada
   // A inicialização é feita pelo modal controller (index.blade.php) ao carregar o HTML
 </script>
+

@@ -1,8 +1,8 @@
 <x-app-layout>
 @php
   $controleItems = [
-    ['label' => 'Patrimonio', 'href' => route('patrimonios.index'), 'icon' => 'cube', 'active' => true],
-    ['label' => 'Atribuir Cod.', 'href' => route('patrimonios.atribuir'), 'icon' => 'tag'],
+    ['label' => 'Patrimônio', 'href' => route('patrimonios.index'), 'icon' => 'cube', 'active' => true],
+    ['label' => 'Atribuir Cód.', 'href' => route('patrimonios.atribuir'), 'icon' => 'tag'],
   ];
 
   $atalhos = [
@@ -106,7 +106,7 @@
             {{ strtoupper(substr(Auth::user()->NOMEUSER ?? 'U', 0, 1)) }}
           </div>
           <div class="min-w-0" x-show="expanded">
-            <p class="text-sm font-semibold text-slate-100 truncate">{{ Auth::user()->NOMEUSER ?? 'Usuario' }}</p>
+            <p class="text-sm font-semibold text-slate-100 truncate">{{ Auth::user()->NOMEUSER ?? 'Usuário' }}</p>
             <p class="text-xs text-slate-400 truncate">{{ Auth::user()->NMLOGIN ?? 'login' }}</p>
           </div>
         </div>

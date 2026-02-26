@@ -40,6 +40,11 @@
                 },
                 search() {
                     let params = new URLSearchParams();
+                    const currentUrlParams = new URLSearchParams(window.location.search);
+                    ['sort', 'direction'].forEach((k) => {
+                        const v = currentUrlParams.get(k);
+                        if (v) params.set(k, v);
+                    });
                     let allTerms = [...this.tags];
                     if (this.inputValue.trim()) {
                         allTerms.push(this.inputValue.trim());
@@ -122,11 +127,11 @@
                 setupDeleteListeners() {
                     const tbody = document.querySelector('tbody');
                     if (!tbody) {
-                        console.log('❌ ERRO: tbody não encontrado!');
+                        console.log('ERRO: tbody não encontrado!');
                         return;
                     }
                     
-                    console.log('✅ tbody encontrado:', tbody);
+                    console.log('tbody encontrado:', tbody);
 
                     const self = this;
                     
@@ -137,26 +142,26 @@
                     
                     // Cria novo handler usando event delegation
                     tbody._deleteHandler = function(e) {
-                        console.log('📍 Clique detectado em:', e.target);
+                        console.log('Clique detectado em:', e.target);
                         const btn = e.target.closest('.delete-btn-usuario');
-                        console.log('🔍 Botão encontrado:', btn);
+                        console.log('Botão encontrado:', btn);
                         if (!btn) {
-                            console.log('❌ Botão com classe delete-btn-usuario não encontrado');
+                            console.log('Botão com classe delete-btn-usuario não encontrado');
                             return;
                         }
                         
-                        console.log('✅ Botão deletar clicado!');
+                        console.log('Botão deletar clicado!');
                         e.preventDefault();
                         e.stopPropagation();
                         
                         const usuarioId = parseInt(btn.getAttribute('data-usuario-id'));
                         const usuarioNome = btn.getAttribute('data-usuario-nome');
-                        console.log('📊 Dados:', { usuarioId, usuarioNome });
+                        console.log('Dados:', { usuarioId, usuarioNome });
                         self.abrirModalDelecao(usuarioId, usuarioNome);
                     };
                     
                     tbody.addEventListener('click', tbody._deleteHandler);
-                    console.log('✅ Listener anexado ao tbody');
+                    console.log('Listener anexado ao tbody');
                 }
             }
         }
@@ -205,7 +210,7 @@
                                                 <span>Pressione <kbd class="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600 text-[10px]">Enter</kbd> para criar uma <span class="font-semibold text-indigo-600">tag</span> e refinar a busca.</span>
                                             </template>
                                             <template x-if="tags.length > 0">
-                                                <span>Para apagar uma tag, apague todo o texto do input ou clique no <span class="text-red-500 font-bold">×</span> da tag.</span>
+                                                <span>Para apagar uma tag, apague todo o texto do input ou clique no <span class="text-red-500 font-bold">&times;</span> da tag.</span>
                                             </template>
                                         </div>
                                     </div>
@@ -216,20 +221,45 @@
                             Criar Novo Usuário
                         </a>
                     </div>
+
                     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                        <table class="w-full text-base text-left text-gray-500 dark:text-gray-400">
+                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3">Nome</th>
-                                    <th scope="col" class="px-6 py-3">Login</th>
-                                    <th scope="col" class="px-6 py-3">Matrícula</th>
-                                    <th scope="col" class="px-6 py-3">UF</th>
-                                    <th scope="col" class="px-6 py-3">Perfil</th>
-                                    <th scope="col" class="px-6 py-3">Ações</th>
+                                    @php
+                                        $nextDir = fn ($col) => (($sort ?? request('sort','NOMEUSER')) === $col && ($direction ?? request('direction','asc')) === 'asc') ? 'desc' : 'asc';
+                                        $isSort = fn ($col) => (($sort ?? request('sort','NOMEUSER')) === $col);
+                                    @endphp
+                                    <th scope="col" class="px-4 py-2">
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'NOMEUSER', 'direction' => $nextDir('NOMEUSER'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">
+                                            Nome <span class="text-[10px]">{{ $isSort('NOMEUSER') ? (($direction ?? request('direction','asc')) === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                                        </a>
+                                    </th>
+                                    <th scope="col" class="px-4 py-2">
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'NMLOGIN', 'direction' => $nextDir('NMLOGIN'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">
+                                            Login <span class="text-[10px]">{{ $isSort('NMLOGIN') ? (($direction ?? request('direction','asc')) === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                                        </a>
+                                    </th>
+                                    <th scope="col" class="px-4 py-2">
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'CDMATRFUNCIONARIO', 'direction' => $nextDir('CDMATRFUNCIONARIO'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">
+                                            Matrícula <span class="text-[10px]">{{ $isSort('CDMATRFUNCIONARIO') ? (($direction ?? request('direction','asc')) === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                                        </a>
+                                    </th>
+                                    <th scope="col" class="px-4 py-2">
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'UF', 'direction' => $nextDir('UF'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">
+                                            UF <span class="text-[10px]">{{ $isSort('UF') ? (($direction ?? request('direction','asc')) === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                                        </a>
+                                    </th>
+                                    <th scope="col" class="px-4 py-2">
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'PERFIL', 'direction' => $nextDir('PERFIL'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">
+                                            Perfil <span class="text-[10px]">{{ $isSort('PERFIL') ? (($direction ?? request('direction','asc')) === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                                        </a>
+                                    </th>
+                                    <th scope="col" class="px-4 py-2">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @include('usuarios._table_rows_usuarios', ['usuarios' => $usuarios])
+                                @include('usuarios._table_rows_usuarios', ['usuarios' => $usuarios, 'currentUserId' => $currentUserId ?? null])
                             </tbody>
                         </table>
                     </div>

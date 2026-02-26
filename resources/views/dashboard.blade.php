@@ -29,7 +29,7 @@
 
           <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 text-gray-900 dark:text-gray-100">
-              <h3 class="font-semibold text-lg mb-4">Top 5 Usu&aacute;rios com Mais Cadastros</h3>
+              <h3 class="font-semibold text-lg mb-4">Top 5 Usuários com Mais Cadastros</h3>
               <ul class="space-y-2">
                 @forelse($topCadastradores as $cadastrador)
                 <li class="flex justify-between items-center text-sm">
@@ -71,7 +71,7 @@
 
             <!-- Controles principais -->
             <div class="mb-8">
-              <div class="flex flex-wrap items-end justify-between gap-4">
+              <div class="flex flex-wrap items-end justify-between gap-4 mb-4">
                 <div>
                   <label class="text-xs uppercase tracking-wide font-semibold text-gray-600 dark:text-gray-400 mb-2 block">Visualizar por</label>
                   <div class="inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
@@ -95,6 +95,30 @@
                     <button data-period="month" class="filter-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-800 border border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-blue focus:ring-offset-2 dark:focus:ring-offset-gray-800">Mês</button>
                     <button data-period="year" class="filter-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-800 border border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-plansul-blue focus:ring-offset-2 dark:focus:ring-offset-gray-800">Ano</button>
                   </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="text-xs uppercase tracking-wide font-semibold text-gray-600 dark:text-gray-400 mb-2 block">Status</label>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button data-status="ativos" class="status-btn px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 border bg-plansul-blue text-white border-plansul-blue shadow-sm">
+                    Ativos (Padrão)
+                  </button>
+                  <button data-status="all" class="status-btn px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-plansul-blue dark:hover:border-blue-500">
+                    Incluir baixados
+                  </button>
+                  <button data-status="baixa" class="status-btn px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-plansul-blue dark:hover:border-blue-500">
+                    Apenas baixados
+                  </button>
+                  <button data-status="em_uso" class="status-btn px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-plansul-blue dark:hover:border-blue-500">
+                    Apenas em uso
+                  </button>
+                  <button data-status="a_disposicao" class="status-btn px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-plansul-blue dark:hover:border-blue-500">
+                    Apenas à disposição
+                  </button>
+                  <button data-status="conserto" class="status-btn px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-plansul-blue dark:hover:border-blue-500">
+                    Apenas em conserto
+                  </button>
                 </div>
               </div>
             </div>
@@ -160,6 +184,7 @@
 
       let currentPeriod = 'week';
       let currentView = 'uf';
+      let currentStatusMode = @json($statusMode ?? 'ativos');
       let selectedUf = 'ALL';
       let currentLabels = initialLabels;
       let currentValues = initialValues;
@@ -275,21 +300,21 @@
       const getViewLabels = () => {
         if (currentView === 'uf') {
           return {
-            title: 'Lancamentos por Estado (UF)',
-            dataset: 'Lancamentos por UF',
+            title: 'Lançamentos por Estado (UF)',
+            dataset: 'Lançamentos por UF',
           };
         }
 
         if (currentView === 'total') {
           return {
-            title: 'Totais (Verificados x Nao verificados)',
-            dataset: 'Verificados x Nao verificados',
+            title: 'Totais (Verificados x Não verificados)',
+            dataset: 'Verificados x Não verificados',
           };
         }
 
         return {
           title: 'Cadastros',
-          dataset: 'Patrimonios Cadastrados',
+          dataset: 'Patrimônios Cadastrados',
         };
       };
 
@@ -352,7 +377,7 @@
       };
 
       const fetchCadastros = async (period) => {
-        const res = await fetch(`/dashboard/data?period=${encodeURIComponent(period)}`, {
+        const res = await fetch(`/dashboard/data?period=${encodeURIComponent(period)}&status_mode=${encodeURIComponent(currentStatusMode)}`, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         if (!res.ok) throw new Error('Erro ao buscar cadastros');
@@ -361,7 +386,7 @@
       };
 
       const fetchUf = async () => {
-        const res = await fetch(`/dashboard/uf-data`, {
+        const res = await fetch(`/dashboard/uf-data?status_mode=${encodeURIComponent(currentStatusMode)}`, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         if (!res.ok) throw new Error('Erro ao buscar UFs');
@@ -370,7 +395,7 @@
       };
 
       const fetchTotal = async () => {
-        const res = await fetch(`/dashboard/total-data`, {
+        const res = await fetch(`/dashboard/total-data?status_mode=${encodeURIComponent(currentStatusMode)}`, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         if (!res.ok) throw new Error('Erro ao buscar totais');
@@ -409,6 +434,7 @@
 
       const viewButtons = Array.from(document.querySelectorAll('.view-btn'));
       const periodButtons = Array.from(document.querySelectorAll('.filter-btn'));
+      const statusButtons = Array.from(document.querySelectorAll('.status-btn'));
       const viewButtonStyle = {
         activeClasses: ['bg-plansul-orange', 'text-white', 'shadow-sm'],
         inactiveClasses: ['bg-transparent', 'text-gray-700', 'dark:text-gray-300'],
@@ -416,6 +442,10 @@
       const periodButtonStyle = {
         activeClasses: ['bg-plansul-blue', 'text-white', 'shadow-sm'],
         inactiveClasses: ['bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300'],
+      };
+      const statusButtonStyle = {
+        activeClasses: ['bg-plansul-blue', 'text-white', 'border-plansul-blue', 'shadow-sm'],
+        inactiveClasses: ['bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300', 'border-gray-300', 'dark:border-gray-600'],
       };
 
       viewButtons.forEach(btn => {
@@ -431,6 +461,14 @@
           currentPeriod = btn.getAttribute('data-period') || 'week';
           setActive(periodButtons, btn, periodButtonStyle);
           if (currentView !== 'uf') updateData();
+        });
+      });
+
+      statusButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentStatusMode = btn.getAttribute('data-status') || 'ativos';
+          setActive(statusButtons, btn, statusButtonStyle);
+          updateData();
         });
       });
 
@@ -484,8 +522,10 @@
 
       const defaultViewBtn = document.querySelector('.view-btn[data-view="uf"]');
       const defaultPeriodBtn = document.querySelector('.filter-btn[data-period="week"]');
+      const defaultStatusBtn = document.querySelector(`.status-btn[data-status="${currentStatusMode}"]`) || document.querySelector('.status-btn[data-status="ativos"]');
       setActive(viewButtons, defaultViewBtn, viewButtonStyle);
       setActive(periodButtons, defaultPeriodBtn, periodButtonStyle);
+      setActive(statusButtons, defaultStatusBtn, statusButtonStyle);
 
       updateData();
     });

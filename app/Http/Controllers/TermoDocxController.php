@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Models\LocalProjeto;
+use App\Models\Tabfant;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -246,17 +248,10 @@ class TermoDocxController extends Controller
         $primeiroPatrimonio = $items->first();
         
         // Valores padrão
-        $uf = config('app.uf', 'PR'); // Padrão (fallback)
-        
-        // Tentar extrair UF do primeiro patrimônio
-        if ($primeiroPatrimonio && $primeiroPatrimonio->localProjeto && $primeiroPatrimonio->localProjeto->projeto) {
-            $projeto = $primeiroPatrimonio->localProjeto->projeto;
-            $ufDoProjeto = $projeto->UF ?? null;
-            
-            // Se encontrar UF definida no projeto, usar
-            if (!empty($ufDoProjeto)) {
-                $uf = $ufDoProjeto;
-            }
+        $uf = config('app.uf', 'SC'); // fallback seguro para evitar "Paraná" indevido
+        $ufResolvida = $this->resolverUfDoPatrimonio($primeiroPatrimonio);
+        if (!empty($ufResolvida)) {
+            $uf = $ufResolvida;
         }
 
         // Converter sigla para nome completo
@@ -271,6 +266,61 @@ class TermoDocxController extends Controller
         $template->setValue('uf', $ufCompleta); // Usar nome completo
         $template->setValue('sigla_uf', ''); // Limpar sigla
         $template->setValue('estado', $ufCompleta); // Compatibilidade
+    }
+
+    /**
+     * Resolve UF de forma determinística:
+     * 1) patr.UF
+     * 2) projeto direto (CDPROJETO)
+     * 3) local+projeto (CDLOCAL + CDPROJETO)
+     * 4) local por código (CDLOCAL)
+     */
+    private function resolverUfDoPatrimonio($patrimonio): ?string
+    {
+        if (!$patrimonio) {
+            return null;
+        }
+
+        $ufDireta = strtoupper(trim((string) ($patrimonio->UF ?? '')));
+        if ($ufDireta !== '') {
+            return $ufDireta;
+        }
+
+        $cdProjeto = trim((string) ($patrimonio->CDPROJETO ?? ''));
+        if ($cdProjeto !== '') {
+            $projetoDireto = Tabfant::where('CDPROJETO', $cdProjeto)->first(['UF']);
+            $ufProjetoDireto = strtoupper(trim((string) ($projetoDireto->UF ?? '')));
+            if ($ufProjetoDireto !== '') {
+                return $ufProjetoDireto;
+            }
+        }
+
+        $cdLocal = trim((string) ($patrimonio->CDLOCAL ?? ''));
+        if ($cdLocal === '') {
+            return null;
+        }
+
+        $query = LocalProjeto::query();
+        if ($cdProjeto !== '') {
+            $query->whereHas('projeto', function ($q) use ($cdProjeto) {
+                $q->where('CDPROJETO', $cdProjeto);
+            });
+        }
+        $local = $query->where('cdlocal', $cdLocal)->with('projeto')->first();
+        if (!$local) {
+            $local = LocalProjeto::where('cdlocal', $cdLocal)->with('projeto')->first();
+        }
+        if (!$local) {
+            return null;
+        }
+
+        $ufLocal = strtoupper(trim((string) ($local->UF ?? '')));
+        if ($ufLocal !== '') {
+            return $ufLocal;
+        }
+
+        $ufProjetoLocal = strtoupper(trim((string) ($local->projeto->UF ?? '')));
+        return $ufProjetoLocal !== '' ? $ufProjetoLocal : null;
     }
 
     /**
@@ -344,6 +394,9 @@ class TermoDocxController extends Controller
                 $itemName = !empty($item->DEPATRIMONIO) 
                     ? $item->DEPATRIMONIO 
                     : ($item->MARCA ?? 'Item sem descrição');
+                if (!empty($item->NUPATRIMONIO)) {
+                    $itemName = "PAT {$item->NUPATRIMONIO} - {$itemName}";
+                }
                 
                 if (!empty($item->MODELO)) {
                     $itemName .= " - {$item->MODELO}";

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 class HomeController extends Controller
 {
     /**
-     * Create a new controller instance.
+     * Cria uma nova instância do controller.
      *
      * @return void
      */
@@ -17,7 +17,7 @@ class HomeController extends Controller
     }
 
     /**
-     * Show the application dashboard.
+     * Exibe o painel principal da aplicação.
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */

@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-2xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Solicitações de Bens') }}
@@ -10,7 +10,7 @@
         data-confirm-url="{{ route('solicitacoes-bens.confirm', ['solicitacao' => '__ID__']) }}"
         data-approve-url="{{ route('solicitacoes-bens.approve', ['solicitacao' => '__ID__']) }}"
         data-cancel-url="{{ route('solicitacoes-bens.cancel', ['solicitacao' => '__ID__']) }}">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="w-full sm:px-6 lg:px-8">
             @if(session('success'))
                 <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert">
                     <span class="font-semibold">Sucesso:</span> {{ session('success') }}
@@ -29,49 +29,40 @@
 
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <div class="flex flex-col gap-4 mb-6">
-                        <div x-data="{ open: false }" class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-                            <div class="flex justify-between items-center">
-                                <h3 class="font-semibold text-lg">Filtros de Busca</h3>
-                                <button type="button" @click="open = !open" aria-expanded="open" aria-controls="filtros-solicitacoes-bens" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                    <span class="sr-only">Expandir filtros</span>
-                                </button>
-                            </div>
-                            <div x-show="open" x-transition class="mt-4" style="display: none;">
-                                <form method="GET" action="{{ route('solicitacoes-bens.index') }}" id="filtros-solicitacoes-bens" class="grid gap-4 md:grid-cols-5 items-end">
-                                    <div class="md:col-span-2">
-                                        <x-input-label for="search" value="Buscar" />
-                                        <x-text-input id="search" name="search" type="text" class="mt-1 block w-full" value="{{ request('search') }}" placeholder="Nome, matricula, setor, local" />
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="w-1/2">
+                            <div class="flex flex-col gap-1">
+                                <template x-if="tags.length > 0">
+                                    <div class="flex flex-wrap items-center gap-2 mb-3">
+                                        <template x-for="(tag, idx) in tags" :key="tag">
+                                            <span class="inline-flex items-center px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold mr-1">
+                                                <span x-text="tag"></span>
+                                                <button type="button" @click="removeTag(idx)" class="ml-1 text-indigo-500 hover:text-red-500 focus:outline-none">&times;</button>
+                                            </span>
+                                        </template>
                                     </div>
-                                    <div>
-                                        <x-input-label for="status" value="Status" />
-                                        <select id="status" name="status" class="input-base mt-1 block w-full">
-                                            <option value="">Todos</option>
-                                            @foreach($statusOptions as $status)
-                                                <option value="{{ $status }}" @selected(request('status') === $status)>{{ $status }}</option>
-                                            @endforeach
-                                        </select>
+                                </template>
+                                <input
+                                    x-model="inputValue"
+                                    @keydown.enter.prevent="addTag()"
+                                    @keydown.tab.prevent="addTag()"
+                                    @keydown.backspace="removeLastTag()"
+                                    type="text"
+                                    placeholder="Buscar..."
+                                    :style="'width:' + Math.max(120, inputValue.length * 10) + 'px'"
+                                    class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 rounded-md shadow-sm transition-all duration-200">
+                                <template x-if="inputValue.length > 0">
+                                    <div class="w-full mt-1">
+                                        <div class="text-[11px] text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded px-2 py-1 shadow-sm text-left">
+                                            <template x-if="tags.length === 0">
+                                                <span>Pressione <kbd class="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600 text-[10px]">Enter</kbd> para criar uma <span class="font-semibold text-indigo-600">tag</span> e refinar a busca.</span>
+                                            </template>
+                                            <template x-if="tags.length > 0">
+                                                <span>Para apagar uma tag, apague todo o texto do input ou clique no <span class="text-red-500 font-bold">&times;</span> da tag.</span>
+                                            </template>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <x-input-label for="uf" value="UF" />
-                                        <x-text-input id="uf" name="uf" type="text" maxlength="2" class="mt-1 block w-full uppercase" value="{{ request('uf') }}" placeholder="UF" />
-                                    </div>
-                                    <div>
-                                        <x-input-label for="per_page" value="Itens por pagina" />
-                                        <select id="per_page" name="per_page" class="input-base mt-1 block w-full">
-                                            @foreach([10, 30, 50, 100, 200] as $opt)
-                                                <option value="{{ $opt }}" @selected((int) request('per_page', 30) === $opt)>{{ $opt }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="md:col-span-5 flex items-center gap-3">
-                                        <x-primary-button class="h-10 px-4">Filtrar</x-primary-button>
-                                        <a href="{{ route('solicitacoes-bens.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">Limpar</a>
-                                    </div>
-                                </form>
+                                </template>
                             </div>
                         </div>
 
@@ -81,12 +72,10 @@
                             $canCreateSolicitacao = $isAdmin || ($userForCreate?->temAcessoTela('1013') ?? false);
                         @endphp
                         @if($canCreateSolicitacao)
-                            <div>
-                                <button type="button" @click="openCreateModal()" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
-                                    <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
-                                    <span>Nova solicitação</span>
-                                </button>
-                            </div>
+                            <button type="button" @click="openCreateModal()" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+                                <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
+                                <span>Nova solicitacao</span>
+                            </button>
                         @endif
                     </div>
 
@@ -104,40 +93,44 @@
                         $currentUserId = $currentUser?->getAuthIdentifier();
                         $currentUserMatricula = trim((string) ($currentUser?->CDMATRFUNCIONARIO ?? ''));
                         $isAdminUser = $currentUser?->isAdmin() ?? false;
+                        $currentSort = $sort ?? request('sort', 'created_at');
+                        $currentDirection = $direction ?? request('direction', 'desc');
+                        $nextDirection = fn ($col) => ($currentSort === $col && $currentDirection === 'asc') ? 'desc' : 'asc';
+                        $sortMark = fn ($col) => ($currentSort === $col) ? ($currentDirection === 'asc' ? '^' : 'v') : '-';
                     @endphp
 
                     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
-                                    <th class="px-4 py-3">Número</th>
-                                    <th class="px-4 py-3">Solicitante</th>
-                                    <th class="px-4 py-3">Setor</th>
-                                    <th class="px-4 py-3">Local destino</th>
-                                    <th class="px-4 py-3">UF</th>
-                                    <th class="px-4 py-3">Status</th>
-                                    <th class="px-4 py-3">Itens</th>
-                                    <th class="px-4 py-3">Criado</th>
-                                    <th class="px-4 py-3">Ações</th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'id', 'direction' => $nextDirection('id'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Número <span class="text-[10px]">{{ $sortMark('id') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'solicitante', 'direction' => $nextDirection('solicitante'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Solicitante <span class="text-[10px]">{{ $sortMark('solicitante') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'setor', 'direction' => $nextDirection('setor'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Setor <span class="text-[10px]">{{ $sortMark('setor') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'local_destino', 'direction' => $nextDirection('local_destino'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Local destino <span class="text-[10px]">{{ $sortMark('local_destino') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'uf', 'direction' => $nextDirection('uf'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">UF <span class="text-[10px]">{{ $sortMark('uf') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'status', 'direction' => $nextDirection('status'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Status <span class="text-[10px]">{{ $sortMark('status') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'itens', 'direction' => $nextDirection('itens'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Itens <span class="text-[10px]">{{ $sortMark('itens') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'created_at', 'direction' => $nextDirection('created_at'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Criado <span class="text-[10px]">{{ $sortMark('created_at') }}</span></a></th>
+                                    <th class="px-4 py-2">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($solicitacoes as $solicitacao)
                                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors cursor-pointer" @click="openShowModal({{ $solicitacao->id }})">
-                                        <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white">#{{ $solicitacao->id }}</td>
-                                        <td class="px-4 py-3">
+                                        <td class="px-4 py-2 font-semibold text-gray-900 dark:text-white">#{{ $solicitacao->id }}</td>
+                                        <td class="px-4 py-2">
                                             <div class="text-gray-900 dark:text-gray-100">{{ $solicitacao->solicitante_nome ?? '-' }}</div>
                                             <div class="text-xs text-gray-500">{{ $solicitacao->solicitante_matricula ?? '-' }}</div>
                                         </td>
-                                        <td class="px-4 py-3">{{ $solicitacao->setor ?? '-' }}</td>
-                                        <td class="px-4 py-3">{{ $solicitacao->local_destino ?? '-' }}</td>
-                                        <td class="px-4 py-3">{{ $solicitacao->uf ?? '-' }}</td>
-                                        <td class="px-4 py-3">
+                                        <td class="px-4 py-2">{{ $solicitacao->setor ?? '-' }}</td>
+                                        <td class="px-4 py-2">{{ $solicitacao->local_destino ?? '-' }}</td>
+                                        <td class="px-4 py-2">{{ $solicitacao->uf ?? '-' }}</td>
+                                        <td class="px-4 py-2">
                                             <x-status-badge :status="$solicitacao->status" :color-map="$statusColors" />
                                         </td>
-                                        <td class="px-4 py-3">{{ $solicitacao->itens_count ?? 0 }}</td>
-                                        <td class="px-4 py-3">{{ optional($solicitacao->created_at)->format('d/m/Y H:i') }}</td>
-                                        <td class="px-4 py-3">
+                                        <td class="px-4 py-2">{{ $solicitacao->itens_count ?? 0 }}</td>
+                                        <td class="px-4 py-2">{{ optional($solicitacao->created_at)->format('d/m/Y H:i') }}</td>
+                                        <td class="px-4 py-2">
                                             @php
                                                 $isOwner = $currentUserId
                                                     && (string) $solicitacao->solicitante_id === (string) $currentUserId;
@@ -192,7 +185,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="px-4 py-6 text-center text-gray-500">Nenhuma solicitacao encontrada.</td>
+                                        <td colspan="9" class="px-4 py-3 text-center text-gray-500">Nenhuma solicitacao encontrada.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -630,8 +623,8 @@
                     quantidade: parseInt(item.quantidade, 10) || 1,
                     unidade: item.unidade || '',
                     observacao: item.observacao || '',
-                    patrimonio_busca: item.patrimonio_busca || item.descricao || '',
-                    selecionado: Boolean(item.descricao),
+                    patrimonio_busca: item.patrimonio_busca || item['patrimônio_busca'] || item.descricao || '',
+                    selecionado: Boolean(item.descricao || item.patrimonio_busca || item['patrimônio_busca']),
                 });
 
                 return {
@@ -656,8 +649,8 @@
             }
 
             function projetoSearch(projetosInjected = null) {
-                // Se projetos nao for passado, tenta pegar do global (caso estivesse no script inline)
-                // Mas aqui assumimos que virá via argumento ou usamos a lista global da pagina index
+                // Se projetos não for passado, tenta pegar do global (caso estivesse no script inline)
+                // Mas aqui assumimos que virá via argumento ou usamos a lista global da página index
                 const todasProjetos = projetosInjected || getProjetosFromDataset();
                 
                 return {
@@ -853,10 +846,9 @@
                     },
 
                     onInput() {
-                        this.item.descricao = '';
-                        this.item.selecionado = false;
-
                         const term = (this.item?.patrimonio_busca || '').trim();
+                        this.item.descricao = term;
+                        this.item.selecionado = false;
                         if (term.length < 2) {
                             this.resultados = [];
                             return;
@@ -896,10 +888,11 @@
                     },
 
                     selectResultado(resultado) {
-                        const text = resultado?.text
+                        const descricao = (resultado?.descricao || '').trim()
+                            || (resultado?.text || '').trim()
                             || [resultado?.nupatrimonio, resultado?.descricao].filter(Boolean).join(' - ');
-                        this.item.descricao = text;
-                        this.item.patrimonio_busca = text;
+                        this.item.descricao = descricao;
+                        this.item.patrimonio_busca = descricao;
                         this.item.selecionado = true;
                         
                         // Se tiver peso, preenche automaticamente o campo unidade
@@ -921,6 +914,8 @@
                     confirmUrlBase: '',
                     approveUrlBase: '',
                     cancelUrlBase: '',
+                    tags: [],
+                    inputValue: '',
                     formModalOpen: false,
                     formModalLoading: false,
                     formModalTitle: '',
@@ -935,8 +930,52 @@
                         this.confirmUrlBase = this.$el?.dataset?.confirmUrl || '';
                         this.approveUrlBase = this.$el?.dataset?.approveUrl || '';
                         this.cancelUrlBase = this.$el?.dataset?.cancelUrl || '';
+                        const params = new URLSearchParams(window.location.search);
+                        const multiSearch = params.getAll('search[]');
+                        if (multiSearch.length > 0) {
+                            this.tags = multiSearch.map((t) => t.trim()).filter(Boolean);
+                        } else {
+                            const singleSearch = params.get('search');
+                            if (singleSearch) {
+                                this.tags = singleSearch.split(',').map((t) => t.trim()).filter(Boolean);
+                            }
+                        }
                     },
 
+
+                    addTag() {
+                        const value = this.inputValue.trim();
+                        if (value && !this.tags.includes(value)) {
+                            this.tags.push(value);
+                            this.inputValue = '';
+                            this.applyFilters();
+                        }
+                    },
+
+                    removeTag(index) {
+                        this.tags.splice(index, 1);
+                        this.applyFilters();
+                    },
+
+                    removeLastTag() {
+                        if (!this.inputValue && this.tags.length > 0) {
+                            this.tags.pop();
+                            this.applyFilters();
+                        }
+                    },
+
+                    applyFilters() {
+                        const params = new URLSearchParams(window.location.search);
+                        params.delete('search');
+                        params.delete('search[]');
+
+                        this.tags.forEach((tag) => params.append('search[]', tag));
+                        params.set('page', '1');
+
+                        const query = params.toString();
+                        const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}`;
+                        window.location.href = nextUrl;
+                    },
 
                     csrf() {
                         return document.querySelector('meta[name=csrf-token]')?.content || '';
@@ -1099,16 +1138,46 @@
                         );
                     },
 
+                    renderModalError(targetId, message) {
+                        const target = document.getElementById(targetId);
+                        if (!target) return;
+
+                        const safeMessage = String(message || 'Falha ao salvar solicitacao.')
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/\"/g, '&quot;')
+                            .replace(/'/g, '&#039;');
+                        const html = `
+                            <div class="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-sm" role="alert" data-modal-error="true">
+                                <span class="font-semibold">Erro:</span> ${safeMessage}
+                            </div>
+                        `;
+
+                        const oldError = target.querySelector('[data-modal-error="true"]');
+                        if (oldError) oldError.remove();
+
+                        const form = target.querySelector('form');
+                        if (form && form.parentNode) {
+                            form.insertAdjacentHTML('beforebegin', html);
+                        } else {
+                            target.insertAdjacentHTML('afterbegin', html);
+                        }
+                    },
+
                     async submitModalForm(form, targetId) {
                         if (!form) return;
-                        
-                        // Fechar modal imediatamente ao submeter
-                        this.closeFormModal();
-                        this.closeShowModal();
-                        
-                        // Mostrar loading (reutilizar o loading do show modal)
-                        this.showModalLoading = true;
-                        
+
+                        const isFormModal = targetId === 'solicitacao-form-modal-body';
+                        let keepLoadingUntilNavigate = false;
+                        if (isFormModal) {
+                            this.formModalOpen = true;
+                            this.formModalLoading = true;
+                        } else {
+                            this.showModalOpen = true;
+                            this.showModalLoading = true;
+                        }
+
                         const formData = new FormData(form);
                         const method = (form.getAttribute('method') || 'POST').toUpperCase();
 
@@ -1118,53 +1187,55 @@
                                 body: formData,
                                 headers: {
                                     'X-Requested-With': 'XMLHttpRequest',
-                                    'Accept': 'text/html', // Prefer HTML for errors, JSON for success handled by content-type check
+                                    'Accept': 'application/json, text/html',
                                 },
                             });
-                            
+
                             const contentType = resp.headers.get('content-type') || '';
                             const responseText = await resp.text();
 
-                            // Se for JSON (sucesso explícito)
                             if (contentType.includes('application/json')) {
+                                let data = {};
                                 try {
-                                    const data = JSON.parse(responseText);
-                                    if (data.redirect) {
-                                        window.location.href = data.redirect;
-                                        return;
-                                    }
-                                    if (data.success) {
-                                        // Sucesso sem redirect: reload page
-                                        window.location.reload();
-                                        return;
-                                    }
+                                    data = JSON.parse(responseText);
                                 } catch (e) {
                                     console.warn('Resposta JSON invalida', e);
+                                    this.renderModalError(targetId, 'Resposta invalida do servidor.');
+                                    return;
                                 }
+
+                                if (data.redirect) {
+                                    keepLoadingUntilNavigate = true;
+                                    window.location.href = data.redirect;
+                                    return;
+                                }
+                                if (data.success) {
+                                    keepLoadingUntilNavigate = true;
+                                    window.location.reload();
+                                    return;
+                                }
+
+                                const errorMessage = data.message
+                                    || Object.values(data.errors || {})?.[0]?.[0]
+                                    || 'Falha ao salvar solicitacao.';
+                                this.renderModalError(targetId, errorMessage);
+                                return;
                             }
 
-                            // Se chegou aqui, é HTML.
-                            // Pode ser erro de validação (422) ou sucesso com redirect seguido (200 com HTML).
-                            // Se for sucesso (200 OK) e HTML, pode ser que o controller redirecionou para INDEX ou SHOW page.
-                            // Mas se estamos num modal, não queremos renderizar a INDEX inteira dentro do modal.
-                            // ASSUNÇÃO: Se retornou HTML, é porque deu erro de validação e o Laravel redirecionou 'back' (para a URL do modal).
-                            
-                            // Se tiver erro, reabrir o modal
-                            this.showModalLoading = false;
-                            this.formModalOpen = true;
-                            this.formModalLoading = false;
-                            
                             const target = document.getElementById(targetId);
                             if (target) {
-                                renderSolicitacaoModalContent(responseText, target);
+                                const selector = isFormModal
+                                    ? '#solicitacao-form-modal-body'
+                                    : '[data-solicitacao-modal-content]';
+                                const htmlToRender = extractModalHtml(responseText, selector);
+                                renderSolicitacaoModalContent(htmlToRender || responseText, target);
                                 if (window.Alpine && typeof window.Alpine.initTree === 'function') {
                                     window.Alpine.initTree(target);
                                 }
-                                // Rebind handlers no novo HTML
                                 bindSolicitacaoModalHandlers(
                                     target,
                                     () => {
-                                        if (targetId === 'solicitacao-form-modal-body') this.closeFormModal();
+                                        if (isFormModal) this.closeFormModal();
                                         else this.closeShowModal();
                                     },
                                     (f) => this.submitModalForm(f, targetId)
@@ -1172,11 +1243,16 @@
                             }
                         } catch (err) {
                             console.error('[SOLICITACAO] Modal submit error', err);
-                            console.log('Error details:', err.message);
-                            this.showModalLoading = false;
-                            alert('Falha ao salvar solicitacao. Verifique sua conexao.');
+                            this.renderModalError(targetId, 'Falha ao salvar solicitacao. Verifique sua conexão.');
                         } finally {
-                            // Não fazer nada aqui pois já controlamos acima
+                            if (keepLoadingUntilNavigate) {
+                                return;
+                            }
+                            if (isFormModal) {
+                                this.formModalLoading = false;
+                            } else {
+                                this.showModalLoading = false;
+                            }
                         }
                     },
 
@@ -1226,3 +1302,6 @@
         </script>
     @endpush
 </x-app-layout>
+
+
+

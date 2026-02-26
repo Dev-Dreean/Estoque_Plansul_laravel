@@ -12,11 +12,21 @@ use Illuminate\Support\Facades\Log;
 class ProjetoController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Listar os locais/projetos.
      */
     public function index(Request $request)
     {
-        $searchTerm = trim((string) $request->input('search', ''));
+        $searchInput = $request->input('search', $request->input('busca', ''));
+        $searchTerms = [];
+        if (is_array($searchInput)) {
+            $searchTerms = array_values(array_filter(array_map(static fn ($v) => trim((string) $v), $searchInput)));
+        } else {
+            $single = trim((string) $searchInput);
+            if ($single !== '') {
+                $searchTerms = preg_split('/[\s,|]+/', $single, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+            }
+        }
+        $searchTerm = implode(' ', $searchTerms);
 
         // Buscar TODOS os locais com relacionamento
         $query = LocalProjeto::with('projeto')
@@ -45,8 +55,36 @@ class ProjetoController extends Controller
         );
 
         // Paginar manualmente - MANTER OS DADOS MAPEADOS, NÃO DESCARTAR!
+        $sortableColumns = ['cdlocal', 'delocal', 'projeto_nome', 'projeto_codigo'];
+        $sort = strtolower((string) $request->input('sort', 'delocal'));
+        if (!in_array($sort, $sortableColumns, true)) {
+            $sort = 'delocal';
+        }
+        $direction = strtolower((string) $request->input('direction', 'asc'));
+        if (!in_array($direction, ['asc', 'desc'], true)) {
+            $direction = 'asc';
+        }
+
+        usort($filtrados, function (array $a, array $b) use ($sort, $direction): int {
+            $av = $a[$sort] ?? '';
+            $bv = $b[$sort] ?? '';
+            $isNumericSort = in_array($sort, ['cdlocal', 'projeto_codigo'], true);
+
+            if ($isNumericSort) {
+                $cmp = ((int) $av) <=> ((int) $bv);
+            } else {
+                $cmp = strcasecmp((string) $av, (string) $bv);
+            }
+
+            if ($cmp === 0) {
+                $cmp = strcasecmp((string) ($a['delocal'] ?? ''), (string) ($b['delocal'] ?? ''));
+            }
+
+            return $direction === 'desc' ? -$cmp : $cmp;
+        });
+
         $page = (int) $request->input('page', 1);
-        $perPage = 15;
+        $perPage = 30;
         $total = count($filtrados);
         $paginada = collect($filtrados)->slice(($page - 1) * $perPage, $perPage)->values()->toArray();
 
@@ -76,14 +114,22 @@ class ProjetoController extends Controller
         }
 
         if ($request->ajax()) {
-            return view('projetos._table_partial', ['locais' => $locais])->render();
+            return view('projetos._table_partial', [
+                'locais' => $locais,
+                'sort' => $sort,
+                'direction' => $direction,
+            ])->render();
         }
 
-        return view('projetos.index', ['locais' => $locais]);
+        return view('projetos.index', [
+            'locais' => $locais,
+            'sort' => $sort,
+            'direction' => $direction,
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Exibir formulário de criação de local.
      */
     public function create()
     {
@@ -93,7 +139,7 @@ class ProjetoController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Armazenar novo registro de local.
      */
     public function store(Request $request)
     {
@@ -124,7 +170,7 @@ class ProjetoController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Exibir o local especificado.
      * Este método pode ser usado para uma página de detalhes, se necessário.
      */
     public function show(LocalProjeto $local)
@@ -134,7 +180,7 @@ class ProjetoController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Exibir formulário de edição do local.
      */
     public function edit(LocalProjeto $projeto) // O Laravel vai injetar o LocalProjeto aqui
     {
@@ -146,7 +192,7 @@ class ProjetoController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Atualizar o registro do local.
      */
     public function update(Request $request, LocalProjeto $projeto)
     {
@@ -179,7 +225,7 @@ class ProjetoController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remover o local do armazenamento.
      */
     public function destroy(Request $request, LocalProjeto $projeto)
     {
@@ -197,7 +243,7 @@ class ProjetoController extends Controller
     }
 
     /**
-     * Delete multiple locals at once
+     * Deletar múltiplos locais de uma vez.
      */
     public function deleteMultiple(Request $request)
     {
@@ -379,5 +425,3 @@ class ProjetoController extends Controller
         }
     }
 }
-
-

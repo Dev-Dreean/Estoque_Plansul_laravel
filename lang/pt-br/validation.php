@@ -173,6 +173,14 @@ return [
         'MODELO' => 'Modelo',
         'DTAQUISICAO' => 'Data de Aquisição',
         'DTBAIXA' => 'Data de Baixa',
+
+        // Solicitações de bens
+        'tracking_code' => 'Código de rastreio',
+        'destination_type' => 'Tipo de destino',
+        'recebedor_matricula' => 'Matrícula do recebedor',
+        'solicitante_nome' => 'Nome do solicitante',
+        'justificativa' => 'Justificativa',
+        'observacoes' => 'Observações',
     ],
 
 ];

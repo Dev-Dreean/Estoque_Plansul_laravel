@@ -24,9 +24,9 @@
 
           @if(($setupMissing ?? false) === true)
           <div class="mb-6 p-4 rounded-lg bg-surface border border-app border-l-4 text-app" style="border-left-color: var(--warn);">
-            <div class="font-semibold">Auditoria de removidos nao instalada</div>
+            <div class="font-semibold">Auditoria de removidos não instalada</div>
             <div class="text-sm mt-1">
-              A tabela <span class="font-mono">registros_removidos</span> ainda nao existe neste banco. Rode: <span class="font-mono">php artisan migrate --path=database/migrations/2025_12_15_000000_create_registros_removidos_table.php</span>.
+              A tabela <span class="font-mono">registros_removidos</span> ainda não existe neste banco. Rode: <span class="font-mono">php artisan migrate --path=database/migrations/2025_12_15_000000_create_registros_removidos_table.php</span>.
             </div>
           </div>
           @endif
@@ -261,7 +261,7 @@
                         @click="proximaPagina()"
                         :disabled="visualizarPagina >= visualizarTotalPaginas"
                         class="px-3 py-2 text-xs sm:text-sm font-semibold rounded-md border border-app bg-surface text-app hover:bg-[var(--surface-2)] disabled:opacity-50 disabled:cursor-not-allowed transition"
-                      >Proxima</button>
+                      >Próxima</button>
                     </div>
                   </div>
                 </div>
@@ -336,7 +336,7 @@
                 Tem certeza que deseja
                 <span class="font-semibold" x-text="acao === 'destroy' ? 'remover definitivamente' : 'restaurar'"></span>
                 o registro "<strong class="text-app" x-text="registroLabel"></strong>"?
-                <span x-show="acao === 'destroy'" x-cloak class="block mt-2 text-xs text-red-600">Esta acao nao pode ser desfeita.</span>
+                <span x-show="acao === 'destroy'" x-cloak class="block mt-2 text-xs text-red-600">Esta ação não pode ser desfeita.</span>
               </p>
 
               <div class="flex gap-3 justify-end">

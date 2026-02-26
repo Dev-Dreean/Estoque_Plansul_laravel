@@ -62,6 +62,9 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "text:check": [
+            "@php scripts/check_ptbr_encoding.php"
         ]
     },
     "extra": {

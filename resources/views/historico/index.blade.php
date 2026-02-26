@@ -193,7 +193,7 @@
                       };
                       $fromOk = $toBool($de);
                       $toOk = $toBool($para);
-                      $fmt = fn ($b) => $b === true ? 'Verificado' : ($b === false ? 'Nao verificado' : '—');
+                      $fmt = fn ($b) => $b === true ? 'Verificado' : ($b === false ? 'Não verificado' : '—');
                       $badgeClass = fn ($b) => $b === true
                         ? 'bg-emerald-100 text-emerald-800 ring-emerald-600/20 dark:bg-emerald-900/30 dark:text-emerald-300'
                         : ($b === false

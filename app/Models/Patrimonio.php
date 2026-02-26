@@ -384,42 +384,39 @@ class Patrimonio extends Model
             $ufs = [$ufs];
         }
 
-        // Regras (alinhadas com o filtro de UF na listagem):
-        // 1) Se patr.UF está preenchido, ela é fonte de verdade.
-        // 2) Só faz fallback (local/projeto) quando patr.UF está NULL/vazia.
-        //
-        // ⚠️ IMPORTANTE: CDLOCAL guarda o campo `locais_projeto.cdlocal` (não `locais_projeto.id`).
-        // ⚠️ IMPORTANTE: CDPROJETO guarda o código `tabfant.CDPROJETO` (não `tabfant.id`).
+        // UF efetiva para evitar vazamento de estado:
+        // 1) projeto direto (CDPROJETO -> tabfant.UF)
+        // 2) projeto do local (alinhado ao CDPROJETO quando existir)
+        // 3) UF do local (também alinhada)
+        // 4) UF armazenada no patrimônio (fallback final)
+        $placeholders = implode(',', array_fill(0, count($ufs), '?'));
+        $effectiveUfSql = "COALESCE(
+            (SELECT UPPER(TRIM(t.UF))
+             FROM tabfant t
+             WHERE t.CDPROJETO = patr.CDPROJETO
+               AND t.UF IS NOT NULL AND TRIM(t.UF) != ''
+             LIMIT 1),
 
-        return $query->where(function ($q) use ($ufs) {
-            // 1) UF diretamente armazenada na tabela patr
-            $q->whereIn('patr.UF', $ufs);
+            (SELECT UPPER(TRIM(t2.UF))
+             FROM locais_projeto l2
+             JOIN tabfant t2 ON t2.id = l2.tabfant_id
+             WHERE l2.cdlocal = patr.CDLOCAL
+               AND (patr.CDPROJETO IS NULL OR TRIM(patr.CDPROJETO) = '' OR t2.CDPROJETO = patr.CDPROJETO)
+               AND t2.UF IS NOT NULL AND TRIM(t2.UF) != ''
+             LIMIT 1),
 
-            // 2) Fallback somente quando patr.UF é NULL ou vazia
-            $q->orWhere(function ($q2) use ($ufs) {
-                $q2->where(function ($q3) {
-                    $q3->whereNull('patr.UF')->orWhere('patr.UF', '');
-                })
-                ->where(function ($q3) use ($ufs) {
-                    // 2a) UF do local (locais_projeto.UF)
-                    $q3->whereIn('patr.CDLOCAL', function ($subquery) use ($ufs) {
-                        $subquery->select('cdlocal')
-                            ->from('locais_projeto')
-                            ->whereNotNull('UF')
-                            ->where('UF', '!=', '')
-                            ->whereIn('UF', $ufs);
-                    })
-                    // 2b) UF do projeto (tabfant.UF)
-                    ->orWhereIn('patr.CDPROJETO', function ($subquery) use ($ufs) {
-                        $subquery->select('CDPROJETO')
-                            ->from('tabfant')
-                            ->whereNotNull('UF')
-                            ->where('UF', '!=', '')
-                            ->whereIn('UF', $ufs);
-                    });
-                });
-            });
-        });
+            (SELECT UPPER(TRIM(l3.UF))
+             FROM locais_projeto l3
+             LEFT JOIN tabfant t3 ON t3.id = l3.tabfant_id
+             WHERE l3.cdlocal = patr.CDLOCAL
+               AND (patr.CDPROJETO IS NULL OR TRIM(patr.CDPROJETO) = '' OR t3.CDPROJETO = patr.CDPROJETO OR t3.CDPROJETO IS NULL)
+               AND l3.UF IS NOT NULL AND TRIM(l3.UF) != ''
+             LIMIT 1),
+
+            NULLIF(UPPER(TRIM(patr.UF)), '')
+        )";
+
+        return $query->whereRaw("{$effectiveUfSql} IN ({$placeholders})", $ufs);
     }
 }
 

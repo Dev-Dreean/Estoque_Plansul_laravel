@@ -23,6 +23,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $query = User::query();
+        $currentUserId = Auth::id();
 
         $search = $request->input('search', $request->input('busca', ''));
         $terms = [];
@@ -47,23 +48,38 @@ class UserController extends Controller
             }
         }
 
-        $usuarios = $query->orderBy('NOMEUSER')->paginate(10);
+        $sortableColumns = ['NOMEUSER', 'NMLOGIN', 'CDMATRFUNCIONARIO', 'UF', 'PERFIL'];
+        $sort = strtoupper((string) $request->input('sort', 'NOMEUSER'));
+        if (!in_array($sort, $sortableColumns, true)) {
+            $sort = 'NOMEUSER';
+        }
+        $direction = strtolower((string) $request->input('direction', 'asc'));
+        if (!in_array($direction, ['asc', 'desc'], true)) {
+            $direction = 'asc';
+        }
+
+        if ($currentUserId) {
+            $query->orderByRaw('CASE WHEN NUSEQUSUARIO = ? THEN 0 ELSE 1 END', [$currentUserId]);
+        }
+        $query->orderBy($sort, $direction)->orderBy('NOMEUSER');
+
+        $usuarios = $query->paginate(30)->withQueryString();
 
         // Se requisição é AJAX com api=1, retorna JSON com HTML das linhas
         if ($request->has('api') && $request->input('api') === '1') {
-            $html = view('usuarios._table_rows_usuarios', compact('usuarios'))->render();
+            $html = view('usuarios._table_rows_usuarios', compact('usuarios', 'currentUserId'))->render();
             return response()->json(['html' => $html]);
         }
 
         if ($request->ajax()) {
-            return view('usuarios._table_partial', compact('usuarios'))->render();
+            return view('usuarios._table_partial', compact('usuarios', 'currentUserId', 'sort', 'direction'))->render();
         }
-        return view('usuarios.index', compact('usuarios'));
+        return view('usuarios.index', compact('usuarios', 'currentUserId', 'sort', 'direction'));
     }
 
     /**
-     * Impersonate another user (developer/admin helper).
-     * Allowed only in local environment or for admins.
+     * Personificar outro usuário (ferramenta dev/admin).
+     * Permitido apenas em ambiente local ou para administradores.
      */
     public function impersonate(User $usuario)
     {
@@ -73,84 +89,75 @@ class UserController extends Controller
             abort(403);
         }
 
-        Log::info('Impersonation requested', [
-            'by_login' => $me->NMLOGIN ?? null,
-            'by_id' => $me->NUSEQUSUARIO ?? null,
-            'target_login' => $usuario->NMLOGIN ?? null,
-            'target_id' => $usuario->NUSEQUSUARIO ?? null,
-            'env' => app()->environment(),
-            'session_before' => session()->all(),
+        Log::info('[PERSONIFICACAO] Solicitada', [
+            'por_login' => $me->NMLOGIN ?? null,
+            'por_id' => $me->NUSEQUSUARIO ?? null,
+            'alvo_login' => $usuario->NMLOGIN ?? null,
+            'alvo_id' => $usuario->NUSEQUSUARIO ?? null,
+            'ambiente' => app()->environment(),
         ]);
 
-        // Store original user id so we can restore and mark impersonation active
+        // Armazenar ID do usuário original para restauração
         session([
             'impersonator_id' => $me->NUSEQUSUARIO,
             'is_impersonating' => true,
         ]);
         Auth::loginUsingId($usuario->NUSEQUSUARIO);
 
-        Log::info('Impersonation started', [
-            'by_login' => $me->NMLOGIN ?? null,
-            'by_id' => $me->NUSEQUSUARIO ?? null,
-            'target_login' => $usuario->NMLOGIN ?? null,
-            'target_id' => $usuario->NUSEQUSUARIO ?? null,
-            'session_after' => session()->all(),
+        Log::info('[PERSONIFICACAO] Iniciada', [
+            'por_login' => $me->NMLOGIN ?? null,
+            'alvo_login' => $usuario->NMLOGIN ?? null,
         ]);
 
         return redirect()->route('patrimonios.index')->with('success', "Agora você está como {$usuario->NOMEUSER} ({$usuario->NMLOGIN})");
     }
 
     /**
-     * Stop impersonation and restore original user.
+     * Parar personificação e restaurar usuário original.
      */
     public function stopImpersonate(Request $request)
     {
-        // Log the incoming stop request for debugging
-        Log::info('Impersonation stop requested', [
-            'current_user' => Auth::user()->NMLOGIN ?? null,
-            'current_user_id' => Auth::id(),
-            'session_before' => session()->all(),
-            'request_ip' => $request->ip(),
-            'request_url' => $request->fullUrl(),
+        // Log da solicitação de parada para depuração
+        Log::info('[PERSONIFICACAO] Parada solicitada', [
+            'usuario_atual' => Auth::user()->NMLOGIN ?? null,
+            'usuario_atual_id' => Auth::id(),
         ]);
 
-        // Preferência: read value first, ensure it exists, then clear session keys
+        // Ler valor e verificar existência antes de limpar sessão
         $impId = session()->get('impersonator_id');
         if (!$impId) {
-            Log::warning('Impersonation stop failed: no impersonator_id in session', ['session' => session()->all()]);
+            Log::warning('[PERSONIFICACAO] Falha: sem impersonator_id na sessão');
             abort(403);
         }
 
-        // Clear impersonation flags from session
+        // Limpar flags de personificação da sessão
         session()->forget(['impersonator_id', 'is_impersonating']);
 
-        // Restore original user and regenerate session to avoid fixation
+        // Restaurar usuário original e regenerar sessão
         $original = User::find($impId);
         if (!$original) {
-            Log::error('Impersonation stop failed: original user not found', ['impersonator_id' => $impId]);
+            Log::error('[PERSONIFICACAO] Usuário original não encontrado', ['impersonator_id' => $impId]);
             abort(404, 'Usuário original não encontrado');
         }
 
         Auth::login($original);
-        // regenerate session id and data to be safe
         try {
             session()->regenerate();
         } catch (\Throwable $e) {
-            Log::debug('Session regenerate failed', ['error' => $e->getMessage()]);
+            Log::debug('Falha ao regenerar sessão', ['erro' => $e->getMessage()]);
         }
 
-        Log::info('Impersonation stopped', [
-            'restored_login' => $original->NMLOGIN ?? null,
-            'restored_id' => $original->NUSEQUSUARIO ?? null,
-            'session_after' => session()->all(),
+        Log::info('[PERSONIFICACAO] Finalizada', [
+            'restaurado_login' => $original->NMLOGIN ?? null,
+            'restaurado_id' => $original->NUSEQUSUARIO ?? null,
         ]);
 
-        return redirect()->route('usuarios.index')->with('success', 'Impersonation finalizada. Você voltou à sua conta.');
+        return redirect()->route('usuarios.index')->with('success', 'Personificação finalizada. Você voltou à sua conta.');
     }
 
     /**
-     * Reset a user's password and return a temporary password (JSON).
-     * Allowed only in local environment or for admins.
+     * Resetar senha de um usuário e retornar senha temporária (JSON).
+     * Permitido apenas em ambiente local ou para administradores.
      */
     public function resetSenha(User $usuario)
     {
@@ -595,5 +602,3 @@ class UserController extends Controller
         return !User::where('NMLOGIN', $login)->exists();
     }
 }
-
-

@@ -1,4 +1,4 @@
-@php
+﻿@php
     $isModal = $isModal ?? false;
     $containerClass = $isModal ? 'p-4 sm:p-5' : 'py-12';
     $wrapperClass = $isModal ? 'w-full' : 'max-w-6xl mx-auto sm:px-6 lg:px-8';
@@ -8,10 +8,16 @@
         'CONFIRMADO' => 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-700',
         'CANCELADO' => 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border border-red-200 dark:border-red-700',
     ];
-    $matriculaOld = old('matricula_recebedor', $solicitacao->matricula_recebedor ?? '');
-    $nomeOld = old('nome_recebedor', $solicitacao->nome_recebedor ?? '');
-    $matriculaTrim = trim((string) $matriculaOld);
-    $nomeTrim = trim((string) $nomeOld);
+    $recebedorMatriculaOld = old(
+        'recebedor_matricula',
+        $solicitacao->solicitante_matricula ?? $solicitacao->matricula_recebedor ?? ''
+    );
+    $recebedorNomeOld = old(
+        'nome_recebedor',
+        $solicitacao->solicitante_nome ?? $solicitacao->nome_recebedor ?? ''
+    );
+    $matriculaTrim = trim((string) $recebedorMatriculaOld);
+    $nomeTrim = trim((string) $recebedorNomeOld);
     $lookupOnInit = $nomeTrim === '' && $matriculaTrim !== '';
     if ($matriculaTrim !== '' && $nomeTrim !== '') {
         $recebedorDisplay = $matriculaTrim . ' - ' . $nomeTrim;
@@ -315,100 +321,9 @@
                                             <div class="w-full border-t border-[color:var(--solicitacao-modal-border,#d6dde6)]"></div>
                                         </div>
                                         <div class="relative flex justify-center">
-                                            <span class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] px-2 text-[10px] text-gray-400">Dados de Entrega</span>
+                                            <span class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] px-2 text-[10px] text-gray-400">Controle Interno</span>
                                         </div>
                                     </div>
-
-                                    <!-- Recebedor Info -->
-                                    <div class="space-y-3">
-                                        <div>
-                                            <label for="recebedor_search" class="block text-[10px] font-medium text-gray-700 dark:text-slate-300 mb-1">Responsável Recebedor * <span class="text-red-500">*</span></label>
-                                            <x-user-autocomplete 
-                                                id="recebedor_search"
-                                                name="recebedor_matricula"
-                                                :value="$matriculaOld"
-                                                :initial-display="$recebedorDisplay"
-                                                :lookup-on-init="$lookupOnInit"
-                                                placeholder="Digite matrícula ou nome..."
-                                                class="h-7 text-xs border-gray-300 dark:border-slate-600" />
-                                            <x-input-error :messages="$errors->get('recebedor_matricula')" class="mt-1" />
-                                            <p class="mt-1 text-[9px] text-gray-500 dark:text-gray-400">Obrigatório: Deve ter um responsável para aprovar o envio</p>
-                                        </div>
-
-                                        <div>
-                                            <label for="local_destino_id" class="block text-[10px] font-medium text-gray-700 dark:text-slate-300 mb-1">Local Atualizado</label>
-                                            @php
-                                                $projetoId = $solicitacao->projeto_id;
-                                                $locaisDoProj = $projetoId 
-                                                    ? \App\Models\LocalProjeto::where('tabfant_id', $projetoId)->orderBy('delocal')->get()
-                                                    : collect([]);
-                                                $localAtualId = old('local_destino_id', null);
-                                                $localAtualText = '';
-                                                if ($localAtualId) {
-                                                    $localAtualText = $locaisDoProj->firstWhere('id', $localAtualId)?->delocal ?? '';
-                                                } elseif ($solicitacao->local_destino) {
-                                                    $localAtualText = $solicitacao->local_destino;
-                                                }
-                                            @endphp
-                                            @php
-                                                $locaisOptions = $locaisDoProj->map(function ($local) {
-                                                    return ['id' => $local->id, 'label' => $local->delocal];
-                                                })->values();
-                                            @endphp
-                                            <div class="relative" x-data="{
-                                                localSearch: @js($localAtualText),
-                                                localId: @js($localAtualId),
-                                                options: @js($locaisOptions),
-                                                showLocalDropdown: false,
-                                                filtered() {
-                                                    const term = (this.localSearch || '').toLowerCase();
-                                                    if (!term) return this.options;
-                                                    return this.options.filter(opt => (opt.label || '').toLowerCase().includes(term));
-                                                },
-                                                selectLocal(option) {
-                                                    this.localSearch = option.label;
-                                                    this.localId = option.id;
-                                                    this.showLocalDropdown = false;
-                                                }
-                                            }" @click.outside="showLocalDropdown = false">
-                                                <input type="text"
-                                                    id="local_destino_search"
-                                                    name="local_destino"
-                                                    placeholder="Buscar local..."
-                                                    x-model="localSearch"
-                                                    @focus="showLocalDropdown = true"
-                                                    @input="showLocalDropdown = true; localId = null"
-                                                    @keydown.escape="showLocalDropdown = false"
-                                                    class="block w-full h-7 text-xs border-gray-300 dark:border-slate-600 dark:bg-slate-900/80 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                                                <input type="hidden" id="local_destino_id" name="local_destino_id" x-model="localId" value="{{ $localAtualId }}" />
-                                                <div x-show="showLocalDropdown" x-transition
-                                                    class="absolute z-50 mt-1 w-full rounded-md border border-slate-700 bg-slate-950/95 shadow-xl max-h-48 overflow-y-auto ring-1 ring-slate-700/50">
-                                                    <template x-for="option in filtered()" :key="option.id">
-                                                        <button type="button"
-                                                            @click="selectLocal(option)"
-                                                            class="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-indigo-600/20 focus:outline-none focus:bg-indigo-600/20">
-                                                            <span x-text="option.label"></span>
-                                                        </button>
-                                                    </template>
-                                                    <template x-if="filtered().length === 0">
-                                                        <div class="px-3 py-2 text-xs text-slate-400">
-                                                            Nenhum local encontrado
-                                                        </div>
-                                                    </template>
-                                                </div>
-                                            </div>
-                                            <x-input-error :messages="$errors->get('local_destino_id')" class="mt-1" />
-                                        </div>
-                                    </div>
-
-                                        <div class="relative">
-                                            <div class="absolute inset-0 flex items-center" aria-hidden="true">
-                                                <div class="w-full border-t border-[color:var(--solicitacao-modal-border,#d6dde6)]"></div>
-                                            </div>
-                                            <div class="relative flex justify-center">
-                                                <span class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] px-2 text-[10px] text-gray-400">Controle</span>
-                                            </div>
-                                        </div>
 
                                         <!-- Controle Interno -->
                                         <div>
@@ -424,13 +339,13 @@
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                                                 </svg>
-                                                Salvar Alterações
+                                                Salvar Notas
                                             </button>
                                         </div>
                                     </form>
                                 @else
                                 <div class="rounded-lg border border-dashed border-slate-600/60 bg-slate-900/60 px-3 py-2 text-[11px] text-slate-400">
-                                    Sem permissão para atualizar dados de entrega.
+                                    Sem permissão para atualizar notas internas.
                                 </div>
                                 @endif
                             </div>
@@ -456,14 +371,14 @@
                                 @method('POST')
                                 
                                 <div>
-                                    <label for="confirm_recebedor_search" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Responsavel Recebedor *</label>
+                                    <label for="confirm_recebedor_search" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Responsável Recebedor *</label>
                                     <x-user-autocomplete
                                         id="confirm_recebedor_search"
                                         name="recebedor_matricula"
-                                        :value="$matriculaOld"
+                                        :value="$recebedorMatriculaOld"
                                         :initial-display="$recebedorDisplay"
                                         :lookup-on-init="$lookupOnInit"
-                                        placeholder="Digite matricula ou nome..."
+                                        placeholder="Digite matrícula ou nome..."
                                         class="h-8 text-xs border-gray-300 dark:border-gray-600" />
                                     <x-input-error :messages="$errors->get('recebedor_matricula')" class="mt-1" />
                                 </div>
@@ -474,7 +389,7 @@
                                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
                                         placeholder="Ex: RAS-2025-001" />
                                 </div>
-<div class="flex gap-2 pt-4">
+                                <div class="flex gap-2 pt-4">
                                     <button type="button" @click="showConfirmModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
                                     </button>
@@ -607,9 +522,12 @@
                 <div class="p-6 overflow-x-auto" x-show="openSection === 'history'" x-transition.duration.300ms>
                     @php
                         // Dados do histórico - ORDENADO CRONOLOGICAMENTE
-                        $historicoStatus = $solicitacao->historicoStatus
-                            ? $solicitacao->historicoStatus->sortBy('created_at')
-                            : collect();
+                        $historicoStatus = collect();
+                        if (\Illuminate\Support\Facades\Schema::hasTable('solicitacoes_bens_status_historico')) {
+                            $historicoStatus = $solicitacao->historicoStatus
+                                ? $solicitacao->historicoStatus->sortBy('created_at')
+                                : collect();
+                        }
 
                         $statusAtual = $solicitacao->status;
                         

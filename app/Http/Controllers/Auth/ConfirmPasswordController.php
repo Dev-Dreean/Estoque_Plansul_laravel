@@ -3,32 +3,36 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\ConfirmsPasswords;
+use Illuminate\Http\Request;
 
+/**
+ * Controller legado de confirmação de senha.
+ *
+ * NÃO UTILIZADO — as rotas de autenticação usam ConfirmablePasswordController (Breeze).
+ * Mantido apenas como referência; pode ser removido em limpeza futura.
+ */
 class ConfirmPasswordController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | Confirm Password Controller
+    | Controller de Confirmação de Senha (legado)
     |--------------------------------------------------------------------------
     |
-    | This controller is responsible for handling password confirmations and
-    | uses a simple trait to include the behavior. You're free to explore
-    | this trait and override any functions that require customization.
+    | Este controller era responsável por lidar com confirmações de senha
+    | via trait do pacote laravel/ui (removido no Laravel 11).
+    | As rotas atuais usam ConfirmablePasswordController (Breeze).
     |
     */
 
-    use ConfirmsPasswords;
-
     /**
-     * Where to redirect users when the intended url fails.
+     * Para onde redirecionar usuários quando a URL pretendida falhar.
      *
      * @var string
      */
     protected $redirectTo = '/home';
 
     /**
-     * Create a new controller instance.
+     * Cria uma nova instância do controller.
      *
      * @return void
      */

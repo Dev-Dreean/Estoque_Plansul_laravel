@@ -108,8 +108,8 @@
 
                         <!-- Observação -->
                         <div>
-                            <label for="Observação" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
-                            <textarea id="Observação" name="Observação" 
+                            <label for="observacao" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
+                            <textarea id="observacao" name="observacao" 
                                 class="block w-full text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" 
                                 rows="2" placeholder="Digite suas observações...">{{ old('observacao') }}</textarea>
                             <x-input-error :messages="$errors->get('observacao')" class="mt-1" />
@@ -128,26 +128,26 @@
                     <!-- SEÇÃO 2: Item Solicitado -->
                     <div x-show="step === 2" class="space-y-3">
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">Item Solicitado</h3>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">Digite 2+ caracteres para buscar no estoque disponível.</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">Informe a descrição do item. Se quiser, use a busca para sugestão.</p>
 
                         <div class="border-2 border-indigo-500 dark:border-indigo-400 rounded-lg p-4 bg-white dark:bg-gray-800 space-y-3 shadow-sm" 
-                            x-data="patrimônioSearch(item)" @click.away="closeResults">
+                            x-data="patrimonioSearch(item)" @click.away="closeResults">
 
-                            <!-- Busca de Patrimônio -->
+                            <!-- Busca de Item -->
                             <div>
-                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Patrimônio / Descrição *</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Item / Descrição *</label>
                                 <div class="relative">
                                     <input type="text"
                                         class="w-full h-8 text-xs px-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                        name="itens[0][patrimônio_busca]"
-                                        x-model.trim="item.patrimônio_busca"
+                                        name="itens[0][patrimonio_busca]"
+                                        x-model.trim="item.patrimonio_busca"
                                         @input.debounce.300ms="onInput"
                                         @focus="openResults"
                                         @keydown.escape.prevent="closeResults"
-                                        placeholder="Digite número ou descrição..."
+                                        placeholder="Digite a descrição do item..."
                                         autocomplete="off"
                                     />
-                                    <input type="hidden" name="itens[0][descricao]" :value="item?.descricao || ''" />
+                                    <input type="hidden" name="itens[0][descricao]" :value="(item?.descricao || item?.patrimonio_busca || '').trim()" />
                                     
                                     <!-- Dropdown de resultados -->
                                     <div x-cloak x-show="dropdownOpen" x-transition

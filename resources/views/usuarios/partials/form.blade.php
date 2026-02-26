@@ -90,7 +90,7 @@
             <option value="ADM" @selected(old('PERFIL', $usuario->PERFIL ?? '' )=='ADM' )>Administrador</option>
         </select>
         <p class="text-xs text-gray-500 mt-1">
-            <span x-show="perfil === 'USR'">Usuario com acesso definido pelas telas liberadas.</span>
+            <span x-show="perfil === 'USR'">Usuário com acesso definido pelas telas liberadas.</span>
             <span x-show="perfil === 'C'">Consultor com acesso definido pelas telas liberadas (somente leitura).</span>
             <span x-show="perfil === 'ADM'">Administrador com acesso a todas as telas.</span>
         </p>

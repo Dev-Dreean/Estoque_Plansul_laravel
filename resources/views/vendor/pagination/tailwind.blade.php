@@ -1,5 +1,5 @@
 @if ($paginator->hasPages())
-    <nav role="navigation" aria-label="{{ __('Pagination Navigation') }}" class="flex items-center justify-between text-app">
+    <nav role="navigation" aria-label="{{ __('Navegação de Páginas') }}" class="flex items-center justify-between text-app">
         <div class="flex justify-between flex-1 sm:hidden">
             @if ($paginator->onFirstPage())
                 <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-muted bg-surface border border-app cursor-default leading-5 rounded-md">
@@ -25,17 +25,17 @@
         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
                 <p class="text-sm text-muted leading-5">
-                    {!! __('Showing') !!}
+                    {!! __('Mostrando') !!}
                     @if ($paginator->firstItem())
                         <span class="font-medium text-app">{{ $paginator->firstItem() }}</span>
-                        {!! __('to') !!}
+                        {!! __('até') !!}
                         <span class="font-medium text-app">{{ $paginator->lastItem() }}</span>
                     @else
                         <span class="font-medium text-app">{{ $paginator->count() }}</span>
                     @endif
-                    {!! __('of') !!}
+                    {!! __('de') !!}
                     <span class="font-medium text-app">{{ $paginator->total() }}</span>
-                    {!! __('results') !!}
+                    {!! __('resultados') !!}
                 </p>
             </div>
 
@@ -75,7 +75,7 @@
                                         <span class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-semibold text-white border accent-bg accent-border cursor-default leading-5">{{ $page }}</span>
                                     </span>
                                 @else
-                                    <a href="{{ $url }}" class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-app bg-surface border border-app leading-5 hover:bg-[var(--surface-2)] focus:z-10 focus:outline-none focus:ring ring-app transition ease-in-out duration-150" aria-label="{{ __('Go to page :page', ['page' => $page]) }}">
+                                    <a href="{{ $url }}" class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-app bg-surface border border-app leading-5 hover:bg-[var(--surface-2)] focus:z-10 focus:outline-none focus:ring ring-app transition ease-in-out duration-150" aria-label="{{ __('Ir para página :page', ['page' => $page]) }}">
                                         {{ $page }}
                                     </a>
                                 @endif

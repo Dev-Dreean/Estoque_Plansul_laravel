@@ -23,9 +23,9 @@
 
           <p class="mb-4">
             @if($user && ($user->must_change_password ?? false))
-            Este e seu primeiro acesso. Defina uma nova senha.
+            Este é seu primeiro acesso. Defina uma nova senha.
             @else
-            Percebemos que seu cadastro esta incompleto.
+            Percebemos que seu cadastro está incompleto.
             @endif
             @if($needsUf && $needsIdentity)
             Informe sua UF e complete seus dados de cadastro para continuar.
@@ -63,9 +63,9 @@
             })" x-init="initLookup()">
               @if($needsMatricula)
               <div>
-                <x-input-label for="CDMATRFUNCIONARIO" value="Matricula *" />
+                <x-input-label for="CDMATRFUNCIONARIO" value="Matrícula *" />
                 <x-text-input id="CDMATRFUNCIONARIO" name="CDMATRFUNCIONARIO" type="text" class="mt-1 block w-full" x-model="matricula" required @blur="onMatriculaBlur" @input="onMatriculaInput" />
-                <p class="text-xs text-gray-500 mt-1" x-show="matriculaExiste">Matricula encontrada. Nome preenchido automaticamente.</p>
+                <p class="text-xs text-gray-500 mt-1" x-show="matriculaExiste">Matrícula encontrada. Nome preenchido automaticamente.</p>
                 <x-input-error :messages="$errors->get('CDMATRFUNCIONARIO')" class="mt-2" />
               </div>
               @endif
@@ -226,7 +226,7 @@
                         'Accept': 'application/json'
                       }
                     });
-                    if (!res.ok) throw new Error('Falha busca matricula');
+                    if (!res.ok) throw new Error('Falha na busca de matrícula');
                     const data = await res.json();
                     this.matriculaExiste = !!data?.exists;
                     if (data?.exists && data?.nome) {
@@ -236,7 +236,7 @@
                       this.nomeBloqueado = false;
                     }
                   } catch (e) {
-                    console.warn('Lookup matricula falhou', e);
+                    console.warn('Lookup de matrícula falhou', e);
                   }
                 }
               }

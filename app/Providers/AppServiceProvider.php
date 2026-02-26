@@ -10,6 +10,7 @@ use App\Models\LocalProjeto;
 use App\Models\ObjetoPatr;
 use App\Models\Patrimonio;
 use App\Models\User;
+use App\Observers\PatrimonioObserver;
 use App\Observers\RegistroRemovidoObserver;
 
 
@@ -39,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Patrimonio::observe(RegistroRemovidoObserver::class);
+        Patrimonio::observe(PatrimonioObserver::class);
         LocalProjeto::observe(RegistroRemovidoObserver::class);
         ObjetoPatr::observe(RegistroRemovidoObserver::class);
         User::observe(RegistroRemovidoObserver::class);

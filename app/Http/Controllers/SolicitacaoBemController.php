@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -42,26 +43,61 @@ class SolicitacaoBemController extends Controller
             $query->where('uf', strtoupper(trim((string) $request->input('uf'))));
         }
 
-        if ($request->filled('search')) {
-            $term = trim((string) $request->input('search'));
-            $query->where(function ($q) use ($term) {
-                $q->where('solicitante_nome', 'like', '%' . $term . '%')
-                    ->orWhere('solicitante_matricula', 'like', '%' . $term . '%')
-                    ->orWhere('setor', 'like', '%' . $term . '%')
-                    ->orWhere('local_destino', 'like', '%' . $term . '%');
-            });
+        $searchInput = $request->input('search', '');
+        $searchTerms = [];
+        if (is_array($searchInput)) {
+            $searchTerms = array_values(array_filter(array_map(static fn ($value) => trim((string) $value), $searchInput)));
+        } else {
+            $single = trim((string) $searchInput);
+            if ($single !== '') {
+                $searchTerms = preg_split('/[\s,|]+/', $single, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+            }
+        }
+
+        if (!empty($searchTerms)) {
+            foreach ($searchTerms as $term) {
+                $query->where(function ($q) use ($term) {
+                    $q->where('solicitante_nome', 'like', '%' . $term . '%')
+                        ->orWhere('solicitante_matricula', 'like', '%' . $term . '%')
+                        ->orWhere('setor', 'like', '%' . $term . '%')
+                        ->orWhere('local_destino', 'like', '%' . $term . '%')
+                        ->orWhere('status', 'like', '%' . $term . '%')
+                        ->orWhere('uf', 'like', '%' . $term . '%')
+                        ->orWhere('id', 'like', '%' . $term . '%');
+                });
+            }
+        }
+
+        $sortableColumns = [
+            'id' => 'id',
+            'solicitante' => 'solicitante_nome',
+            'setor' => 'setor',
+            'local_destino' => 'local_destino',
+            'uf' => 'uf',
+            'status' => 'status',
+            'itens' => 'itens_count',
+            'created_at' => 'created_at',
+        ];
+        $sort = (string) $request->input('sort', 'created_at');
+        if (!array_key_exists($sort, $sortableColumns)) {
+            $sort = 'created_at';
+        }
+        $direction = strtolower((string) $request->input('direction', 'desc'));
+        if (!in_array($direction, ['asc', 'desc'], true)) {
+            $direction = 'desc';
         }
 
         $solicitacoes = $query
             ->withCount('itens')
-            ->orderByDesc('created_at')
+            ->orderBy($sortableColumns[$sort], $direction)
+            ->orderByDesc('id')
             ->paginate($perPage)
             ->withQueryString();
 
         $statusOptions = SolicitacaoBem::statusOptions();
-        $projetos = Tabfant::orderBy('NOMEPROJETO')->get();
+        $projetos = $this->loadProjetosUnicos();
 
-        return view('solicitacoes.index', compact('solicitacoes', 'statusOptions', 'projetos'));
+        return view('solicitacoes.index', compact('solicitacoes', 'statusOptions', 'projetos', 'sort', 'direction'));
     }
 
     public function create(Request $request): View|JsonResponse
@@ -69,11 +105,11 @@ class SolicitacaoBemController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
         if (!$this->canCreateSolicitacao($user)) {
-            return $this->denyAccess($request, 'Você não tem permissão para criar solicitacao.');
+            return $this->denyAccess($request, 'Você não tem permissão para criar solicitação.');
         }
 
         $isModal = $request->input('modal') === '1';
-        $projetos = Tabfant::orderBy('NOMEPROJETO')->get();
+        $projetos = $this->loadProjetosUnicos();
         return view('solicitacoes.create', [
             'user' => Auth::user(),
             'isModal' => $isModal,
@@ -86,7 +122,7 @@ class SolicitacaoBemController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
         if (!$this->canCreateSolicitacao($user)) {
-            return $this->denyAccess($request, 'Você não tem permissão para criar solicitacao.');
+            return $this->denyAccess($request, 'Você não tem permissão para criar solicitação.');
         }
 
         $rules = [
@@ -103,7 +139,23 @@ class SolicitacaoBemController extends Controller
             'itens.*.observacao' => ['nullable', 'string', 'max:500'],
         ];
 
-        $validated = $request->validate($rules);
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            if ($request->input('modal') === '1' || $request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first(),
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            return redirect()
+                ->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $validated = $validator->validated();
 
         $user = Auth::user();
         $uf = strtoupper(trim((string) ($validated['uf'] ?? '')));
@@ -155,14 +207,14 @@ class SolicitacaoBemController extends Controller
         if ($request->input('modal') === '1') {
             return response()->json([
                 'success' => true,
-                'message' => 'Solicitacao registrada com sucesso.',
+                'message' => 'Solicitação registrada com sucesso.',
                 'redirect' => route('solicitacoes-bens.index'),
             ]);
         }
 
         return redirect()
             ->route('solicitacoes-bens.index')
-            ->with('success', 'Solicitacao registrada com sucesso.');
+            ->with('success', 'Solicitação registrada com sucesso.');
     }
 
     public function show(Request $request, SolicitacaoBem $solicitacao): View|JsonResponse
@@ -170,11 +222,15 @@ class SolicitacaoBemController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
         if (!$this->canViewSolicitacao($user, $solicitacao)) {
-            return $this->denyAccess($request, 'Você não tem permissão para visualizar esta solicitacao.');
+            return $this->denyAccess($request, 'Você não tem permissão para visualizar esta solicitação.');
         }
 
         $isModal = $request->input('modal') === '1';
-        $solicitacao->load(['itens', 'projeto', 'historicoStatus.usuario']);
+        $relations = ['itens', 'projeto'];
+        if (Schema::hasTable('solicitacoes_bens_status_historico')) {
+            $relations[] = 'historicoStatus.usuario';
+        }
+        $solicitacao->load($relations);
         $statusOptions = SolicitacaoBem::statusOptions();
 
         $canManage = $this->canUpdateSolicitacao($user)
@@ -190,24 +246,57 @@ class SolicitacaoBemController extends Controller
         return view('solicitacoes.show', compact('solicitacao', 'statusOptions', 'isModal', 'canManage'));
     }
 
-    public function showModal(Request $request, SolicitacaoBem $solicitacao): View
+    public function showModal(Request $request, SolicitacaoBem $solicitacao)
     {
         /** @var User|null $user */
         $user = Auth::user();
         if (!$this->canViewSolicitacao($user, $solicitacao)) {
-            abort(403, 'Você não tem permissão para visualizar esta solicitacao.');
+            abort(403, 'Você não tem permissão para visualizar esta solicitação.');
         }
 
-        $solicitacao->load(['itens', 'projeto', 'historicoStatus.usuario']);
-        $statusOptions = SolicitacaoBem::statusOptions();
-        $canManage = $this->canUpdateSolicitacao($user)
-            || $this->canConfirmSolicitacao($user)
-            || $this->canApproveSolicitacao($user)
-            || $this->canCancelSolicitacao($user)
-            || $this->canReturnSolicitacao($user);
-        $isModal = true;
+        try {
+            $relations = ['itens', 'projeto'];
+            if (Schema::hasTable('solicitacoes_bens_status_historico')) {
+                $relations[] = 'historicoStatus.usuario';
+            }
+            $solicitacao->load($relations);
+            $statusOptions = SolicitacaoBem::statusOptions();
+            $canManage = $this->canUpdateSolicitacao($user)
+                || $this->canConfirmSolicitacao($user)
+                || $this->canApproveSolicitacao($user)
+                || $this->canCancelSolicitacao($user)
+                || $this->canReturnSolicitacao($user);
+            $isModal = true;
 
-        return view('solicitacoes.partials.show-content', compact('solicitacao', 'statusOptions', 'isModal', 'canManage'));
+            // Renderiza aqui para capturar qualquer falha de Blade e evitar HTTP 500 na modal.
+            $html = view('solicitacoes.partials.show-content', compact('solicitacao', 'statusOptions', 'isModal', 'canManage'))->render();
+            return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
+        } catch (\Throwable $e) {
+            Log::error('[SOLICITAÇÃO] Falha ao renderizar modal de visualização', [
+                'solicitacao_id' => $solicitacao->id,
+                'user_id' => $user?->getAuthIdentifier(),
+                'error' => $e->getMessage(),
+            ]);
+
+            $id = (int) $solicitacao->id;
+            $status = e((string) ($solicitacao->status ?? '-'));
+            $solicitante = e((string) ($solicitacao->solicitante_nome ?? '-'));
+
+            $fallbackHtml = <<<HTML
+<div class="p-4">
+    <div class="rounded-lg border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/30 text-red-900 dark:text-red-200 px-4 py-3">
+        <h3 class="text-sm font-semibold mb-1">Erro ao carregar solicitação #{$id}</h3>
+        <p class="text-xs">Não foi possível carregar os detalhes desta solicitação.</p>
+        <p class="text-xs mt-1">Solicitante: {$solicitante} | Status: {$status}</p>
+        <p class="text-xs mt-2 text-red-700 dark:text-red-300">Tente novamente. Se o problema persistir, contate o administrador.</p>
+    </div>
+</div>
+HTML;
+
+            return response($fallbackHtml, 500)
+                ->header('Content-Type', 'text/html; charset=UTF-8')
+                ->header('X-Solicitacao-Modal-Error', '1');
+        }
     }
 
     public function update(Request $request, SolicitacaoBem $solicitacao): RedirectResponse|JsonResponse
@@ -215,10 +304,10 @@ class SolicitacaoBemController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
         if (!$this->canViewSolicitacao($user, $solicitacao)) {
-            return $this->denyAccess($request, 'Você não tem permissão para atualizar esta solicitacao.');
+            return $this->denyAccess($request, 'Você não tem permissão para atualizar esta solicitação.');
         }
         if (!$this->canUpdateSolicitacao($user)) {
-            return $this->denyAccess($request, 'Você não tem permissão para atualizar esta solicitacao.');
+            return $this->denyAccess($request, 'Você não tem permissão para atualizar esta solicitação.');
         }
 
         $data = $request->validate([
@@ -255,13 +344,13 @@ class SolicitacaoBemController extends Controller
         if ($request->input('modal') === '1') {
             return response()->json([
                 'success' => true,
-                'message' => 'Solicitacao atualizada com sucesso.',
+                'message' => 'Solicitação atualizada com sucesso.',
             ]);
         }
 
         return redirect()
             ->route('solicitacoes-bens.index')
-            ->with('success', 'Solicitacao atualizada com sucesso.');
+            ->with('success', 'Solicitação atualizada com sucesso.');
     }
 
     public function destroy(Request $request, SolicitacaoBem $solicitacao): RedirectResponse|JsonResponse
@@ -269,7 +358,7 @@ class SolicitacaoBemController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
         if (!$this->canDeleteSolicitacao($user, $solicitacao)) {
-            return $this->denyAccess($request, 'Você não tem permissão para remover esta solicitacao.');
+            return $this->denyAccess($request, 'Você não tem permissão para remover esta solicitação.');
         }
 
         DB::transaction(function () use ($solicitacao) {
@@ -280,13 +369,13 @@ class SolicitacaoBemController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Solicitacao removida com sucesso.',
+                'message' => 'Solicitação removida com sucesso.',
             ]);
         }
 
         return redirect()
             ->route('solicitacoes-bens.index')
-            ->with('success', 'Solicitacao removida com sucesso.');
+            ->with('success', 'Solicitação removida com sucesso.');
     }
 
     private function canViewAllSolicitacoes(?User $user): bool
@@ -358,7 +447,7 @@ class SolicitacaoBemController extends Controller
         if (!$user) {
             return false;
         }
-        // ✅ ADM sempre tem acesso (nunca precisa de permissão explícita)
+        // ADM sempre tem acesso (nunca precisa de permissão explícita)
         if ($user->isAdmin()) {
             return true;
         }
@@ -370,7 +459,7 @@ class SolicitacaoBemController extends Controller
         if (!$user) {
             return false;
         }
-        // ✅ ADM sempre tem acesso (nunca precisa de permissão explícita)
+        // ADM sempre tem acesso (nunca precisa de permissão explícita)
         if ($user->isAdmin()) {
             return true;
         }
@@ -382,7 +471,7 @@ class SolicitacaoBemController extends Controller
         if (!$user) {
             return false;
         }
-        // ✅ ADM sempre tem acesso (nunca precisa de permissão explícita)
+        // ADM sempre tem acesso (nunca precisa de permissão explícita)
         if ($user->isAdmin()) {
             return true;
         }
@@ -394,7 +483,7 @@ class SolicitacaoBemController extends Controller
         if (!$user) {
             return false;
         }
-        // ✅ ADM sempre tem acesso (nunca precisa de permissão explícita)
+        // ADM sempre tem acesso (nunca precisa de permissão explícita)
         if ($user->isAdmin()) {
             return true;
         }
@@ -452,12 +541,12 @@ class SolicitacaoBemController extends Controller
             return;
         }
 
-        $subject = 'Solicitacao de bens recebida #' . $solicitacao->id;
+        $subject = 'Solicitação de bens recebida #' . $solicitacao->id;
         $body = implode("\n", [
-            'Uma nova solicitacao de bens foi registrada.',
-            'Numero: ' . $solicitacao->id,
+            'Uma nova solicitação de bens foi registrada.',
+            'Número: ' . $solicitacao->id,
             'Solicitante: ' . ($solicitacao->solicitante_nome ?? '-'),
-            'Matricula: ' . ($solicitacao->solicitante_matricula ?? '-'),
+            'Matrícula: ' . ($solicitacao->solicitante_matricula ?? '-'),
             'Setor: ' . ($solicitacao->setor ?? '-'),
             'UF: ' . ($solicitacao->uf ?? '-'),
             'Local destino: ' . ($solicitacao->local_destino ?? '-'),
@@ -472,11 +561,25 @@ class SolicitacaoBemController extends Controller
             $solicitacao->email_confirmacao_enviado_em = now();
             $solicitacao->save();
         } catch (\Throwable $e) {
-            Log::warning('Falha ao enviar email de solicitacao de bens', [
+            Log::warning('Falha ao enviar e-mail de solicitação de bens', [
                 'solicitacao_id' => $solicitacao->id,
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Evita projetos duplicados no dropdown (mesmo código/nome com IDs diferentes).
+     */
+    private function loadProjetosUnicos()
+    {
+        return Tabfant::query()
+            ->selectRaw('MIN(id) as id, CDPROJETO, NOMEPROJETO')
+            ->whereNotNull('CDPROJETO')
+            ->whereNotNull('NOMEPROJETO')
+            ->groupBy('CDPROJETO', 'NOMEPROJETO')
+            ->orderBy('NOMEPROJETO')
+            ->get();
     }
 
     private function registrarHistoricoStatus(
@@ -511,7 +614,7 @@ class SolicitacaoBemController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
         if (!$this->canConfirmSolicitacao($user)) {
-            return $this->denyAccess($request, 'Voce nao tem permissao para confirmar solicitacoes.');
+            return $this->denyAccess($request, 'Você não tem permissão para confirmar solicitações.');
         }
 
         if ($solicitacao->status !== SolicitacaoBem::STATUS_PENDENTE) {
@@ -550,7 +653,7 @@ class SolicitacaoBemController extends Controller
             null
         );
 
-        Log::info('✅ [SOLICITACOES] Solicitação confirmada (1º nível)', [
+        Log::info('[SOLICITACOES] Solicitação confirmada (1º nível)', [
             'solicitacao_id' => $solicitacao->id,
             'confirmado_por' => $user->NMLOGIN,
         ]);
@@ -574,10 +677,10 @@ class SolicitacaoBemController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
         if (!$this->canApproveSolicitacao($user)) {
-            return $this->denyAccess($request, 'Voce nao tem permissao para aprovar a solicitacao.');
+            return $this->denyAccess($request, 'Você não tem permissão para aprovar a solicitação.');
         }
         if (empty($solicitacao->matricula_recebedor)) {
-            return $this->denyAccess($request, 'Informe o responsavel recebedor antes de aprovar a solicitacao.');
+            return $this->denyAccess($request, 'Informe o responsável recebedor antes de aprovar a solicitação.');
         }
 
         if ($solicitacao->status !== SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO) {
@@ -598,7 +701,7 @@ class SolicitacaoBemController extends Controller
             null
         );
 
-        Log::info('✅ [SOLICITACOES] Solicitação aprovada (2º nível)', [
+        Log::info('[SOLICITACOES] Solicitação aprovada (2º nível)', [
             'solicitacao_id' => $solicitacao->id,
             'aprovado_por' => $user->NMLOGIN,
         ]);
@@ -622,7 +725,7 @@ class SolicitacaoBemController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
         if (!$this->canCancelSolicitacao($user)) {
-            return $this->denyAccess($request, 'Voce nao tem permissao para cancelar a solicitacao.');
+            return $this->denyAccess($request, 'Você não tem permissão para cancelar a solicitação.');
         }
 
         if ($solicitacao->status === SolicitacaoBem::STATUS_CANCELADO) {
@@ -630,7 +733,7 @@ class SolicitacaoBemController extends Controller
         }
 
         if ($solicitacao->status !== SolicitacaoBem::STATUS_PENDENTE) {
-            return $this->denyAccess($request, 'Apenas solicitacoes pendentes podem ser canceladas.');
+            return $this->denyAccess($request, 'Apenas solicitações pendentes podem ser canceladas.');
         }
 
         $validated = $request->validate([
@@ -652,7 +755,7 @@ class SolicitacaoBemController extends Controller
             $validated['justificativa_cancelamento']
         );
 
-        Log::info('🚫 [SOLICITACOES] Solicitação cancelada', [
+        Log::info('[SOLICITACOES] Solicitação cancelada', [
             'solicitacao_id' => $solicitacao->id,
             'cancelado_por' => $user->NMLOGIN,
             'justificativa' => $validated['justificativa_cancelamento'],
@@ -668,18 +771,18 @@ class SolicitacaoBemController extends Controller
         return redirect()->back()->with('success', 'Solicitação cancelada com sucesso!');
     }
     /**
-     * Retornar solicitacao para analise (volta para PENDENTE)
+     * Retornar solicitação para análise (volta para PENDENTE)
      */
     public function returnToAnalysis(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
     {
         /** @var User|null $user */
         $user = Auth::user();
         if (!$this->canReturnSolicitacao($user)) {
-            return $this->denyAccess($request, 'Voce nao tem permissao para retornar a solicitacao para analise.');
+            return $this->denyAccess($request, 'Você não tem permissão para retornar a solicitação para análise.');
         }
 
         if ($solicitacao->status !== SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO) {
-            return $this->denyAccess($request, 'Apenas solicitacoes aguardando confirmacao podem voltar para analise.');
+            return $this->denyAccess($request, 'Apenas solicitações aguardando confirmação podem voltar para análise.');
         }
 
         $validated = $request->validate([
@@ -688,7 +791,7 @@ class SolicitacaoBemController extends Controller
 
         $motivo = trim((string) $validated['motivo_retorno']);
         $timestamp = now()->format('d/m/Y H:i');
-        $nota = "[{$timestamp}] Retorno para analise: {$motivo}";
+        $nota = "[{$timestamp}] Retorno para análise: {$motivo}";
         $observacaoAtual = trim((string) ($solicitacao->observacao_controle ?? ''));
         $observacaoNova = $observacaoAtual !== '' ? ($observacaoAtual . "\n\n" . $nota) : $nota;
         $destinationType = $solicitacao->destination_type ?: SolicitacaoBem::DESTINATION_PROJETO;
@@ -712,7 +815,7 @@ class SolicitacaoBemController extends Controller
             $motivo
         );
 
-        Log::info('[SOLICITACOES] Solicitacao retornada para analise', [
+        Log::info('[SOLICITACOES] Solicitação retornada para análise', [
             'solicitacao_id' => $solicitacao->id,
             'retornado_por' => $user?->NMLOGIN,
             'motivo' => $motivo,
@@ -721,10 +824,10 @@ class SolicitacaoBemController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Solicitacao retornada para analise com sucesso!',
+                'message' => 'Solicitação retornada para análise com sucesso!',
             ]);
         }
 
-        return redirect()->back()->with('success', 'Solicitacao retornada para analise com sucesso!');
+        return redirect()->back()->with('success', 'Solicitação retornada para análise com sucesso!');
     }
 }

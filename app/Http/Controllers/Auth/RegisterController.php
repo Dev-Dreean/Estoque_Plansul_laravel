@@ -4,34 +4,37 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * Controller legado de registro de usuários.
+ *
+ * NÃO UTILIZADO — as rotas de registro usam RegisteredUserController (Breeze).
+ * Mantido apenas como referência; pode ser removido em limpeza futura.
+ */
 class RegisterController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | Register Controller
+    | Controller de Registro (legado)
     |--------------------------------------------------------------------------
     |
-    | This controller handles the registration of new users as well as their
-    | validation and creation. By default this controller uses a trait to
-    | provide this functionality without requiring any additional code.
+    | Este controller gerenciava o registro de novos usuários via trait
+    | do pacote laravel/ui (removido no Laravel 11).
+    | As rotas atuais usam RegisteredUserController (Breeze).
     |
     */
 
-    use RegistersUsers;
-
     /**
-     * Where to redirect users after registration.
+     * Para onde redirecionar usuários após o registro.
      *
      * @var string
      */
     protected $redirectTo = '/home';
 
     /**
-     * Create a new controller instance.
+     * Cria uma nova instância do controller.
      *
      * @return void
      */
@@ -41,7 +44,7 @@ class RegisterController extends Controller
     }
 
     /**
-     * Get a validator for an incoming registration request.
+     * Obtém um validador para uma requisição de registro.
      *
      * @param  array  $data
      * @return \Illuminate\Contracts\Validation\Validator
@@ -56,7 +59,7 @@ class RegisterController extends Controller
     }
 
     /**
-     * Create a new user instance after a valid registration.
+     * Cria uma nova instância de usuário após registro válido.
      *
      * @param  array  $data
      * @return \App\Models\User

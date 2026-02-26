@@ -74,21 +74,37 @@
         'doubleclick.net'
       ];
       
-      // Interceptar fetch
-      const originalFetch = window.fetch;
-      window.fetch = function(...args) {
-        const url = args[0]?.toString?.() || '';
-        if (blockedDomains.some(domain => url.includes(domain))) {
-          console.warn('[APP] ✅ Bloqueada requisição de ads:', url);
-          return Promise.reject(new Error('Blocked by CSP'));
-        }
-        return originalFetch.apply(this, args);
-      };
+      // Interceptar fetch (sem afetar requests internas da aplicação)
+      const originalFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+      if (originalFetch) {
+        window.fetch = function(...args) {
+          try {
+            const input = args[0];
+            const rawUrl = (typeof input === 'string')
+              ? input
+              : (input && typeof input.url === 'string' ? input.url : '');
+            const parsed = rawUrl ? new URL(rawUrl, window.location.origin) : null;
+            const host = parsed?.hostname?.toLowerCase?.() || '';
+
+            const isExternal = !!parsed && parsed.origin !== window.location.origin;
+            if (isExternal && blockedDomains.some(domain => host.includes(domain) || rawUrl.includes(domain))) {
+              console.warn('[APP] ✅ Bloqueada requisição de ads:', rawUrl);
+              return Promise.reject(new Error('Blocked by CSP'));
+            }
+          } catch (e) {
+            // Em caso de falha de parsing, segue fluxo normal.
+          }
+
+          return originalFetch(...args);
+        };
+      }
       
       // Interceptar XMLHttpRequest
       const originalOpen = XMLHttpRequest.prototype.open;
+      const originalSend = XMLHttpRequest.prototype.send;
       XMLHttpRequest.prototype.open = function(method, url, ...rest) {
-        if (blockedDomains.some(domain => url.includes(domain))) {
+        const safeUrl = String(url || '');
+        if (blockedDomains.some(domain => safeUrl.includes(domain))) {
           console.warn('[APP] ✅ Bloqueado XMLHttpRequest para ads:', url);
           this._blocked = true;
           return;
@@ -98,7 +114,7 @@
       
       XMLHttpRequest.prototype.send = function(...args) {
         if (this._blocked) return;
-        return XMLHttpRequest.prototype.send.apply(this, args);
+        return originalSend.apply(this, args);
       };
     })();
   </script>

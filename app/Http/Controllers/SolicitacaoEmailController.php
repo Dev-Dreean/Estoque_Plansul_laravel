@@ -43,7 +43,7 @@ class SolicitacaoEmailController extends Controller
             ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Empty payload. Please send email with "from", "subject" and "body" fields.',
+                'message' => 'Payload vazio. Envie o e-mail com os campos "from", "subject" e "body".',
                 'received_keys' => array_keys($payload),
             ], 422);
         }
@@ -123,11 +123,11 @@ class SolicitacaoEmailController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Missing required fields.',
+                'message' => 'Campos obrigatórios ausentes.',
                 'missing' => $missing,
                 'details' => [
                     'projeto_tentado' => $projetoValue,
-                    'hint' => 'Use um código de projeto válido (ex: 281, 2, 47). Veja projetos disponíveis em /api/projetos',
+                    'hint' => 'Use um código de projeto válido (ex.: 281, 2, 47). Veja os projetos disponíveis em /api/projetos',
                 ],
             ], 422);
         }
@@ -172,7 +172,7 @@ class SolicitacaoEmailController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Solicitacao registrada com sucesso.',
+            'message' => 'Solicitação registrada com sucesso.',
             'solicitacao_id' => $solicitacao?->id,
         ]);
     }
@@ -803,12 +803,12 @@ class SolicitacaoEmailController extends Controller
             return;
         }
 
-        $subject = 'Solicitacao de bens recebida #' . $solicitacao->id;
+        $subject = 'Solicitação de bens recebida #' . $solicitacao->id;
         $body = implode("\n", [
-            'Uma nova solicitacao de bens foi registrada.',
-            'Numero: ' . $solicitacao->id,
+            'Uma nova solicitação de bens foi registrada.',
+            'Número: ' . $solicitacao->id,
             'Solicitante: ' . ($solicitacao->solicitante_nome ?? '-'),
-            'Matricula: ' . ($solicitacao->solicitante_matricula ?? '-'),
+            'Matrícula: ' . ($solicitacao->solicitante_matricula ?? '-'),
             'Setor: ' . ($solicitacao->setor ?? '-'),
             'UF: ' . ($solicitacao->uf ?? '-'),
             'Local destino: ' . ($solicitacao->local_destino ?? '-'),
@@ -823,7 +823,7 @@ class SolicitacaoEmailController extends Controller
             $solicitacao->email_confirmacao_enviado_em = now();
             $solicitacao->save();
         } catch (\Throwable $e) {
-            Log::warning('Falha ao enviar email de solicitacao de bens', [
+            Log::warning('Falha ao enviar e-mail de solicitação de bens', [
                 'solicitacao_id' => $solicitacao->id,
                 'error' => $e->getMessage(),
             ]);

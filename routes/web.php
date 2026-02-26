@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Application web routes
+ * Rotas web da aplicação
  *
- * This file defines HTTP routes for the application, organized into logical
- * groups. Routes are loaded by the RouteServiceProvider within a group
- * that contains the "web" middleware group.
+ * Este arquivo define as rotas HTTP da aplicação, organizadas em grupos
+ * lógicos. As rotas são carregadas pelo RouteServiceProvider dentro de um
+ * grupo que contém o middleware group "web".
  */
 
 use App\Http\Controllers\DashboardController;
@@ -23,12 +23,11 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\RelatorioBensController;
-use App\Http\Controllers\DuplicatePatrimonioController;
 use App\Http\Controllers\RelatorioDownloadController;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Rotas Web
 |--------------------------------------------------------------------------
 */
 
@@ -144,8 +143,7 @@ Route::middleware('auth')->group(function () {
 });
 
 
-// GRUPO 2: Rotas principais que EXIGEM perfil completo. NOTE A MUDANÇA AQUI!
-// NOTE: Adicionamos 'profile.complete' a este grupo.
+// GRUPO 2: Rotas principais — exigem autenticação + perfil completo
 Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])->group(function () {
     // Configuração de Tema (apenas administradores)
     Route::middleware(['admin', 'tela.access:1008'])->group(function () {
@@ -153,13 +151,13 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         Route::post('/settings/theme', [\App\Http\Controllers\ThemeController::class, 'update'])->name('settings.theme.update');
     });
 
-    // MOVI TODAS AS SUAS ROTAS PRINCIPAIS PARA DENTRO DESTE GRUPO
-
-    // Rota do Dashboard/Gráficos (NUSEQTELA: 1008)
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('tela.access:1001');
-    Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data')->middleware('tela.access:1001');
-    Route::get('/dashboard/uf-data', [DashboardController::class, 'ufData'])->name('dashboard.uf-data')->middleware('tela.access:1001');
-    Route::get('/dashboard/total-data', [DashboardController::class, 'totalData'])->name('dashboard.total-data')->middleware('tela.access:1001');
+    // Rotas do Dashboard/Gráficos (NUSEQTELA: 1001)
+    Route::middleware('tela.access:1001')->prefix('dashboard')->group(function () {
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/data', [DashboardController::class, 'data'])->name('dashboard.data');
+        Route::get('/uf-data', [DashboardController::class, 'ufData'])->name('dashboard.uf-data');
+        Route::get('/total-data', [DashboardController::class, 'totalData'])->name('dashboard.total-data');
+    });
 
     // Rotas do CRUD de Patrimônios e suas APIs (NUSEQTELA: 1000)
     Route::resource('patrimonios', PatrimonioController::class)->middleware(['tela.access:1000']);
@@ -200,7 +198,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::resource('projetos', ProjetoController::class)->middleware(['tela.access:1002', 'can.delete']);
     Route::get('projetos/{projeto}/duplicar', [ProjetoController::class, 'duplicate'])->name('projetos.duplicate')->middleware('tela.access:1002');
     Route::post('projetos/delete-multiple', [ProjetoController::class, 'deleteMultiple'])->name('projetos.delete-multiple')->middleware(['tela.access:1002', 'can.delete']);
-    Route::get('/api/locais/lookup', [ProjetoController::class, 'lookup'])->name('projetos.lookup')->middleware('auth'); // Removido tela.access:1002 para permitir solicitações
+    Route::get('/api/locais/lookup', [ProjetoController::class, 'lookup'])->name('projetos.lookup'); // Sem tela.access:1002 para permitir solicitações
     Route::get('/api/projetos/nome/{codigo}', function ($codigo) {
         $p = \App\Models\Tabfant::where('CDPROJETO', $codigo)->first();
         return $p ? response()->json(['exists' => true, 'nome' => $p->NOMEPROJETO]) : response()->json(['exists' => false]);
@@ -213,11 +211,11 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::get('/api/locais/buscar', [App\Http\Controllers\PatrimonioController::class, 'buscarLocais'])->name('api.locais.buscar');
     Route::get('/api/locais/{id}', [App\Http\Controllers\PatrimonioController::class, 'buscarLocalPorId'])->name('api.locais.por-id');
     Route::get('/api/locais/debug', [App\Http\Controllers\PatrimonioController::class, 'debugLocaisPorCodigo'])->name('api.locais.debug');
-    Route::post('/api/locais/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalVinculadoProjeto'])->name('api.locais.criar')->middleware(['auth', 'can:create,App\\Models\\Patrimonio']);
-    Route::post('/api/locais/criar-novo', [App\Http\Controllers\PatrimonioController::class, 'criarNovoLocal'])->name('api.locais.criar-novo')->middleware(['auth', 'can:create,App\\Models\\Patrimonio']);
-    Route::post('/api/locais-projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalProjeto'])->name('api.locais-projetos.criar')->middleware(['auth', 'can:create,App\\Models\\Patrimonio']);
-    Route::post('/api/locais-projetos/criar-simples', [ProjetoController::class, 'criarSimples'])->name('api.locais-projetos.criar-simples')->middleware(['auth', 'can:create,App\\Models\\Patrimonio']);
-    Route::post('/api/locais/criar-com-projeto', [App\Http\Controllers\PatrimonioController::class, 'criarLocalComProjeto'])->name('api.locais.criar-com-projeto')->middleware(['auth', 'can:create,App\\Models\\Patrimonio']);
+    Route::post('/api/locais/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalVinculadoProjeto'])->name('api.locais.criar')->middleware('can:create,App\\Models\\Patrimonio');
+    Route::post('/api/locais/criar-novo', [App\Http\Controllers\PatrimonioController::class, 'criarNovoLocal'])->name('api.locais.criar-novo')->middleware('can:create,App\\Models\\Patrimonio');
+    Route::post('/api/locais-projetos/criar', [App\Http\Controllers\PatrimonioController::class, 'criarLocalProjeto'])->name('api.locais-projetos.criar')->middleware('can:create,App\\Models\\Patrimonio');
+    Route::post('/api/locais-projetos/criar-simples', [ProjetoController::class, 'criarSimples'])->name('api.locais-projetos.criar-simples')->middleware('can:create,App\\Models\\Patrimonio');
+    Route::post('/api/locais/criar-com-projeto', [App\Http\Controllers\PatrimonioController::class, 'criarLocalComProjeto'])->name('api.locais.criar-com-projeto')->middleware('can:create,App\\Models\\Patrimonio');
     // ⚠️ Evitar rotas ambíguas como /api/locais/{cdprojeto} (colide com /api/locais/{id}).
     // Padronizar sempre em: /api/locais/buscar?cdprojeto=<CDPROJETO>&termo=
 
@@ -238,38 +236,35 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::resource('usuarios', UserController::class)->middleware(['tela.access:1003', 'can.delete']);
     Route::get('usuarios/confirmacao', [UserController::class, 'confirmacao'])->name('usuarios.confirmacao')->middleware('tela.access:1003');
     // Impersonation / developer helpers (restritos a admin ou ambiente local dentro do controller)
-    Route::post('/usuarios/{usuario}/impersonate', [UserController::class, 'impersonate'])->name('usuarios.impersonate')->middleware('auth');
-    Route::post('/impersonate/stop', [UserController::class, 'stopImpersonate'])->name('impersonate.stop')->middleware('auth');
-    Route::post('/usuarios/{usuario}/reset-senha', [UserController::class, 'resetSenha'])->name('usuarios.resetSenha')->middleware('auth');
+    Route::post('/usuarios/{usuario}/impersonate', [UserController::class, 'impersonate'])->name('usuarios.impersonate');
+    Route::post('/impersonate/stop', [UserController::class, 'stopImpersonate'])->name('impersonate.stop');
+    Route::post('/usuarios/{usuario}/reset-senha', [UserController::class, 'resetSenha'])->name('usuarios.resetSenha');
     // APIs auxiliares do formulário de usuário
     Route::get('/api/usuarios/sugerir-login', [UserController::class, 'sugerirLogin'])->name('api.usuarios.sugerirLogin')->middleware('tela.access:1003');
     Route::get('/api/usuarios/login-disponivel', [UserController::class, 'loginDisponivel'])->name('api.usuarios.loginDisponivel')->middleware('tela.access:1003');
 
-    // Solicitacoes de Bens (T:1010)
-    // ⚠️ IMPORTANTE: Middleware removido do resource para permitir admin SEMPRE
-    // Admin bypass é feito no middleware CheckTelaAccess, mas precisa ser auth primeiro
-    Route::middleware('auth')->group(function () {
-        Route::resource('solicitacoes-bens', SolicitacaoBemController::class)
-            ->parameters(['solicitacoes-bens' => 'solicitacao'])
-            ->only(['index', 'create', 'store', 'update', 'destroy']);
+    // Solicitações de Bens (T:1010)
+    // Admin bypass é feito no middleware CheckTelaAccess
+    Route::resource('solicitacoes-bens', SolicitacaoBemController::class)
+        ->parameters(['solicitacoes-bens' => 'solicitacao'])
+        ->only(['index', 'create', 'store', 'update', 'destroy']);
 
-        // Ações de solicitações de bens
-        Route::get('/solicitacoes-bens/{solicitacao}/show-modal', 
-            [SolicitacaoBemController::class, 'showModal'])->name('solicitacoes-bens.show-modal');
-        Route::post('/solicitacoes-bens/{solicitacao}/confirm', 
-            [SolicitacaoBemController::class, 'confirm'])->name('solicitacoes-bens.confirm');
-        Route::post('/solicitacoes-bens/{solicitacao}/approve', 
-            [SolicitacaoBemController::class, 'approve'])->name('solicitacoes-bens.approve');
-        Route::post('/solicitacoes-bens/{solicitacao}/return-to-analysis',
-            [SolicitacaoBemController::class, 'returnToAnalysis'])->name('solicitacoes-bens.return-to-analysis');
-        Route::post('/solicitacoes-bens/{solicitacao}/cancel', 
-            [SolicitacaoBemController::class, 'cancel'])->name('solicitacoes-bens.cancel');
+    // Ações de solicitações de bens
+    Route::get('/solicitacoes-bens/{solicitacao}/show-modal', 
+        [SolicitacaoBemController::class, 'showModal'])->name('solicitacoes-bens.show-modal');
+    Route::post('/solicitacoes-bens/{solicitacao}/confirm', 
+        [SolicitacaoBemController::class, 'confirm'])->name('solicitacoes-bens.confirm');
+    Route::post('/solicitacoes-bens/{solicitacao}/approve', 
+        [SolicitacaoBemController::class, 'approve'])->name('solicitacoes-bens.approve');
+    Route::post('/solicitacoes-bens/{solicitacao}/return-to-analysis',
+        [SolicitacaoBemController::class, 'returnToAnalysis'])->name('solicitacoes-bens.return-to-analysis');
+    Route::post('/solicitacoes-bens/{solicitacao}/cancel', 
+        [SolicitacaoBemController::class, 'cancel'])->name('solicitacoes-bens.cancel');
 
-        // API para buscar patrimônios disponíveis (autocomplete)
-        Route::get('/api/solicitacoes-bens/patrimonio-disponivel', 
-            [App\Http\Controllers\SolicitacaoBemPatrimonioController::class, 'buscarDisponivel']
-        )->name('solicitacoes-bens.patrimonio-disponivel');
-    });
+    // API para buscar patrimônios disponíveis (autocomplete)
+    Route::get('/api/solicitacoes-bens/patrimonio-disponivel', 
+        [App\Http\Controllers\SolicitacaoBemPatrimonioController::class, 'buscarDisponivel']
+    )->name('solicitacoes-bens.patrimonio-disponivel');
 
 
     // Rotas de Relatórios
@@ -340,5 +335,5 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     });
 
     // Navegador lateral beta (projeto paralelo)
-    Route::get('/navigator-beta', [PatrimonioController::class, 'navigatorBeta'])->name('navigator.beta')->middleware('auth');
+    Route::get('/navigator-beta', [PatrimonioController::class, 'navigatorBeta'])->name('navigator.beta');
 });

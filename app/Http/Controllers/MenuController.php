@@ -23,29 +23,29 @@ class MenuController extends Controller
         $estados = [
             'AC' => 'Acre',
             'AL' => 'Alagoas',
-            'AP' => 'Amapa',
+            'AP' => 'Amapá',
             'AM' => 'Amazonas',
             'BA' => 'Bahia',
-            'CE' => 'Ceara',
+            'CE' => 'Ceará',
             'DF' => 'Distrito Federal',
-            'ES' => 'Espirito Santo',
-            'GO' => 'Goias',
-            'MA' => 'Maranhao',
+            'ES' => 'Espírito Santo',
+            'GO' => 'Goiás',
+            'MA' => 'Maranhão',
             'MT' => 'Mato Grosso',
             'MS' => 'Mato Grosso do Sul',
             'MG' => 'Minas Gerais',
-            'PA' => 'Para',
-            'PB' => 'Paraiba',
-            'PR' => 'Parana',
+            'PA' => 'Pará',
+            'PB' => 'Paraíba',
+            'PR' => 'Paraná',
             'PE' => 'Pernambuco',
-            'PI' => 'Piaui',
+            'PI' => 'Piauí',
             'RJ' => 'Rio de Janeiro',
             'RN' => 'Rio Grande do Norte',
             'RS' => 'Rio Grande do Sul',
-            'RO' => 'Rondonia',
+            'RO' => 'Rondônia',
             'RR' => 'Roraima',
             'SC' => 'Santa Catarina',
-            'SP' => 'Sao Paulo',
+            'SP' => 'São Paulo',
             'SE' => 'Sergipe',
             'TO' => 'Tocantins',
         ];
@@ -56,11 +56,11 @@ class MenuController extends Controller
         // Obter saudacao baseada na hora
         $hour = date('H');
         if ($hour >= 5 && $hour < 12) {
-            $greeting = 'Bom Dia';
+            $greeting = 'Bom dia';
         } elseif ($hour >= 12 && $hour < 18) {
-            $greeting = 'Boa Tarde';
+            $greeting = 'Boa tarde';
         } else {
-            $greeting = 'Boa Noite';
+            $greeting = 'Boa noite';
         }
 
         // Usar o novo MenuHelper para obter telas com acesso
@@ -183,12 +183,12 @@ class MenuController extends Controller
                     : false;
 
                 $status = 'bloqueada';
-                $mensagem = 'Faca login para solicitar liberacao.';
+                $mensagem = 'Faça login para solicitar liberação.';
 
                 if ($user) {
                     if (!$visivel) {
                         $status = 'oculta';
-                        $mensagem = 'Tela nao visivel para o perfil ' . $user->PERFIL;
+                        $mensagem = 'Tela não visível para o perfil ' . $user->PERFIL;
                     } elseif ($user->isGod()) {
                         $status = 'liberada';
                         $mensagem = 'Super admin com acesso total (pode excluir).';
@@ -197,11 +197,11 @@ class MenuController extends Controller
                         $mensagem = 'Admin acessa todas as telas liberadas (sem excluir).';
                     } elseif ($temPermissao) {
                         $status = 'liberada';
-                        $mensagem = 'Permissao liberada pelo codigo ' . $codigo . '.';
+                        $mensagem = 'Permissão liberada pelo código ' . $codigo . '.';
                     } elseif ($temCodigo) {
-                        $mensagem = 'Codigo vinculado, mas sem liberacao ativa.';
+                        $mensagem = 'Código vinculado, mas sem liberação ativa.';
                     } else {
-                        $mensagem = 'Sem liberacao para o codigo ' . $codigo . '.';
+                        $mensagem = 'Sem liberação para o código ' . $codigo . '.';
                     }
                 }
 
@@ -228,9 +228,9 @@ class MenuController extends Controller
     {
         return match ($perfil) {
             User::PERFIL_ADMIN => 'Admin: acesso a todas as telas liberadas, sem deletar.',
-            User::PERFIL_USUARIO => 'Usuario: acesso conforme telas liberadas.',
+            User::PERFIL_USUARIO => 'Usuário: acesso conforme telas liberadas.',
             User::PERFIL_CONSULTOR => 'Consultor: acesso somente leitura conforme telas liberadas.',
-            default => 'Visitante: faca login para solicitar liberacao.',
+            default => 'Visitante: faça login para solicitar liberação.',
         };
     }
 }

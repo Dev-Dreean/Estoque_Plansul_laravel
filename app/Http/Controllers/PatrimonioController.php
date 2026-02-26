@@ -3207,7 +3207,11 @@ class PatrimonioController extends Controller
 
         $termo = trim($request->input('termo', ''));
 
-        $cdprojeto = trim($request->input('cdprojeto', ''));
+        $cdprojetoRaw = trim($request->input('cdprojeto', ''));
+
+        // Aceita formatos como "8 - SEDE" e normaliza para "8".
+
+        $cdprojeto = preg_replace('/\D+/', '', $cdprojetoRaw) ?: $cdprojetoRaw;
 
 
 
@@ -3217,7 +3221,7 @@ class PatrimonioController extends Controller
 
 
 
-        // Regra: projeto define locais. Sem projeto, só permite fallback quando o termo é um cdlocal específico.
+        // Regra: projeto define locais. Sem projeto, so permite fallback quando o termo e um cdlocal especifico.
 
         if ($cdprojeto === '') {
 
@@ -3231,15 +3235,19 @@ class PatrimonioController extends Controller
 
         } else {
 
-            $proj = Tabfant::where('CDPROJETO', $cdprojeto)->first(['id', 'CDPROJETO']);
+            // Alguns ambientes possuem multiplos registros tabfant com o mesmo CDPROJETO.
 
-            if (!$proj) {
+            // Considerar todos evita "sumico" de locais validos.
+
+            $projIds = Tabfant::where('CDPROJETO', $cdprojeto)->pluck('id');
+
+            if ($projIds->isEmpty()) {
 
                 return response()->json([]);
 
             }
 
-            $query->where('tabfant_id', $proj->id);
+            $query->whereIn('tabfant_id', $projIds->all());
 
         }
 
@@ -3249,17 +3257,19 @@ class PatrimonioController extends Controller
 
 
 
-        // Buscar informações do projeto na tabfant para cada local
+        $tabfById = Tabfant::whereIn('id', $locaisProjeto->pluck('tabfant_id')->filter()->unique()->values())
 
-        $locais = $locaisProjeto->map(function ($lp) {
+            ->get(['id', 'CDPROJETO', 'NOMEPROJETO'])
 
-            $tabfant = null;
+            ->keyBy('id');
 
-            if ($lp->tabfant_id) {
 
-                $tabfant = Tabfant::find($lp->tabfant_id);
 
-            }
+        // Buscar informacoes do projeto na tabfant para cada local
+
+        $locais = $locaisProjeto->map(function ($lp) use ($tabfById) {
+
+            $tabfant = $lp->tabfant_id ? ($tabfById[$lp->tabfant_id] ?? null) : null;
 
 
 
@@ -3287,8 +3297,20 @@ class PatrimonioController extends Controller
 
 
 
-        // Aplicar filtro inteligente
+        // Quando o usu�rio informar c�digo num�rico (ex: 1339), priorizar match exato
+        // para n�o "sumir" em listas grandes limitadas pelo filtro inteligente.
+        if ($termo !== '' && ctype_digit($termo)) {
 
+            $exatos = array_values(array_filter($locais, function ($row) use ($termo) {
+                return (string) ($row['cdlocal'] ?? '') === $termo;
+            }));
+
+            if (!empty($exatos)) {
+                return response()->json($exatos);
+            }
+        }
+
+        // Aplicar filtro inteligente
         $filtrados = \App\Services\FilterService::filtrar(
 
             $locais,
@@ -3297,13 +3319,11 @@ class PatrimonioController extends Controller
 
             ['cdlocal', 'delocal'],  // campos de busca
 
-            ['cdlocal' => 'número', 'delocal' => 'texto'],  // tipos de campo
+            ['cdlocal' => 'n�mero', 'delocal' => 'texto'],  // tipos de campo
 
-            100  // limite
+            300  // limite ampliado para facilitar sele��o em projetos grandes
 
         );
-
-
 
         return response()->json($filtrados);
 
@@ -4974,140 +4994,56 @@ class PatrimonioController extends Controller
 
 
 
-        // Filtro de UF (multi-select)
-
-        // REGRA baseada em dados reais:
-
-        // 1º) Se patr.UF está preenchido → usa direto
-
-        // 2º) Se patr.UF é NULL → busca projeto.UF → local.UF → fallback 'SC' se SEDE
-
+        // Filtro de UF (multi-select) por UF efetiva:
+        // prioridade: projeto direto -> projeto do local (alinhado ao projeto do patrimônio)
+        // -> UF do local (alinhada) -> UF armazenada no patrimônio.
         if ($request->filled('uf')) {
-
             $ufs = $request->input('uf', []);
-
             if (is_string($ufs)) {
-
                 $ufs = array_filter(array_map('trim', explode(',', $ufs)));
-
             }
 
-            $ufs = array_filter($ufs);
-
-
+            $ufs = array_values(array_unique(array_filter(array_map(
+                fn ($uf) => strtoupper(trim((string) $uf)),
+                (array) $ufs
+            ))));
 
             if (!empty($ufs)) {
+                Log::info('[FILTRO] UF aplicado (uf_efetiva)', ['ufs' => $ufs]);
 
-                Log::info('🗺️ [FILTRO] UF aplicado', ['ufs' => $ufs]);
+                $placeholders = implode(',', array_fill(0, count($ufs), '?'));
 
-                
+                $effectiveUfSql = "COALESCE(
+                    (SELECT UPPER(TRIM(t.UF))
+                     FROM tabfant t
+                     WHERE t.CDPROJETO = patr.CDPROJETO
+                       AND t.UF IS NOT NULL AND TRIM(t.UF) != ''
+                     LIMIT 1),
 
-                $query->where(function($q) use ($ufs) {
+                    (SELECT UPPER(TRIM(t2.UF))
+                     FROM locais_projeto l2
+                     JOIN tabfant t2 ON t2.id = l2.tabfant_id
+                     WHERE l2.cdlocal = patr.CDLOCAL
+                       AND (patr.CDPROJETO IS NULL OR TRIM(patr.CDPROJETO) = '' OR t2.CDPROJETO = patr.CDPROJETO)
+                       AND t2.UF IS NOT NULL AND TRIM(t2.UF) != ''
+                     LIMIT 1),
 
-                    // PRIORIDADE 1: UF diretamente na tabela patr
+                    (SELECT UPPER(TRIM(l3.UF))
+                     FROM locais_projeto l3
+                     LEFT JOIN tabfant t3 ON t3.id = l3.tabfant_id
+                     WHERE l3.cdlocal = patr.CDLOCAL
+                       AND (patr.CDPROJETO IS NULL OR TRIM(patr.CDPROJETO) = '' OR t3.CDPROJETO = patr.CDPROJETO OR t3.CDPROJETO IS NULL)
+                       AND l3.UF IS NOT NULL AND TRIM(l3.UF) != ''
+                     LIMIT 1),
 
-                    $q->whereIn('UF', $ufs)
+                    NULLIF(UPPER(TRIM(patr.UF)), '')
+                )";
 
-                    
-
-                    // OU (para patrimonios com patr.UF = NULL):
-
-                    ->orWhere(function($q2) use ($ufs) {
-
-                        // Garantir que patr.UF é NULL
-
-                        $q2->whereNull('UF')
-
-                        
-
-                        ->where(function($q3) use ($ufs) {
-
-                            // PRIORIDADE 2: UF do projeto (via local.projeto)
-
-                            $q3->whereHas('local.projeto', function($q4) use ($ufs) {
-
-                                $q4->whereIn('UF', $ufs);
-
-                            })
-
-                            
-
-                            // OU PRIORIDADE 3: UF do local (quando projeto não tem UF)
-
-                            ->orWhere(function($q4) use ($ufs) {
-
-                                $q4->whereHas('local', function($q5) use ($ufs) {
-
-                                    $q5->whereIn('UF', $ufs);
-
-                                })
-
-                                // E projeto não tem UF
-
-                                ->whereDoesntHave('local.projeto', function($q5) {
-
-                                    $q5->whereNotNull('UF')->where('UF', '!=', '');
-
-                                });
-
-                            });
-
-                            
-
-                            // PRIORIDADE 4: Fallback SC para SEDE (somente se 'SC' está nos filtros)
-
-                            if (in_array('SC', $ufs)) {
-
-                                $q3->orWhere(function($q4) {
-
-                                    // Patrimonio do projeto SEDE (8)
-
-                                    $q4->where(function($q5) {
-
-                                        $q5->where('CDPROJETO', '8')
-
-                                           ->orWhereHas('local.projeto', function($q6) {
-
-                                               $q6->where('CDPROJETO', '8');
-
-                                           });
-
-                                    })
-
-                                    // E projeto não tem UF
-
-                                    ->whereDoesntHave('local.projeto', function($q5) {
-
-                                        $q5->whereNotNull('UF')->where('UF', '!=', '');
-
-                                    })
-
-                                    // E local não tem UF
-
-                                    ->whereDoesntHave('local', function($q5) {
-
-                                        $q5->whereNotNull('UF')->where('UF', '!=', '');
-
-                                    });
-
-                                });
-
-                            }
-
-                        });
-
-                    });
-
-                });
-
+                $query->whereRaw("{$effectiveUfSql} IN ({$placeholders})", $ufs);
             } else {
-
-                Log::info('⚠️  [FILTRO] UF vazio (não aplicado)');
-
+                Log::info('[FILTRO] UF vazio (não aplicado)');
             }
-
         }
-
         Log::info('[QUERY] SQL gerada', [
 
             'sql' => $query->toSql(),
@@ -6968,4 +6904,5 @@ class PatrimonioController extends Controller
 
 
 }
+
 

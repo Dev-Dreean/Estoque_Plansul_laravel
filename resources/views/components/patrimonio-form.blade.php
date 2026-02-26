@@ -411,7 +411,7 @@
                 ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 text-gray-600 cursor-not-allowed'
                 : 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 text-gray-700'
             ]" />
-          <input type="hidden" name="CDLOCAL" :value="formData.CDLOCAL" />
+          <input type="hidden" name="CDLOCAL" :value="(codigoLocalSelecionado || String(codigoLocalDigitado || '').trim() || formData.CDLOCAL)" />
 
           {{-- Botão Lupa e Limpar --}}
           <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
@@ -1335,7 +1335,7 @@
                 this.userSelectedName = `${matricula} - ${nomeLimpo}`;
                 this.userSearch = this.userSelectedName;
                 this.showUserDropdown = false;
-                // Auto-focus para a proxima field (Data de Aquisicao)
+                // Auto-focus para a próxima field (Data de Aquisição)
                 this.$nextTick(() => {
                   setTimeout(() => {
                     const dtAquisicao = document.getElementById('DTAQUISICAO');
@@ -1780,7 +1780,9 @@
 
         // 1?? Atualizar o Local
         this.codigoLocalDigitado = String(codigo.cdlocal);
-        this.formData.CDLOCAL = String(codigo.id); // ? DEVE SER o ID, não cdlocal!
+        // Persistir o cdlocal no hidden para evitar perder mudança ao salvar sem blur completo.
+        // O backend valida e resolve com CDPROJETO (evita ambiguidades por código repetido).
+        this.formData.CDLOCAL = String(codigo.cdlocal);
         this.codigoLocalSelecionado = String(codigo.cdlocal);
 
         // 2?? ?? PREENCHER AUTOMATICAMENTE O NOME DO LOCAL
@@ -1831,10 +1833,10 @@
 
       handleCodigoLocalInput() {
         // Se o usuário digitar algo diferente do selecionado,
-        // limpar o ID para não enviar um CDLOCAL antigo no submit.
+        // evita enviar CDLOCAL antigo e já prepara o valor digitado para submit.
         const digitado = String(this.codigoLocalDigitado || '').trim();
         if (this.codigoLocalSelecionado && digitado !== this.codigoLocalSelecionado) {
-          this.formData.CDLOCAL = '';
+          this.formData.CDLOCAL = /^\d+$/.test(digitado) ? digitado : '';
           this.localSelecionadoId = null;
           this.nomeLocalBusca = '';
           this.localNome = '';
@@ -2556,7 +2558,7 @@
               this.nomeLocalBusca = primeiro.LOCAL || primeiro.delocal || '';
             }
             this.localNome = this.nomeLocalBusca;
-            this.formData.CDLOCAL = primeiro.id; // Usar ID em vez de cdlocal
+            this.formData.CDLOCAL = String(primeiro.cdlocal || primeiro.CDLOCAL || primeiro.id || '');
             this.localSelecionadoId = primeiro.id;
             this.formData.CDPROJETO = primeiro.CDPROJETO || '';
             this.projetoAssociadoSearch = primeiro.CDPROJETO && primeiro.NOMEPROJETO ?
