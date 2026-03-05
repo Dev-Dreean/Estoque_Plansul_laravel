@@ -1950,48 +1950,76 @@
               });
           },
           exportarRelatorio(formato) {
+            if (this.reportLoading) return;
+
             const actions = {
               excel: "{{ route('relatorios.patrimonios.exportar.excel') }}",
-              csv: "{{ route('relatorios.patrimonios.exportar.csv') }}",
-              ods: "{{ route('relatorios.patrimonios.exportar.ods') }}",
-              pdf: "{{ route('relatorios.patrimonios.exportar.pdf') }}",
+              csv:   "{{ route('relatorios.patrimonios.exportar.csv') }}",
+              ods:   "{{ route('relatorios.patrimonios.exportar.ods') }}",
+              pdf:   "{{ route('relatorios.patrimonios.exportar.pdf') }}",
             };
-            const action = actions[formato] || actions.excel;
+            const action = actions[formato];
+            if (!action) return;
 
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = action;
-
-            const token = document.createElement('input');
-            token.type = 'hidden';
-            token.name = '_token';
-            token.value = this.csrf();
-            form.appendChild(token);
+            // Monta FormData com CSRF + filtros do relatório
+            const formData = new FormData();
+            formData.append('_token', this.csrf());
 
             Object.entries(this.reportFilters || {}).forEach(([key, value]) => {
               if (Array.isArray(value)) {
-                value.filter((item) => item !== null && item !== undefined && item !== '').forEach((item) => {
-                  const input = document.createElement('input');
-                  input.type = 'hidden';
-                  input.name = `${key}[]`;
-                  input.value = item;
-                  form.appendChild(input);
-                });
+                value
+                  .filter((item) => item !== null && item !== undefined && item !== '')
+                  .forEach((item) => formData.append(`${key}[]`, item));
                 return;
               }
-
               if (value !== null && value !== undefined && value !== '') {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = value;
-                form.appendChild(input);
+                formData.append(key, value);
               }
             });
 
-            document.body.appendChild(form);
-            form.submit();
-            form.remove();
+            this.reportLoading = true;
+
+            fetch(action, {
+              method: 'POST',
+              body: formData,
+              headers: { 'X-CSRF-TOKEN': this.csrf() },
+            })
+              .then(async (response) => {
+                if (!response.ok) {
+                  // Tenta ler mensagem de erro do servidor
+                  const text = await response.text().catch(() => '');
+                  let msg = `Erro ${response.status} ao gerar o arquivo.`;
+                  try {
+                    const json = JSON.parse(text);
+                    if (json.message) msg = json.message;
+                  } catch (_) {}
+                  throw new Error(msg);
+                }
+                // Extrai nome do arquivo do header se disponível
+                const disposition = response.headers.get('Content-Disposition') || '';
+                const match = disposition.match(/filename\*?=(?:UTF-8'')?"?([^";]+)/i);
+                const ext = formato === 'pdf' ? '.pdf' : (formato === 'excel' ? '.xlsx' : (formato === 'ods' ? '.ods' : '.csv'));
+                const filename = match ? decodeURIComponent(match[1]) : `relatorio${ext}`;
+                const blob = await response.blob();
+                return { blob, filename };
+              })
+              .then(({ blob, filename }) => {
+                const objectUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = objectUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(objectUrl);
+              })
+              .catch((error) => {
+                console.error('[RELATORIO] Erro ao exportar', error);
+                alert('Não foi possível gerar o arquivo: ' + error.message);
+              })
+              .finally(() => {
+                this.reportLoading = false;
+              });
           },
           getFilterLabel(tipo) {
             const labels = {
