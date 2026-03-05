@@ -16,7 +16,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 // Removido uso de Maatwebsite\Excel; usaremos SimpleExcelWriter já presente
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 
 class RelatorioController extends Controller
 {
@@ -170,10 +172,21 @@ class RelatorioController extends Controller
                 'resultados' => $resultados,
                 'filtros' => $request->only(array_keys($base))
             ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validação falhou',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (\Throwable $e) {
+            Log::error('[RELATORIO] Falha ao gerar relatório', [
+                'user_id' => Auth::id(),
+                'erro' => $e->getMessage(),
+                'tipo_relatorio' => (string) $request->input('tipo_relatorio', ''),
+            ]);
+
             return response()->json([
                 'message' => 'Erro interno ao gerar relatório',
-                'exception' => app()->environment('local') ? $e->getMessage() : null
+                'exception' => app()->environment('local') ? $e->getMessage() : null,
             ], 500);
         }
     }
@@ -596,6 +609,7 @@ class RelatorioController extends Controller
     {
         @set_time_limit(300);
         @ini_set('max_execution_time', '300');
+        @ini_set('memory_limit', '512M');
         DB::disableQueryLog();
     }
 
@@ -622,12 +636,38 @@ class RelatorioController extends Controller
     public function exportarPdf(Request $request)
     {
         $this->prepareExportRuntime();
+
         $query = $this->getQueryFromRequest($request);
         $query->setEagerLoads([]);
-        $resultados = $query->get();
-        $pdf = PDF::loadView('patrimonios.pdf', compact('resultados'));
+
+        // Colunas do relatório — sem dependência de relações (tudo vem do modelo direto)
+        $cols = [
+            'NUPATRIMONIO',
+            'DEPATRIMONIO',
+            'SITUACAO',
+            'MARCA',
+            'MODELO',
+            'NUSERIE',
+            'CDPROJETO',
+            'CDLOCAL',
+            'DTAQUISICAO',
+            'DTOPERACAO',
+        ];
+
+        // Baixa somente os campos necessários para reduzir memória
+        $registros = $query->get($cols);
+
+        // Usa pdf-simples.blade.php que tem CSS inline (DomPDF não carrega CSS externo/Vite)
+        $pdf = Pdf::loadView('relatorios.patrimonios.pdf-simples', [
+            'modelo'    => 'simple',
+            'cols'      => $cols,
+            'registros' => $registros,
+        ])->setPaper('a4', 'landscape');
+
         $downloadName = $this->buildReportDownloadName($request, 'pdf');
-        return $pdf->stream($downloadName);
+
+        // download() força Content-Disposition: attachment — mais confiável que stream()
+        return $pdf->download($downloadName);
     }
 
     /**
@@ -787,3 +827,4 @@ class RelatorioController extends Controller
         return response()->download($tempPath)->deleteFileAfterSend(true);
     }
 }
+
