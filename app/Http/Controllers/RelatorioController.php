@@ -641,17 +641,18 @@ class RelatorioController extends Controller
             $query = $this->getQueryFromRequest($request);
             $query->setEagerLoads([]);
 
-            // Limite máximo de registros para PDF (evita estouro de memória/timeout)
-            $limite = 1000;
-            $totalEstimado = (clone $query)->limit($limite + 1)->count();
+            // Limite conservador para PDF — DomPDF consome ~200-300KB de RAM por linha
+            // com textos longos; 300 registros fica bem abaixo do teto de 256MB do KingHost
+            $limite = 300;
+            $totalEstimado = (clone $query)->count();
             $truncado = $totalEstimado > $limite;
 
+            // Apenas colunas essenciais + sem campos de texto longo (DEHISTORICO, CARACTERISTICAS)
             $cols = [
                 'NUPATRIMONIO',
                 'DEPATRIMONIO',
                 'SITUACAO',
                 'MARCA',
-                'MODELO',
                 'CDPROJETO',
                 'CDLOCAL',
                 'DTAQUISICAO',
@@ -660,7 +661,7 @@ class RelatorioController extends Controller
             $registros = $query->take($limite)->get($cols);
 
             // Gera HTML diretamente (sem Blade), mais leve e sem overhead de compilação
-            $html = $this->buildPdfHtml($registros, $cols, $truncado, $limite, $request);
+            $html = $this->buildPdfHtml($registros, $cols, $truncado, $limite, $totalEstimado, $request);
 
             /** @var \Barryvdh\DomPDF\PDF $pdf */
             $pdf = Pdf::loadHTML($html);
@@ -691,7 +692,7 @@ class RelatorioController extends Controller
      * Constrói o HTML do PDF diretamente (sem Blade) para melhor desempenho.
      * Usa apenas CSS inline compatível com DomPDF (sem Tailwind/Vite).
      */
-    private function buildPdfHtml($registros, array $cols, bool $truncado, int $limite, Request $request): string
+    private function buildPdfHtml($registros, array $cols, bool $truncado, int $limite, int $totalEstimado, Request $request): string
     {
         $tipo = $request->input('tipo_relatorio', 'geral');
         $total = $registros->count();
@@ -711,7 +712,7 @@ class RelatorioController extends Controller
         ];
 
         $avisoTruncado = $truncado
-            ? '<p style="background:#fff3cd;border:1px solid #ffc107;padding:6px 10px;font-size:10px;margin-bottom:8px;"><strong>⚠ Atenção:</strong> O relatório foi limitado a '.$limite.' registros. Use Excel/CSV para exportar todos os dados.</p>'
+            ? '<p style="background:#fff3cd;border:1px solid #ffc107;padding:6px 10px;font-size:10px;margin-bottom:8px;"><strong>Atencao:</strong> O relatorio foi limitado a '.$limite.' registros (total: '.$totalEstimado.'). Use Excel/CSV para exportar todos os dados.</p>'
             : '';
 
         // Cabeçalho da tabela
@@ -719,6 +720,9 @@ class RelatorioController extends Controller
         foreach ($cols as $c) {
             $ths .= '<th>' . ($colLabels[$c] ?? $c) . '</th>';
         }
+
+        // Colunas que podem ter texto muito longo — truncar para reduzir tamanho do HTML
+        $maxLen = ['DEPATRIMONIO' => 60, 'MARCA' => 30, 'MODELO' => 30];
 
         // Linhas da tabela
         $trs = '';
@@ -729,8 +733,13 @@ class RelatorioController extends Controller
                 $val = $r->$c ?? '';
                 if ($val instanceof \DateTimeInterface) {
                     $val = $val->format('d/m/Y');
+                } else {
+                    $val = (string) $val;
+                    if (isset($maxLen[$c]) && mb_strlen($val) > $maxLen[$c]) {
+                        $val = mb_substr($val, 0, $maxLen[$c]) . '...';
+                    }
                 }
-                $trs .= '<td>' . htmlspecialchars((string) $val, ENT_QUOTES, 'UTF-8') . '</td>';
+                $trs .= '<td>' . htmlspecialchars($val, ENT_QUOTES, 'UTF-8') . '</td>';
             }
             $trs .= '</tr>';
         }
