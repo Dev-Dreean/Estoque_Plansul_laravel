@@ -637,37 +637,137 @@ class RelatorioController extends Controller
     {
         $this->prepareExportRuntime();
 
-        $query = $this->getQueryFromRequest($request);
-        $query->setEagerLoads([]);
+        try {
+            $query = $this->getQueryFromRequest($request);
+            $query->setEagerLoads([]);
 
-        // Colunas do relatório — sem dependência de relações (tudo vem do modelo direto)
-        $cols = [
-            'NUPATRIMONIO',
-            'DEPATRIMONIO',
-            'SITUACAO',
-            'MARCA',
-            'MODELO',
-            'NUSERIE',
-            'CDPROJETO',
-            'CDLOCAL',
-            'DTAQUISICAO',
-            'DTOPERACAO',
+            // Limite máximo de registros para PDF (evita estouro de memória/timeout)
+            $limite = 1000;
+            $totalEstimado = (clone $query)->limit($limite + 1)->count();
+            $truncado = $totalEstimado > $limite;
+
+            $cols = [
+                'NUPATRIMONIO',
+                'DEPATRIMONIO',
+                'SITUACAO',
+                'MARCA',
+                'MODELO',
+                'CDPROJETO',
+                'CDLOCAL',
+                'DTAQUISICAO',
+            ];
+
+            $registros = $query->take($limite)->get($cols);
+
+            // Gera HTML diretamente (sem Blade), mais leve e sem overhead de compilação
+            $html = $this->buildPdfHtml($registros, $cols, $truncado, $limite, $request);
+
+            /** @var \Barryvdh\DomPDF\PDF $pdf */
+            $pdf = Pdf::loadHTML($html);
+            $pdf->setPaper('a4', 'landscape');
+            $pdf->setOption('isHtml5ParserEnabled', true);
+            $pdf->setOption('isRemoteEnabled', false);
+            $pdf->setOption('defaultFont', 'helvetica');
+
+            $downloadName = $this->buildReportDownloadName($request, 'pdf');
+
+            return $pdf->download($downloadName);
+
+        } catch (\Throwable $e) {
+            Log::error('❌ [RELATORIO PDF] Falha ao gerar PDF', [
+                'user_id'   => Auth::id(),
+                'erro'      => $e->getMessage(),
+                'arquivo'   => $e->getFile() . ':' . $e->getLine(),
+                'filtros'   => $request->only(['tipo_relatorio', 'projeto_busca', 'cdprojeto', 'situacao_busca']),
+            ]);
+
+            return response()->json([
+                'message' => 'Erro ao gerar PDF: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Constrói o HTML do PDF diretamente (sem Blade) para melhor desempenho.
+     * Usa apenas CSS inline compatível com DomPDF (sem Tailwind/Vite).
+     */
+    private function buildPdfHtml($registros, array $cols, bool $truncado, int $limite, Request $request): string
+    {
+        $tipo = $request->input('tipo_relatorio', 'geral');
+        $total = $registros->count();
+        $data  = now()->format('d/m/Y H:i:s');
+
+        $colLabels = [
+            'NUPATRIMONIO'  => 'Nº Patr.',
+            'DEPATRIMONIO'  => 'Descrição',
+            'SITUACAO'      => 'Situação',
+            'MARCA'         => 'Marca',
+            'MODELO'        => 'Modelo',
+            'NUSERIE'       => 'Nº Série',
+            'CDPROJETO'     => 'Projeto',
+            'CDLOCAL'       => 'Local',
+            'DTAQUISICAO'   => 'Dt. Aquisição',
+            'DTOPERACAO'    => 'Dt. Cadastro',
         ];
 
-        // Baixa somente os campos necessários para reduzir memória
-        $registros = $query->get($cols);
+        $avisoTruncado = $truncado
+            ? '<p style="background:#fff3cd;border:1px solid #ffc107;padding:6px 10px;font-size:10px;margin-bottom:8px;"><strong>⚠ Atenção:</strong> O relatório foi limitado a '.$limite.' registros. Use Excel/CSV para exportar todos os dados.</p>'
+            : '';
 
-        // Usa pdf-simples.blade.php que tem CSS inline (DomPDF não carrega CSS externo/Vite)
-        $pdf = Pdf::loadView('relatorios.patrimonios.pdf-simples', [
-            'modelo'    => 'simple',
-            'cols'      => $cols,
-            'registros' => $registros,
-        ])->setPaper('a4', 'landscape');
+        // Cabeçalho da tabela
+        $ths = '';
+        foreach ($cols as $c) {
+            $ths .= '<th>' . ($colLabels[$c] ?? $c) . '</th>';
+        }
 
-        $downloadName = $this->buildReportDownloadName($request, 'pdf');
+        // Linhas da tabela
+        $trs = '';
+        foreach ($registros as $i => $r) {
+            $bg = ($i % 2 === 0) ? '#FFFFFF' : '#F5F5F5';
+            $trs .= '<tr style="background:' . $bg . '">';
+            foreach ($cols as $c) {
+                $val = $r->$c ?? '';
+                if ($val instanceof \DateTimeInterface) {
+                    $val = $val->format('d/m/Y');
+                }
+                $trs .= '<td>' . htmlspecialchars((string) $val, ENT_QUOTES, 'UTF-8') . '</td>';
+            }
+            $trs .= '</tr>';
+        }
 
-        // download() força Content-Disposition: attachment — mais confiável que stream()
-        return $pdf->download($downloadName);
+        return <<<HTML
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Relatório de Patrimônios</title>
+<style>
+  * { font-family: Helvetica, Arial, sans-serif; box-sizing: border-box; }
+  body { font-size: 10px; color: #111; margin: 0; padding: 12px 14px 30px; }
+  h1 { font-size: 14px; margin: 0 0 3px; }
+  .meta { font-size: 9px; color: #555; margin-bottom: 10px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #bbb; padding: 3px 5px; vertical-align: top; word-break: break-word; }
+  th { background: #1e3a5f; color: #FFF; font-size: 8px; text-transform: uppercase; letter-spacing: .4px; }
+  tbody tr:nth-child(odd) { background: #FFFFFF; }
+  tbody tr:nth-child(even) { background: #F5F5F5; }
+  footer { position: fixed; left: 0; right: 0; bottom: 0; font-size: 8px; color: #777;
+           text-align: center; border-top: 1px solid #ccc; padding: 3px 0; }
+  @page { margin: 15px 15px 35px; }
+</style>
+</head>
+<body>
+  <h1>Relatório de Patrimônios</h1>
+  <div class="meta">Gerado em: {$data} &nbsp;|&nbsp; Filtro: {$tipo} &nbsp;|&nbsp; Registros: {$total}</div>
+  {$avisoTruncado}
+  <table>
+    <thead><tr>{$ths}</tr></thead>
+    <tbody>{$trs}</tbody>
+  </table>
+  <footer>Plansul &mdash; Relatório de Patrimônios &mdash; {$data}</footer>
+</body>
+</html>
+HTML;
     }
 
     /**
