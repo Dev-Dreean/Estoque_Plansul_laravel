@@ -517,7 +517,7 @@
     </div>
   </div>
 
-  {{-- GRUPO 6: Matrícula do Responsável, Data de Aquisição e Data de Baixa --}}
+  {{-- GRUPO 6: Matrícula do Responsável, Data da OC e Data de Baixa --}}
   <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
     <div class="relative" @click.away="showUserDropdown=false">
       <label for="matricula_busca" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Matrícula do Responsável *</label>
@@ -571,8 +571,17 @@
     </div>
 
     <div>
-      <label for="DTAQUISICAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Data de Aquisição</label>
+      <label for="DTAQUISICAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Data da OC</label>
       <input x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" @keydown.tab.prevent="focusNext($event.target)" tabindex="17" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+    </div>
+
+    <div>
+      <label for="FLTERMORESPONSABILIDADE" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Termo de Responsabilidade Enviado</label>
+      <select x-model="formData.FLTERMORESPONSABILIDADE" id="FLTERMORESPONSABILIDADE" name="FLTERMORESPONSABILIDADE" tabindex="18"
+        class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500">
+        <option value="N">Não</option>
+        <option value="S">Sim</option>
+      </select>
     </div>
 
     <div>
@@ -582,7 +591,7 @@
         name="DTBAIXA"
         type="date"
         @keydown.tab.prevent="focusNext($event.target)"
-        tabindex="18"
+        tabindex="19"
         class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
       <x-input-error class="mt-2" :messages="$errors->get('DTBAIXA')" />
     </div>
@@ -927,6 +936,7 @@
         CDMATRFUNCIONARIO: (config.old?.CDMATRFUNCIONARIO ?? config.patrimonio?.CDMATRFUNCIONARIO) || '',
         PESO: (config.old?.PESO ?? config.patrimonio?.PESO) || '',
         TAMANHO: (config.old?.TAMANHO ?? config.patrimonio?.TAMANHO) || '',
+        FLTERMORESPONSABILIDADE: (config.old?.FLTERMORESPONSABILIDADE ?? config.patrimonio?.FLTERMORESPONSABILIDADE) || 'N',
       },
       // == ESTADO DA UI ==
       loading: false,

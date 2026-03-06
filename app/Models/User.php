@@ -43,6 +43,10 @@ class User extends Authenticatable
     public const TELA_SOLICITACOES_CRIAR = '1013';
     public const TELA_SOLICITACOES_APROVAR = '1014';
     public const TELA_SOLICITACOES_CANCELAR = '1015';
+    public const TELA_SOLICITACOES_HISTORICO = '1016';
+    public const TELA_SOLICITACOES_GERENCIAR_VISIBILIDADE = '1017';
+    public const TELA_SOLICITACOES_VISUALIZACAO_RESTRITA = '1018';
+    public const TELA_SOLICITACOES_TRIAGEM_INICIAL = '1019';
     public const MATRICULA_PLACEHOLDERS = ['0', '1'];
     public const MATRICULA_PLACEHOLDER_PREFIX = 'TMP-';
 
@@ -220,7 +224,8 @@ class User extends Authenticatable
                 || $this->temAcessoTela(self::TELA_SOLICITACOES_ATUALIZAR)
                 || $this->temAcessoTela(self::TELA_SOLICITACOES_CRIAR)
                 || $this->temAcessoTela(self::TELA_SOLICITACOES_APROVAR)
-                || $this->temAcessoTela(self::TELA_SOLICITACOES_CANCELAR);
+                || $this->temAcessoTela(self::TELA_SOLICITACOES_CANCELAR)
+                || $this->temAcessoTela(self::TELA_SOLICITACOES_TRIAGEM_INICIAL);
             if ($temPermissaoSolicitacoes) {
                 return true;
             }

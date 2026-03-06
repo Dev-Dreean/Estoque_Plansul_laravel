@@ -1,6 +1,7 @@
 @php
     $defaultNome = old('solicitante_nome', $user?->NOMEUSER ?? '');
     $defaultMatricula = old('solicitante_matricula', $user?->CDMATRFUNCIONARIO ?? '');
+    $defaultReceberEuMesmo = old('receber_eu_mesmo', '1');
     $defaultUf = old('uf', $user?->UF ?? '');
     $oldItens = old('itens');
     if (!is_array($oldItens) || count($oldItens) === 0) {
@@ -19,9 +20,14 @@
             </h2>
         </x-slot>
 
+        
+        <div class="pt-6 w-full sm:px-6 lg:px-8">
+            @include('solicitacoes.partials.subnav')
+        </div>
         @include('solicitacoes.partials.form', [
             'defaultNome' => $defaultNome,
             'defaultMatricula' => $defaultMatricula,
+            'defaultReceberEuMesmo' => $defaultReceberEuMesmo,
             'defaultUf' => $defaultUf,
             'oldItens' => $oldItens,
             'isModal' => $isModal,
@@ -32,6 +38,7 @@
     @include('solicitacoes.partials.form', [
         'defaultNome' => $defaultNome,
         'defaultMatricula' => $defaultMatricula,
+        'defaultReceberEuMesmo' => $defaultReceberEuMesmo,
         'defaultUf' => $defaultUf,
         'oldItens' => $oldItens,
         'isModal' => $isModal,

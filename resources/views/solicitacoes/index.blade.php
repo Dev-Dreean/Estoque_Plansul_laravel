@@ -27,6 +27,8 @@
                 </div>
             @endif
 
+            @include('solicitacoes.partials.subnav')
+
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="flex justify-between items-center mb-4">
@@ -81,10 +83,14 @@
 
                     @php
                         $statusColors = [
-                            'PENDENTE' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-                            'AGUARDANDO_CONFIRMACAO' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-                            'CONFIRMADO' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-                            'CANCELADO' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+                            // Mesma paleta dos cards do acompanhamento
+                            'PENDENTE' => 'bg-yellow-400 text-black border border-yellow-500',
+                            'AGUARDANDO_CONFIRMACAO' => 'bg-blue-400 text-black border border-blue-500',
+                            'CONFIRMADO' => 'bg-purple-400 text-black border border-purple-600',
+                            'RECEBIDO' => 'bg-green-400 text-black border border-green-600',
+                            'NAO_ENVIADO' => 'bg-orange-400 text-black border border-orange-500',
+                            'NAO_RECEBIDO' => 'bg-rose-300 text-black border border-rose-500',
+                            'CANCELADO' => 'bg-red-400 text-black border border-red-600',
                         ];
                     @endphp
 
@@ -93,6 +99,35 @@
                         $currentUserId = $currentUser?->getAuthIdentifier();
                         $currentUserMatricula = trim((string) ($currentUser?->CDMATRFUNCIONARIO ?? ''));
                         $isAdminUser = $currentUser?->isAdmin() ?? false;
+                        $shortPersonName = function (?string $nome): string {
+                            $nome = trim((string) $nome);
+                            if ($nome === '') {
+                                return '-';
+                            }
+
+                            $partes = preg_split('/\s+/', $nome) ?: [];
+                            $qtd = count($partes);
+
+                            if ($qtd <= 2) {
+                                return mb_convert_case(mb_strtolower($nome, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+                            }
+
+                            if ($qtd <= 4) {
+                                $resumo = $partes[0] . ' ' . $partes[1] . ' ' . $partes[$qtd - 1];
+                                return mb_convert_case(mb_strtolower($resumo, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+                            }
+
+                            $resumo = $partes[0] . ' ' . $partes[$qtd - 1];
+                            return mb_convert_case(mb_strtolower($resumo, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+                        };
+                        $formatDisplay = function (?string $valor): string {
+                            $valor = trim((string) $valor);
+                            if ($valor === '') {
+                                return '-';
+                            }
+
+                            return mb_convert_case(mb_strtolower($valor, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+                        };
                         $currentSort = $sort ?? request('sort', 'created_at');
                         $currentDirection = $direction ?? request('direction', 'desc');
                         $nextDirection = fn ($col) => ($currentSort === $col && $currentDirection === 'asc') ? 'desc' : 'asc';
@@ -103,13 +138,12 @@
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'id', 'direction' => $nextDirection('id'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Número <span class="text-[10px]">{{ $sortMark('id') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'id', 'direction' => $nextDirection('id'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Cód. <span class="text-[10px]">{{ $sortMark('id') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'itens', 'direction' => $nextDirection('itens'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Itens <span class="text-[10px]">{{ $sortMark('itens') }}</span></a></th>
                                     <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'solicitante', 'direction' => $nextDirection('solicitante'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Solicitante <span class="text-[10px]">{{ $sortMark('solicitante') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'setor', 'direction' => $nextDirection('setor'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Setor <span class="text-[10px]">{{ $sortMark('setor') }}</span></a></th>
                                     <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'local_destino', 'direction' => $nextDirection('local_destino'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Local destino <span class="text-[10px]">{{ $sortMark('local_destino') }}</span></a></th>
                                     <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'uf', 'direction' => $nextDirection('uf'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">UF <span class="text-[10px]">{{ $sortMark('uf') }}</span></a></th>
                                     <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'status', 'direction' => $nextDirection('status'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Status <span class="text-[10px]">{{ $sortMark('status') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'itens', 'direction' => $nextDirection('itens'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Itens <span class="text-[10px]">{{ $sortMark('itens') }}</span></a></th>
                                     <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'created_at', 'direction' => $nextDirection('created_at'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Criado <span class="text-[10px]">{{ $sortMark('created_at') }}</span></a></th>
                                     <th class="px-4 py-2">Ações</th>
                                 </tr>
@@ -118,17 +152,16 @@
                                 @forelse($solicitacoes as $solicitacao)
                                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors cursor-pointer" @click="openShowModal({{ $solicitacao->id }})">
                                         <td class="px-4 py-2 font-semibold text-gray-900 dark:text-white">#{{ $solicitacao->id }}</td>
+                                        <td class="px-4 py-2">{{ $solicitacao->itens_count ?? 0 }}</td>
                                         <td class="px-4 py-2">
-                                            <div class="text-gray-900 dark:text-gray-100">{{ $solicitacao->solicitante_nome ?? '-' }}</div>
+                                            <div class="text-gray-900 dark:text-gray-100">{{ $shortPersonName($solicitacao->solicitante_nome ?? '-') }}</div>
                                             <div class="text-xs text-gray-500">{{ $solicitacao->solicitante_matricula ?? '-' }}</div>
                                         </td>
-                                        <td class="px-4 py-2">{{ $solicitacao->setor ?? '-' }}</td>
-                                        <td class="px-4 py-2">{{ $solicitacao->local_destino ?? '-' }}</td>
+                                        <td class="px-4 py-2">{{ $formatDisplay($solicitacao->local_destino ?? '-') }}</td>
                                         <td class="px-4 py-2">{{ $solicitacao->uf ?? '-' }}</td>
                                         <td class="px-4 py-2">
                                             <x-status-badge :status="$solicitacao->status" :color-map="$statusColors" />
                                         </td>
-                                        <td class="px-4 py-2">{{ $solicitacao->itens_count ?? 0 }}</td>
                                         <td class="px-4 py-2">{{ optional($solicitacao->created_at)->format('d/m/Y H:i') }}</td>
                                         <td class="px-4 py-2">
                                             @php
@@ -185,7 +218,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="px-4 py-3 text-center text-gray-500">Nenhuma solicitacao encontrada.</td>
+                                        <td colspan="8" class="px-4 py-3 text-center text-gray-500">Nenhuma solicitacao encontrada.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -210,24 +243,10 @@
                             <form method="POST" :action="urlConfirm()" class="p-6 space-y-4">
                                 @csrf
                                 @method('POST')
-                                
-                                <div>
-                                    <label for="quick_recebedor_search" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Responsavel Recebedor *</label>
-                                    <x-user-autocomplete
-                                        id="quick_recebedor_search"
-                                        name="recebedor_matricula"
-                                        value=""
-                                        placeholder="Digite matricula ou nome..."
-                                        class="h-8 text-xs border-gray-300 dark:border-gray-600" />
-                                    <x-input-error :messages="$errors->get('recebedor_matricula')" class="mt-1" />
-                                </div>
 
-                                <div>
-                                    <label for="quick_tracking_code" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Rastreio *</label>
-                                    <input type="text" id="quick_tracking_code" name="tracking_code" required 
-                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
-                                        placeholder="Ex: RAS-2025-001" />
-                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    Confirme para mover esta solicitação para a etapa de análise.
+                                </p>
 <div class="flex gap-2 pt-4">
                                     <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
@@ -244,7 +263,7 @@
                     <div x-show="showQuickApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
                             <div class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
-                                <h3 class="text-sm font-bold">Aprovar Solicitação</h3>
+                                <h3 class="text-sm font-bold">Pedido Enviado</h3>
                                 <button @click="fecharModais()" class="text-white/70 hover:text-white">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -255,14 +274,23 @@
                                 @csrf
                                 @method('POST')
                                 
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Tem certeza que deseja aprovar esta solicitação? Ela será marcada como confirmada.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    Informe o código de rastreio para marcar o pedido como enviado.
+                                </p>
+
+                                <div>
+                                    <label for="quick_tracking_code_enviado" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Rastreio *</label>
+                                    <input type="text" id="quick_tracking_code_enviado" name="tracking_code" required
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
+                                        placeholder="Ex: RAS-2026-001" />
+                                </div>
 
                                 <div class="flex gap-2 pt-4">
                                     <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
                                     </button>
                                     <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">
-                                        Aprovar
+                                        Confirmar Envio
                                     </button>
                                 </div>
                             </form>
@@ -489,7 +517,113 @@
                     <div>
                         <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white" x-text="showModalTitle"></h3>
                     </div>
-                    <button type="button" @click="closeShowModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">×</button>
+                    <div class="flex items-center gap-2 relative">
+                        <template x-if="showModalCanManageAccess && showModalAccessGranted.length > 0">
+                            <div class="flex items-center gap-2 text-xs bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg px-3 py-2">
+                                <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                                </svg>
+                                <span class="text-indigo-700 dark:text-indigo-300 font-medium">Acesso:</span>
+                                <span class="text-indigo-600 dark:text-indigo-400" x-text="showModalAccessGranted.map(u => u.login).join(', ')"></span>
+                            </div>
+                        </template>
+                        <template x-if="showModalCanManageAccess">
+                            <div class="relative">
+                                <button
+                                    type="button"
+                                    @click="showAccessDropdown = !showAccessDropdown"
+                                    class="inline-flex items-center gap-1 rounded-lg border border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50">
+                                    Acesso
+                                    <span class="text-[10px]" x-text="showModalAccessSelected.length ? `(${showModalAccessSelected.length})` : ''"></span>
+                                </button>
+                                <div
+                                    x-show="showAccessDropdown"
+                                    x-cloak
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="opacity-0 scale-95"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="opacity-100 scale-100"
+                                    x-transition:leave-end="opacity-0 scale-95"
+                                    @click.outside="showAccessDropdown = false"
+                                    class="absolute right-0 mt-2 w-[22rem] max-w-[90vw] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl p-0 z-20 overflow-hidden ring-1 ring-black ring-opacity-5">
+                                    <div class="border-b border-gray-100 dark:border-gray-800 px-4 py-3 bg-gray-50 dark:bg-gray-800">
+                                        <p class="text-sm font-semibold text-gray-900 dark:text-white">Gerenciar acesso</p>
+                                        <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Marque quem terá acesso. Desmarque quem deve perder acesso.</p>
+                                    </div>
+                                    <div class="max-h-80 overflow-y-auto px-2 py-3 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+                                        <template x-if="showModalAccessUsers.length > 0">
+                                            <div>
+                                                <p class="text-[11px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide px-1 mb-2">Usuários permitidos</p>
+                                                <div class="space-y-1.5">
+                                                    <template x-for="usuario in showModalAccessUsers" :key="`access-${usuario.id}`">
+                                                        <label 
+                                                            class="group flex items-start gap-3 rounded-lg border px-3 py-2.5 text-left cursor-pointer transition-all"
+                                                            :class="showModalAccessSelected.includes(String(usuario.id)) ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-700' : 'border-transparent hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-700'">
+                                                            <div class="flex items-center h-full pt-0.5">
+                                                                <input type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-indigo-600 focus:ring-indigo-500 transition-colors"
+                                                                    :value="String(usuario.id)" x-model="showModalAccessSelected">
+                                                            </div>
+                                                            <span class="min-w-0 flex-1">
+                                                                <span class="block truncate text-sm font-bold text-gray-900 dark:text-gray-100 transition-colors"
+                                                                    :class="showModalAccessSelected.includes(String(usuario.id)) ? 'text-indigo-700 dark:text-indigo-400' : 'group-hover:text-indigo-600 dark:group-hover:text-indigo-400'" 
+                                                                    x-text="usuario.login"></span>
+                                                                <span class="mt-0.5 block truncate text-[11px] text-gray-500 dark:text-gray-400" x-text="usuario.nome"></span>
+                                                            </span>
+                                                        </label>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <!-- Nenhum usuário -->
+                                        <template x-if="!showModalAccessUsers.length">
+                                            <div class="rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/20 px-3 py-3 text-xs text-amber-700 dark:text-amber-400 text-center">
+                                                Nenhum usuário disponível para gerenciar o acesso nesta solicitação.
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 px-4 py-3">
+                                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                            <span x-text="showModalAccessSelected.length" class="text-gray-900 dark:text-white font-semibold"></span> selecionado(s)
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" @click="showAccessDropdown = false"
+                                                class="px-3 py-1.5 text-xs font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">Fechar</button>
+                                            <button type="button" @click="saveShowModalAccessChanges()"
+                                                :disabled="!showModalAccessHasChanges"
+                                                :class="showModalAccessHasChanges ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm' : 'bg-gray-200 dark:bg-gray-800 border border-transparent dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'"
+                                                class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all">
+                                                <span x-text="showModalAccessActionLabel"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="showModalAccessFeedback.message"
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 translate-y-1"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 translate-y-1"
+                            class="hidden sm:flex items-center justify-center rounded-full border h-8 w-8"
+                            :class="showModalAccessFeedback.success ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'"
+                            :title="showModalAccessFeedback.message">
+                            <template x-if="showModalAccessFeedback.success">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                                </svg>
+                            </template>
+                            <template x-if="!showModalAccessFeedback.success">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </template>
+                        </div>
+                        <button type="button" @click="closeShowModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">×</button>
+                    </div>
                 </div>
                 <div class="relative flex-1 overflow-y-auto bg-white dark:bg-gray-800 min-h-[320px] solicitacao-modal-scroll">
                     <div x-show="showModalLoading" class="absolute inset-0 flex items-center justify-center bg-white/90 dark:bg-gray-800/90 z-10">
@@ -926,6 +1060,34 @@
                     showModalLoading: false,
                     showModalContentReady: false,
                     showModalTitle: '',
+                    showAccessDropdown: false,
+                    showModalCanManageAccess: false,
+                    showModalAccessUsers: [],
+                    showModalAccessGranted: [],
+                    showModalAccessSelected: [],
+                    showModalAccessInitiallyGranted: [],
+                    showModalAccessGrantUrl: '',
+                    showModalAccessRevokeUrl: '',
+                    showModalAccessFeedback: { success: false, message: '' },
+                    currentSolicitacaoId: null,
+                    get showModalAccessAddedIds() {
+                        const initial = new Set(this.showModalAccessInitiallyGranted);
+                        return this.showModalAccessSelected.filter((id) => !initial.has(id));
+                    },
+                    get showModalAccessRemovedIds() {
+                        const selected = new Set(this.showModalAccessSelected);
+                        return this.showModalAccessInitiallyGranted.filter((id) => !selected.has(id));
+                    },
+                    get showModalAccessHasChanges() {
+                        return this.showModalAccessAddedIds.length > 0 || this.showModalAccessRemovedIds.length > 0;
+                    },
+                    get showModalAccessActionLabel() {
+                        const added = this.showModalAccessAddedIds.length;
+                        const removed = this.showModalAccessRemovedIds.length;
+                        if (added > 0 && removed > 0) return 'Salvar acesso';
+                        if (removed > 0) return 'Remover acesso';
+                        return 'Conceder acesso';
+                    },
                     init() {
                         this.confirmUrlBase = this.$el?.dataset?.confirmUrl || '';
                         this.approveUrlBase = this.$el?.dataset?.approveUrl || '';
@@ -981,6 +1143,138 @@
                         return document.querySelector('meta[name=csrf-token]')?.content || '';
                     },
 
+                    setShowModalAccessFeedback(success, message, duration = 2600) {
+                        this.showModalAccessFeedback = {
+                            success: !!success,
+                            message: message || '',
+                        };
+
+                        if (this.showModalAccessFeedbackTimer) {
+                            clearTimeout(this.showModalAccessFeedbackTimer);
+                        }
+
+                        if (!message) {
+                            return;
+                        }
+
+                        this.showModalAccessFeedbackTimer = setTimeout(() => {
+                            this.showModalAccessFeedback = { success: false, message: '' };
+                            this.showModalAccessFeedbackTimer = null;
+                        }, duration);
+                    },
+
+                    hydrateShowModalAccessData(modalBody) {
+                        this.showModalCanManageAccess = false;
+                        this.showModalAccessUsers = [];
+                        this.showModalAccessGranted = [];
+                        this.showModalAccessSelected = [];
+                        this.showModalAccessInitiallyGranted = [];
+                        this.showModalAccessGrantUrl = '';
+                        this.showModalAccessRevokeUrl = '';
+                        this.setShowModalAccessFeedback(false, '', 0);
+                        this.showAccessDropdown = false;
+
+                        if (!modalBody) return;
+                        const source = modalBody.querySelector('#solicitacao-permissoes-data');
+                        if (!source || source.dataset.enabled !== '1') return;
+
+                        this.showModalCanManageAccess = true;
+                        this.showModalAccessGrantUrl = source.dataset.grantUrl || '';
+                        this.showModalAccessRevokeUrl = source.dataset.revokeUrl || '';
+                        try {
+                            const users = JSON.parse(source.dataset.users || '[]');
+                            this.showModalAccessUsers = Array.isArray(users) ? users : [];
+                        } catch (e) {
+                            this.showModalAccessUsers = [];
+                        }
+                        try {
+                            const grantedUsers = JSON.parse(source.dataset.grantedUsers || '[]');
+                            this.showModalAccessGranted = Array.isArray(grantedUsers) ? grantedUsers : [];
+                        } catch (e) {
+                            this.showModalAccessGranted = [];
+                        }
+                        const allUsers = [...this.showModalAccessGranted, ...this.showModalAccessUsers];
+                        const uniqueUsers = [];
+                        const seen = new Set();
+                        allUsers.forEach((usuario) => {
+                            const id = String(usuario.id ?? '').trim();
+                            if (!id || seen.has(id)) return;
+                            seen.add(id);
+                            uniqueUsers.push({
+                                id: Number(usuario.id),
+                                nome: usuario.nome || '',
+                                login: usuario.login || '',
+                            });
+                        });
+                        this.showModalAccessUsers = uniqueUsers;
+                        this.showModalAccessInitiallyGranted = this.showModalAccessGranted.map((usuario) => String(usuario.id));
+                        this.showModalAccessSelected = [...this.showModalAccessInitiallyGranted];
+                    },
+
+                    async saveShowModalAccessChanges() {
+                        if (!this.showModalAccessGrantUrl || !this.showModalAccessHasChanges) {
+                            return;
+                        }
+
+                        const addedIds = [...new Set(this.showModalAccessAddedIds.map((v) => String(v).trim()).filter(Boolean))];
+                        const removedIds = [...new Set(this.showModalAccessRemovedIds.map((v) => String(v).trim()).filter(Boolean))];
+
+                        this.showModalLoading = true;
+                        this.setShowModalAccessFeedback(false, '', 0);
+                        try {
+                            if (addedIds.length) {
+                                const formData = new FormData();
+                                addedIds.forEach((usuarioId) => formData.append('usuario_ids[]', usuarioId));
+                                formData.append('modal', '1');
+
+                                const response = await fetch(this.showModalAccessGrantUrl, {
+                                    method: 'POST',
+                                    body: formData,
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRF-TOKEN': this.csrf(),
+                                        'Accept': 'application/json',
+                                    },
+                                });
+
+                                const payload = await response.json().catch(() => ({}));
+                                if (!response.ok || payload.success === false) {
+                                    this.setShowModalAccessFeedback(false, payload.message || 'Não foi possível conceder o acesso selecionado.');
+                                    return;
+                                }
+                            }
+
+                            for (const usuarioId of removedIds) {
+                                const response = await fetch(`${this.showModalAccessRevokeUrl}/${encodeURIComponent(usuarioId)}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRF-TOKEN': this.csrf(),
+                                        'Accept': 'application/json',
+                                    },
+                                });
+
+                                const payload = await response.json().catch(() => ({}));
+                                if (!response.ok || payload.success === false) {
+                                    this.setShowModalAccessFeedback(false, payload.message || 'Não foi possível remover o acesso selecionado.');
+                                    return;
+                                }
+                            }
+
+                            this.setShowModalAccessFeedback(true, 'Acesso atualizado com sucesso.');
+                            this.showModalAccessGranted = this.showModalAccessUsers.filter((usuario) =>
+                                this.showModalAccessSelected.includes(String(usuario.id))
+                            );
+                            this.showModalAccessInitiallyGranted = [...this.showModalAccessSelected];
+                            this.showAccessDropdown = false;
+                        } catch (err) {
+                            console.error('[SOLICITACAO] Erro ao liberar acessos', err);
+                            this.renderModalError('solicitacao-show-modal-body', 'Falha ao liberar acesso. Verifique sua conexão.');
+                        } finally {
+                            this.showModalLoading = false;
+                        }
+                    },
+
                     openCreateModal() {
                         this.openFormModal('create');
                     },
@@ -993,10 +1287,20 @@
                         }
                         
                         console.log('[SOLICITACAO] Opening show modal for ID:', id);
+                        this.currentSolicitacaoId = id;
                         this.showModalTitle = `Solicita\u00e7\u00e3o #${id}`;
                         this.showModalOpen = false;
                         this.showModalLoading = true;
                         this.showModalContentReady = false;
+                        this.showAccessDropdown = false;
+                        this.showModalCanManageAccess = false;
+                        this.showModalAccessUsers = [];
+                        this.showModalAccessGranted = [];
+                        this.showModalAccessSelected = [];
+                        this.showModalAccessInitiallyGranted = [];
+                        this.showModalAccessGrantUrl = '';
+                        this.showModalAccessRevokeUrl = '';
+                        this.setShowModalAccessFeedback(false, '', 0);
                         modalBody.innerHTML = '';
 
                         const url = "{{ url('solicitacoes-bens') }}/" + encodeURIComponent(id) + "/show-modal";
@@ -1036,6 +1340,7 @@
                                     () => this.closeShowModal(),
                                     (form) => this.submitModalForm(form, 'solicitacao-show-modal-body')
                                 );
+                                this.hydrateShowModalAccessData(modalBody);
                                 console.log('[SOLICITACAO] Handlers bound');
                                 this.showModalContentReady = true;
                             })
@@ -1078,6 +1383,10 @@
                         })
                             .then((resp) => {
                                 console.log('[SOLICITACAO] Fetch response status:', resp.status, 'URL:', url);
+                                if (resp.redirected && resp.url && !resp.url.includes('/solicitacoes-bens')) {
+                                    window.location.href = resp.url;
+                                    return '';
+                                }
                                 if (!resp.ok) {
                                     if (resp.status === 401) {
                                         throw new Error('Sua sessão expirou. Por favor, faça login novamente.');
@@ -1089,6 +1398,7 @@
                                 return resp.text();
                             })
                             .then((html) => {
+                                if (!html) return;
                                 this.applyFormModalHtml(html);
                             })
                             .catch((err) => {
@@ -1118,6 +1428,16 @@
                         this.showModalLoading = false;
                         this.showModalContentReady = false;
                         this.showModalTitle = '';
+                        this.showAccessDropdown = false;
+                        this.showModalCanManageAccess = false;
+                        this.showModalAccessUsers = [];
+                        this.showModalAccessGranted = [];
+                        this.showModalAccessSelected = [];
+                        this.showModalAccessInitiallyGranted = [];
+                        this.showModalAccessGrantUrl = '';
+                        this.showModalAccessRevokeUrl = '';
+                        this.setShowModalAccessFeedback(false, '', 0);
+                        this.currentSolicitacaoId = null;
                         const modalBody = document.getElementById('solicitacao-show-modal-body');
                         if (modalBody) {
                             modalBody.innerHTML = '';
@@ -1302,6 +1622,10 @@
         </script>
     @endpush
 </x-app-layout>
+
+
+
+
 
 
 

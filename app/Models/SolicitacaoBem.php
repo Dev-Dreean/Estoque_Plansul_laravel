@@ -5,12 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class SolicitacaoBem extends Model
 {
     public const STATUS_PENDENTE = 'PENDENTE';
     public const STATUS_AGUARDANDO_CONFIRMACAO = 'AGUARDANDO_CONFIRMACAO';
     public const STATUS_CONFIRMADO = 'CONFIRMADO';
+    public const STATUS_NAO_ENVIADO = 'NAO_ENVIADO';
+    public const STATUS_NAO_RECEBIDO = 'NAO_RECEBIDO';
+    public const STATUS_RECEBIDO = 'RECEBIDO';
     public const STATUS_CANCELADO = 'CANCELADO';
     
     public const DESTINATION_FILIAL = 'FILIAL';
@@ -53,6 +57,9 @@ class SolicitacaoBem extends Model
             self::STATUS_PENDENTE,
             self::STATUS_AGUARDANDO_CONFIRMACAO,
             self::STATUS_CONFIRMADO,
+            self::STATUS_NAO_ENVIADO,
+            self::STATUS_NAO_RECEBIDO,
+            self::STATUS_RECEBIDO,
             self::STATUS_CANCELADO,
         ];
     }
@@ -78,5 +85,17 @@ class SolicitacaoBem extends Model
     public function projeto(): BelongsTo
     {
         return $this->belongsTo(Tabfant::class, 'projeto_id', 'id');
+    }
+
+    public function usuariosComPermissao(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            User::class,
+            'solicitacoes_bens_permissoes',
+            'solicitacao_id',
+            'usuario_id',
+            'id',
+            'NUSEQUSUARIO'
+        )->withPivot(['liberado_por_id'])->withTimestamps();
     }
 }

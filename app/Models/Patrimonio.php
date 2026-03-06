@@ -50,7 +50,8 @@ class Patrimonio extends Model
         'CODOBJETO',
         'NMPLANTA',
         'PESO',
-        'TAMANHO'
+        'TAMANHO',
+        'FLTERMORESPONSABILIDADE',
     ];
 
     protected $casts = [

@@ -4,6 +4,10 @@
     $cardClass = $isModal ? 'w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm' : 'bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden';
     $padClass = $isModal ? 'p-5 sm:p-6' : 'p-6 sm:p-8';
     $showStep2 = $errors->has('itens') || $errors->has('itens.0.descricao') || $errors->has('itens.0.quantidade') || $errors->has('itens.0.unidade') || $errors->has('itens.0.observacao');
+    $recebedorMatriculaOld = (string) old('recebedor_matricula', $defaultMatricula ?? '');
+    $recebedorDisplayOld = $recebedorMatriculaOld !== ''
+        ? trim($recebedorMatriculaOld . ' - ' . ($defaultNome ?? ''))
+        : (string) ($defaultNome ?? '');
 @endphp
 
 <div class="{{ $containerClass }}">
@@ -25,13 +29,35 @@
                     @if($isModal)
                         <input type="hidden" name="modal" value="1" />
                     @endif
-                    <input type="hidden" name="solicitante_nome" value="{{ $defaultNome }}" />
-                    <input type="hidden" name="solicitante_matricula" value="{{ $defaultMatricula }}" />
                     <input type="hidden" name="uf" value="{{ $defaultUf }}" />
                     
                     <!-- SEÇÃO 1: Dados da Solicitação -->
                     <div x-show="step === 1" class="space-y-3">
                         <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">Dados da Solicitação</h3>
+
+                        <input type="hidden" id="solicitante_nome" name="solicitante_nome" value="{{ old('solicitante_nome', $defaultNome) }}">
+                        <input type="hidden" id="solicitante_matricula" name="solicitante_matricula" value="{{ old('solicitante_matricula', $defaultMatricula) }}">
+
+                        <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white/60 dark:bg-gray-900/30 space-y-2">
+                            <div class="text-[11px] text-gray-500 dark:text-gray-400">
+                                Solicitante: <span class="font-semibold text-gray-800 dark:text-gray-100">{{ $defaultNome }}</span>
+                                <span class="mx-1">|</span>
+                                Matrícula: <span class="font-semibold text-gray-800 dark:text-gray-100">{{ $defaultMatricula ?: '-' }}</span>
+                            </div>
+                            <div>
+                                <label for="recebedor_matricula" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Quem vai receber *</label>
+                                <x-user-autocomplete
+                                    id="recebedor_matricula"
+                                    name="recebedor_matricula"
+                                    :value="$recebedorMatriculaOld"
+                                    :initial-display="$recebedorDisplayOld"
+                                    :lookup-on-init="false"
+                                    placeholder="Digite matrícula ou nome do recebedor..."
+                                    class="h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200" />
+                                <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Por padrão vem o usuário logado. Se outra pessoa for receber, basta selecionar aqui.</p>
+                                <x-input-error :messages="$errors->get('recebedor_matricula')" class="mt-1" />
+                            </div>
+                        </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3" x-data="projetoLocalForm()">
                             <!-- Projeto com Dropdown Searchable -->

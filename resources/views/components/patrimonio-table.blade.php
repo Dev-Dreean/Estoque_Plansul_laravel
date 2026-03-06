@@ -60,10 +60,11 @@
     'marca' => 'Marca',
     'descricao' => 'Desc.',
     'situacao' => 'Status',
-    'dtaquisicao' => 'Dt. Aquis.',
+    'dtaquisicao' => 'Dt. OC',
     'dtoperacao' => 'Dt. Cad.',
     'responsavel' => 'Resp.',
     'cadastrador' => 'Cad. Por',
+    'termo_responsabilidade' => 'Termo Resp.',
     // Colunas auxiliares (mantidas caso sejam usadas)
     'nuserie' => 'Série',
     'nmplanta' => 'Termo',
@@ -311,6 +312,19 @@
             
             @elseif($col === 'cadastrador')
               <td class="{{ $headerPadding }} truncate max-w-[100px]">{{ $item->cadastrado_por_nome ?? '—' }}</td>
+            
+            @elseif($col === 'termo_responsabilidade')
+              <td class="{{ $headerPadding }} text-center">
+                @php
+                  $flTermo = strtoupper(trim((string) ($item->FLTERMORESPONSABILIDADE ?? 'N')));
+                  $termoEnviado = in_array($flTermo, ['S', '1', 'Y'], true);
+                @endphp
+                @if($termoEnviado)
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300" title="Termo enviado">Sim</span>
+                @else
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" title="Termo pendente">Não</span>
+                @endif
+              </td>
             
             {{-- CUSTOM COLUMNS: renderiza via slot nomeado --}}
             @else

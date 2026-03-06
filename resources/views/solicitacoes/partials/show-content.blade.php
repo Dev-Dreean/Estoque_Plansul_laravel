@@ -3,10 +3,13 @@
     $containerClass = $isModal ? 'p-4 sm:p-5' : 'py-12';
     $wrapperClass = $isModal ? 'w-full' : 'max-w-6xl mx-auto sm:px-6 lg:px-8';
     $statusColors = [
-        'PENDENTE' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700',
-        'AGUARDANDO_CONFIRMACAO' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-200 dark:border-blue-700',
-        'CONFIRMADO' => 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-700',
-        'CANCELADO' => 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border border-red-200 dark:border-red-700',
+        'PENDENTE' => 'bg-yellow-400 text-black border border-yellow-500',
+        'AGUARDANDO_CONFIRMACAO' => 'bg-blue-400 text-black border border-blue-500',
+        'CONFIRMADO' => 'bg-purple-400 text-black border border-purple-600',
+        'RECEBIDO' => 'bg-green-400 text-black border border-green-600',
+        'NAO_ENVIADO' => 'bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-500/35 dark:text-amber-100 dark:border-amber-300/55',
+        'NAO_RECEBIDO' => 'bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-500/35 dark:text-rose-100 dark:border-rose-300/55',
+        'CANCELADO' => 'bg-red-400 text-black border border-red-600',
     ];
     $recebedorMatriculaOld = old(
         'recebedor_matricula',
@@ -27,10 +30,26 @@
         $recebedorDisplay = $matriculaTrim;
     }
     $canManage = $canManage ?? false;
-    $canUpdateData = auth()->user()?->temAcessoTela('1012') ?? false;
+    $canContestNotReceived = $canContestNotReceived ?? false;
+    $authUser = auth()->user();
+    $authUserMatricula = trim((string) ($authUser?->CDMATRFUNCIONARIO ?? ''));
+    $solicitanteMatricula = trim((string) ($solicitacao->solicitante_matricula ?? ''));
+    $canMarkReceived = (bool) ($authUser?->isAdmin())
+        || ((string) ($solicitacao->solicitante_id ?? '') !== '' && (string) ($solicitacao->solicitante_id ?? '') === (string) ($authUser?->getAuthIdentifier() ?? ''))
+        || ($authUserMatricula !== '' && $authUserMatricula === $solicitanteMatricula);
+    $canMarkNotReceived = $canMarkReceived;
+    $canConfirmAction = (bool) ($canConfirmAction ?? false);
+    $canApproveAction = (bool) ($canApproveAction ?? false);
+    $canCancelAction = (bool) ($canCancelAction ?? false);
+    $canReturnAction = (bool) ($canReturnAction ?? false);
+    $canRecriarCancelada = (bool) ($canRecriarCancelada ?? false);
+    $canManagePanel = $canManage
+        || $canMarkReceived
+        || $canMarkNotReceived
+        || $canContestNotReceived
+        || $canRecriarCancelada;
 
-    // Se pode gerenciar, usa duas colunas (1/1) a partir de md.
-    $gridClass = $canManage ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1';
+    $gridClass = 'grid-cols-1';
     $leftColClass = '';
 @endphp
 
@@ -40,8 +59,13 @@
                 showUpdate: true,
                 showConfirmModal: false,
                 showApproveModal: false,
+                showReceiveModal: false,
+                showNotReceivedModal: false,
+                showContestNotReceivedModal: false,
                 showReturnModal: false,
                 showCancelModal: false,
+                showRecreateCancelledModal: false,
+                showDetails: false,
                 openSection: 'history',
                 toggleSection(section) {
                     this.openSection = this.openSection === section ? '' : section;
@@ -70,16 +94,389 @@
                 </div>
             @endif
 
+            @if($canManagePanel)
+                <div class="mb-3 bg-[color:var(--solicitacao-modal-bg,#fcfdff)] dark:bg-slate-900/90 shadow-sm rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 overflow-hidden">
+                    <div class="flex flex-wrap md:flex-nowrap items-stretch justify-center gap-2 p-2">
+                        @if($solicitacao->status === 'PENDENTE' && $canConfirmAction)
+                            <button type="button" @click="showConfirmModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                Confirmar Solicitação
+                            </button>
+                        @endif
+                        @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $canApproveAction)
+                            <button type="button" @click="showApproveModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                Pedido Enviado
+                            </button>
+                        @endif
+                        @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $canReturnAction)
+                            <button type="button" @click="showReturnModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 transition shadow-sm">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12a9 9 0 1015.364-6.364M3 12H9m-6 0l3-3m-3 3l3 3" /></svg>
+                                Voltar para Pendente
+                            </button>
+                        @endif
+                        @if($solicitacao->status === 'PENDENTE' && $canCancelAction)
+                            <button type="button" @click="showCancelModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition shadow-sm">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                Cancelar Solicitação
+                            </button>
+                        @endif
+                        @if($solicitacao->status === 'CANCELADO' && $canRecriarCancelada)
+                            <button type="button" @click="showRecreateCancelledModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition shadow-sm">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8 8 0 106.582 9m0 0H9m-4 0V4" /></svg>
+                                Solicitar Novamente
+                            </button>
+                        @endif
+                        @if($solicitacao->status === 'CONFIRMADO' && $canMarkReceived)
+                            <button type="button" @click="showReceiveModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-bold transition shadow-sm"
+                                style="background:#22d3ee;border:1px solid #67e8f9;color:#082f49;">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                Confirmar Recebimento
+                            </button>
+                        @endif
+                        @if($solicitacao->status === 'CONFIRMADO' && $canMarkNotReceived)
+                            <button type="button" @click="showNotReceivedModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold transition shadow-sm"
+                                style="background:#e11d48;border:1px solid #fb7185;color:#fff;">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM9 9l6 6m0-6l-6 6" /></svg>
+                                Pedido Não Recebido
+                            </button>
+                        @endif
+                        @if($solicitacao->status === 'NAO_RECEBIDO' && $canContestNotReceived)
+                            <button type="button" @click="showContestNotReceivedModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 transition shadow-sm">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h6m-9 8h16a1 1 0 001-1V7a1 1 0 00-1-1h-3l-2-2H9L7 6H4a1 1 0 00-1 1v12a1 1 0 001 1z" /></svg>
+                                Contestar Não Recebido
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            @php
+                $statusAtualTopo = $solicitacao->status;
+                $statusFluxo = (string) ($solicitacao->status ?? '');
+                $historicoStatusTopo = collect();
+                if (\Illuminate\Support\Facades\Schema::hasTable('solicitacoes_bens_status_historico')) {
+                    $historicoStatusTopo = $solicitacao->historicoStatus
+                        ? $solicitacao->historicoStatus->sortBy('created_at')->values()
+                        : collect();
+                }
+                $statusHistorico = $historicoStatusTopo
+                    ->pluck('status_novo')
+                    ->filter()
+                    ->map(fn ($status) => strtoupper((string) $status))
+                    ->values();
+                $etapaAtual = match ($statusAtualTopo) {
+                    'PENDENTE', 'CANCELADO' => 1,
+                    'AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO' => 2,
+                    'CONFIRMADO', 'NAO_RECEBIDO' => 3,
+                    'RECEBIDO' => 4,
+                    default => 1,
+                };
+                $nomeCurto = function (?string $nome): string {
+                    $nome = trim((string) $nome);
+                    if ($nome === '') {
+                        return '-';
+                    }
+                    $partes = array_values(array_filter(explode(' ', preg_replace('/\s+/u', ' ', $nome))));
+                    if (count($partes) <= 1) {
+                        return $partes[0] ?? $nome;
+                    }
+                    return ($partes[0] ?? '') . ' ' . ($partes[count($partes) - 1] ?? '');
+                };
+                $solicitanteNomeCurto = $nomeCurto($solicitacao->solicitante_nome ?? null);
+                $recebedorNomeBase = trim((string) ($solicitacao->nome_recebedor ?: $solicitacao->solicitante_nome));
+                $recebedorNomeCurto = $nomeCurto($recebedorNomeBase);
+                $mesmoSolicitanteRecebedor = mb_strtoupper($solicitanteNomeCurto, 'UTF-8') === mb_strtoupper($recebedorNomeCurto, 'UTF-8');
+                $primeiroItemDescricao = trim((string) data_get($solicitacao->itens->first(), 'descricao', ''));
+                $projetoCodigo = (string) ($solicitacao->projeto?->CDPROJETO ?? '-');
+                $projetoNome = (string) ($solicitacao->projeto?->NOMEPROJETO ?? '');
+                $projetoLabel = trim($projetoCodigo . ($projetoNome !== '' ? ' - ' . $projetoNome : ''));
+                $separacaoLiberada = in_array($statusFluxo, ['AGUARDANDO_CONFIRMACAO', 'CONFIRMADO', 'RECEBIDO', 'NAO_ENVIADO', 'NAO_RECEBIDO'], true)
+                    || $statusHistorico->contains('AGUARDANDO_CONFIRMACAO')
+                    || $statusHistorico->contains('CONFIRMADO')
+                    || $statusHistorico->contains('RECEBIDO')
+                    || $statusHistorico->contains('NAO_ENVIADO')
+                    || $statusHistorico->contains('NAO_RECEBIDO');
+                $freteLiberado = in_array($statusFluxo, ['CONFIRMADO', 'RECEBIDO', 'NAO_RECEBIDO', 'NAO_ENVIADO'], true)
+                    || $statusHistorico->contains('CONFIRMADO')
+                    || $statusHistorico->contains('RECEBIDO')
+                    || $statusHistorico->contains('NAO_ENVIADO')
+                    || $statusHistorico->contains('NAO_RECEBIDO');
+                $envioLiberado = $freteLiberado;
+                $statusEnvioTexto = match ($statusFluxo) {
+                    'RECEBIDO' => 'Entregue',
+                    'CONFIRMADO' => 'Enviado',
+                    'NAO_RECEBIDO' => 'Não recebido',
+                    'NAO_ENVIADO' => 'Não enviado',
+                    'AGUARDANDO_CONFIRMACAO' => 'Em análise',
+                    'CANCELADO' => 'Cancelado',
+                    default => 'Pendente',
+                };
+                $statusEnvioClass = match ($statusFluxo) {
+                    'RECEBIDO' => 'bg-cyan-100 text-cyan-800 border border-cyan-200 dark:bg-cyan-500/20 dark:text-cyan-200 dark:border-cyan-400/40',
+                    'CONFIRMADO' => 'bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-500/20 dark:text-blue-200 dark:border-blue-400/40',
+                    'NAO_RECEBIDO' => 'bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-500/20 dark:text-rose-200 dark:border-rose-400/40',
+                    'NAO_ENVIADO' => 'bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-500/20 dark:text-amber-200 dark:border-amber-400/40',
+                    'CANCELADO' => 'bg-red-100 text-red-800 border border-red-200 dark:bg-red-500/20 dark:text-red-200 dark:border-red-400/40',
+                    default => 'bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-500/20 dark:text-yellow-200 dark:border-yellow-400/40',
+                };
+                $ultimoHistoricoNaoPendente = $historicoStatusTopo->reverse()->first(
+                    fn ($h) => strtoupper((string) ($h->status_novo ?? '')) !== 'PENDENTE'
+                );
+                $ultimoStatusNaoPendente = strtoupper((string) data_get($ultimoHistoricoNaoPendente, 'status_novo', ''));
+                $ultimoHistoricoComMotivo = $historicoStatusTopo->reverse()->first(
+                    fn ($h) => trim((string) ($h->motivo ?? '')) !== ''
+                );
+                $motivoFluxo = trim((string) data_get($ultimoHistoricoComMotivo, 'motivo', $solicitacao->justificativa_cancelamento ?? ''));
+                if ($statusFluxo === 'PENDENTE' && $ultimoStatusNaoPendente !== '') {
+                    $statusEnvioTexto = 'Retornou para pendente';
+                    $statusEnvioClass = 'bg-indigo-100 text-indigo-800 border border-indigo-200 dark:bg-indigo-500/25 dark:text-indigo-100 dark:border-indigo-300/40';
+                }
+                $interrupcao = match ($statusAtualTopo) {
+                    'CANCELADO' => ['label' => 'Cancelado', 'class' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 border border-red-200 dark:border-red-800'],
+                    'NAO_ENVIADO' => ['label' => 'Pedido não enviado', 'class' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200 dark:border-amber-800'],
+                    'NAO_RECEBIDO' => ['label' => 'Pedido não recebido', 'class' => 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border border-rose-200 dark:border-rose-800'],
+                    default => null,
+                };
+                $stepsTopo = [
+                    ['n' => 1, 'label' => 'Criado'],
+                    ['n' => 2, 'label' => 'Em Análise'],
+                    ['n' => 3, 'label' => 'Enviado'],
+                    ['n' => 4, 'label' => 'Recebido'],
+                ];
+                $historicoCards = $historicoStatusTopo
+                    ->sortBy('created_at')
+                    ->values()
+                    ->filter(function ($hist) {
+                        $status = strtoupper((string) ($hist->status_novo ?? ''));
+                        $acao = strtolower((string) ($hist->acao ?? ''));
+                        return $status !== '' || $acao !== '';
+                    })
+                    ->values();
+
+                if ($historicoCards->isEmpty()) {
+                    $historicoCards = collect([
+                        (object) [
+                            'status_novo' => \App\Models\SolicitacaoBem::STATUS_PENDENTE,
+                            'status_anterior' => null,
+                            'acao' => 'criado',
+                            'motivo' => null,
+                            'usuario' => null,
+                            'created_at' => $solicitacao->created_at,
+                        ],
+                    ]);
+                }
+            @endphp
+
+            <div class="mb-3 bg-[color:var(--solicitacao-modal-bg,#fcfdff)] dark:bg-slate-900/90 shadow-sm rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 overflow-hidden">
+                <div class="px-4 py-3 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-800/80 flex items-center justify-between gap-2">
+                    <h3 class="text-[13px] font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" /></svg>
+                        Acompanhamento do Pedido
+                    </h3>
+                    <button type="button" @click="toggleSection('history')" class="ml-auto inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors">
+                        <span x-text="openSection === 'history' ? 'Contrair' : 'Expandir'"></span>
+                        <svg class="w-3 h-3 transition-transform" :class="openSection === 'history' ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                </div>
+                <div class="p-4">
+                    <div class="relative flex items-center justify-between">
+                        <div class="absolute top-4 left-0 w-full h-0.5 bg-gray-200 dark:bg-gray-700"></div>
+                        <div class="absolute top-4 left-0 h-0.5 bg-indigo-500 transition-all duration-500" style="width: {{ (($etapaAtual - 1) / 3) * 100 }}%"></div>
+                        @foreach($stepsTopo as $stepTopo)
+                            @php
+                                $ativo = $stepTopo['n'] <= $etapaAtual;
+                            @endphp
+                            <div class="relative z-10 flex flex-col items-center">
+                                <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold {{ $ativo ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white dark:bg-slate-900 border-gray-300 dark:border-gray-600 text-gray-400' }}">
+                                    {{ $stepTopo['n'] }}
+                                </div>
+                                <span class="mt-2 text-[10px] {{ $ativo ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-400' }}">{{ $stepTopo['label'] }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                    @if($interrupcao)
+                        <div class="mt-3 text-center">
+                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold {{ $interrupcao['class'] }}">{{ $interrupcao['label'] }}</span>
+                        </div>
+                    @endif
+
+                    <div x-show="openSection === 'history'" x-transition.duration.300ms class="mt-4 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] pt-4">
+                        <div class="overflow-x-auto pb-1">
+                            <div class="flex flex-nowrap gap-3 min-w-max">
+                                @foreach($historicoCards as $histCard)
+                                    @php
+                                        $statusCard = strtoupper((string) ($histCard->status_novo ?? ''));
+                                        $acaoCard = strtolower((string) ($histCard->acao ?? ''));
+                                        $motivoCard = trim((string) ($histCard->motivo ?? ''));
+                                        $statusAnteriorCard = strtoupper((string) ($histCard->status_anterior ?? ''));
+                                        $usuarioCard = trim((string) ($histCard->usuario->NOMEUSER ?? $histCard->usuario->NMLOGIN ?? '-'));
+                                        $usuarioCardPartes = array_values(array_filter(explode(' ', preg_replace('/\s+/u', ' ', $usuarioCard))));
+                                        $usuarioNomeCurtoCard = count($usuarioCardPartes) > 1
+                                            ? (($usuarioCardPartes[0] ?? '') . ' ' . ($usuarioCardPartes[count($usuarioCardPartes) - 1] ?? ''))
+                                            : $usuarioCard;
+                                        $usuarioMatriculaCard = trim((string) ($histCard->usuario->CDMATRFUNCIONARIO ?? $solicitacao->solicitante_matricula ?? '-'));
+                                        $dataCard = optional($histCard->created_at)->format('d/m/Y');
+                                        $horaCard = optional($histCard->created_at)->format('H:i');
+
+                                        $secaoCard = match (true) {
+                                            $acaoCard === 'contestar_nao_recebido' => 'Contestação',
+                                            $acaoCard === 'retornar' => 'Retorno',
+                                            $statusCard === 'AGUARDANDO_CONFIRMACAO' => 'Separação',
+                                            $statusCard === 'CONFIRMADO', $statusCard === 'NAO_ENVIADO' => 'Expedição',
+                                            $statusCard === 'RECEBIDO', $statusCard === 'NAO_RECEBIDO' => 'Recebimento',
+                                            $statusCard === 'CANCELADO' => 'Cancelamento',
+                                            default => 'Solicitação',
+                                        };
+
+                                        $tituloCard = match (true) {
+                                            $acaoCard === 'contestar_nao_recebido' => 'Não recebido contestado',
+                                            $acaoCard === 'retornar' => 'Retornou para pendente',
+                                            $acaoCard === 'confirmar', $statusCard === 'AGUARDANDO_CONFIRMACAO' => 'Separação confirmada',
+                                            $acaoCard === 'enviar', $statusCard === 'CONFIRMADO' => 'Pedido enviado',
+                                            $statusCard === 'NAO_ENVIADO' => 'Pedido não enviado',
+                                            $statusCard === 'NAO_RECEBIDO' => 'Pedido não recebido',
+                                            $statusCard === 'RECEBIDO' => 'Recebimento confirmado',
+                                            $statusCard === 'CANCELADO' => 'Solicitação cancelada',
+                                            default => 'Solicitação criada',
+                                        };
+
+                                        $paletteCard = match ($secaoCard) {
+                                            'Solicitação' => ['border' => 'border-yellow-400 dark:border-yellow-400', 'bar' => 'bg-yellow-400', 'border_style' => 'border-color:#facc15;', 'bar_style' => 'background-color:#facc15;', 'tag_style' => 'background-color:#facc15;border-color:#eab308;color:#000;'],
+                                            'Separação' => ['border' => 'border-blue-400 dark:border-blue-400', 'bar' => 'bg-blue-400', 'border_style' => 'border-color:#60a5fa;', 'bar_style' => 'background-color:#60a5fa;', 'tag_style' => 'background-color:#60a5fa;border-color:#3b82f6;color:#000;'],
+                                            'Expedição' => ['border' => 'border-purple-600 dark:border-purple-500', 'bar' => 'bg-purple-600', 'border_style' => 'border-color:#7c3aed;', 'bar_style' => 'background-color:#7c3aed;', 'tag_style' => 'background-color:#a78bfa;border-color:#7c3aed;color:#000;'],
+                                            'Recebimento' => ['border' => 'border-green-400 dark:border-green-400', 'bar' => 'bg-green-400', 'border_style' => 'border-color:#22c55e;', 'bar_style' => 'background-color:#22c55e;', 'tag_style' => 'background-color:#4ade80;border-color:#22c55e;color:#000;'],
+                                            'Contestação' => ['border' => 'border-violet-400 dark:border-violet-400', 'bar' => 'bg-violet-400', 'border_style' => 'border-color:#a78bfa;', 'bar_style' => 'background-color:#a78bfa;', 'tag_style' => 'background-color:#c4b5fd;border-color:#a78bfa;color:#000;'],
+                                            'Retorno' => ['border' => 'border-amber-400 dark:border-amber-400', 'bar' => 'bg-amber-400', 'border_style' => 'border-color:#f59e0b;', 'bar_style' => 'background-color:#f59e0b;', 'tag_style' => 'background-color:#fbbf24;border-color:#f59e0b;color:#000;'],
+                                            'Cancelamento' => ['border' => 'border-red-400 dark:border-red-400', 'bar' => 'bg-red-400', 'border_style' => 'border-color:#ef4444;', 'bar_style' => 'background-color:#ef4444;', 'tag_style' => 'background-color:#f87171;border-color:#ef4444;color:#000;'],
+                                            default => ['border' => 'border-slate-300 dark:border-slate-600', 'bar' => 'bg-slate-500', 'border_style' => 'border-color:#94a3b8;', 'bar_style' => 'background-color:#94a3b8;', 'tag_style' => 'background-color:#cbd5e1;border-color:#94a3b8;color:#000;'],
+                                        };
+                                        $bordaCard = $paletteCard['border'];
+
+                                        $statusCardLabel = match ($statusCard) {
+                                            'PENDENTE' => 'Pendente',
+                                            'AGUARDANDO_CONFIRMACAO' => 'Aguardando confirmação',
+                                            'CONFIRMADO' => 'Confirmado',
+                                            'RECEBIDO' => 'Recebido',
+                                            'NAO_ENVIADO' => 'Não enviado',
+                                            'NAO_RECEBIDO' => 'Não recebido',
+                                            'CANCELADO' => 'Cancelado',
+                                            default => 'Pendente',
+                                        };
+                                        $statusCardStyle = $paletteCard['tag_style'];
+                                        $faixaCard = $paletteCard['bar'];
+                                        $bordaCardStyle = $paletteCard['border_style'];
+                                        $faixaCardStyle = $paletteCard['bar_style'];
+                                        $isSolicitacaoCard = $secaoCard === 'Solicitação';
+                                        $isSeparacaoCard = $secaoCard === 'Separação';
+                                        $isExpedicaoCard = $secaoCard === 'Expedição';
+                                        $isRecebimentoCard = $secaoCard === 'Recebimento';
+                                        $isExcecaoCard = in_array($secaoCard, ['Contestação', 'Retorno', 'Cancelamento'], true);
+                                        $rastreioCard = trim((string) ($solicitacao->tracking_code ?? ''));
+                                        $recebedorMatriculaCard = trim((string) ($solicitacao->matricula_recebedor ?: $solicitacao->solicitante_matricula ?: '-'));
+                                        $responsavelCard = $usuarioNomeCurtoCard !== '' ? $usuarioNomeCurtoCard : '-';
+                                        $responsavelCard .= $usuarioMatriculaCard !== '' ? ' (' . $usuarioMatriculaCard . ')' : '';
+                                    @endphp
+                                    <div class="w-[300px] shrink-0 rounded-xl border-2 {{ $bordaCard }} bg-[color:var(--solicitacao-modal-bg,#fcfdff)] dark:bg-slate-900/85 overflow-hidden shadow-sm" style="{{ $bordaCardStyle }}">
+                                        <div class="h-1 {{ $faixaCard }}" style="{{ $faixaCardStyle }}"></div>
+                                        <div class="px-3 py-2.5 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700/90 flex items-start justify-between gap-2">
+                                            <div class="min-w-0">
+                                                <h4 class="text-[11px] font-bold tracking-[0.16em] text-slate-700 dark:text-slate-200 uppercase">{{ $secaoCard }}</h4>
+                                                <div class="text-[10px] text-slate-500 dark:text-slate-400">{{ $dataCard ?: '-' }} {{ $horaCard ?: '-' }}</div>
+                                            </div>
+                                            <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap border" style="{{ $statusCardStyle }}">{{ $statusCardLabel }}</span>
+                                        </div>
+
+                                        <div class="p-3 space-y-2.5">
+                                            <div class="text-[15px] leading-tight font-semibold text-gray-900 dark:text-gray-100">{{ $tituloCard }}</div>
+
+                                            <dl class="space-y-1.5 text-[12px] leading-snug">
+                                                <div class="grid grid-cols-[84px,1fr] gap-x-2">
+                                                    <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Item</dt>
+                                                    <dd class="font-semibold text-gray-900 dark:text-gray-100 break-words">{{ $primeiroItemDescricao ?: '-' }}</dd>
+                                                </div>
+
+                                                @if($isSolicitacaoCard || $isSeparacaoCard || $isExpedicaoCard || $isRecebimentoCard)
+                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
+                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Projeto</dt>
+                                                        <dd class="font-semibold text-gray-900 dark:text-gray-100 truncate" title="{{ $projetoLabel !== '' ? $projetoLabel : '-' }}">{{ $projetoLabel !== '' ? $projetoLabel : '-' }}</dd>
+                                                    </div>
+                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
+                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Local</dt>
+                                                        <dd class="font-semibold text-gray-900 dark:text-gray-100 truncate" title="{{ $solicitacao->local_destino ?: '-' }}">{{ $solicitacao->local_destino ?: '-' }}</dd>
+                                                    </div>
+                                                @endif
+
+                                                @if($isSolicitacaoCard || $isSeparacaoCard)
+                                                    @if($mesmoSolicitanteRecebedor)
+                                                        <div class="grid grid-cols-[84px,1fr] gap-x-2">
+                                                            <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Pessoa</dt>
+                                                            <dd class="font-semibold text-gray-900 dark:text-gray-100 truncate" title="{{ $solicitanteNomeCurto }}">{{ $solicitanteNomeCurto }}</dd>
+                                                        </div>
+                                                    @else
+                                                        <div class="grid grid-cols-[84px,1fr] gap-x-2">
+                                                            <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Solicitante</dt>
+                                                            <dd class="font-semibold text-gray-900 dark:text-gray-100 truncate" title="{{ $solicitanteNomeCurto }}">{{ $solicitanteNomeCurto }}</dd>
+                                                        </div>
+                                                        <div class="grid grid-cols-[84px,1fr] gap-x-2">
+                                                            <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Recebedor</dt>
+                                                            <dd class="font-semibold text-gray-900 dark:text-gray-100 truncate" title="{{ $recebedorNomeCurto }}">{{ $recebedorNomeCurto }}</dd>
+                                                        </div>
+                                                    @endif
+                                                @endif
+
+                                                @if($isSeparacaoCard)
+                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
+                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Matrícula</dt>
+                                                        <dd class="font-semibold text-gray-900 dark:text-gray-100">{{ $recebedorMatriculaCard !== '' ? $recebedorMatriculaCard : '-' }}</dd>
+                                                    </div>
+                                                @endif
+
+                                                @if(($isExpedicaoCard || $isRecebimentoCard || $isExcecaoCard) && $rastreioCard !== '')
+                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
+                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Rastreio</dt>
+                                                        <dd class="font-semibold text-gray-900 dark:text-gray-100 break-all">{{ $rastreioCard }}</dd>
+                                                    </div>
+                                                @endif
+
+                                                @if($acaoCard === 'retornar' && $statusAnteriorCard !== '')
+                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
+                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Retorno</dt>
+                                                        <dd class="font-semibold text-amber-700 dark:text-amber-300">{{ str_replace('_', ' ', $statusAnteriorCard) }} -> PENDENTE</dd>
+                                                    </div>
+                                                @endif
+
+                                                @if($motivoCard !== '')
+                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
+                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Motivo</dt>
+                                                        <dd class="font-semibold text-rose-700 dark:text-rose-300 break-words">{{ $motivoCard }}</dd>
+                                                    </div>
+                                                @endif
+                                            </dl>
+
+                                            <div class="pt-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700/90">
+                                                <div class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Responsável</div>
+                                                <div class="text-[12px] font-semibold text-gray-900 dark:text-gray-100">{{ $responsavelCard }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid gap-3 {{ $gridClass }}">
 
                 <!-- Coluna Principal (Detalhes + Itens) -->
                 <div class="{{ $leftColClass }} space-y-3">
 
                     <!-- Card de Detalhes -->
-                    <div class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] shadow-sm rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] overflow-hidden">
+                    <div class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] dark:bg-slate-900/90 shadow-sm rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 overflow-hidden">
 
                         <!-- Header do Card -->
-                        <div class="px-4 py-2.5 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)] flex items-center justify-between gap-2 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)]">
+                        <div class="px-4 py-2.5 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 flex items-center justify-between gap-2 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-800/80">
                             <div class="flex items-start gap-3">
                                 <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
                                     <svg class="h-4 w-4" style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -91,116 +488,63 @@
                                     <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5">Resumo das informações principais</p>
                                 </div>
                             </div>
+                            <button type="button" @click="showDetails = !showDetails" class="ml-auto inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors">
+                                <span x-text="showDetails ? 'Contrair' : 'Expandir'"></span>
+                                <svg class="w-3 h-3 transition-transform" :class="showDetails ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
                         </div>
 
                         <!-- Grid de Informacoes -->
-                        <div class="p-4">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-5">
-                                <!-- Solicitante -->
-                                <div class="flex items-start gap-3">
-                                    <div class="mt-1 p-1.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600 dark:text-indigo-400 flex-shrink-0">
-                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Solicitante</div>
-                                        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->solicitante_nome ?? '-' }}</div>
-                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Matrícula: <span class="font-mono text-gray-700 dark:text-slate-200">{{ $solicitacao->solicitante_matricula ?? '-' }}</span></div>
-                                    </div>
+                        <div class="p-4" x-show="showDetails" x-transition.duration.250ms>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
+                                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Solicitante</div>
+                                    <div class="text-base font-bold text-gray-900 dark:text-gray-100">{{ $solicitacao->solicitante_nome ?? '-' }}</div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Matrícula: <span class="font-mono font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->solicitante_matricula ?? '-' }}</span></div>
                                 </div>
 
-                                <!-- Local/UF -->
-                                <div class="flex items-start gap-3">
-                                    <div class="mt-1 p-1.5 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-purple-600 dark:text-purple-400 flex-shrink-0">
-                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Local / UF</div>
-                                        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->local_destino ?? '-' }}</div>
-                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">UF: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->uf ?? '-' }}</span></div>
-                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Setor: <span class="text-gray-700 dark:text-slate-200">{{ $solicitacao->setor ?? 'Setor não informado' }}</span></div>
-                                    </div>
+                                <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
+                                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Recebedor</div>
+                                    <div class="text-base font-bold text-gray-900 dark:text-gray-100">{{ $solicitacao->nome_recebedor ?: ($solicitacao->solicitante_nome ?? '-') }}</div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Matrícula: <span class="font-mono font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->matricula_recebedor ?: ($solicitacao->solicitante_matricula ?? '-') }}</span></div>
+                                    @if(trim((string) ($solicitacao->nome_recebedor ?? '')) !== '' && mb_strtoupper(trim((string) $solicitacao->nome_recebedor), 'UTF-8') !== mb_strtoupper(trim((string) ($solicitacao->solicitante_nome ?? '')), 'UTF-8'))
+                                        <div class="text-xs text-cyan-700 dark:text-cyan-300 mt-1 font-medium">Recebedor diferente do solicitante</div>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                                <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
+                                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Local / UF</div>
+                                    <div class="text-base font-bold text-gray-900 dark:text-gray-100">{{ $solicitacao->local_destino ?? '-' }}</div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">UF: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->uf ?? '-' }}</span></div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Setor: <span class="text-gray-900 dark:text-gray-100">{{ $solicitacao->setor ?? 'Setor não informado' }}</span></div>
                                 </div>
 
-                                <!-- Projeto -->
-                                <div class="flex items-start gap-3">
-                                    <div class="mt-1 p-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-emerald-600 dark:text-emerald-400 flex-shrink-0">
-                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                        </svg>
+                                <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
+                                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Projeto / Destinação</div>
+                                    <div class="text-base font-bold text-gray-900 dark:text-gray-100">{{ $solicitacao->projeto?->NOMEPROJETO ?? '-' }}</div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Cód: <span class="font-mono font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->projeto?->CDPROJETO ?? '-' }}</span></div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Destinação: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->destination_type ? 'Filial/Projeto' : '-' }}</span></div>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <span class="text-xs text-slate-500 dark:text-slate-400">Status:</span>
+                                        <x-status-badge :status="$solicitacao->status" :color-map="$statusColors" class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full shadow-sm" />
                                     </div>
-                                    <div>
-                                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Projeto</div>
-                                        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->projeto?->NOMEPROJETO ?? '-' }}</div>
-                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cód: <span class="font-mono text-gray-700 dark:text-slate-200">{{ $solicitacao->projeto?->CDPROJETO ?? '-' }}</span></div>
-                                    </div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Criado em: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ optional($solicitacao->created_at)->format('d/m/Y H:i') }}</span></div>
+                                    @if($solicitacao->tracking_code)
+                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Rastreio: <span class="font-mono font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->tracking_code }}</span></div>
+                                    @endif
                                 </div>
-
-                                <!-- Destinação (abaixo de Local/UF) -->
-                                @if($solicitacao->destination_type)
-                                    <div class="col-span-1 sm:col-span-2 lg:col-span-3">
-                                        <div class="mt-2">
-                                            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Destinação</div>
-                                            <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">Filial/Projeto</div>
-                                        </div>
-                                    </div>
-                                @endif
-
-                                <!-- Situação -->
-                                <div class="flex items-start gap-3 sm:col-span-2 lg:col-span-3">
-                                    <div class="mt-1 p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400 flex-shrink-0">
-                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Situação</div>
-                                        <div class="flex flex-col gap-2">
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-xs text-slate-500 dark:text-slate-400">Status:</span>
-                                                <x-status-badge :status="$solicitacao->status" :color-map="$statusColors" class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full shadow-sm" />
-                                            </div>
-                                            <div class="text-xs text-slate-500 dark:text-slate-400">Criado em: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ optional($solicitacao->created_at)->format('d/m/Y H:i') }}</span></div>
-                                            
-                                            @if($solicitacao->confirmado_em)
-                                                <div class="text-xs text-slate-500 dark:text-slate-400">Confirmado em: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ $solicitacao->confirmado_em->format('d/m/Y H:i') }}</span></div>
-                                                <div class="text-xs text-slate-500 dark:text-slate-400">Confirmado por: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ $solicitacao->confirmadoPor?->NOMEUSER ?? '-' }}</span></div>
-                                            @endif
-                                            
-                                            @if($solicitacao->cancelado_em)
-                                                <div class="text-xs text-slate-500 dark:text-slate-400">Cancelado em: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ $solicitacao->cancelado_em->format('d/m/Y H:i') }}</span></div>
-                                                <div class="text-xs text-slate-500 dark:text-slate-400">Cancelado por: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ $solicitacao->canceladoPor?->NOMEUSER ?? '-' }}</span></div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Código de Rastreio -->
-                                @if($solicitacao->tracking_code)
-                                    <div class="flex items-start gap-3">
-                                        <div class="mt-1 p-1.5 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-orange-600 dark:text-orange-400 flex-shrink-0">
-                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Código de Rastreio</div>
-                                            <div class="text-sm font-mono font-semibold text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{{ $solicitacao->tracking_code }}</div>
-                                        </div>
-                                    </div>
-                                @endif
                             </div>
 
                             <!-- Observação -->
                             @if($solicitacao->observacao)
                                 <div class="mx-4 mt-2 mb-4 pt-3 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)]">
                                     <h4 class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Observação do Solicitante</h4>
-                                    <div class="bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] rounded-lg p-3 text-xs text-gray-700 dark:text-slate-200 italic whitespace-pre-line border border-[color:var(--solicitacao-modal-border,#d6dde6)]">
-                                        {{ $solicitacao->Observação }}
+                                    <div class="bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/75 rounded-lg p-3 text-xs text-gray-700 dark:text-slate-200 italic whitespace-pre-line border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700">
+                                        {{ $solicitacao->observacao }}
                                     </div>
                                 </div>
                             @endif
@@ -215,7 +559,7 @@
                                 </h4>
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-xs text-left">
-                                        <thead class="text-[10px] text-gray-700 uppercase bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:text-slate-400 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)]">
+                                        <thead class="text-[10px] text-gray-700 uppercase bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-800/80 dark:text-slate-300 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700">
                                             <tr>
                                                 <th class="px-3 py-2 font-semibold tracking-wide">Descrição / Patrimônio</th>
                                                 <th class="px-3 py-2 font-semibold tracking-wide text-center">Qtd</th>
@@ -225,11 +569,11 @@
                                         </thead>
                                         <tbody class="divide-y divide-[color:var(--solicitacao-modal-border,#d6dde6)]">
                                             @forelse($solicitacao->itens as $item)
-                                                <tr class="hover:bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] transition-colors">
-                                                    <td class="px-3 py-2 font-medium text-gray-900 dark:text-white">{{ $item->Descrição }}</td>
+                                                <tr class="hover:bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:hover:bg-slate-800/70 transition-colors">
+                                                    <td class="px-3 py-2 font-medium text-gray-900 dark:text-white">{{ trim((string) ($item->descricao ?? '')) !== '' ? $item->descricao : 'Item sem descrição' }}</td>
                                                     <td class="px-3 py-2 text-center text-gray-600 dark:text-slate-300">{{ $item->quantidade }}</td>
                                                     <td class="px-3 py-2 text-center text-gray-500 dark:text-slate-400">{{ $item->unidade ?: '-' }}</td>
-                                                    <td class="px-3 py-2 text-gray-500 dark:text-slate-400 italic">{{ $item->Observação ?: '-' }}</td>
+                                                    <td class="px-3 py-2 text-gray-500 dark:text-slate-400 italic">{{ $item->observacao ?: '-' }}</td>
                                                 </tr>
                                             @empty
                                                 <tr>
@@ -248,113 +592,7 @@
 
                 </div>
 
-                <!-- Coluna Lateral (Acoes) -->
-                @if($canManage)
-                    <div class="sm:col-span-1">
-                        <div class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] shadow-lg rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] overflow-hidden sticky top-4">
-
-                            <!-- Header Ações -->
-                            <!-- Botões de Ação Rápida (Acima do Painel) -->
-                            <div class="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 p-3 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)] space-y-2">
-                                <!-- Botão Confirmar (Tiago/Beatriz) -->
-                                @if($solicitacao->status === 'PENDENTE' && auth()->user()->temAcessoTela('1011'))
-                                    <button type="button" @click="showConfirmModal = true" 
-                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all dark:focus:ring-offset-slate-900">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        Confirmar Solicitação
-                                    </button>
-                                @endif
-
-                                <!-- Botão Aprovar (Solicitante) - aparece DEPOIS de confirmado -->
-                                @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && auth()->user()->temAcessoTela('1014'))
-                                    <button type="button" @click="showApproveModal = true" 
-                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all dark:focus:ring-offset-slate-900">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h-4V6h4v4zM12 14a2 2 0 100-4 2 2 0 000 4z" />
-                                        </svg>
-                                        Aprovar Solicitação
-                                    </button>
-                                @endif
-
-                                <!-- Botao Voltar para An&aacute;lise (Solicitante) - aparece em AGUARDANDO_CONFIRMACAO -->
-                                @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && auth()->user()->temAcessoTela('1014'))
-                                    <button type="button" @click="showReturnModal = true" 
-                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all dark:focus:ring-offset-slate-900">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12a9 9 0 1015.364-6.364M3 12H9m-6 0l3-3m-3 3l3 3" />
-                                        </svg>
-                                        Voltar para an&aacute;lise
-                                    </button>
-                                @endif
-
-
-                                <!-- Botão Cancelar - APENAS em PENDENTE (desaparece após confirmar) -->
-                                @if($solicitacao->status === 'PENDENTE' && auth()->user()->temAcessoTela('1015'))
-                                    <button type="button" @click="showCancelModal = true" 
-                                        class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all dark:focus:ring-offset-slate-900">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                        Cancelar Solicitação
-                                    </button>
-                                @endif
-                            </div>
-
-                            <div class="bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] p-3 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)]">
-                                <h3 class="text-sm font-bold text-indigo-600 dark:text-indigo-300">Painel de Controle</h3>
-                                <p class="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5">Gerenciamento da Solicitação #{{ $solicitacao->id }}</p>
-                            </div>
-
-                            <div class="p-3">
-                                @if($canUpdateData)
-                                <form method="POST" action="{{ route('solicitacoes-bens.update', $solicitacao) }}" data-modal-form="{{ $isModal ? '1' : '0' }}" class="space-y-3">
-                                    @csrf
-                                    @method('PATCH')
-                                    @if($isModal)
-                                        <input type="hidden" name="modal" value="1" />
-                                    @endif
-
-                                    <div class="relative">
-                                        <div class="absolute inset-0 flex items-center" aria-hidden="true">
-                                            <div class="w-full border-t border-[color:var(--solicitacao-modal-border,#d6dde6)]"></div>
-                                        </div>
-                                        <div class="relative flex justify-center">
-                                            <span class="bg-[color:var(--solicitacao-modal-bg,#fcfdff)] px-2 text-[10px] text-gray-400">Controle Interno</span>
-                                        </div>
-                                    </div>
-
-                                        <!-- Controle Interno -->
-                                        <div>
-                                            <label for="observacao_controle" class="block text-[10px] font-medium text-gray-700 dark:text-slate-300 mb-1">Notas Internas</label>
-                                            <textarea id="observacao_controle" name="observacao_controle"
-                                                class="block w-full rounded-lg border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs"
-                                                rows="2" placeholder="Anotações do almoxarifado...">{{ old('observacao_controle', $solicitacao->observacao_controle) }}</textarea>
-                                            <x-input-error :messages="$errors->get('observacao_controle')" class="mt-1" />
-                                        </div>
-
-                                        <div class="space-y-2">
-                                            <button type="submit" class="w-full relative flex justify-center items-center gap-2 py-1.5 px-3 border border-transparent rounded-lg shadow-md text-[11px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all dark:focus:ring-offset-slate-900">
-                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                                </svg>
-                                                Salvar Notas
-                                            </button>
-                                        </div>
-                                    </form>
-                                @else
-                                <div class="rounded-lg border border-dashed border-slate-600/60 bg-slate-900/60 px-3 py-2 text-[11px] text-slate-400">
-                                    Sem permissão para atualizar notas internas.
-                                </div>
-                                @endif
-                            </div>
-                            <div class="bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] px-4 py-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] text-center">
-                                <p class="text-[10px] text-gray-400 uppercase tracking-wide">Última atualização: {{ $solicitacao->updated_at->diffForHumans() }}</p>
-                            </div>
-                        </div>
-                    </div>
-
+                @if($canManagePanel)
                     <!-- MODAL: Confirmar Solicitação -->
                     <div x-show="showConfirmModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
@@ -369,26 +607,7 @@
                             <form method="POST" action="{{ route('solicitacoes-bens.confirm', $solicitacao->id) }}" class="p-6 space-y-4">
                                 @csrf
                                 @method('POST')
-                                
-                                <div>
-                                    <label for="confirm_recebedor_search" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Responsável Recebedor *</label>
-                                    <x-user-autocomplete
-                                        id="confirm_recebedor_search"
-                                        name="recebedor_matricula"
-                                        :value="$recebedorMatriculaOld"
-                                        :initial-display="$recebedorDisplay"
-                                        :lookup-on-init="$lookupOnInit"
-                                        placeholder="Digite matrícula ou nome..."
-                                        class="h-8 text-xs border-gray-300 dark:border-gray-600" />
-                                    <x-input-error :messages="$errors->get('recebedor_matricula')" class="mt-1" />
-                                </div>
-
-                                <div>
-                                    <label for="tracking_code" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Rastreio *</label>
-                                    <input type="text" id="tracking_code" name="tracking_code" required 
-                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
-                                        placeholder="Ex: RAS-2025-001" />
-                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Confirme para mover a solicitação para <strong>Em Análise</strong>.</p>
                                 <div class="flex gap-2 pt-4">
                                     <button type="button" @click="showConfirmModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
@@ -401,11 +620,11 @@
                         </div>
                     </div>
 
-                    <!-- MODAL: Aprovar Solicitação -->
+                    <!-- MODAL: Pedido Enviado -->
                     <div x-show="showApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
                             <div class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
-                                <h3 class="text-sm font-bold">Aprovar Solicitação</h3>
+                                <h3 class="text-sm font-bold">Pedido Enviado</h3>
                                 <button @click="showApproveModal = false" class="text-white/70 hover:text-white">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -415,15 +634,131 @@
                             <form method="POST" action="{{ route('solicitacoes-bens.approve', $solicitacao->id) }}" class="p-6 space-y-4">
                                 @csrf
                                 @method('POST')
-                                
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Tem certeza que deseja aprovar esta solicitação? Ela será marcada como confirmada.</p>
+
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Informe o código de rastreio para registrar o envio.</p>
+                                <div>
+                                    <label for="tracking_code_enviado" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Rastreio *</label>
+                                    <input type="text" id="tracking_code_enviado" name="tracking_code" required
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
+                                        placeholder="Ex: RAS-2026-001" />
+                                </div>
 
                                 <div class="flex gap-2 pt-4">
                                     <button type="button" @click="showApproveModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
                                     </button>
                                     <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">
-                                        Aprovar
+                                        Salvar Envio
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- MODAL: Confirmar Recebimento -->
+                    <div x-show="showReceiveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-cyan-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Confirmar Recebimento</h3>
+                                <button @click="showReceiveModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.receive', $solicitacao->id) }}" class="p-6 space-y-4">
+                                @csrf
+                                @method('POST')
+
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Confirma que o item foi recebido e que esta solicitação deve ser encerrada?</p>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showReceiveModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Voltar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-bold rounded-lg transition"
+                                        style="background:#22d3ee;border:1px solid #67e8f9;color:#082f49;">
+                                        Confirmar Recebimento
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- MODAL: Pedido Não Recebido -->
+                    <div x-show="showNotReceivedModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-rose-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Pedido Não Recebido</h3>
+                                <button @click="showNotReceivedModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.not-received', $solicitacao->id) }}" class="p-6 space-y-4">
+                                @csrf
+                                @method('POST')
+
+                                <div>
+                                    <label for="justificativa_nao_recebido" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Justificativa *</label>
+                                    <textarea id="justificativa_nao_recebido" name="justificativa_nao_recebido" required rows="3"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        placeholder="Descreva o motivo do não recebimento (ex.: item divergente, avariado, não entregue no local)..."></textarea>
+                                </div>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showNotReceivedModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Voltar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold rounded-lg transition"
+                                        style="background:#e11d48;border:1px solid #fb7185;color:#fff;">
+                                        Salvar Não Recebido
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- MODAL: Contestar Não Recebido -->
+                    <div x-show="showContestNotReceivedModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-violet-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Contestar Não Recebido</h3>
+                                <button @click="showContestNotReceivedModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.contest-not-received', $solicitacao->id) }}" class="p-6 space-y-4">
+                                @csrf
+                                @method('POST')
+
+                                <div>
+                                    <label for="status_destino" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Novo status do fluxo *</label>
+                                    <select id="status_destino" name="status_destino" required
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3">
+                                        <option value="">Selecione...</option>
+                                        <option value="PENDENTE">Criado (Pendente)</option>
+                                        <option value="AGUARDANDO_CONFIRMACAO">Em análise</option>
+                                        <option value="CONFIRMADO">Enviado</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="motivo_contestacao" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo da contestação *</label>
+                                    <textarea id="motivo_contestacao" name="motivo_contestacao" required rows="3"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        placeholder="Descreva a contestação e a ação tomada no fluxo..."></textarea>
+                                </div>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showContestNotReceivedModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Voltar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition">
+                                        Salvar Contestação
                                     </button>
                                 </div>
                             </form>
@@ -498,11 +833,49 @@
                             </form>
                         </div>
                     </div>
+
+                    <!-- MODAL: Solicitar Novamente (Cancelada) -->
+                    <div x-show="showRecreateCancelledModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-indigo-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Solicitar Novamente</h3>
+                                <button @click="showRecreateCancelledModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.recreate-cancelled', $solicitacao->id) }}" class="p-6 space-y-4">
+                                @csrf
+                                @method('POST')
+
+                                <p class="text-sm text-gray-600 dark:text-gray-300">
+                                    Uma nova solicitação será criada com os mesmos dados e itens desta solicitação cancelada.
+                                </p>
+
+                                <div>
+                                    <label for="motivo_reenvio" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo da correção *</label>
+                                    <textarea id="motivo_reenvio" name="motivo_reenvio" required rows="3"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        placeholder="Descreva o que foi corrigido para reenviar a solicitação..."></textarea>
+                                </div>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showRecreateCancelledModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Voltar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition">
+                                        Criar Nova Solicitação
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 @endif
             </div>
 
-            <!-- Card de Histórico (Abaixo dos Outros) -->
-            <div class="mt-4 bg-[color:var(--solicitacao-modal-bg,#fcfdff)] shadow-sm rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] overflow-hidden">
+            <!-- Card de Histórico (legado - oculto) -->
+            <div class="hidden mt-4 bg-[color:var(--solicitacao-modal-bg,#fcfdff)] shadow-sm rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] overflow-hidden">
                 <div class="px-4 py-3 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)] bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] flex items-center justify-between gap-2">
                     <h3 class="text-[13px] font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

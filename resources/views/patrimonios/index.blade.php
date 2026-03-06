@@ -2285,7 +2285,7 @@
           {{-- Datas --}}
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
-              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Data de Aquisição</p>
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Data da OC</p>
               <p id="consulta-dtaquisicao" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
             </div>
             <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">

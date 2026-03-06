@@ -227,11 +227,6 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // API para gerar próximo número de patrimônio
     Route::get('/api/patrimonios/proximo-numero', [PatrimonioController::class, 'proximoNumeroPatrimonio'])->name('api.patrimonios.proximo-numero');
 
-    // Rotas de Perfil (editar, atualizar, deletar)
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
     // Rotas de Usuários (T:1003)
     Route::resource('usuarios', UserController::class)->middleware(['tela.access:1003', 'can.delete']);
     Route::get('usuarios/confirmacao', [UserController::class, 'confirmacao'])->name('usuarios.confirmacao')->middleware('tela.access:1003');
@@ -248,6 +243,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::resource('solicitacoes-bens', SolicitacaoBemController::class)
         ->parameters(['solicitacoes-bens' => 'solicitacao'])
         ->only(['index', 'create', 'store', 'update', 'destroy']);
+    Route::get('/solicitacoes-bens/historico', [SolicitacaoBemController::class, 'historico'])
+        ->name('solicitacoes-bens.historico')
+        ->middleware('tela.access:1016');
 
     // Ações de solicitações de bens
     Route::get('/solicitacoes-bens/{solicitacao}/show-modal', 
@@ -256,10 +254,26 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         [SolicitacaoBemController::class, 'confirm'])->name('solicitacoes-bens.confirm');
     Route::post('/solicitacoes-bens/{solicitacao}/approve', 
         [SolicitacaoBemController::class, 'approve'])->name('solicitacoes-bens.approve');
+    Route::post('/solicitacoes-bens/{solicitacao}/not-sent',
+        [SolicitacaoBemController::class, 'notSent'])->name('solicitacoes-bens.not-sent');
+    Route::post('/solicitacoes-bens/{solicitacao}/receive',
+        [SolicitacaoBemController::class, 'receive'])->name('solicitacoes-bens.receive');
+    Route::post('/solicitacoes-bens/{solicitacao}/not-received',
+        [SolicitacaoBemController::class, 'notReceived'])->name('solicitacoes-bens.not-received');
+    Route::post('/solicitacoes-bens/{solicitacao}/contest-not-received',
+        [SolicitacaoBemController::class, 'contestNotReceived'])->name('solicitacoes-bens.contest-not-received');
     Route::post('/solicitacoes-bens/{solicitacao}/return-to-analysis',
         [SolicitacaoBemController::class, 'returnToAnalysis'])->name('solicitacoes-bens.return-to-analysis');
+    Route::post('/solicitacoes-bens/{solicitacao}/recreate-cancelled',
+        [SolicitacaoBemController::class, 'recreateCancelled'])->name('solicitacoes-bens.recreate-cancelled');
     Route::post('/solicitacoes-bens/{solicitacao}/cancel', 
         [SolicitacaoBemController::class, 'cancel'])->name('solicitacoes-bens.cancel');
+    Route::post('/solicitacoes-bens/{solicitacao}/permissoes',
+        [SolicitacaoBemController::class, 'grantViewer'])->name('solicitacoes-bens.permissoes.grant');
+    Route::post('/solicitacoes-bens/{solicitacao}/permissoes/revoke',
+        [SolicitacaoBemController::class, 'revokeViewerModal'])->name('solicitacoes-bens.permissoes.revoke');
+    Route::delete('/solicitacoes-bens/{solicitacao}/permissoes/{usuario}',
+        [SolicitacaoBemController::class, 'revokeViewer'])->name('solicitacoes-bens.permissoes.revoke.delete');
 
     // API para buscar patrimônios disponíveis (autocomplete)
     Route::get('/api/solicitacoes-bens/patrimonio-disponivel', 
@@ -268,7 +282,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
 
 
     // Rotas de Relatórios
-    Route::prefix('relatorios')->name('relatorios.')->middleware('tela.access:1006')->group(function () {
+    Route::prefix('relatorios')->name('relatorios.')->middleware('tela.access:1000')->group(function () {
         // Fluxo original: gerar => retorna JSON para modal de pré-visualização
         Route::post('/patrimonios/gerar', [\App\Http\Controllers\RelatorioController::class, 'gerar'])->name('patrimonios.gerar');
         // Download direto (novo método unificado permanece disponível)
@@ -281,7 +295,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     });
 
     // Relatório de Funcionários (Excel) - FORA do grupo relatorios para manter nome exato
-    Route::get('/relatorios/funcionarios/exportar/excel', [\App\Http\Controllers\RelatorioController::class, 'exportarFuncionariosExcel'])->name('funcionarios.exportar.excel')->middleware(['auth', 'tela.access:1006']);
+    Route::get('/relatorios/funcionarios/exportar/excel', [\App\Http\Controllers\RelatorioController::class, 'exportarFuncionariosExcel'])->name('funcionarios.exportar.excel')->middleware(['auth', 'tela.access:1000']);
 
     // Rotas de Termos
     Route::prefix('termos')->name('termos.')->middleware(['can:create,App\\Models\\Patrimonio'])->group(function () {

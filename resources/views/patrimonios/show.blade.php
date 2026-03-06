@@ -59,7 +59,7 @@
                         {{-- Datas --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <x-input-label for="DTAQUISICAO" value="Data de Aquisição" />
+                                <x-input-label for="DTAQUISICAO" value="Data da OC" />
                                 <input type="text" id="DTAQUISICAO" value="{{ $patrimonio->DTAQUISICAO ? \Carbon\Carbon::parse($patrimonio->DTAQUISICAO)->format('d/m/Y') : '-' }}" readonly 
                                     class="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100">
                             </div>
@@ -77,10 +77,17 @@
                                 class="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100">
                         </div>
 
-                        {{-- Usuário criador --}}
+                        {{-- Criado por --}}
                         <div>
                             <x-input-label for="USUARIO" value="Criado por" />
-                            <input type="text" id="USUARIO" value="{{ $patrimonio->USUARIO ?? '-' }}" readonly 
+                            <input type="text" id="USUARIO" value="{{ $patrimonio->cadastrado_por_nome ?? $patrimonio->USUARIO ?? '-' }}" readonly 
+                                class="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100">
+                        </div>
+
+                        {{-- Termo de Responsabilidade --}}
+                        <div>
+                            <x-input-label for="FLTERMORESPONSABILIDADE" value="Termo de Responsabilidade Enviado" />
+                            <input type="text" id="FLTERMORESPONSABILIDADE" value="{{ ($patrimonio->FLTERMORESPONSABILIDADE === 'S') ? 'Sim' : 'Não' }}" readonly 
                                 class="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100">
                         </div>
 

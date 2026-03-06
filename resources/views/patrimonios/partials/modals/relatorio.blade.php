@@ -38,8 +38,8 @@
                 <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
                     name="tipo_relatorio" value="aquisicao" x-model="tipoRelatorio"
                     class="form-radio text-indigo-600"><span
-                    class="text-gray-700 dark:text-gray-300">Por Período de
-                    Aquisição</span></label>
+                    class="text-gray-700 dark:text-gray-300">Por Período da
+                    OC</span></label>
                 <label class="flex items-center space-x-2 cursor-pointer"><input type="radio"
                     name="tipo_relatorio" value="cadastro" x-model="tipoRelatorio"
                     class="form-radio text-indigo-600"><span

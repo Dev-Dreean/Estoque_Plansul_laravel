@@ -12,6 +12,10 @@
             <a href="{{ route('solicitacoes-bens.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">Voltar</a>
         </div>
     </x-slot>
+
+    <div class="pt-6 w-full sm:px-6 lg:px-8">
+        @include('solicitacoes.partials.subnav')
+    </div>
 @endunless
 
     @include('solicitacoes.partials.show-content', [

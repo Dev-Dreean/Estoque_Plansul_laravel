@@ -235,8 +235,11 @@ class CadastroTelaController extends Controller
         $inserted = null;
 
         DB::transaction(function () use ($nome, &$inserted) {
-            $exists = DB::table('acessotela')->get()->first(function ($tela) use ($nome) {
-                return stripos($tela->DETELA, $nome) !== false;
+            $telasCadastradas = DB::table('acessotela')->get();
+            $nomeNormalizado = $this->normalizarNomeTela($nome);
+
+            $exists = $telasCadastradas->first(function ($tela) use ($nomeNormalizado) {
+                return $this->normalizarNomeTela((string) $tela->DETELA) === $nomeNormalizado;
             });
 
             if ($exists) {
@@ -244,14 +247,20 @@ class CadastroTelaController extends Controller
                 return;
             }
 
-            $telasPrincipais = $this->getTelasPrincipais();
-            $telaPrincipal = collect($telasPrincipais)->first(function ($tela) use ($nome) {
-                return stripos($tela['nome'], $nome) !== false || stripos($nome, $tela['nome']) !== false;
-            });
+            $telaPrincipal = $this->localizarTelaPrincipalPorNome($nome, $this->getTelasPrincipais());
+            $codigoPreferencial = $telaPrincipal['codigo'] ?? null;
 
-            $sugestaoCodigo = $telaPrincipal
-                ? $telaPrincipal['codigo']
-                : (DB::table('acessotela')->max('NUSEQTELA') + 1 ?: 1000);
+            if ($codigoPreferencial !== null) {
+                $codigoOcupado = $telasCadastradas->firstWhere('NUSEQTELA', $codigoPreferencial);
+                if ($codigoOcupado) {
+                    $inserted = false;
+                    return;
+                }
+            }
+
+            $sugestaoCodigo = $codigoPreferencial !== null
+                ? (int) $codigoPreferencial
+                : $this->proximoCodigoLivre($telasCadastradas);
 
             DB::table('acessotela')->insert([
                 'NUSEQTELA' => $sugestaoCodigo,
@@ -264,7 +273,7 @@ class CadastroTelaController extends Controller
         });
 
         if ($inserted === false) {
-            return redirect()->route('cadastro-tela.index')->with('warning', "A tela \"{$nome}\" já está cadastrada.");
+            return redirect()->route('cadastro-tela.index')->with('warning', "A tela \"{$nome}\" já está cadastrada ou já possui um código principal em uso.");
         }
 
         return redirect()->route('cadastro-tela.index')->with('success', "Tela \"{$nome}\" vinculada com código {$inserted}.");
@@ -283,28 +292,35 @@ class CadastroTelaController extends Controller
         $inseridas = 0;
 
         DB::transaction(function () use ($telasPrincipais, $cadastradas, &$inseridas) {
-            $max = DB::table('acessotela')->max('NUSEQTELA');
-            $next = $max ? ($max + 1) : 1000;
+            $telasAtuais = collect($cadastradas->all());
 
             foreach ($telasPrincipais as $tela) {
-                $nome = $tela['nome'];
-                $exists = $cadastradas->first(function ($item) use ($nome) {
-                    return stripos($item->DETELA, $nome) !== false;
+                $nomeNormalizado = $this->normalizarNomeTela((string) $tela['nome']);
+                $exists = $telasAtuais->first(function ($item) use ($nomeNormalizado, $tela) {
+                    return (int) $item->NUSEQTELA === (int) $tela['codigo']
+                        || $this->normalizarNomeTela((string) $item->DETELA) === $nomeNormalizado;
                 });
 
                 if ($exists) {
                     continue;
                 }
 
+                $codigo = $telasAtuais->contains(fn ($item) => (int) $item->NUSEQTELA === (int) $tela['codigo'])
+                    ? $this->proximoCodigoLivre($telasAtuais)
+                    : (int) $tela['codigo'];
+
                 DB::table('acessotela')->insert([
-                    'NUSEQTELA' => $next,
-                    'DETELA' => $nome,
-                    'NMSISTEMA' => 'Plansul',
+                    'NUSEQTELA' => $codigo,
+                    'DETELA' => $tela['nome'],
+                    'NMSISTEMA' => 'Sistema Principal',
                     'FLACESSO' => 'S',
                 ]);
 
                 $inseridas++;
-                $next++;
+                $telasAtuais->push((object) [
+                    'NUSEQTELA' => $codigo,
+                    'DETELA' => $tela['nome'],
+                ]);
             }
         });
 
@@ -327,6 +343,55 @@ class CadastroTelaController extends Controller
             ['codigo' => 1007, 'nome' => 'Histórico', 'rota' => '/historico'],
             ['codigo' => 1008, 'nome' => 'Configurações de Tema', 'rota' => '/settings/theme'],
             ['codigo' => 1010, 'nome' => 'Solicitações de Bens', 'rota' => '/solicitacoes-bens'],
+            ['codigo' => 1016, 'nome' => 'Histórico de Solicitações', 'rota' => '/solicitacoes-bens/historico'],
+            ['codigo' => 1017, 'nome' => 'Solicitações - Gerenciar Visibilidade', 'rota' => '/solicitacoes-bens'],
+            ['codigo' => 1018, 'nome' => 'Solicitações - Visualização Restrita', 'rota' => '/solicitacoes-bens'],
+            ['codigo' => 1019, 'nome' => 'Solicitações - Triagem Inicial', 'rota' => '/solicitacoes-bens'],
         ];
+    }
+
+    private function localizarTelaPrincipalPorNome(string $nome, array $telasPrincipais): ?array
+    {
+        $nomeNormalizado = $this->normalizarNomeTela($nome);
+
+        $matchExato = collect($telasPrincipais)->first(function ($tela) use ($nomeNormalizado) {
+            return $this->normalizarNomeTela((string) $tela['nome']) === $nomeNormalizado;
+        });
+
+        if ($matchExato) {
+            return $matchExato;
+        }
+
+        return collect($telasPrincipais)
+            ->filter(function ($tela) use ($nomeNormalizado) {
+                $nomeTela = $this->normalizarNomeTela((string) $tela['nome']);
+                return str_contains($nomeTela, $nomeNormalizado) || str_contains($nomeNormalizado, $nomeTela);
+            })
+            ->sortByDesc(fn ($tela) => mb_strlen((string) $tela['nome']))
+            ->first();
+    }
+
+    private function proximoCodigoLivre($telas): int
+    {
+        $usados = collect($telas)
+            ->pluck('NUSEQTELA')
+            ->map(static fn ($codigo) => (int) $codigo)
+            ->unique()
+            ->all();
+
+        $codigo = empty($usados) ? 1000 : (max($usados) + 1);
+        while (in_array($codigo, $usados, true)) {
+            $codigo++;
+        }
+
+        return $codigo;
+    }
+
+    private function normalizarNomeTela(string $nome): string
+    {
+        $nome = trim($nome);
+        $nome = preg_replace('/\s+/u', ' ', $nome) ?: $nome;
+
+        return mb_strtoupper($nome, 'UTF-8');
     }
 }

@@ -781,6 +781,8 @@ class PatrimonioController extends Controller
 
                 'TAMANHO' => 'nullable|string|max:100',
 
+                'FLTERMORESPONSABILIDADE' => 'nullable|string|in:S,N',
+
             ]);
 
 
@@ -926,6 +928,8 @@ class PatrimonioController extends Controller
             'PESO' => $validated['PESO'] ?? null,
 
             'TAMANHO' => $validated['TAMANHO'] ?? null,
+
+            'FLTERMORESPONSABILIDADE' => $validated['FLTERMORESPONSABILIDADE'] ?? 'N',
 
             'USUARIO' => $usuarioCriador,
 
@@ -3297,8 +3301,8 @@ class PatrimonioController extends Controller
 
 
 
-        // Quando o usuário informar código numérico (ex: 1339), priorizar match exato
-        // para não "sumir" em listas grandes limitadas pelo filtro inteligente.
+        // Quando o usuï¿½rio informar cï¿½digo numï¿½rico (ex: 1339), priorizar match exato
+        // para nï¿½o "sumir" em listas grandes limitadas pelo filtro inteligente.
         if ($termo !== '' && ctype_digit($termo)) {
 
             $exatos = array_values(array_filter($locais, function ($row) use ($termo) {
@@ -3319,9 +3323,9 @@ class PatrimonioController extends Controller
 
             ['cdlocal', 'delocal'],  // campos de busca
 
-            ['cdlocal' => 'número', 'delocal' => 'texto'],  // tipos de campo
+            ['cdlocal' => 'nï¿½mero', 'delocal' => 'texto'],  // tipos de campo
 
-            300  // limite ampliado para facilitar seleção em projetos grandes
+            300  // limite ampliado para facilitar seleï¿½ï¿½o em projetos grandes
 
         );
 
@@ -5339,6 +5343,8 @@ class PatrimonioController extends Controller
             'PESO' => 'nullable|numeric|min:0',
 
             'TAMANHO' => 'nullable|string|max:100',
+
+            'FLTERMORESPONSABILIDADE' => 'nullable|string|in:S,N',
 
             // Matricula precisa existir na tabela funcionarios
 

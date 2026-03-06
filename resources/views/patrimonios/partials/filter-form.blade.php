@@ -1,4 +1,4 @@
-@php
+﻿@php
   use Carbon\Carbon;
   $filterKeys = ['nupatrimonio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','conferido','matr_responsavel','cadastrado_por','numof','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate','uf'];
   $badgeColors = [
@@ -213,7 +213,12 @@
               },
               filtered() {
                 const term = (this.search || '').toLowerCase();
-                if (!term.length) return [];
+                if (!term.length) {
+                  return this.options
+                    .slice()
+                    .sort((a, b) => a.label.localeCompare(b.label))
+                    .slice(0, 12);
+                }
                 const scored = this.options
                   .map(o => {
                     const label = o.label.toLowerCase();
@@ -257,7 +262,7 @@
               x-model="search"
               @input="open=search.length>0; syncValue()"
               @keydown.enter.prevent="handleManual()"
-              @blur="syncValue()"
+              @blur="handleManual()"
               placeholder="Projeto"
               class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md"
             />
@@ -323,7 +328,12 @@
               },
               filtered() {
                 const term = (this.search || '').toLowerCase();
-                if (!term.length) return [];
+                if (!term.length) {
+                  return this.options
+                    .slice()
+                    .sort((a, b) => a.label.localeCompare(b.label))
+                    .slice(0, 20);
+                }
                 const scored = this.options
                   .map(o => {
                     const label = o.label.toLowerCase();
@@ -344,20 +354,24 @@
                 this.open = false;
               },
               init() {
-                // Carregar os locais do projeto selecionado (se houver)
                 const initialProj = '{{ request('cdprojeto') }}';
                 if (initialProj) {
                   this.fetchLocais(initialProj, true);
                 }
-                // Ouvir mudanças no projeto
-                window.addEventListener('patrimônio-projeto-selecionado', (e) => {
+
+                window.addEventListener('patrimônio-projeto-selecionado', async (e) => {
                   const proj = (e.detail || '').toString();
                   this.value = '';
                   this.search = '';
-                  this.fetchLocais(proj, false);
+                  await this.fetchLocais(proj, false);
+                  this.$nextTick(() => {
+                    if (this.$refs.localInput) {
+                      this.$refs.localInput.focus();
+                    }
+                    this.open = true;
+                  });
                 });
 
-                // Se já veio com local preenchido e opções carregadas via servidor, sincronizar o nome
                 const current = this.options.find(o => o.code === this.value);
                 if (current) this.search = current.label;
               }
@@ -368,7 +382,10 @@
             <input
               type="text"
               x-model="search"
-              @input="open=search.length>0"
+              x-ref="localInput"
+              @input="open=true"
+              @focus="open=true"
+              @click="open=true"
               placeholder="Local Físico"
               class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md"
             />
@@ -376,15 +393,16 @@
             <div
               x-show="open"
               x-transition
-              class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-50 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-56 overflow-y-auto"
+              class="absolute z-40 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-56 overflow-y-auto"
             >
               <template x-for="opt in filtered()" :key="opt.code">
-                <button type="button" class="flex justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                <button type="button" class="flex justify-between w-full px-3 py-2 text-sm text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
                   @click="select(opt)">
                   <span x-text="opt.label"></span>
                 </button>
               </template>
-              <div x-show="filtered().length === 0" class="px-3 py-2 text-xs text-gray-500">Nenhum resultado</div>
+              <div x-show="loading" class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">Carregando locais...</div>
+              <div x-show="!loading && filtered().length === 0" class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">Nenhum resultado</div>
             </div>
           </div>
         </div>
@@ -623,18 +641,18 @@
           }"
         >
           <div class="flex items-center justify-between gap-2">
-            <span class="text-sm font-semibold text-gray-800 dark:text-gray-100">Aquisição</span>
+            <span class="text-sm font-semibold text-gray-800 dark:text-gray-100">Data da OC</span>
             <label class="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
               <input type="checkbox" name="filtrar_aquisicao" value="1" x-model="range" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
               <span>Intervalo</span>
             </label>
           </div>
           <div class="flex items-center gap-2">
-            <input type="date" name="dtaquisicao_de" value="{{ request('dtaquisicao_de') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de Aquisição" />
+            <input type="date" name="dtaquisicao_de" value="{{ request('dtaquisicao_de') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data da OC" />
             <template x-if="range">
               <span class="text-xs text-gray-500 dark:text-gray-300">até</span>
             </template>
-            <input x-show="range" x-cloak type="date" name="dtaquisicao_ate" value="{{ request('dtaquisicao_ate') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data de Aquisição Até" />
+            <input x-show="range" x-cloak type="date" name="dtaquisicao_ate" value="{{ request('dtaquisicao_ate') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" aria-label="Data da OC Até" />
           </div>
         </div>
         <div
@@ -682,3 +700,5 @@
     </form>
   </div>
 </div>
+
+
