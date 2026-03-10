@@ -7,7 +7,7 @@
     'subtitle' => null,
 ])
 
-<label class="flex items-start p-3 rounded-lg bg-gray-700 dark:bg-gray-700 border border-gray-600 dark:border-gray-600 hover:bg-gray-600 dark:hover:bg-gray-600 cursor-pointer transition-colors">
+<label class="flex items-start h-full p-3 rounded-lg bg-gray-700 dark:bg-gray-700 border border-gray-600 dark:border-gray-600 hover:bg-gray-600 dark:hover:bg-gray-600 cursor-pointer transition-colors">
     <input
         type="checkbox"
         name="{{ $name }}"

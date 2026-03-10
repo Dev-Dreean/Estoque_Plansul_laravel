@@ -51,13 +51,19 @@
     overflow: hidden; word-break: break-word;
   }
   /* Larguras das colunas */
-  .col-pat   { width: 55px; }
-  .col-desc  { width: 28%; }
-  .col-sit   { width: 70px; }
-  .col-mar   { width: 75px; }
-  .col-prj   { width: 50px; }
-  .col-loc   { width: 120px; }
-  .col-oc    { width: 50px; }
+  .col-npat  { width: 45px; }   /* Nº Pat. */
+  .col-conf  { width: 35px; }   /* Conf. */
+  .col-of    { width: 40px; }   /* OF */
+  .col-obj   { width: 40px; }   /* Obj. */
+  .col-proj  { width: 60px; }   /* Proj. */
+  .col-local { width: 70px; }   /* Local */
+  .col-mod   { width: 50px; }   /* Mod. */
+  .col-mar   { width: 55px; }   /* Marca */
+  .col-desc  { width: 110px; }  /* Desc. */
+  .col-status{ width: 55px; }   /* Status */
+  .col-dt-oc { width: 65px; }   /* Dt. OC */
+  .col-dt-cad{ width: 70px; }   /* Dt. Cad. */
+  .col-cad-por{ width: 60px; }  /* Cad. Por */
 
   .rodape-pagina { font-size: 8px; color: #666; text-align: right; margin-top: 6px; }
 
@@ -101,25 +107,37 @@
   <table>
     <thead>
       <tr>
-        <th class="col-pat">N.Pat</th>
-        <th class="col-desc">Descricao</th>
-        <th class="col-sit">Situacao</th>
+        <th class="col-npat">Nº Pat.</th>
+        <th class="col-conf">Conf.</th>
+        <th class="col-of">OF</th>
+        <th class="col-obj">Obj.</th>
+        <th class="col-proj">Proj.</th>
+        <th class="col-local">Local</th>
+        <th class="col-mod">Mod.</th>
         <th class="col-mar">Marca</th>
-        <th class="col-prj">Projeto</th>
-        <th class="col-loc">Local Fisico</th>
-        <th class="col-oc">OC</th>
+        <th class="col-desc">Desc.</th>
+        <th class="col-status">Status</th>
+        <th class="col-dt-oc">Dt. OC</th>
+        <th class="col-dt-cad">Dt. Cad.</th>
+        <th class="col-cad-por">Cad. Por</th>
       </tr>
     </thead>
     <tbody>
       @foreach($registros as $r)
       <tr>
-        <td class="col-pat">{{ $r->NUPATRIMONIO }}</td>
-        <td class="col-desc">{{ mb_substr($r->DEPATRIMONIO ?? '', 0, 60) }}</td>
-        <td class="col-sit">{{ $r->SITUACAO }}</td>
-        <td class="col-mar">{{ mb_substr($r->MARCA ?? '', 0, 20) }}</td>
-        <td class="col-prj">{{ $r->CDPROJETO }}</td>
-        <td class="col-loc">{{ $r->local?->delocal ?? $r->CDLOCAL }}</td>
-        <td class="col-oc">{{ $r->NUMOF ?? '-' }}</td>
+        <td class="col-npat">{{ $r->NUPATRIMONIO }}</td>
+        <td class="col-conf">{{ ($r->FLCONFERIDO === 'S' || $r->FLCONFERIDO === '1') ? 'Sim' : 'Não' }}</td>
+        <td class="col-of">{{ $r->NUMOF ?? '-' }}</td>
+        <td class="col-obj">{{ $r->CODOBJETO ?? '-' }}</td>
+        <td class="col-proj">{{ $r->projeto?->NOMEPROJETO ?? $r->CDPROJETO }}</td>
+        <td class="col-local">{{ $r->local?->delocal ?? $r->CDLOCAL }}</td>
+        <td class="col-mod">{{ mb_substr($r->MODELO ?? '', 0, 15) }}</td>
+        <td class="col-mar">{{ mb_substr($r->MARCA ?? '', 0, 15) }}</td>
+        <td class="col-desc">{{ mb_substr($r->DEPATRIMONIO ?? '', 0, 50) }}</td>
+        <td class="col-status">{{ $r->SITUACAO }}</td>
+        <td class="col-dt-oc">{{ $r->DTAQUISICAO?->format('d/m/Y') ?? '-' }}</td>
+        <td class="col-dt-cad">{{ $r->DTOPERACAO?->format('d/m/Y') ?? '-' }}</td>
+        <td class="col-cad-por">{{ $r->USUARIO ?? '-' }}</td>
       </tr>
       @endforeach
     </tbody>

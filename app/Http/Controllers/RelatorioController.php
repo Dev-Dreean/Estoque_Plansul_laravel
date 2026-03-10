@@ -703,10 +703,12 @@ class RelatorioController extends Controller
             $query = $this->getQueryFromRequest($request);
             $query->setEagerLoads([]);
 
-            // Colunas + relacionamento local para mostrar nome em vez de código
-            $cols = ['NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO', 'MARCA', 'CDPROJETO', 'CDLOCAL', 'NUMOF'];
+            // Colunas para relatório completo (14 colunas solicitadas)
+            $cols = ['NUPATRIMONIO', 'FLCONFERIDO', 'NUMOF', 'CODOBJETO', 'CDPROJETO', 'CDLOCAL', 
+                     'MODELO', 'MARCA', 'DEPATRIMONIO', 'SITUACAO', 'DTAQUISICAO', 'DTOPERACAO', 'USUARIO'];
             
-            $registros = $query->with('local')
+            // Carrega relacionamentos: local (para nome do local) e projeto (para nome do projeto)
+            $registros = $query->with('local', 'projeto')
                               ->get($cols);
 
             $data  = now()->format('d/m/Y H:i:s');
