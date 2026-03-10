@@ -94,14 +94,17 @@
     <h2>Relatorio de Patrimonios</h2>
     <span class="info">{{ $total }} registros &nbsp;|&nbsp; Filtro: {{ $tipo }} &nbsp;|&nbsp; {{ $data }}</span>
   </div>
-  <div style="display:flex;gap:8px;align-items:center">
+  <div style="display:flex;gap:16px;align-items:flex-start">
     <button class="btn-imprimir" onclick="window.print()">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
       </svg>
       Imprimir / Salvar como PDF
     </button>
-    <button class="btn-fechar" onclick="window.close()">Fechar</button>
+    <div style="font-size:11px;opacity:0.9;line-height:1.4;text-align:right">
+      <div><strong>✅ Conferidos:</strong> {{ $conferidos }}</div>
+      <div><strong>❌ Não conferidos:</strong> {{ $nao_conferidos }}</div>
+    </div>
   </div>
 </div>
 

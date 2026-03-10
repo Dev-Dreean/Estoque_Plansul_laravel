@@ -713,11 +713,13 @@ class RelatorioController extends Controller
 
             $data  = now()->format('d/m/Y H:i:s');
             $total = $registros->count();
+            $conferidos = $registros->filter(fn($r) => $r->FLCONFERIDO === 'S' || $r->FLCONFERIDO === '1')->count();
+            $nao_conferidos = $total - $conferidos;
             $tipo  = $request->input('tipo_relatorio', 'geral');
 
-            Log::info('📋 [IMPRIMIR HTML] Relatório gerado', ['total' => $total, 'user' => Auth::id()]);
+            Log::info('📋 [IMPRIMIR HTML] Relatório gerado', ['total' => $total, 'conferidos' => $conferidos, 'user' => Auth::id()]);
 
-            return response()->view('relatorios.patrimonios.imprimir', compact('registros', 'data', 'total', 'tipo'));
+            return response()->view('relatorios.patrimonios.imprimir', compact('registros', 'data', 'total', 'conferidos', 'nao_conferidos', 'tipo'));
         } catch (\Throwable $e) {
             Log::error('❌ [IMPRIMIR HTML] Falha', ['erro' => $e->getMessage()]);
             return response('<h2>Erro ao gerar relatorio: ' . e($e->getMessage()) . '</h2>', 500);
