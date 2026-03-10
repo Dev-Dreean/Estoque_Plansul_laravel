@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 
 class TermoCodigo extends Model
 {
@@ -23,11 +23,14 @@ class TermoCodigo extends Model
     public static function hasTituloColumn(): bool
     {
         try {
-            if (!Schema::hasTable('termo_codigos')) {
+            $tabelaExiste = DB::select("SHOW TABLES LIKE 'termo_codigos'");
+            if (empty($tabelaExiste)) {
                 return false;
             }
 
-            return Schema::hasColumn('termo_codigos', 'titulo');
+            $colunaExiste = DB::select("SHOW COLUMNS FROM termo_codigos LIKE 'titulo'");
+
+            return !empty($colunaExiste);
         } catch (\Throwable $e) {
             Log::warning('Nao foi possivel verificar a coluna titulo em termo_codigos.', [
                 'erro' => $e->getMessage(),
