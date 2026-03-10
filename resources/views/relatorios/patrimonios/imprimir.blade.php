@@ -63,7 +63,35 @@
 
   .rodape-pagina { font-size: 9px; color: #666; text-align: right; margin-top: 8px; }
 
-  /* === CSS de impressão === */
+  /* === Loading/Spinner === */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .loading-overlay.ativo { display: flex; }
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: girar 1s linear infinite;
+  }
+  @keyframes girar {
+    to { transform: rotate(360deg); }
+  }
+  .loading-texto {
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+  } */
   @media print {
     @page { margin: 6mm 6mm 10mm; size: A4 landscape; }
     .barra-acoes { display: none !important; }
@@ -77,20 +105,35 @@
 </head>
 <body>
 
+{{-- Loading Overlay --}}
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-texto">⏳ Gerando PDF...</div>
+</div>
+
 <script>
   function gerarPdf() {
-    const elemento = document.getElementById('conteudo-relatorio');
-    const nomeArquivo = 'Relatório_Patrimonios_' + new Date().toISOString().split('T')[0] + '.pdf';
+    const loading = document.getElementById('loading-overlay');
+    loading.classList.add('ativo');
     
-    const opcoes = {
-      margin: [6, 6, 10, 6],
-      filename: nomeArquivo,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' }
-    };
+    setTimeout(() => {
+      const elemento = document.getElementById('conteudo-relatorio');
+      const nomeArquivo = 'Relatório_Patrimonios_' + new Date().toISOString().split('T')[0] + '.pdf';
+      
+      const opcoes = {
+        margin: [6, 6, 10, 6],
+        filename: nomeArquivo,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' }
+      };
 
-    html2pdf().set(opcoes).from(elemento).save();
+      html2pdf().set(opcoes).from(elemento).save().then(() => {
+        loading.classList.remove('ativo');
+      }).catch(() => {
+        loading.classList.remove('ativo');
+      });
+    }, 300);
   }
 </script>
 
