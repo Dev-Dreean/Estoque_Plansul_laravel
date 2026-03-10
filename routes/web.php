@@ -292,6 +292,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         Route::post('/patrimonios/exportar/csv', [\App\Http\Controllers\RelatorioController::class, 'exportarCsv'])->name('patrimonios.exportar.csv');
         Route::post('/patrimonios/exportar/pdf', [\App\Http\Controllers\RelatorioController::class, 'exportarPdf'])->name('patrimonios.exportar.pdf');
         Route::post('/patrimonios/exportar/ods', [\App\Http\Controllers\RelatorioController::class, 'exportarOds'])->name('patrimonios.exportar.ods');
+        Route::post('/patrimonios/imprimir', [\App\Http\Controllers\RelatorioController::class, 'imprimirHtml'])->name('patrimonios.imprimir');
     });
 
     // Relatório de Funcionários (Excel) - FORA do grupo relatorios para manter nome exato

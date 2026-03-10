@@ -689,6 +689,38 @@ class RelatorioController extends Controller
     }
 
     /**
+     * Gera HTML de impressão (print-ready) para relatório de patrimônios.
+     * Abre em nova aba do navegador — o usuário imprime ou salva como PDF via Ctrl+P.
+     * Sem uso de DomPDF → sem limite de memória → funciona com qualquer volume de registros.
+     */
+    public function imprimirHtml(Request $request)
+    {
+        @set_time_limit(300);
+        @ini_set('memory_limit', '256M');
+        DB::disableQueryLog();
+
+        try {
+            $query = $this->getQueryFromRequest($request);
+            $query->setEagerLoads([]);
+
+            $cols = ['NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO', 'MARCA', 'CDPROJETO', 'CDLOCAL', 'DTAQUISICAO'];
+
+            $registros = $query->get($cols);
+
+            $data  = now()->format('d/m/Y H:i:s');
+            $total = $registros->count();
+            $tipo  = $request->input('tipo_relatorio', 'geral');
+
+            Log::info('📋 [IMPRIMIR HTML] Relatório gerado', ['total' => $total, 'user' => Auth::id()]);
+
+            return response()->view('relatorios.patrimonios.imprimir', compact('registros', 'data', 'total', 'tipo'));
+        } catch (\Throwable $e) {
+            Log::error('❌ [IMPRIMIR HTML] Falha', ['erro' => $e->getMessage()]);
+            return response('<h2>Erro ao gerar relatorio: ' . e($e->getMessage()) . '</h2>', 500);
+        }
+    }
+
+    /**
      * Gera HTML radicalmente simples para PDF (sem CSS redundante, sem espaçamento).
      * Apenas tabela nua com dados puros.
      */

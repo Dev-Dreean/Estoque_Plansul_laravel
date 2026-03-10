@@ -1952,11 +1952,45 @@
           exportarRelatorio(formato) {
             if (this.reportLoading) return;
 
+            // PDF: abre nova aba com HTML para impressão (sem DomPDF — sem limite de memória)
+            if (formato === 'pdf') {
+              const action = "{{ route('relatorios.patrimonios.imprimir') }}";
+              const form = document.createElement('form');
+              form.method = 'POST';
+              form.action = action;
+              form.target = '_blank';
+              form.style.display = 'none';
+
+              // CSRF
+              const csrf = document.createElement('input');
+              csrf.type = 'hidden'; csrf.name = '_token'; csrf.value = this.csrf();
+              form.appendChild(csrf);
+
+              // Filtros do relatório
+              Object.entries(this.reportFilters || {}).forEach(([key, value]) => {
+                if (Array.isArray(value)) {
+                  value.filter(v => v !== null && v !== undefined && v !== '').forEach(v => {
+                    const i = document.createElement('input');
+                    i.type = 'hidden'; i.name = key + '[]'; i.value = v;
+                    form.appendChild(i);
+                  });
+                } else if (value !== null && value !== undefined && value !== '') {
+                  const i = document.createElement('input');
+                  i.type = 'hidden'; i.name = key; i.value = value;
+                  form.appendChild(i);
+                }
+              });
+
+              document.body.appendChild(form);
+              form.submit();
+              form.remove();
+              return;
+            }
+
             const actions = {
               excel: "{{ route('relatorios.patrimonios.exportar.excel') }}",
               csv:   "{{ route('relatorios.patrimonios.exportar.csv') }}",
               ods:   "{{ route('relatorios.patrimonios.exportar.ods') }}",
-              pdf:   "{{ route('relatorios.patrimonios.exportar.pdf') }}",
             };
             const action = actions[formato];
             if (!action) return;
