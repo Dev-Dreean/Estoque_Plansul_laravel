@@ -315,7 +315,7 @@
                             @endif
 
                             {{-- Lista de itens como badges individuais --}}
-                            @php($itensAgrupados = $grupo_patrimonios->pluck('DEPATRIMONIO')->filter()->unique()->values()->all())
+                            @php($itensAgrupados = $grupo_patrimonios->pluck('DEPATRIMONIO')->filter()->unique()->values())
                             <div class="flex items-center gap-2 flex-1 min-w-0 max-w-[26rem] sm:max-w-[28rem] lg:max-w-[32rem] xl:max-w-[36rem] 2xl:max-w-[42rem] overflow-hidden">
                               <span x-show="getTituloAgrupado(@js((string) $grupo_codigo)) !== ''"
                                 style="display: none;"
@@ -337,15 +337,16 @@
                               <div x-show="getTituloAgrupado(@js((string) $grupo_codigo)) === ''"
                                 class="flex items-center gap-2 min-w-0 overflow-hidden"
                                 style="display: none;">
-                                <template x-for="item in getItensAgrupadosVisiveis(@js($itensAgrupados))" :key="item">
-                                  <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 whitespace-nowrap min-w-0 max-w-[10rem] sm:max-w-[12rem] lg:max-w-[14rem] xl:max-w-[15rem]">
-                                    <span class="truncate" :title="item" x-text="item"></span>
-                                  </span>
-                                </template>
-                                <span x-show="getItensAgrupadosOcultos(@js($itensAgrupados)) > 0"
-                                  class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 whitespace-nowrap flex-shrink-0"
-                                  x-text="`+${getItensAgrupadosOcultos(@js($itensAgrupados))} mais`"
-                                  style="display: none;"></span>
+                                @foreach($itensAgrupados->take(2) as $item)
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 whitespace-nowrap min-w-0 max-w-[10rem] sm:max-w-[12rem] lg:max-w-[14rem] xl:max-w-[15rem]">
+                                  <span class="truncate" title="{{ $item }}">{{ $item }}</span>
+                                </span>
+                                @endforeach
+                                @if($itensAgrupados->count() > 2)
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 whitespace-nowrap flex-shrink-0">
+                                  +{{ $itensAgrupados->count() - 2 }} mais
+                                </span>
+                                @endif
                               </div>
                             </div>
                           </div>
@@ -713,26 +714,6 @@
         },
         getTituloAgrupado(codigo) {
           return String(this.customGroupTitles[String(codigo)] || '').trim();
-        },
-        getLimiteItensAgrupados() {
-          const width = window.innerWidth || 0;
-
-          if (width >= 1700) return 4;
-          if (width >= 1400) return 3;
-          if (width >= 1024) return 2;
-          return 1;
-        },
-        getItensAgrupadosVisiveis(itens) {
-          const lista = Array.isArray(itens) ? itens.filter(item => String(item || '').trim() !== '') : [];
-          const limite = this.getLimiteItensAgrupados();
-
-          return lista.slice(0, limite);
-        },
-        getItensAgrupadosOcultos(itens) {
-          const lista = Array.isArray(itens) ? itens.filter(item => String(item || '').trim() !== '') : [];
-          const limite = this.getLimiteItensAgrupados();
-
-          return Math.max(lista.length - limite, 0);
         },
         async salvarTituloTermo(codigo) {
           if (this.salvandoTitulo) {
