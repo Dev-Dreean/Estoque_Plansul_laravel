@@ -707,8 +707,8 @@ class RelatorioController extends Controller
             $cols = ['NUPATRIMONIO', 'FLCONFERIDO', 'NUMOF', 'CODOBJETO', 'CDPROJETO', 'CDLOCAL', 
                      'MODELO', 'MARCA', 'DEPATRIMONIO', 'SITUACAO', 'DTAQUISICAO', 'DTOPERACAO', 'USUARIO'];
             
-            // Carrega relacionamentos: local (para nome do local) e projeto (para nome do projeto)
-            $registros = $query->with('local', 'projeto')
+            // Carrega relacionamentos: local, projeto e creator (usuário) para exibir nome completo
+            $registros = $query->with('local', 'projeto', 'creator')
                               ->get($cols);
 
             $data  = now()->format('d/m/Y H:i:s');

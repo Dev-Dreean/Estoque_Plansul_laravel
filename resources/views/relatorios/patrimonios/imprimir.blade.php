@@ -6,7 +6,7 @@
 <title>Relatorio de Patrimonios - {{ $data }}</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #111; background: #fff; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #111; background: #fff; }
 
   /* === Barra de ações (não imprime) === */
   .barra-acoes {
@@ -37,44 +37,52 @@
   .cabecalho-relatorio h1 { font-size: 14px; font-weight: bold; margin-bottom: 2px; }
   .cabecalho-relatorio .meta { font-size: 9px; color: #555; }
 
-  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  table { width: 100%; border-collapse: collapse; table-layout: auto; }
   thead tr th {
     background: #1e3a5f; color: #fff;
-    font-size: 8px; text-transform: uppercase; letter-spacing: .4px;
-    padding: 3px 4px; text-align: left; border: 1px solid #0f1f3d;
-    overflow: hidden;
+    font-size: 9px; text-transform: uppercase; letter-spacing: .4px;
+    padding: 5px 6px; text-align: left; border: 1px solid #0f1f3d;
+    overflow: hidden; white-space: nowrap;
   }
   tbody tr:nth-child(even) { background: #f3f4f6; }
   tbody tr td {
-    font-size: 8px; padding: 2px 4px;
+    font-size: 9px; padding: 4px 6px;
     border: 1px solid #d1d5db;
-    overflow: hidden; word-break: break-word;
+    overflow: hidden; word-break: break-word; vertical-align: center;
   }
-  /* Larguras das colunas */
-  .col-npat  { width: 45px; }   /* Nº Pat. */
-  .col-conf  { width: 35px; }   /* Conf. */
-  .col-of    { width: 40px; }   /* OF */
-  .col-obj   { width: 40px; }   /* Obj. */
-  .col-proj  { width: 60px; }   /* Proj. */
-  .col-local { width: 70px; }   /* Local */
-  .col-mod   { width: 50px; }   /* Mod. */
-  .col-mar   { width: 55px; }   /* Marca */
-  .col-desc  { width: 110px; }  /* Desc. */
-  .col-status{ width: 55px; }   /* Status */
-  .col-dt-oc { width: 65px; }   /* Dt. OC */
-  .col-dt-cad{ width: 70px; }   /* Dt. Cad. */
-  .col-cad-por{ width: 60px; }  /* Cad. Por */
+  /* Larguras das colunas - responsivo */
+  .col-npat  { min-width: 55px; width: 5%; }     /* Nº Pat. */
+  .col-conf  { min-width: 50px; width: 4%; }     /* Conf. */
+  .col-of    { min-width: 55px; width: 5%; }     /* OF */
+  .col-obj   { min-width: 55px; width: 5%; }     /* Obj. */
+  .col-proj  { min-width: 80px; width: 8%; }     /* Proj. */
+  .col-local { min-width: 100px; width: 10%; }   /* Local */
+  .col-mod   { min-width: 65px; width: 6%; }     /* Mod. */
+  .col-mar   { min-width: 70px; width: 7%; }     /* Marca */
+  .col-desc  { min-width: 150px; width: 15%; }   /* Desc. */
+  .col-status{ min-width: 70px; width: 6%; }     /* Status */
+  .col-dt-oc { min-width: 75px; width: 7%; }     /* Dt. OC */
+  .col-dt-cad{ min-width: 80px; width: 7%; }     /* Dt. Cad. */
+  .col-cad-por{ min-width: 100px; width: 8%; }   /* Cad. Por */
 
-  .rodape-pagina { font-size: 8px; color: #666; text-align: right; margin-top: 6px; }
+  .rodape-pagina { font-size: 9px; color: #666; text-align: right; margin-top: 8px; }
 
   /* === CSS de impressão === */
   @media print {
-    @page { margin: 8mm 8mm 12mm; size: A4 landscape; }
+    @page { margin: 6mm 6mm 10mm; size: A4 landscape; }
     .barra-acoes { display: none !important; }
-    .conteudo { padding-top: 0 !important; }
+    .conteudo { padding-top: 0 !important; padding-left: 8px !important; padding-right: 8px !important; }
     tbody tr { page-break-inside: avoid; }
     thead { display: table-header-group; }
     .rodape-pagina { display: none; }
+    body { font-size: 10px; }
+    table, thead tr th, tbody tr td { font-size: 9px; }
+  }
+  
+  /* === Responsividade para telas pequenas === */
+  @media screen and (max-width: 1200px) {
+    body { font-size: 10px; }
+    thead tr th, tbody tr td { font-size: 8px; padding: 3px 4px; }
   }
 </style>
 </head>
@@ -131,13 +139,13 @@
         <td class="col-obj">{{ $r->CODOBJETO ?? '-' }}</td>
         <td class="col-proj">{{ $r->projeto?->NOMEPROJETO ?? $r->CDPROJETO }}</td>
         <td class="col-local">{{ $r->local?->delocal ?? $r->CDLOCAL }}</td>
-        <td class="col-mod">{{ mb_substr($r->MODELO ?? '', 0, 15) }}</td>
-        <td class="col-mar">{{ mb_substr($r->MARCA ?? '', 0, 15) }}</td>
-        <td class="col-desc">{{ mb_substr($r->DEPATRIMONIO ?? '', 0, 50) }}</td>
+        <td class="col-mod">{{ mb_substr($r->MODELO ?? '', 0, 20) }}</td>
+        <td class="col-mar">{{ mb_substr($r->MARCA ?? '', 0, 20) }}</td>
+        <td class="col-desc">{{ mb_substr($r->DEPATRIMONIO ?? '', 0, 60) }}</td>
         <td class="col-status">{{ $r->SITUACAO }}</td>
         <td class="col-dt-oc">{{ $r->DTAQUISICAO?->format('d/m/Y') ?? '-' }}</td>
         <td class="col-dt-cad">{{ $r->DTOPERACAO?->format('d/m/Y') ?? '-' }}</td>
-        <td class="col-cad-por">{{ $r->USUARIO ?? '-' }}</td>
+        <td class="col-cad-por">{{ $r->cadastradoPorNome ?? $r->USUARIO ?? '-' }}</td>
       </tr>
       @endforeach
     </tbody>
