@@ -315,10 +315,10 @@
                             @endif
 
                             {{-- Lista de itens como badges individuais --}}
-                            <div class="flex flex-wrap gap-2 flex-shrink">
+                            <div class="flex flex-wrap gap-2 flex-1 min-w-0 max-w-[34rem] xl:max-w-[42rem] 2xl:max-w-[52rem] overflow-hidden">
                               <span x-show="getTituloAgrupado(@js((string) $grupo_codigo)) !== ''"
                                 style="display: none;"
-                                class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700 whitespace-nowrap max-w-full">
+                                class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700 whitespace-nowrap max-w-full min-w-0">
                                 <span class="truncate"
                                   :title="getTituloAgrupado(@js((string) $grupo_codigo))"
                                   x-text="getTituloAgrupado(@js((string) $grupo_codigo))"></span>
@@ -335,12 +335,14 @@
                               @endif
                               <div x-show="getTituloAgrupado(@js((string) $grupo_codigo)) === ''" class="contents">
                               @foreach($grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->take(5) as $item)
-                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 whitespace-nowrap">
-                                {{ Str::limit($item, 30) }}
+                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 whitespace-nowrap min-w-0 max-w-[16rem] lg:max-w-[18rem]">
+                                <span class="truncate" title="{{ $item }}">
+                                  {{ $item }}
+                                </span>
                               </span>
                               @endforeach
                               @if($grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->count() > 5)
-                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">
+                              <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 whitespace-nowrap flex-shrink-0">
                                 +{{ $grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->count() - 5 }} mais
                               </span>
                               @endif
