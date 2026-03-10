@@ -3869,7 +3869,11 @@ class PatrimonioController extends Controller
 
     private function montarMetadadosTermos($patrimonios): array
     {
-        $codigos = collect($patrimonios)
+        $itens = method_exists($patrimonios, 'getCollection')
+            ? $patrimonios->getCollection()
+            : collect($patrimonios);
+
+        $codigos = $itens
             ->pluck('NMPLANTA')
             ->filter(fn ($codigo) => $codigo !== null && $codigo !== '')
             ->map(fn ($codigo) => (string) $codigo)
@@ -3883,25 +3887,39 @@ class PatrimonioController extends Controller
         $usuario = Auth::user();
         $loginAtual = strtoupper(trim((string) ($usuario->NMLOGIN ?? '')));
         $podeAdministrar = $usuario && ($usuario->isGod() || $usuario->isAdmin());
+        $tituloDisponivel = TermoCodigo::hasTituloColumn();
 
         $metadados = $codigos->mapWithKeys(fn ($codigo) => [
             $codigo => [
                 'titulo' => null,
-                'pode_editar' => $podeAdministrar,
+                'pode_editar' => $tituloDisponivel && $podeAdministrar,
             ],
         ])->all();
 
-        $registros = TermoCodigo::query()
-            ->whereIn('codigo', $codigos->all())
-            ->get(['codigo', 'titulo', 'created_by']);
+        $colunas = ['codigo', 'created_by'];
+        if ($tituloDisponivel) {
+            $colunas[] = 'titulo';
+        }
+
+        try {
+            $registros = TermoCodigo::query()
+                ->whereIn('codigo', $codigos->all())
+                ->get($colunas);
+        } catch (\Throwable $e) {
+            Log::warning('Nao foi possivel carregar os metadados dos termos para a tela de atribuicao.', [
+                'erro' => $e->getMessage(),
+            ]);
+
+            return $metadados;
+        }
 
         foreach ($registros as $registro) {
             $codigo = (string) $registro->codigo;
             $criador = strtoupper(trim((string) ($registro->created_by ?? '')));
 
             $metadados[$codigo] = [
-                'titulo' => $registro->titulo,
-                'pode_editar' => $podeAdministrar || ($loginAtual !== '' && $criador !== '' && $loginAtual === $criador),
+                'titulo' => $tituloDisponivel ? $registro->titulo : null,
+                'pode_editar' => $tituloDisponivel && ($podeAdministrar || ($loginAtual !== '' && $criador !== '' && $loginAtual === $criador)),
             ];
         }
 
@@ -4172,15 +4190,18 @@ class PatrimonioController extends Controller
 
                     // Caso o código tenha sido "gerado" no front mas ainda não registrado, registramos agora
 
-                    TermoCodigo::firstOrCreate([
-
-                        'codigo' => $codigoTermo
-
-                    ], [
-
-                        'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA')
-
-                    ]);
+                    try {
+                        TermoCodigo::firstOrCreate([
+                            'codigo' => $codigoTermo
+                        ], [
+                            'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA')
+                        ]);
+                    } catch (\Throwable $e) {
+                        Log::warning('Nao foi possivel registrar o codigo de termo gerado no fluxo legado.', [
+                            'codigo' => $codigoTermo,
+                            'erro' => $e->getMessage(),
+                        ]);
+                    }
 
                 }
 
@@ -4214,15 +4235,18 @@ class PatrimonioController extends Controller
 
                     // registra para manter histórico de códigos gerados
 
-                    TermoCodigo::firstOrCreate([
-
-                        'codigo' => $codigoTermo
-
-                    ], [
-
-                        'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA')
-
-                    ]);
+                    try {
+                        TermoCodigo::firstOrCreate([
+                            'codigo' => $codigoTermo
+                        ], [
+                            'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA')
+                        ]);
+                    } catch (\Throwable $e) {
+                        Log::warning('Nao foi possivel registrar o novo codigo de termo no fluxo legado.', [
+                            'codigo' => $codigoTermo,
+                            'erro' => $e->getMessage(),
+                        ]);
+                    }
 
                 }
 
@@ -4252,23 +4276,30 @@ class PatrimonioController extends Controller
 
             if ($updated > 0 && !$codigoJaEmUso) {
 
-                $registroTermo = TermoCodigo::firstOrCreate([
+                try {
+                    TermoCodigo::firstOrCreate([
+                        'codigo' => $codigoTermo
+                    ], [
+                        'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA')
+                    ]);
 
-                    'codigo' => $codigoTermo
+                    $dadosAtualizacao = [
+                        'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
+                    ];
 
-                ], [
+                    if (TermoCodigo::hasTituloColumn()) {
+                        $dadosAtualizacao['titulo'] = null;
+                    }
 
-                    'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA')
-
-                ]);
-
-                $registroTermo->forceFill([
-
-                    'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
-
-                    'titulo' => null,
-
-                ])->save();
+                    TermoCodigo::query()
+                        ->where('codigo', $codigoTermo)
+                        ->update($dadosAtualizacao);
+                } catch (\Throwable $e) {
+                    Log::warning('Nao foi possivel sincronizar os metadados do termo no fluxo legado.', [
+                        'codigo' => $codigoTermo,
+                        'erro' => $e->getMessage(),
+                    ]);
+                }
 
             }
 

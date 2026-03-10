@@ -236,8 +236,8 @@
                   });
                   $termoMeta = !$is_sem_termo ? ($termosMetadados[(string) $grupo_codigo] ?? ['titulo' => null, 'pode_editar' => false]) : null;
                   $tituloPersonalizado = trim((string) data_get($termoMeta, 'titulo', ''));
-                  $tituloExibicao = $tituloPersonalizado !== '' ? $tituloPersonalizado : "Termo {$grupo_codigo}";
-                  $podeEditarTitulo = (bool) data_get($termoMeta, 'pode_editar', false);
+                  $adminPodeEditarTitulo = auth()->check() && (auth()->user()->isGod() || auth()->user()->isAdmin());
+                  $podeEditarTitulo = $adminPodeEditarTitulo || (bool) data_get($termoMeta, 'pode_editar', false);
                   @endphp
 
                   {{-- Cabeçalho Colapsável do Grupo --}}
@@ -263,16 +263,16 @@
                             <div class="flex flex-col gap-2 min-w-0">
                               <div class="flex items-center gap-2 min-w-0">
                                 <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-2 border-gray-400 dark:border-gray-600 flex-shrink-0 max-w-full">
-                                  <span class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate" title="{{ $tituloExibicao }}">{{ $tituloExibicao }}</span>
+                                  <span class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate" title="Termo {{ $grupo_codigo }}">Termo {{ $grupo_codigo }}</span>
                                 </span>
-                                @if($tituloPersonalizado !== '')
+                                @if(false && $tituloPersonalizado !== '')
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700 whitespace-nowrap">
                                   Termo {{ $grupo_codigo }}
                                 </span>
                                 @endif
-                                @if($podeEditarTitulo)
+                                @if(false && $podeEditarTitulo)
                                 <button type="button"
-                                  @click.stop="abrirEditorTitulo(@js((string) $grupo_codigo), @js($tituloPersonalizado))"
+                                  @click.stop="abrirEditorTitulo(@js((string) $grupo_codigo), getTituloAgrupado(@js((string) $grupo_codigo)))"
                                   class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-indigo-200 dark:border-indigo-700 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex-shrink-0"
                                   title="Editar título do termo">
                                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -290,14 +290,15 @@
                                 <input type="text"
                                   id="titulo-termo-{{ $grupo_codigo }}"
                                   x-model="editingTitulo"
+                                  @keydown.enter.prevent="salvarTituloTermo(@js((string) $grupo_codigo))"
                                   maxlength="120"
-                                  placeholder="Digite um título para identificar este agrupado"
+                                  placeholder="Digite um nome para identificar este agrupado"
                                   class="w-full max-w-md px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <button type="button"
                                   @click.stop="salvarTituloTermo(@js((string) $grupo_codigo))"
                                   :disabled="salvandoTitulo"
                                   class="inline-flex items-center px-3 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition">
-                                  <span x-text="salvandoTitulo ? 'Salvando...' : 'Salvar título'"></span>
+                                  <span x-text="salvandoTitulo ? 'Salvando...' : 'Salvar nome'"></span>
                                 </button>
                                 <button type="button"
                                   @click.stop="cancelarEdicaoTitulo()"
@@ -315,6 +316,24 @@
 
                             {{-- Lista de itens como badges individuais --}}
                             <div class="flex flex-wrap gap-2 flex-shrink">
+                              <span x-show="getTituloAgrupado(@js((string) $grupo_codigo)) !== ''"
+                                style="display: none;"
+                                class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700 whitespace-nowrap max-w-full">
+                                <span class="truncate"
+                                  :title="getTituloAgrupado(@js((string) $grupo_codigo))"
+                                  x-text="getTituloAgrupado(@js((string) $grupo_codigo))"></span>
+                              </span>
+                              @if($podeEditarTitulo)
+                              <button type="button"
+                                @click.stop="abrirEditorTitulo(@js((string) $grupo_codigo), getTituloAgrupado(@js((string) $grupo_codigo)))"
+                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-indigo-200 dark:border-indigo-700 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex-shrink-0"
+                                title="Editar nome do agrupado">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L12 15l-4 1 1-4 9.586-9.586z"></path>
+                                </svg>
+                              </button>
+                              @endif
+                              <div x-show="getTituloAgrupado(@js((string) $grupo_codigo)) === ''" class="contents">
                               @foreach($grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->take(5) as $item)
                               <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 whitespace-nowrap">
                                 {{ Str::limit($item, 30) }}
@@ -325,6 +344,7 @@
                                 +{{ $grupo_patrimonios->pluck('DEPATRIMONIO')->unique()->count() - 5 }} mais
                               </span>
                               @endif
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -561,6 +581,9 @@
     window.patrimonioAtribuirSelection = patrimonioAtribuirSelection;
     const atribuirCodigosBaseUrl = @json(route('patrimonios.atribuir.codigos'));
     const termosBaseUrl = @json(url('/termos'));
+    const initialGroupTitles = @json(collect($termosMetadados ?? [])->mapWithKeys(function ($meta, $codigo) {
+      return [(string) $codigo => trim((string) ($meta['titulo'] ?? ''))];
+    })->all());
 
     window.atribuirPage = function atribuirPage() {
       return {
@@ -580,6 +603,7 @@
         editingTermoCodigo: null,
         editingTitulo: '',
         salvandoTitulo: false,
+        customGroupTitles: initialGroupTitles,
         groupState: {}, // Estado dos grupos (expandido/colapsado)
         grupoSelecionados: {}, // Itens selecionados por grupo
         selectionEnabled: false,
@@ -685,6 +709,9 @@
           this.editingTitulo = '';
           this.salvandoTitulo = false;
         },
+        getTituloAgrupado(codigo) {
+          return String(this.customGroupTitles[String(codigo)] || '').trim();
+        },
         async salvarTituloTermo(codigo) {
           if (this.salvandoTitulo) {
             return;
@@ -708,15 +735,15 @@
             const json = await res.json().catch(() => ({}));
 
             if (!res.ok) {
-              alert(json.message || 'Não foi possível atualizar o título do termo.');
+              alert(json.message || 'Não foi possível atualizar o nome do agrupado.');
               return;
             }
 
-            alert(json.message || 'Título do termo atualizado com sucesso.');
-            window.location.reload();
+            this.customGroupTitles[String(codigo)] = String(json?.data?.titulo || '').trim();
+            this.cancelarEdicaoTitulo();
           } catch (e) {
-            console.error('Erro ao atualizar título do termo:', e);
-            alert('Erro ao atualizar o título do termo. Tente novamente.');
+            console.error('Erro ao atualizar nome do agrupado:', e);
+            alert('Erro ao atualizar o nome do agrupado. Tente novamente.');
           } finally {
             this.salvandoTitulo = false;
           }

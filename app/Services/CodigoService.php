@@ -60,16 +60,30 @@ class CodigoService
                 return ['updated' => [], 'already_used' => true, 'code' => $numero];
             }
 
-            $registroTermo = TermoCodigo::firstOrCreate([
-                'codigo' => $numero
-            ], [
-                'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA'
-            ]);
+            try {
+                TermoCodigo::firstOrCreate([
+                    'codigo' => $numero
+                ], [
+                    'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA'
+                ]);
 
-            $registroTermo->forceFill([
-                'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
-                'titulo' => null,
-            ])->save();
+                $dadosAtualizacao = [
+                    'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
+                ];
+
+                if (TermoCodigo::hasTituloColumn()) {
+                    $dadosAtualizacao['titulo'] = null;
+                }
+
+                TermoCodigo::query()
+                    ->where('codigo', $numero)
+                    ->update($dadosAtualizacao);
+            } catch (\Throwable $e) {
+                Log::warning('Nao foi possivel atualizar os metadados do termo durante a atribuicao.', [
+                    'codigo' => $numero,
+                    'erro' => $e->getMessage(),
+                ]);
+            }
 
             $idsLimpos = collect($ids)->filter()->unique()->values();
             if ($idsLimpos->isEmpty()) {

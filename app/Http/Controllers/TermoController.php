@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Patrimonio;
 use App\Models\HistoricoMovimentacao;
+use App\Models\Patrimonio;
 use App\Models\TermoCodigo;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class TermoController extends Controller
@@ -23,54 +24,70 @@ class TermoController extends Controller
             'patrimonio_ids' => 'required|array|min:1',
             'patrimonio_ids.*' => 'exists:patr,NUSEQPATR',
         ], [
-            'patrimonio_ids.required' => 'Você precisa selecionar pelo menos um patrimônio.'
+            'patrimonio_ids.required' => 'Você precisa selecionar pelo menos um patrimônio.',
         ]);
 
-        // Lógica para gerar o novo código de termo sequencial
-        $ultimoCodTermo = DB::table('patr')->max('NMPLANTA');
+        $ultimoCodTermo = (int) DB::table('patr')->max('NMPLANTA');
         $novoCodTermo = $ultimoCodTermo + 1;
 
-        TermoCodigo::updateOrCreate(
-            ['codigo' => $novoCodTermo],
-            [
+        try {
+            $dadosTermo = [
                 'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
-                'titulo' => null,
-            ]
-        );
+            ];
 
-        // Atualiza todos os patrimônios selecionados com o novo código
+            if (TermoCodigo::hasTituloColumn()) {
+                $dadosTermo['titulo'] = null;
+            }
+
+            TermoCodigo::updateOrCreate(
+                ['codigo' => $novoCodTermo],
+                $dadosTermo
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Não foi possível sincronizar os metadados do termo durante a geração.', [
+                'codigo' => $novoCodTermo,
+                'erro' => $e->getMessage(),
+            ]);
+        }
+
         Patrimonio::whereIn('NUSEQPATR', $validated['patrimonio_ids'])
             ->update(['NMPLANTA' => $novoCodTermo]);
 
-        // Registrar histórico de atribuição de termo para cada patrimônio
         try {
-            $patrimonios = Patrimonio::whereIn('NUSEQPATR', $validated['patrimonio_ids'])->get(['NUPATRIMONIO', 'CDMATRFUNCIONARIO']);
-            foreach ($patrimonios as $p) {
+            $patrimonios = Patrimonio::whereIn('NUSEQPATR', $validated['patrimonio_ids'])
+                ->get(['NUPATRIMONIO', 'CDMATRFUNCIONARIO']);
+
+            foreach ($patrimonios as $patrimonio) {
                 $coAutor = null;
                 $actorMat = Auth::user()->CDMATRFUNCIONARIO ?? null;
-                $ownerMat = $p->CDMATRFUNCIONARIO;
+                $ownerMat = $patrimonio->CDMATRFUNCIONARIO;
+
                 if (!empty($actorMat) && !empty($ownerMat) && $actorMat != $ownerMat) {
                     $coAutor = User::where('CDMATRFUNCIONARIO', $ownerMat)->value('NMLOGIN');
                 }
+
                 HistoricoMovimentacao::create([
                     'TIPO' => 'termo',
                     'CAMPO' => 'NMPLANTA',
                     'VALOR_ANTIGO' => null,
                     'VALOR_NOVO' => $novoCodTermo,
-                    'NUPATR' => $p->NUPATRIMONIO,
+                    'NUPATR' => $patrimonio->NUPATRIMONIO,
                     'CODPROJ' => null,
-                    'USUARIO' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+                    'USUARIO' => Auth::user()->NMLOGIN ?? 'SISTEMA',
                     'CO_AUTOR' => $coAutor,
                     'DTOPERACAO' => now(),
                 ]);
             }
         } catch (\Throwable $e) {
-            // não interromper o fluxo por falha no histórico
+            Log::warning('Falha ao registrar o histórico de geração do termo.', [
+                'codigo' => $novoCodTermo,
+                'erro' => $e->getMessage(),
+            ]);
         }
 
-        // Redireciona de volta para a página de atribuição para continuidade do fluxo
-        return redirect()->route('patrimonios.atribuir', ['status' => 'indisponivel'])
-            ->with('success', "Código de Termo Nº {$novoCodTermo} gerado e atribuído com sucesso a " . count($validated['patrimonio_ids']) . " itens!");
+        return redirect()
+            ->route('patrimonios.atribuir', ['status' => 'indisponivel'])
+            ->with('success', "Código de Termo Nº {$novoCodTermo} gerado e atribuído com sucesso a " . count($validated['patrimonio_ids']) . ' itens!');
     }
 
     /**
@@ -82,8 +99,10 @@ class TermoController extends Controller
             'cod_termo' => 'required|integer',
             'cdprojeto' => 'nullable|integer',
         ]);
-        $codTermo = $validated['cod_termo'];
+
+        $codTermo = (int) $validated['cod_termo'];
         $query = Patrimonio::query()->where('NMPLANTA', $codTermo);
+
         if (!empty($validated['cdprojeto'])) {
             $query->where('CDPROJETO', $validated['cdprojeto']);
         }
@@ -95,19 +114,18 @@ class TermoController extends Controller
         $filePath = storage_path("app/termo_de_transferencia_{$codTermo}.xlsx");
         $writer = SimpleExcelWriter::create($filePath);
 
-        $writer->addRow(["TERMO DE TRANSFERÊNCIA Nº", $codTermo]);
+        $writer->addRow(['TERMO DE TRANSFERÊNCIA Nº', $codTermo]);
         if (!empty($validated['cdprojeto'])) {
-            $writer->addRow(["Projeto:", $validated['cdprojeto']]);
+            $writer->addRow(['Projeto:', $validated['cdprojeto']]);
         }
         $writer->addRow([]);
         $writer->addRow(['Projeto Nº', 'Patr.', 'Descrição']);
 
         foreach ($query->cursor() as $patrimonio) {
-            // Prioridade: DEPATRIMONIO -> MARCA -> fallback
-            $descricao = !empty($patrimonio->DEPATRIMONIO) 
-                ? $patrimonio->DEPATRIMONIO 
+            $descricao = !empty($patrimonio->DEPATRIMONIO)
+                ? $patrimonio->DEPATRIMONIO
                 : ($patrimonio->MARCA ?? 'Item sem descrição');
-                
+
             $writer->addRow([
                 'Projeto Nº' => $patrimonio->CDPROJETO,
                 'Patr.' => $patrimonio->NUPATRIMONIO,
@@ -122,37 +140,34 @@ class TermoController extends Controller
     }
 
     /**
-     * Lista códigos existentes (registrados e/ou usados) em JSON.
+     * Lista códigos existentes em JSON.
      */
-    public function listarCodigos(Request $request)
+    public function listarCodigos(Request $request): JsonResponse
     {
         $q = trim((string) $request->input('q', ''));
 
-        // Códigos registrados manualmente
         $registrados = TermoCodigo::query()
-            ->when($q !== '', fn($qq) => $qq->where('codigo', 'like', "%$q%"))
+            ->when($q !== '', fn ($query) => $query->where('codigo', 'like', "%{$q}%"))
             ->get(['codigo', 'created_at'])
             ->keyBy('codigo');
 
-        // Códigos usados na tabela patr
         $usados = Patrimonio::query()
             ->whereNotNull('NMPLANTA')
-            ->when($q !== '', fn($qq) => $qq->where('NMPLANTA', 'like', "%$q%"))
+            ->when($q !== '', fn ($query) => $query->where('NMPLANTA', 'like', "%{$q}%"))
             ->selectRaw('NMPLANTA as codigo, COUNT(*) as qtd')
             ->groupBy('NMPLANTA')
             ->get()
             ->keyBy('codigo');
 
-        // União das chaves
         $codigos = collect(array_unique(array_merge(array_keys($registrados->all()), array_keys($usados->all()))))
             ->sort()
             ->values()
             ->map(function ($codigo) use ($registrados, $usados) {
                 $qtd = $usados->get($codigo)->qtd ?? 0;
-                $usado = $qtd > 0;
+
                 return [
                     'codigo' => (int) $codigo,
-                    'usado' => $usado,
+                    'usado' => $qtd > 0,
                     'qtd' => $qtd,
                     'registrado' => $registrados->has($codigo),
                 ];
@@ -162,15 +177,15 @@ class TermoController extends Controller
     }
 
     /**
-     * Cria (registra) um novo código, se ainda não existir.
+     * Cria um novo código, se ainda não existir.
      */
-    public function criarCodigo(Request $request)
+    public function criarCodigo(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'codigo' => 'required|integer|min:1',
         ]);
-        $codigo = (int) $validated['codigo'];
 
+        $codigo = (int) $validated['codigo'];
         $jaExiste = TermoCodigo::where('codigo', $codigo)->exists()
             || Patrimonio::where('NMPLANTA', $codigo)->exists();
 
@@ -180,20 +195,21 @@ class TermoController extends Controller
 
         $criado = TermoCodigo::create([
             'codigo' => $codigo,
-            'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+            'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
         ]);
 
         return response()->json(['data' => $criado], 201);
     }
 
     /**
-     * Sugere o próximo código (max + 1) considerando registrados e usados.
+     * Sugere o próximo código considerando registrados e usados.
      */
-    public function sugestaoCodigo()
+    public function sugestaoCodigo(): JsonResponse
     {
         $maxRegistrado = (int) TermoCodigo::max('codigo');
         $maxUsado = (int) Patrimonio::max('NMPLANTA');
         $sugestao = max($maxRegistrado, $maxUsado) + 1;
+
         return response()->json(['sugestao' => $sugestao]);
     }
 
@@ -212,6 +228,10 @@ class TermoController extends Controller
             return response()->json(['message' => 'Esse termo não está em uso no momento.'], 404);
         }
 
+        if (!TermoCodigo::hasTituloColumn()) {
+            return response()->json(['message' => 'A edição do nome do agrupado ainda não está disponível neste ambiente. Execute a migration pendente.'], 409);
+        }
+
         $registro = TermoCodigo::firstOrCreate(
             ['codigo' => $codigo],
             ['created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA']
@@ -224,50 +244,54 @@ class TermoController extends Controller
             || ($loginAtual !== '' && $criador !== '' && $loginAtual === $criador);
 
         if (!$podeEditar) {
-            return response()->json(['message' => 'Apenas quem gerou o termo pode editar este título.'], 403);
+            return response()->json(['message' => 'Apenas quem gerou o termo pode editar o nome deste agrupado.'], 403);
         }
 
         $titulo = trim((string) ($validated['titulo'] ?? ''));
 
-        $registro->forceFill([
-            'titulo' => $titulo !== '' ? $titulo : null,
-        ])->save();
+        TermoCodigo::query()
+            ->where('codigo', $codigo)
+            ->update([
+                'titulo' => $titulo !== '' ? $titulo : null,
+            ]);
 
         return response()->json([
             'message' => $titulo !== ''
-                ? 'Título do termo atualizado com sucesso.'
-                : 'Título personalizado removido com sucesso.',
+                ? 'Nome do agrupado atualizado com sucesso.'
+                : 'Nome personalizado removido com sucesso.',
             'data' => [
                 'codigo' => $codigo,
-                'titulo' => $registro->titulo,
+                'titulo' => $titulo !== '' ? $titulo : null,
             ],
         ]);
     }
 
     /**
-     * Página para gerenciar códigos (server-rendered, sem dependência de modal).
+     * Página para gerenciar códigos.
      */
     public function gerenciarCodigos(Request $request)
     {
         $q = trim((string) $request->input('q', ''));
-        // Registrados
+
         $registrados = TermoCodigo::query()
-            ->when($q !== '', fn($qq) => $qq->where('codigo', 'like', "%$q%"))
+            ->when($q !== '', fn ($query) => $query->where('codigo', 'like', "%{$q}%"))
             ->get(['codigo', 'created_at'])
             ->keyBy('codigo');
-        // Usados
+
         $usados = Patrimonio::query()
             ->whereNotNull('NMPLANTA')
-            ->when($q !== '', fn($qq) => $qq->where('NMPLANTA', 'like', "%$q%"))
+            ->when($q !== '', fn ($query) => $query->where('NMPLANTA', 'like', "%{$q}%"))
             ->selectRaw('NMPLANTA as codigo, COUNT(*) as qtd')
             ->groupBy('NMPLANTA')
             ->get()
             ->keyBy('codigo');
+
         $codigos = collect(array_unique(array_merge(array_keys($registrados->all()), array_keys($usados->all()))))
             ->sort()
             ->values()
             ->map(function ($codigo) use ($registrados, $usados) {
                 $qtd = $usados->get($codigo)->qtd ?? 0;
+
                 return [
                     'codigo' => (int) $codigo,
                     'usado' => $qtd > 0,
@@ -275,7 +299,9 @@ class TermoController extends Controller
                     'registrado' => $registrados->has($codigo),
                 ];
             });
+
         $sugestao = max((int) TermoCodigo::max('codigo'), (int) Patrimonio::max('NMPLANTA')) + 1;
+
         return view('termos.codigos.index', [
             'codigos' => $codigos,
             'sugestao' => $sugestao,
@@ -291,18 +317,20 @@ class TermoController extends Controller
         $validated = $request->validate([
             'codigo' => 'required|integer|min:1',
         ]);
+
         $codigo = (int) $validated['codigo'];
         $jaExiste = TermoCodigo::where('codigo', $codigo)->exists()
             || Patrimonio::where('NMPLANTA', $codigo)->exists();
+
         if ($jaExiste) {
             return back()->withErrors(['codigo' => 'Código já existe (registrado ou em uso).'])->withInput();
         }
+
         TermoCodigo::create([
             'codigo' => $codigo,
-            'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA'),
+            'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
         ]);
+
         return back()->with('success', 'Código cadastrado com sucesso.');
     }
 }
-
-
