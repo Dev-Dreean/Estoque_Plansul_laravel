@@ -635,157 +635,128 @@ class RelatorioController extends Controller
 
     public function exportarPdf(Request $request)
     {
-        $this->prepareExportRuntime();
+        @set_time_limit(600);
+        @ini_set('max_execution_time', '600');
+        @ini_set('memory_limit', '256M');
+        DB::disableQueryLog();
 
         try {
             $query = $this->getQueryFromRequest($request);
             $query->setEagerLoads([]);
 
-            // Apenas colunas essenciais + sem campos de texto longo (DEHISTORICO, CARACTERISTICAS)
-            $cols = [
-                'NUPATRIMONIO',
-                'DEPATRIMONIO',
-                'SITUACAO',
-                'MARCA',
-                'CDPROJETO',
-                'CDLOCAL',
-                'DTAQUISICAO',
-            ];
+            $cols = ['NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO', 'MARCA', 'CDPROJETO', 'CDLOCAL', 'DTAQUISICAO'];
 
-            // KingHost limita a 256MB — limite de 500 registros para não estourar memória
-            $limite = 500;
-            $totalEstimado = (clone $query)->count();
-            $truncado = $totalEstimado > $limite;
+            // Buscar TODOS os registros sem limite
+            $registros = $query->get($cols);
+            $total = $registros->count();
 
-            $registros = $query->take($limite)->get($cols);
+            Log::info('📊 [PDF] Gerando relatório com ' . $total . ' registros');
 
-            // Gera HTML diretamente (sem Blade), mais leve e sem overhead de compilação
-            $html = $this->buildPdfHtml($registros, $cols, $truncado, $limite, $totalEstimado, $request);
+            // Gera HTML radicalmente simples (sem CSS, sem espaçamento)
+            $html = $this->buildPdfHtmlRadical($registros, $cols, $request);
 
-            // Libera memória da collection antes de carregar o DomPDF
+            // Libera memória
             unset($registros);
 
             /** @var \Barryvdh\DomPDF\PDF $pdf */
             $pdf = Pdf::loadHTML($html);
             $pdf->setPaper('a4', 'landscape');
+            
+            // Configurações radicais para não usar muita RAM
             $pdf->setOption('isHtml5ParserEnabled', false);
             $pdf->setOption('isRemoteEnabled', false);
             $pdf->setOption('defaultFont', 'courier');
-            $pdf->setOption('dpi', 50);
+            $pdf->setOption('dpi', 40);
+            $pdf->setOption('enablePhp', false);
             $pdf->setOption('isFontSubsettingEnabled', false);
 
-            // Libera HTML da memória antes do render
             unset($html);
 
+            Log::info('✅ [PDF] Relatório gerado com sucesso');
             $downloadName = $this->buildReportDownloadName($request, 'pdf');
 
             return $pdf->download($downloadName);
 
         } catch (\Throwable $e) {
-            Log::error('❌ [RELATORIO PDF] Falha ao gerar PDF', [
-                'user_id'   => Auth::id(),
-                'erro'      => $e->getMessage(),
-                'arquivo'   => $e->getFile() . ':' . $e->getLine(),
-                'filtros'   => $request->only(['tipo_relatorio', 'projeto_busca', 'cdprojeto', 'situacao_busca']),
+            Log::error('❌ [PDF] Falha ao gerar PDF', [
+                'user_id' => Auth::id(),
+                'erro' => $e->getMessage(),
+                'arquivo' => $e->getFile() . ':' . $e->getLine(),
             ]);
 
-            return response()->json([
-                'message' => 'Erro ao gerar PDF: ' . $e->getMessage(),
-            ], 500);
+            return response()->json(['message' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Constrói o HTML do PDF diretamente (sem Blade) para melhor desempenho.
-     * Usa apenas CSS inline compatível com DomPDF (sem Tailwind/Vite).
-     * Usa array + implode em vez de concatenação para menor uso de memória.
+     * Gera HTML radicalmente simples para PDF (sem CSS redundante, sem espaçamento).
+     * Apenas tabela nua com dados puros.
      */
-    private function buildPdfHtml($registros, array $cols, bool $truncado, int $limite, int $totalEstimado, Request $request): string
+    private function buildPdfHtmlRadical($registros, array $cols, Request $request): string
     {
+        $data  = date('d/m/Y H:i');
+        $total = $registros->count();
         $tipo  = $request->input('tipo_relatorio', 'geral');
-        $total = $totalEstimado;
-        $data  = now()->format('d/m/Y H:i:s');
 
-        $colLabels = [
-            'NUPATRIMONIO'  => 'N Pat.',
-            'DEPATRIMONIO'  => 'Desc.',
-            'SITUACAO'      => 'Sit.',
-            'MARCA'         => 'Marca',
-            'MODELO'        => 'Modelo',
-            'NUSERIE'       => 'Serie',
-            'CDPROJETO'     => 'Proj',
-            'CDLOCAL'       => 'Local',
-            'DTAQUISICAO'   => 'OC',
-            'DTOPERACAO'    => 'Cad.',
+        $colNames = [
+            'NUPATRIMONIO' => 'PAT',
+            'DEPATRIMONIO' => 'DESC',
+            'SITUACAO' => 'SIT',
+            'MARCA' => 'MAR',
+            'CDPROJETO' => 'PRJ',
+            'CDLOCAL' => 'LOC',
+            'DTAQUISICAO' => 'DT',
         ];
 
-        // Aviso se truncado
-        $avisoHtml = $truncado
-            ? '<p style="background:#FFF;color:#333;border:1px solid #999;padding:2px 3px;font-size:7px;margin:0 0 3px">Info: Limitado a ' . $limite . ' de ' . $totalEstimado . ' registros. Use Excel/CSV para todos.</p>'
-            : '';
-
-        // Cabeçalho da tabela
-        $thParts = [];
+        // Constrói cabeçalho
+        $thead = '<tr>';
         foreach ($cols as $c) {
-            $thParts[] = '<th style="padding:1px 2px;font-size:7px">' . ($colLabels[$c] ?? $c) . '</th>';
+            $thead .= '<th>' . ($colNames[$c] ?? $c) . '</th>';
         }
-        $ths = implode('', $thParts);
-        unset($thParts);
+        $thead .= '</tr>';
 
-        // Colunas que podem ter texto muito longo — truncar para reduzir tamanho do HTML
-        $maxLen = ['DEPATRIMONIO' => 40, 'MARCA' => 15, 'MODELO' => 15];
-
-        // Linhas da tabela — usa array para evitar re-alocação de string em loop grande
-        $trParts = [];
-        foreach ($registros as $i => $r) {
-            $rowBg = ($i % 2 === 0) ? '' : ' style="background:#F9F9F9"';
-            $cells = '<tr' . $rowBg . '>';
+        // Constrói linhas (array para eficiência)
+        $trs = [];
+        foreach ($registros as $r) {
+            $row = '<tr>';
             foreach ($cols as $c) {
                 $val = $r->$c ?? '';
                 if ($val instanceof \DateTimeInterface) {
                     $val = $val->format('d/m/y');
                 } else {
                     $val = (string) $val;
-                    if (isset($maxLen[$c]) && mb_strlen($val) > $maxLen[$c]) {
-                        $val = mb_substr($val, 0, $maxLen[$c]) . '.';
+                    if (strlen($val) > 35) {
+                        $val = substr($val, 0, 32) . 'o';
                     }
                 }
-                $cells .= '<td style="padding:1px">' . htmlspecialchars($val, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</td>';
+                $row .= '<td>' . htmlspecialchars($val, ENT_QUOTES, 'UTF-8') . '</td>';
             }
-            $cells .= '</tr>';
-            $trParts[] = $cells;
+            $row .= '</tr>';
+            $trs[] = $row;
         }
-        $trs = implode('', $trParts);
-        unset($trParts);
+        $tbody = implode('', $trs);
+        unset($trs);
 
         return <<<HTML
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8">
-<title>Relatorio</title>
+<head><meta charset=\"UTF-8\"><title>PDF</title></head>
 <style>
- *{box-sizing:border-box}
- body{font-family:Courier,monospace;font-size:8px;margin:0;padding:5px;color:#111}
- h1{font-size:11px;margin:0 0 2px;font-weight:bold}
- .m{font-size:7px;margin-bottom:4px;color:#555}
- table{width:100%;border-collapse:collapse}
- th{background:#1e3a5f;color:#FFF;border:1px solid #888;padding:2px;font-size:7px;text-align:left}
- td{border:1px solid #ccc;padding:1px 2px;font-size:7px}
- footer{position:fixed;bottom:0;left:0;right:0;border-top:1px solid #999;font-size:6px;color:#777;text-align:center;padding:2px 0;background:#FFF;margin:0}
- @page{margin:8px 8px 25px}
+ body{font:8px Courier;margin:5px}h1{font:10px;margin:0 0 1px}
+ table{border-collapse:collapse;width:100%}
+ th{border:1px solid #000;padding:1px;font:7px;background:#ddd}
+ td{border:1px solid #ccc;padding:1px;font:7px}
 </style>
-</head>
 <body>
-<h1>Relatorio de Patrimonios</h1>
-<div class="m">{$data} | {$tipo} | {$total} registros</div>
-{$avisoHtml}
-<table><thead><tr>{$ths}</tr></thead><tbody>{$trs}</tbody></table>
-<footer>Plansul {$data}</footer>
+<h1>Patrimonios - {$data}</h1>
+<table><thead>{$thead}</thead><tbody>{$tbody}</tbody></table>
+<p style=\"font:6px;position:fixed;bottom:2px;color:#666\">Total: {$total} | {$tipo}</p>
 </body>
 </html>
 HTML;
     }
+
+
 
     /**
      * Exporta lista completa de funcionários em Excel.
