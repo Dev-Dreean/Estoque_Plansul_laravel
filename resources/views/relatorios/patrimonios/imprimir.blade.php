@@ -145,13 +145,7 @@
         <td class="col-status">{{ mb_strtoupper($r->SITUACAO) }}</td>
         <td class="col-dt-oc">{{ $r->DTAQUISICAO?->format('d/m/Y') ?? '-' }}</td>
         <td class="col-dt-cad">{{ $r->DTOPERACAO?->format('d/m/Y') ?? '-' }}</td>
-        @php
-          $nomeUser = $r->creator?->NOMEUSER ?? $r->USUARIO ?? '-';
-          $partes = array_filter(explode(' ', trim($nomeUser)));
-          $nomeReduzido = count($partes) >= 2 ? $partes[0] . ' ' . $partes[1] : ($partes[0] ?? '-');
-          $nomeReduzido = mb_strtoupper(mb_substr($nomeReduzido, 0, 25));
-        @endphp
-        <td class=\"col-cad-por\">{{ $nomeReduzido }}</td>
+        <td class="col-cad-por">{{ mb_strtoupper($r->USUARIO ?? '-') }}</td>
       </tr>
       @endforeach
     </tbody>
