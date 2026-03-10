@@ -652,12 +652,15 @@ class RelatorioController extends Controller
                 'DTAQUISICAO',
             ];
 
-            // Busca todos os registros sem limite (prepareExportRuntime já define 512M + 300s)
-            $registros = $query->get($cols);
-            $total = $registros->count();
+            // KingHost limita a 256MB — limite de 500 registros para não estourar memória
+            $limite = 500;
+            $totalEstimado = (clone $query)->count();
+            $truncado = $totalEstimado > $limite;
+
+            $registros = $query->take($limite)->get($cols);
 
             // Gera HTML diretamente (sem Blade), mais leve e sem overhead de compilação
-            $html = $this->buildPdfHtml($registros, $cols, false, $total, $total, $request);
+            $html = $this->buildPdfHtml($registros, $cols, $truncado, $limite, $totalEstimado, $request);
 
             // Libera memória da collection antes de carregar o DomPDF
             unset($registros);
@@ -667,9 +670,9 @@ class RelatorioController extends Controller
             $pdf->setPaper('a4', 'landscape');
             $pdf->setOption('isHtml5ParserEnabled', false);
             $pdf->setOption('isRemoteEnabled', false);
-            $pdf->setOption('defaultFont', 'helvetica');
-            $pdf->setOption('dpi', 72);
-            $pdf->setOption('isFontSubsettingEnabled', true);
+            $pdf->setOption('defaultFont', 'courier');
+            $pdf->setOption('dpi', 50);
+            $pdf->setOption('isFontSubsettingEnabled', false);
 
             // Libera HTML da memória antes do render
             unset($html);
@@ -705,44 +708,49 @@ class RelatorioController extends Controller
 
         $colLabels = [
             'NUPATRIMONIO'  => 'N Pat.',
-            'DEPATRIMONIO'  => 'Descricao',
-            'SITUACAO'      => 'Situacao',
+            'DEPATRIMONIO'  => 'Desc.',
+            'SITUACAO'      => 'Sit.',
             'MARCA'         => 'Marca',
             'MODELO'        => 'Modelo',
-            'NUSERIE'       => 'Nr Serie',
-            'CDPROJETO'     => 'Projeto',
+            'NUSERIE'       => 'Serie',
+            'CDPROJETO'     => 'Proj',
             'CDLOCAL'       => 'Local',
-            'DTAQUISICAO'   => 'Dt. OC',
-            'DTOPERACAO'    => 'Cadastro',
+            'DTAQUISICAO'   => 'OC',
+            'DTOPERACAO'    => 'Cad.',
         ];
+
+        // Aviso se truncado
+        $avisoHtml = $truncado
+            ? '<p style="background:#FFF;color:#333;border:1px solid #999;padding:2px 3px;font-size:7px;margin:0 0 3px">Info: Limitado a ' . $limite . ' de ' . $totalEstimado . ' registros. Use Excel/CSV para todos.</p>'
+            : '';
 
         // Cabeçalho da tabela
         $thParts = [];
         foreach ($cols as $c) {
-            $thParts[] = '<th>' . ($colLabels[$c] ?? $c) . '</th>';
+            $thParts[] = '<th style="padding:1px 2px;font-size:7px">' . ($colLabels[$c] ?? $c) . '</th>';
         }
         $ths = implode('', $thParts);
         unset($thParts);
 
         // Colunas que podem ter texto muito longo — truncar para reduzir tamanho do HTML
-        $maxLen = ['DEPATRIMONIO' => 50, 'MARCA' => 25, 'MODELO' => 25];
+        $maxLen = ['DEPATRIMONIO' => 40, 'MARCA' => 15, 'MODELO' => 15];
 
         // Linhas da tabela — usa array para evitar re-alocação de string em loop grande
         $trParts = [];
         foreach ($registros as $i => $r) {
-            $rowBg = ($i % 2 === 0) ? '' : ' style="background:#F5F5F5"';
+            $rowBg = ($i % 2 === 0) ? '' : ' style="background:#F9F9F9"';
             $cells = '<tr' . $rowBg . '>';
             foreach ($cols as $c) {
                 $val = $r->$c ?? '';
                 if ($val instanceof \DateTimeInterface) {
-                    $val = $val->format('d/m/Y');
+                    $val = $val->format('d/m/y');
                 } else {
                     $val = (string) $val;
                     if (isset($maxLen[$c]) && mb_strlen($val) > $maxLen[$c]) {
-                        $val = mb_substr($val, 0, $maxLen[$c]) . '..';
+                        $val = mb_substr($val, 0, $maxLen[$c]) . '.';
                     }
                 }
-                $cells .= '<td>' . htmlspecialchars($val, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</td>';
+                $cells .= '<td style="padding:1px">' . htmlspecialchars($val, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</td>';
             }
             $cells .= '</tr>';
             $trParts[] = $cells;
@@ -752,31 +760,28 @@ class RelatorioController extends Controller
 
         return <<<HTML
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Relatorio de Patrimonios</title>
+<title>Relatorio</title>
 <style>
-  *{font-family:Helvetica,Arial,sans-serif;box-sizing:border-box}
-  body{font-size:9px;color:#111;margin:0;padding:10px 12px 28px}
-  h1{font-size:13px;margin:0 0 2px}
-  .meta{font-size:8px;color:#555;margin-bottom:8px}
-  table{width:100%;border-collapse:collapse}
-  th,td{border:1px solid #bbb;padding:2px 4px;vertical-align:top;word-break:break-word}
-  th{background:#1e3a5f;color:#FFF;font-size:7px;text-transform:uppercase}
-  tr:nth-child(even){background:#F5F5F5}
-  footer{position:fixed;left:0;right:0;bottom:0;font-size:7px;color:#777;text-align:center;border-top:1px solid #ccc;padding:2px 0}
-  @page{margin:12px 12px 30px}
+ *{box-sizing:border-box}
+ body{font-family:Courier,monospace;font-size:8px;margin:0;padding:5px;color:#111}
+ h1{font-size:11px;margin:0 0 2px;font-weight:bold}
+ .m{font-size:7px;margin-bottom:4px;color:#555}
+ table{width:100%;border-collapse:collapse}
+ th{background:#1e3a5f;color:#FFF;border:1px solid #888;padding:2px;font-size:7px;text-align:left}
+ td{border:1px solid #ccc;padding:1px 2px;font-size:7px}
+ footer{position:fixed;bottom:0;left:0;right:0;border-top:1px solid #999;font-size:6px;color:#777;text-align:center;padding:2px 0;background:#FFF;margin:0}
+ @page{margin:8px 8px 25px}
 </style>
 </head>
 <body>
-  <h1>Relatorio de Patrimonios</h1>
-  <div class="meta">Gerado em: {$data} | Filtro: {$tipo} | Registros: {$total}</div>
-  <table>
-    <thead><tr>{$ths}</tr></thead>
-    <tbody>{$trs}</tbody>
-  </table>
-  <footer>Plansul - Relatorio de Patrimonios - {$data}</footer>
+<h1>Relatorio de Patrimonios</h1>
+<div class="m">{$data} | {$tipo} | {$total} registros</div>
+{$avisoHtml}
+<table><thead><tr>{$ths}</tr></thead><tbody>{$trs}</tbody></table>
+<footer>Plansul {$data}</footer>
 </body>
 </html>
 HTML;
