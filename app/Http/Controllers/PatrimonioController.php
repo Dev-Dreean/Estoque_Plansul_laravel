@@ -3885,7 +3885,7 @@ class PatrimonioController extends Controller
         }
 
         $usuario = Auth::user();
-        $loginAtual = strtoupper(trim((string) ($usuario->NMLOGIN ?? '')));
+        $loginAtual = $this->normalizarLoginTermo((string) ($usuario->NMLOGIN ?? ''));
         $podeAdministrar = $usuario && ($usuario->isGod() || $usuario->isAdmin());
         $tituloDisponivel = TermoCodigo::hasTituloColumn();
         $criadoresInferidos = $itens
@@ -3894,7 +3894,7 @@ class PatrimonioController extends Controller
                 $usuarios = $grupo
                     ->pluck('USUARIO')
                     ->filter(fn ($login) => trim((string) $login) !== '')
-                    ->map(fn ($login) => strtoupper(trim((string) $login)))
+                    ->map(fn ($login) => $this->normalizarLoginTermo((string) $login))
                     ->unique()
                     ->values();
 
@@ -3927,7 +3927,7 @@ class PatrimonioController extends Controller
 
         foreach ($registros as $registro) {
             $codigo = (string) $registro->codigo;
-            $criador = strtoupper(trim((string) ($registro->created_by ?? '')));
+            $criador = $this->normalizarLoginTermo((string) ($registro->created_by ?? ''));
             $criadorInferido = (string) ($criadoresInferidos->get($codigo) ?? '');
             $podeEditar = $tituloDisponivel && (
                 $podeAdministrar
@@ -3942,6 +3942,17 @@ class PatrimonioController extends Controller
         }
 
         return $metadados;
+    }
+
+    private function normalizarLoginTermo(string $login): string
+    {
+        $login = strtoupper(trim($login));
+
+        return match ($login) {
+            'BEA.SC', 'BEATRIZ.SC', 'BEATRIZ', 'BEATRIZ_SC' => 'BEATRIZ.SC',
+            'TIAGOP', 'TIAGO', 'TIAGO.SC', 'TIAGO.P', 'TIAGO_P' => 'TIAGOP',
+            default => $login,
+        };
     }
 
 

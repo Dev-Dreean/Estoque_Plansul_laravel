@@ -238,13 +238,13 @@ class TermoController extends Controller
         );
 
         $usuario = Auth::user();
-        $loginAtual = strtoupper(trim((string) ($usuario->NMLOGIN ?? '')));
-        $criador = strtoupper(trim((string) ($registro->created_by ?? '')));
+        $loginAtual = $this->normalizarLoginTermo((string) ($usuario->NMLOGIN ?? ''));
+        $criador = $this->normalizarLoginTermo((string) ($registro->created_by ?? ''));
         $usuariosDoTermo = Patrimonio::query()
             ->where('NMPLANTA', $codigo)
             ->pluck('USUARIO')
             ->filter(fn ($login) => trim((string) $login) !== '')
-            ->map(fn ($login) => strtoupper(trim((string) $login)))
+            ->map(fn ($login) => $this->normalizarLoginTermo((string) $login))
             ->unique()
             ->values();
         $criadorInferido = $usuariosDoTermo->count() === 1 ? (string) $usuariosDoTermo->first() : '';
@@ -279,6 +279,17 @@ class TermoController extends Controller
                 'titulo' => $titulo !== '' ? $titulo : null,
             ],
         ]);
+    }
+
+    private function normalizarLoginTermo(string $login): string
+    {
+        $login = strtoupper(trim($login));
+
+        return match ($login) {
+            'BEA.SC', 'BEATRIZ.SC', 'BEATRIZ', 'BEATRIZ_SC' => 'BEATRIZ.SC',
+            'TIAGOP', 'TIAGO', 'TIAGO.SC', 'TIAGO.P', 'TIAGO_P' => 'TIAGOP',
+            default => $login,
+        };
     }
 
     /**
