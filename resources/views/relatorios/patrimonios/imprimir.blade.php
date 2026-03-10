@@ -56,8 +56,8 @@
   .col-sit   { width: 70px; }
   .col-mar   { width: 75px; }
   .col-prj   { width: 50px; }
-  .col-loc   { width: 55px; }
-  .col-dt    { width: 60px; }
+  .col-loc   { width: 120px; }
+  .col-oc    { width: 50px; }
 
   .rodape-pagina { font-size: 8px; color: #666; text-align: right; margin-top: 6px; }
 
@@ -106,8 +106,8 @@
         <th class="col-sit">Situacao</th>
         <th class="col-mar">Marca</th>
         <th class="col-prj">Projeto</th>
-        <th class="col-loc">Local</th>
-        <th class="col-dt">Dt.OC</th>
+        <th class="col-loc">Local Fisico</th>
+        <th class="col-oc">OC</th>
       </tr>
     </thead>
     <tbody>
@@ -118,8 +118,8 @@
         <td class="col-sit">{{ $r->SITUACAO }}</td>
         <td class="col-mar">{{ mb_substr($r->MARCA ?? '', 0, 20) }}</td>
         <td class="col-prj">{{ $r->CDPROJETO }}</td>
-        <td class="col-loc">{{ $r->CDLOCAL }}</td>
-        <td class="col-dt">{{ $r->DTAQUISICAO ? \Carbon\Carbon::parse($r->DTAQUISICAO)->format('d/m/y') : '' }}</td>
+        <td class="col-loc">{{ $r->local?->delocal ?? $r->CDLOCAL }}</td>
+        <td class="col-oc">{{ $r->NUMOF ?? '-' }}</td>
       </tr>
       @endforeach
     </tbody>

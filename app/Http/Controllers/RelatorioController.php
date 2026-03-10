@@ -703,9 +703,11 @@ class RelatorioController extends Controller
             $query = $this->getQueryFromRequest($request);
             $query->setEagerLoads([]);
 
-            $cols = ['NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO', 'MARCA', 'CDPROJETO', 'CDLOCAL', 'DTAQUISICAO'];
-
-            $registros = $query->get($cols);
+            // Colunas + relacionamento local para mostrar nome em vez de código
+            $cols = ['NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO', 'MARCA', 'CDPROJETO', 'CDLOCAL', 'NUMOF'];
+            
+            $registros = $query->with('local')
+                              ->get($cols);
 
             $data  = now()->format('d/m/Y H:i:s');
             $total = $registros->count();
