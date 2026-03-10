@@ -315,7 +315,9 @@
                             @endif
 
                             {{-- Lista de itens como badges individuais --}}
-                            @php($itensAgrupados = $grupo_patrimonios->pluck('DEPATRIMONIO')->filter()->unique()->values())
+                            @php
+                              $itensAgrupados = $grupo_patrimonios->pluck('DEPATRIMONIO')->filter()->unique()->values();
+                            @endphp
                             <div class="flex items-center gap-2 flex-1 min-w-0 max-w-[26rem] sm:max-w-[28rem] lg:max-w-[32rem] xl:max-w-[36rem] 2xl:max-w-[42rem] overflow-hidden">
                               <span x-show="getTituloAgrupado(@js((string) $grupo_codigo)) !== ''"
                                 style="display: none;"
