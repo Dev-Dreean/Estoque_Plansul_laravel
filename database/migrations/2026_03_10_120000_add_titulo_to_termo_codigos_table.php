@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -12,10 +12,10 @@ return new class extends Migration
             return;
         }
 
-        if (!Schema::hasColumn('termo_codigos', 'titulo')) {
-            Schema::table('termo_codigos', function (Blueprint $table) {
-                $table->string('titulo', 120)->nullable()->after('codigo');
-            });
+        $colunaExiste = DB::select("SHOW COLUMNS FROM termo_codigos LIKE 'titulo'");
+
+        if (empty($colunaExiste)) {
+            DB::statement("ALTER TABLE termo_codigos ADD COLUMN titulo VARCHAR(120) NULL AFTER codigo");
         }
     }
 
@@ -25,10 +25,10 @@ return new class extends Migration
             return;
         }
 
-        if (Schema::hasColumn('termo_codigos', 'titulo')) {
-            Schema::table('termo_codigos', function (Blueprint $table) {
-                $table->dropColumn('titulo');
-            });
+        $colunaExiste = DB::select("SHOW COLUMNS FROM termo_codigos LIKE 'titulo'");
+
+        if (!empty($colunaExiste)) {
+            DB::statement("ALTER TABLE termo_codigos DROP COLUMN titulo");
         }
     }
 };
