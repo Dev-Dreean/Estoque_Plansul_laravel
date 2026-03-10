@@ -78,14 +78,7 @@
 <body>
 
 <script>
-  // Gerar PDF automaticamente ao carregar a página
-  document.addEventListener('DOMContentLoaded', async function() {
-    // Aguardar um pouco para garantir que a página está pronta
-    await new Promise(r => setTimeout(r, 500));
-    gerarPdfAutomatico();
-  });
-
-  function gerarPdfAutomatico() {
+  function gerarPdf() {
     const elemento = document.getElementById('conteudo-relatorio');
     const nomeArquivo = 'Relatório_Patrimonios_' + new Date().toISOString().split('T')[0] + '.pdf';
     
@@ -108,6 +101,12 @@
     <span class="info">{{ $total }} registros &nbsp;|&nbsp; Filtro: {{ $tipo }} &nbsp;|&nbsp; {{ $data }}</span>
   </div>
   <div style="display:flex;gap:16px;align-items:flex-start">
+    <button class="btn-imprimir" onclick="gerarPdf()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      Salvar PDF
+    </button>
     <div style="font-size:11px;opacity:0.9;line-height:1.4;text-align:right">
       <div><strong>✅ Conferidos:</strong> {{ $conferidos }}</div>
       <div><strong>❌ Não conferidos:</strong> {{ $nao_conferidos }}</div>
