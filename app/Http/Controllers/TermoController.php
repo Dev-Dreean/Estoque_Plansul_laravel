@@ -240,11 +240,26 @@ class TermoController extends Controller
         $usuario = Auth::user();
         $loginAtual = strtoupper(trim((string) ($usuario->NMLOGIN ?? '')));
         $criador = strtoupper(trim((string) ($registro->created_by ?? '')));
+        $usuariosDoTermo = Patrimonio::query()
+            ->where('NMPLANTA', $codigo)
+            ->pluck('USUARIO')
+            ->filter(fn ($login) => trim((string) $login) !== '')
+            ->map(fn ($login) => strtoupper(trim((string) $login)))
+            ->unique()
+            ->values();
+        $criadorInferido = $usuariosDoTermo->count() === 1 ? (string) $usuariosDoTermo->first() : '';
         $podeEditar = ($usuario && ($usuario->isGod() || $usuario->isAdmin()))
-            || ($loginAtual !== '' && $criador !== '' && $loginAtual === $criador);
+            || ($loginAtual !== '' && $criador !== '' && $loginAtual === $criador)
+            || ($loginAtual !== '' && $criadorInferido !== '' && $loginAtual === $criadorInferido);
 
         if (!$podeEditar) {
             return response()->json(['message' => 'Apenas quem gerou o termo pode editar o nome deste agrupado.'], 403);
+        }
+
+        if ($criador === '' && $criadorInferido !== '') {
+            TermoCodigo::query()
+                ->where('codigo', $codigo)
+                ->update(['created_by' => $criadorInferido]);
         }
 
         $titulo = trim((string) ($validated['titulo'] ?? ''));

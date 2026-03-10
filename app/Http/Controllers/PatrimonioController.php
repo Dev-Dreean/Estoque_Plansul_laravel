@@ -3888,6 +3888,18 @@ class PatrimonioController extends Controller
         $loginAtual = strtoupper(trim((string) ($usuario->NMLOGIN ?? '')));
         $podeAdministrar = $usuario && ($usuario->isGod() || $usuario->isAdmin());
         $tituloDisponivel = TermoCodigo::hasTituloColumn();
+        $criadoresInferidos = $itens
+            ->groupBy(fn ($item) => (string) ($item->NMPLANTA ?? ''))
+            ->map(function ($grupo) {
+                $usuarios = $grupo
+                    ->pluck('USUARIO')
+                    ->filter(fn ($login) => trim((string) $login) !== '')
+                    ->map(fn ($login) => strtoupper(trim((string) $login)))
+                    ->unique()
+                    ->values();
+
+                return $usuarios->count() === 1 ? $usuarios->first() : null;
+            });
 
         $metadados = $codigos->mapWithKeys(fn ($codigo) => [
             $codigo => [
@@ -3916,10 +3928,16 @@ class PatrimonioController extends Controller
         foreach ($registros as $registro) {
             $codigo = (string) $registro->codigo;
             $criador = strtoupper(trim((string) ($registro->created_by ?? '')));
+            $criadorInferido = (string) ($criadoresInferidos->get($codigo) ?? '');
+            $podeEditar = $tituloDisponivel && (
+                $podeAdministrar
+                || ($loginAtual !== '' && $criador !== '' && $loginAtual === $criador)
+                || ($loginAtual !== '' && $criadorInferido !== '' && $loginAtual === $criadorInferido)
+            );
 
             $metadados[$codigo] = [
                 'titulo' => $tituloDisponivel ? $registro->titulo : null,
-                'pode_editar' => $tituloDisponivel && ($podeAdministrar || ($loginAtual !== '' && $criador !== '' && $loginAtual === $criador)),
+                'pode_editar' => $podeEditar,
             ];
         }
 
