@@ -135,17 +135,23 @@
       <tr>
         <td class="col-npat">{{ $r->NUPATRIMONIO }}</td>
         <td class="col-conf">{{ ($r->FLCONFERIDO === 'S' || $r->FLCONFERIDO === '1') ? '✅' : '❌' }}</td>
-        <td class="col-of">{{ strtoupper($r->NUMOF ?? '-') }}</td>
-        <td class="col-obj">{{ strtoupper($r->CODOBJETO ?? '-') }}</td>
-        <td class="col-proj">{{ strtoupper($r->projeto?->NOMEPROJETO ?? $r->CDPROJETO) }}</td>
-        <td class="col-local">{{ strtoupper($r->local?->delocal ?? $r->CDLOCAL) }}</td>
-        <td class="col-mod">{{ strtoupper(mb_substr($r->MODELO ?? '', 0, 20)) }}</td>
-        <td class="col-mar">{{ strtoupper(mb_substr($r->MARCA ?? '', 0, 20)) }}</td>
-        <td class="col-desc">{{ strtoupper(mb_substr($r->DEPATRIMONIO ?? '', 0, 60)) }}</td>
-        <td class="col-status">{{ strtoupper($r->SITUACAO) }}</td>
+        <td class="col-of">{{ mb_strtoupper($r->NUMOF ?? '-') }}</td>
+        <td class="col-obj">{{ mb_strtoupper($r->CODOBJETO ?? '-') }}</td>
+        <td class="col-proj">{{ mb_strtoupper($r->projeto?->NOMEPROJETO ?? $r->CDPROJETO) }}</td>
+        <td class="col-local">{{ mb_strtoupper($r->local?->delocal ?? $r->CDLOCAL) }}</td>
+        <td class="col-mod">{{ mb_strtoupper(mb_substr($r->MODELO ?? '', 0, 20)) }}</td>
+        <td class="col-mar">{{ mb_strtoupper(mb_substr($r->MARCA ?? '', 0, 20)) }}</td>
+        <td class="col-desc">{{ mb_strtoupper(mb_substr($r->DEPATRIMONIO ?? '', 0, 60)) }}</td>
+        <td class="col-status">{{ mb_strtoupper($r->SITUACAO) }}</td>
         <td class="col-dt-oc">{{ $r->DTAQUISICAO?->format('d/m/Y') ?? '-' }}</td>
         <td class="col-dt-cad">{{ $r->DTOPERACAO?->format('d/m/Y') ?? '-' }}</td>
-        <td class="col-cad-por">{{ strtoupper($r->creator?->NOMEUSER ?? $r->USUARIO ?? '-') }}</td>
+        @php
+          $nomeUser = $r->creator?->NOMEUSER ?? $r->USUARIO ?? '-';
+          $partes = array_filter(explode(' ', trim($nomeUser)));
+          $nomeReduzido = count($partes) >= 2 ? $partes[0] . ' ' . $partes[1] : ($partes[0] ?? '-');
+          $nomeReduzido = mb_strtoupper(mb_substr($nomeReduzido, 0, 25));
+        @endphp
+        <td class=\"col-cad-por\">{{ $nomeReduzido }}</td>
       </tr>
       @endforeach
     </tbody>
