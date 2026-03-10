@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Relatorio de Patrimonios - {{ $data }}</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #111; background: #fff; }
@@ -24,11 +25,6 @@
     display: inline-flex; align-items: center; gap: 6px;
   }
   .btn-imprimir:hover { background: #dc2626; }
-  .btn-fechar {
-    background: #6b7280; color: #fff; border: none; padding: 6px 12px;
-    border-radius: 6px; font-size: 12px; cursor: pointer;
-  }
-  .btn-fechar:hover { background: #4b5563; }
 
   /* === Conteúdo do relatório === */
   .conteudo { padding-top: 50px; padding: 55px 12px 20px; }
@@ -74,19 +70,36 @@
     .conteudo { padding-top: 0 !important; padding-left: 8px !important; padding-right: 8px !important; }
     tbody tr { page-break-inside: avoid; }
     thead { display: table-header-group; }
-    .rodape-pagina { display: none; }
     body { font-size: 10px; }
     table, thead tr th, tbody tr td { font-size: 9px; }
-  }
-  
-  /* === Responsividade para telas pequenas === */
-  @media screen and (max-width: 1200px) {
-    body { font-size: 10px; }
-    thead tr th, tbody tr td { font-size: 8px; padding: 3px 4px; }
   }
 </style>
 </head>
 <body>
+
+<script>
+  // Gerar PDF automaticamente ao carregar a página
+  document.addEventListener('DOMContentLoaded', async function() {
+    // Aguardar um pouco para garantir que a página está pronta
+    await new Promise(r => setTimeout(r, 500));
+    gerarPdfAutomatico();
+  });
+
+  function gerarPdfAutomatico() {
+    const elemento = document.getElementById('conteudo-relatorio');
+    const nomeArquivo = 'Relatório_Patrimonios_' + new Date().toISOString().split('T')[0] + '.pdf';
+    
+    const opcoes = {
+      margin: [6, 6, 10, 6],
+      filename: nomeArquivo,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' }
+    };
+
+    html2pdf().set(opcoes).from(elemento).save();
+  }
+</script>
 
 {{-- Barra de ações (não exibida na impressão) --}}
 <div class="barra-acoes">
@@ -95,12 +108,6 @@
     <span class="info">{{ $total }} registros &nbsp;|&nbsp; Filtro: {{ $tipo }} &nbsp;|&nbsp; {{ $data }}</span>
   </div>
   <div style="display:flex;gap:16px;align-items:flex-start">
-    <button class="btn-imprimir" onclick="window.print()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-      </svg>
-      Imprimir / Salvar como PDF
-    </button>
     <div style="font-size:11px;opacity:0.9;line-height:1.4;text-align:right">
       <div><strong>✅ Conferidos:</strong> {{ $conferidos }}</div>
       <div><strong>❌ Não conferidos:</strong> {{ $nao_conferidos }}</div>
@@ -109,7 +116,7 @@
 </div>
 
 {{-- Conteúdo --}}
-<div class="conteudo">
+<div class="conteudo" id="conteudo-relatorio">
   <div class="cabecalho-relatorio">
     <h1>Relatorio de Patrimonios</h1>
     <div class="meta">Gerado em: {{ $data }} &nbsp;|&nbsp; Filtro: {{ $tipo }} &nbsp;|&nbsp; Total: <strong>{{ $total }}</strong> registros</div>
