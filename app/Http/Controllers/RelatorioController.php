@@ -641,12 +641,6 @@ class RelatorioController extends Controller
             $query = $this->getQueryFromRequest($request);
             $query->setEagerLoads([]);
 
-            // Limite conservador para PDF — DomPDF consome ~200-300KB de RAM por linha
-            // com textos longos; 300 registros fica bem abaixo do teto de 256MB do KingHost
-            $limite = 300;
-            $totalEstimado = (clone $query)->count();
-            $truncado = $totalEstimado > $limite;
-
             // Apenas colunas essenciais + sem campos de texto longo (DEHISTORICO, CARACTERISTICAS)
             $cols = [
                 'NUPATRIMONIO',
@@ -658,17 +652,27 @@ class RelatorioController extends Controller
                 'DTAQUISICAO',
             ];
 
-            $registros = $query->take($limite)->get($cols);
+            // Busca todos os registros sem limite (prepareExportRuntime já define 512M + 300s)
+            $registros = $query->get($cols);
+            $total = $registros->count();
 
             // Gera HTML diretamente (sem Blade), mais leve e sem overhead de compilação
-            $html = $this->buildPdfHtml($registros, $cols, $truncado, $limite, $totalEstimado, $request);
+            $html = $this->buildPdfHtml($registros, $cols, false, $total, $total, $request);
+
+            // Libera memória da collection antes de carregar o DomPDF
+            unset($registros);
 
             /** @var \Barryvdh\DomPDF\PDF $pdf */
             $pdf = Pdf::loadHTML($html);
             $pdf->setPaper('a4', 'landscape');
-            $pdf->setOption('isHtml5ParserEnabled', true);
+            $pdf->setOption('isHtml5ParserEnabled', false);
             $pdf->setOption('isRemoteEnabled', false);
             $pdf->setOption('defaultFont', 'helvetica');
+            $pdf->setOption('dpi', 72);
+            $pdf->setOption('isFontSubsettingEnabled', true);
+
+            // Libera HTML da memória antes do render
+            unset($html);
 
             $downloadName = $this->buildReportDownloadName($request, 'pdf');
 
@@ -691,44 +695,43 @@ class RelatorioController extends Controller
     /**
      * Constrói o HTML do PDF diretamente (sem Blade) para melhor desempenho.
      * Usa apenas CSS inline compatível com DomPDF (sem Tailwind/Vite).
+     * Usa array + implode em vez de concatenação para menor uso de memória.
      */
     private function buildPdfHtml($registros, array $cols, bool $truncado, int $limite, int $totalEstimado, Request $request): string
     {
-        $tipo = $request->input('tipo_relatorio', 'geral');
-        $total = $registros->count();
+        $tipo  = $request->input('tipo_relatorio', 'geral');
+        $total = $totalEstimado;
         $data  = now()->format('d/m/Y H:i:s');
 
         $colLabels = [
-            'NUPATRIMONIO'  => 'Nº Patr.',
-            'DEPATRIMONIO'  => 'Descrição',
-            'SITUACAO'      => 'Situação',
+            'NUPATRIMONIO'  => 'N Pat.',
+            'DEPATRIMONIO'  => 'Descricao',
+            'SITUACAO'      => 'Situacao',
             'MARCA'         => 'Marca',
             'MODELO'        => 'Modelo',
-            'NUSERIE'       => 'Nº Série',
+            'NUSERIE'       => 'Nr Serie',
             'CDPROJETO'     => 'Projeto',
             'CDLOCAL'       => 'Local',
             'DTAQUISICAO'   => 'Dt. OC',
-            'DTOPERACAO'    => 'Dt. Cadastro',
+            'DTOPERACAO'    => 'Cadastro',
         ];
 
-        $avisoTruncado = $truncado
-            ? '<p style="background:#fff3cd;border:1px solid #ffc107;padding:6px 10px;font-size:10px;margin-bottom:8px;"><strong>Atencao:</strong> O relatorio foi limitado a '.$limite.' registros (total: '.$totalEstimado.'). Use Excel/CSV para exportar todos os dados.</p>'
-            : '';
-
         // Cabeçalho da tabela
-        $ths = '';
+        $thParts = [];
         foreach ($cols as $c) {
-            $ths .= '<th>' . ($colLabels[$c] ?? $c) . '</th>';
+            $thParts[] = '<th>' . ($colLabels[$c] ?? $c) . '</th>';
         }
+        $ths = implode('', $thParts);
+        unset($thParts);
 
         // Colunas que podem ter texto muito longo — truncar para reduzir tamanho do HTML
-        $maxLen = ['DEPATRIMONIO' => 60, 'MARCA' => 30, 'MODELO' => 30];
+        $maxLen = ['DEPATRIMONIO' => 50, 'MARCA' => 25, 'MODELO' => 25];
 
-        // Linhas da tabela
-        $trs = '';
+        // Linhas da tabela — usa array para evitar re-alocação de string em loop grande
+        $trParts = [];
         foreach ($registros as $i => $r) {
-            $bg = ($i % 2 === 0) ? '#FFFFFF' : '#F5F5F5';
-            $trs .= '<tr style="background:' . $bg . '">';
+            $rowBg = ($i % 2 === 0) ? '' : ' style="background:#F5F5F5"';
+            $cells = '<tr' . $rowBg . '>';
             foreach ($cols as $c) {
                 $val = $r->$c ?? '';
                 if ($val instanceof \DateTimeInterface) {
@@ -736,44 +739,44 @@ class RelatorioController extends Controller
                 } else {
                     $val = (string) $val;
                     if (isset($maxLen[$c]) && mb_strlen($val) > $maxLen[$c]) {
-                        $val = mb_substr($val, 0, $maxLen[$c]) . '...';
+                        $val = mb_substr($val, 0, $maxLen[$c]) . '..';
                     }
                 }
-                $trs .= '<td>' . htmlspecialchars($val, ENT_QUOTES, 'UTF-8') . '</td>';
+                $cells .= '<td>' . htmlspecialchars($val, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</td>';
             }
-            $trs .= '</tr>';
+            $cells .= '</tr>';
+            $trParts[] = $cells;
         }
+        $trs = implode('', $trParts);
+        unset($trParts);
 
         return <<<HTML
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Relatório de Patrimônios</title>
+<title>Relatorio de Patrimonios</title>
 <style>
-  * { font-family: Helvetica, Arial, sans-serif; box-sizing: border-box; }
-  body { font-size: 10px; color: #111; margin: 0; padding: 12px 14px 30px; }
-  h1 { font-size: 14px; margin: 0 0 3px; }
-  .meta { font-size: 9px; color: #555; margin-bottom: 10px; }
-  table { width: 100%; border-collapse: collapse; }
-  th, td { border: 1px solid #bbb; padding: 3px 5px; vertical-align: top; word-break: break-word; }
-  th { background: #1e3a5f; color: #FFF; font-size: 8px; text-transform: uppercase; letter-spacing: .4px; }
-  tbody tr:nth-child(odd) { background: #FFFFFF; }
-  tbody tr:nth-child(even) { background: #F5F5F5; }
-  footer { position: fixed; left: 0; right: 0; bottom: 0; font-size: 8px; color: #777;
-           text-align: center; border-top: 1px solid #ccc; padding: 3px 0; }
-  @page { margin: 15px 15px 35px; }
+  *{font-family:Helvetica,Arial,sans-serif;box-sizing:border-box}
+  body{font-size:9px;color:#111;margin:0;padding:10px 12px 28px}
+  h1{font-size:13px;margin:0 0 2px}
+  .meta{font-size:8px;color:#555;margin-bottom:8px}
+  table{width:100%;border-collapse:collapse}
+  th,td{border:1px solid #bbb;padding:2px 4px;vertical-align:top;word-break:break-word}
+  th{background:#1e3a5f;color:#FFF;font-size:7px;text-transform:uppercase}
+  tr:nth-child(even){background:#F5F5F5}
+  footer{position:fixed;left:0;right:0;bottom:0;font-size:7px;color:#777;text-align:center;border-top:1px solid #ccc;padding:2px 0}
+  @page{margin:12px 12px 30px}
 </style>
 </head>
 <body>
-  <h1>Relatório de Patrimônios</h1>
-  <div class="meta">Gerado em: {$data} &nbsp;|&nbsp; Filtro: {$tipo} &nbsp;|&nbsp; Registros: {$total}</div>
-  {$avisoTruncado}
+  <h1>Relatorio de Patrimonios</h1>
+  <div class="meta">Gerado em: {$data} | Filtro: {$tipo} | Registros: {$total}</div>
   <table>
     <thead><tr>{$ths}</tr></thead>
     <tbody>{$trs}</tbody>
   </table>
-  <footer>Plansul &mdash; Relatório de Patrimônios &mdash; {$data}</footer>
+  <footer>Plansul - Relatorio de Patrimonios - {$data}</footer>
 </body>
 </html>
 HTML;
