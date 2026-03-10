@@ -13,6 +13,7 @@ class TermoCodigo extends Model
 
     protected $fillable = [
         'codigo',
+        'titulo',
         'created_by',
     ];
 }

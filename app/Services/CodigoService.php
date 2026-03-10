@@ -60,11 +60,16 @@ class CodigoService
                 return ['updated' => [], 'already_used' => true, 'code' => $numero];
             }
 
-            TermoCodigo::firstOrCreate([
+            $registroTermo = TermoCodigo::firstOrCreate([
                 'codigo' => $numero
             ], [
                 'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA'
             ]);
+
+            $registroTermo->forceFill([
+                'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
+                'titulo' => null,
+            ])->save();
 
             $idsLimpos = collect($ids)->filter()->unique()->values();
             if ($idsLimpos->isEmpty()) {

@@ -6,6 +6,7 @@ use App\Models\Patrimonio;
 use App\Models\HistoricoMovimentacao;
 use App\Models\TermoCodigo;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,14 @@ class TermoController extends Controller
         // Lógica para gerar o novo código de termo sequencial
         $ultimoCodTermo = DB::table('patr')->max('NMPLANTA');
         $novoCodTermo = $ultimoCodTermo + 1;
+
+        TermoCodigo::updateOrCreate(
+            ['codigo' => $novoCodTermo],
+            [
+                'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
+                'titulo' => null,
+            ]
+        );
 
         // Atualiza todos os patrimônios selecionados com o novo código
         Patrimonio::whereIn('NUSEQPATR', $validated['patrimonio_ids'])
@@ -186,6 +195,53 @@ class TermoController extends Controller
         $maxUsado = (int) Patrimonio::max('NMPLANTA');
         $sugestao = max($maxRegistrado, $maxUsado) + 1;
         return response()->json(['sugestao' => $sugestao]);
+    }
+
+    public function atualizarTitulo(Request $request, int $codigo): JsonResponse
+    {
+        $validated = $request->validate([
+            'titulo' => ['nullable', 'string', 'max:120'],
+        ]);
+
+        $codigo = (int) $codigo;
+        if ($codigo <= 0) {
+            return response()->json(['message' => 'Código do termo inválido.'], 422);
+        }
+
+        if (!Patrimonio::where('NMPLANTA', $codigo)->exists()) {
+            return response()->json(['message' => 'Esse termo não está em uso no momento.'], 404);
+        }
+
+        $registro = TermoCodigo::firstOrCreate(
+            ['codigo' => $codigo],
+            ['created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA']
+        );
+
+        $usuario = Auth::user();
+        $loginAtual = strtoupper(trim((string) ($usuario->NMLOGIN ?? '')));
+        $criador = strtoupper(trim((string) ($registro->created_by ?? '')));
+        $podeEditar = ($usuario && ($usuario->isGod() || $usuario->isAdmin()))
+            || ($loginAtual !== '' && $criador !== '' && $loginAtual === $criador);
+
+        if (!$podeEditar) {
+            return response()->json(['message' => 'Apenas quem gerou o termo pode editar este título.'], 403);
+        }
+
+        $titulo = trim((string) ($validated['titulo'] ?? ''));
+
+        $registro->forceFill([
+            'titulo' => $titulo !== '' ? $titulo : null,
+        ])->save();
+
+        return response()->json([
+            'message' => $titulo !== ''
+                ? 'Título do termo atualizado com sucesso.'
+                : 'Título personalizado removido com sucesso.',
+            'data' => [
+                'codigo' => $codigo,
+                'titulo' => $registro->titulo,
+            ],
+        ]);
     }
 
     /**

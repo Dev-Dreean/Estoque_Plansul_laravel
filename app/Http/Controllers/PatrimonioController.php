@@ -3861,8 +3861,51 @@ class PatrimonioController extends Controller
 
 
 
-        return view('patrimonios.atribuir', compact('patrimonios', 'patrimonios_grouped'));
+        $termosMetadados = $this->montarMetadadosTermos($patrimonios);
 
+        return view('patrimonios.atribuir', compact('patrimonios', 'patrimonios_grouped', 'termosMetadados'));
+
+    }
+
+    private function montarMetadadosTermos($patrimonios): array
+    {
+        $codigos = collect($patrimonios)
+            ->pluck('NMPLANTA')
+            ->filter(fn ($codigo) => $codigo !== null && $codigo !== '')
+            ->map(fn ($codigo) => (string) $codigo)
+            ->unique()
+            ->values();
+
+        if ($codigos->isEmpty()) {
+            return [];
+        }
+
+        $usuario = Auth::user();
+        $loginAtual = strtoupper(trim((string) ($usuario->NMLOGIN ?? '')));
+        $podeAdministrar = $usuario && ($usuario->isGod() || $usuario->isAdmin());
+
+        $metadados = $codigos->mapWithKeys(fn ($codigo) => [
+            $codigo => [
+                'titulo' => null,
+                'pode_editar' => $podeAdministrar,
+            ],
+        ])->all();
+
+        $registros = TermoCodigo::query()
+            ->whereIn('codigo', $codigos->all())
+            ->get(['codigo', 'titulo', 'created_by']);
+
+        foreach ($registros as $registro) {
+            $codigo = (string) $registro->codigo;
+            $criador = strtoupper(trim((string) ($registro->created_by ?? '')));
+
+            $metadados[$codigo] = [
+                'titulo' => $registro->titulo,
+                'pode_editar' => $podeAdministrar || ($loginAtual !== '' && $criador !== '' && $loginAtual === $criador),
+            ];
+        }
+
+        return $metadados;
     }
 
 
@@ -4017,7 +4060,9 @@ class PatrimonioController extends Controller
 
         // Reutiliza a mesma view principal de atribuição; evita duplicação e problemas de alias
 
-        return view('patrimonios.atribuir', compact('patrimonios', 'patrimonios_grouped'));
+        $termosMetadados = $this->montarMetadadosTermos($patrimonios);
+
+        return view('patrimonios.atribuir', compact('patrimonios', 'patrimonios_grouped', 'termosMetadados'));
 
     }
 
@@ -4187,6 +4232,8 @@ class PatrimonioController extends Controller
 
             // Verificar quais Patrimonios já estão atribuídos
 
+            $codigoJaEmUso = Patrimonio::where('NMPLANTA', $codigoTermo)->exists();
+
             $jaAtribuidos = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)
 
                 ->whereNotNull('NMPLANTA')
@@ -4202,6 +4249,28 @@ class PatrimonioController extends Controller
                 ->whereNull('NMPLANTA')
 
                 ->update(['NMPLANTA' => $codigoTermo]);
+
+            if ($updated > 0 && !$codigoJaEmUso) {
+
+                $registroTermo = TermoCodigo::firstOrCreate([
+
+                    'codigo' => $codigoTermo
+
+                ], [
+
+                    'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA')
+
+                ]);
+
+                $registroTermo->forceFill([
+
+                    'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
+
+                    'titulo' => null,
+
+                ])->save();
+
+            }
 
 
 

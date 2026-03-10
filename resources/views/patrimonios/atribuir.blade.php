@@ -234,6 +234,10 @@
                   'primeiro' => $items->first()
                   ];
                   });
+                  $termoMeta = !$is_sem_termo ? ($termosMetadados[(string) $grupo_codigo] ?? ['titulo' => null, 'pode_editar' => false]) : null;
+                  $tituloPersonalizado = trim((string) data_get($termoMeta, 'titulo', ''));
+                  $tituloExibicao = $tituloPersonalizado !== '' ? $tituloPersonalizado : "Termo {$grupo_codigo}";
+                  $podeEditarTitulo = (bool) data_get($termoMeta, 'pode_editar', false);
                   @endphp
 
                   {{-- Cabeçalho Colapsável do Grupo --}}
@@ -254,11 +258,55 @@
                             </svg>
                           </button>
 
-                          <div class="flex items-center gap-3 flex-1 min-w-0">
+                          <div class="flex items-start gap-3 flex-1 min-w-0">
                             @if(!$is_sem_termo)
-                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-2 border-gray-400 dark:border-gray-600 flex-shrink-0">
-                              <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Termo {{ $grupo_codigo }}</span>
-                            </span>
+                            <div class="flex flex-col gap-2 min-w-0">
+                              <div class="flex items-center gap-2 min-w-0">
+                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-2 border-gray-400 dark:border-gray-600 flex-shrink-0 max-w-full">
+                                  <span class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate" title="{{ $tituloExibicao }}">{{ $tituloExibicao }}</span>
+                                </span>
+                                @if($tituloPersonalizado !== '')
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700 whitespace-nowrap">
+                                  Termo {{ $grupo_codigo }}
+                                </span>
+                                @endif
+                                @if($podeEditarTitulo)
+                                <button type="button"
+                                  @click.stop="abrirEditorTitulo(@js((string) $grupo_codigo), @js($tituloPersonalizado))"
+                                  class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-indigo-200 dark:border-indigo-700 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex-shrink-0"
+                                  title="Editar título do termo">
+                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L12 15l-4 1 1-4 9.586-9.586z"></path>
+                                  </svg>
+                                </button>
+                                @endif
+                              </div>
+                              @if($podeEditarTitulo)
+                              <div x-show="editingTermoCodigo === @js((string) $grupo_codigo)"
+                                x-transition
+                                @click.stop
+                                style="display: none;"
+                                class="flex flex-wrap items-center gap-2">
+                                <input type="text"
+                                  id="titulo-termo-{{ $grupo_codigo }}"
+                                  x-model="editingTitulo"
+                                  maxlength="120"
+                                  placeholder="Digite um título para identificar este agrupado"
+                                  class="w-full max-w-md px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <button type="button"
+                                  @click.stop="salvarTituloTermo(@js((string) $grupo_codigo))"
+                                  :disabled="salvandoTitulo"
+                                  class="inline-flex items-center px-3 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition">
+                                  <span x-text="salvandoTitulo ? 'Salvando...' : 'Salvar título'"></span>
+                                </button>
+                                <button type="button"
+                                  @click.stop="cancelarEdicaoTitulo()"
+                                  class="inline-flex items-center px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                  Cancelar
+                                </button>
+                              </div>
+                              @endif
+                            </div>
                             @else
                             <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white dark:bg-gray-800 border-2 border-amber-300 dark:border-amber-400 flex-shrink-0">
                               <span class="text-sm font-semibold text-amber-900 dark:text-amber-200">Sem Termo</span>
@@ -512,6 +560,7 @@
     })();
     window.patrimonioAtribuirSelection = patrimonioAtribuirSelection;
     const atribuirCodigosBaseUrl = @json(route('patrimonios.atribuir.codigos'));
+    const termosBaseUrl = @json(url('/termos'));
 
     window.atribuirPage = function atribuirPage() {
       return {
@@ -528,6 +577,9 @@
         atribuindo: false,
         erroCodigo: false,
         gerandoCodigo: false,
+        editingTermoCodigo: null,
+        editingTitulo: '',
+        salvandoTitulo: false,
         groupState: {}, // Estado dos grupos (expandido/colapsado)
         grupoSelecionados: {}, // Itens selecionados por grupo
         selectionEnabled: false,
@@ -616,6 +668,58 @@
               this.ajaxFetchParams(params);
             }
           });
+        },
+        abrirEditorTitulo(codigo, tituloAtual = '') {
+          this.editingTermoCodigo = String(codigo);
+          this.editingTitulo = tituloAtual || '';
+          this.$nextTick(() => {
+            const input = document.getElementById(`titulo-termo-${codigo}`);
+            if (input) {
+              input.focus();
+              input.select?.();
+            }
+          });
+        },
+        cancelarEdicaoTitulo() {
+          this.editingTermoCodigo = null;
+          this.editingTitulo = '';
+          this.salvandoTitulo = false;
+        },
+        async salvarTituloTermo(codigo) {
+          if (this.salvandoTitulo) {
+            return;
+          }
+
+          this.salvandoTitulo = true;
+
+          try {
+            const res = await fetch(`${termosBaseUrl}/${encodeURIComponent(codigo)}/titulo`, {
+              method: 'PATCH',
+              headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                titulo: this.editingTitulo,
+              }),
+            });
+
+            const json = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+              alert(json.message || 'Não foi possível atualizar o título do termo.');
+              return;
+            }
+
+            alert(json.message || 'Título do termo atualizado com sucesso.');
+            window.location.reload();
+          } catch (e) {
+            console.error('Erro ao atualizar título do termo:', e);
+            alert('Erro ao atualizar o título do termo. Tente novamente.');
+          } finally {
+            this.salvandoTitulo = false;
+          }
         },
         buildFilterParams(overrides = {}) {
           const params = new URLSearchParams(window.location.search);

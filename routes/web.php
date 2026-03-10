@@ -306,6 +306,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         Route::get('/codigos', [\App\Http\Controllers\TermoController::class, 'listarCodigos'])->name('codigos.index');
         Route::post('/codigos', [\App\Http\Controllers\TermoController::class, 'criarCodigo'])->name('codigos.store');
         Route::get('/codigos/sugestao', [\App\Http\Controllers\TermoController::class, 'sugestaoCodigo'])->name('codigos.sugestao');
+        Route::patch('/{codigo}/titulo', [\App\Http\Controllers\TermoController::class, 'atualizarTitulo'])->name('titulo.update');
         // Rotas DOCX usando PhpWord TemplateProcessor
         Route::post('/docx/zip', [\App\Http\Controllers\TermoDocxController::class, 'downloadZip'])->name('docx.zip');
         Route::get('/docx/{id}', [\App\Http\Controllers\TermoDocxController::class, 'downloadSingle'])->name('docx.single');

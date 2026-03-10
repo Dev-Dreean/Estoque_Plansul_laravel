@@ -91,6 +91,26 @@
     color: #fff;
     font-size: 16px;
     font-weight: bold;
+  }
+  .progress-container {
+    width: 300px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4f46e5, #7c3aed);
+    width: 0%;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.8);
+  }
+  .progress-texto {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    margin-top: 8px;
   } */
   @media print {
     @page { margin: 6mm 6mm 10mm; size: A4 landscape; }
@@ -109,12 +129,29 @@
 <div class="loading-overlay" id="loading-overlay">
   <div class="spinner"></div>
   <div class="loading-texto">⏳ Gerando PDF...</div>
+  <div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+  <div class="progress-texto"><span id="progress-percent">0</span>%</div>
 </div>
 
 <script>
   function gerarPdf() {
     const loading = document.getElementById('loading-overlay');
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercent = document.getElementById('progress-percent');
     loading.classList.add('ativo');
+    
+    // Simular progresso
+    let progresso = 0;
+    const intervalo = setInterval(() => {
+      if (progresso < 70) {
+        progresso += Math.random() * 30;
+        if (progresso > 70) progresso = 70;
+      }
+      progressBar.style.width = progresso + '%';
+      progressPercent.textContent = Math.floor(progresso);
+    }, 200);
     
     setTimeout(() => {
       const elemento = document.getElementById('conteudo-relatorio');
@@ -129,9 +166,21 @@
       };
 
       html2pdf().set(opcoes).from(elemento).save().then(() => {
-        loading.classList.remove('ativo');
+        clearInterval(intervalo);
+        progressBar.style.width = '100%';
+        progressPercent.textContent = '100';
+        setTimeout(() => {
+          loading.classList.remove('ativo');
+          progresso = 0;
+          progressBar.style.width = '0%';
+          progressPercent.textContent = '0';
+        }, 500);
       }).catch(() => {
+        clearInterval(intervalo);
         loading.classList.remove('ativo');
+        progresso = 0;
+        progressBar.style.width = '0%';
+        progressPercent.textContent = '0';
       });
     }, 300);
   }
