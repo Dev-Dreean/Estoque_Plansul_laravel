@@ -1,5 +1,7 @@
 ﻿<?php
 // one-off: Listar últimos funcionários e projetos adicionados
+use Illuminate\Support\Facades\DB;
+
 require __DIR__.'/../bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
