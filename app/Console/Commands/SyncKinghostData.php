@@ -219,37 +219,34 @@ class SyncKinghostData extends Command
         $this->line("\n📋 ETAPA 3: Verificando novos funcionários em plansul104");
         $this->line("==========================================================");
 
-        $host104  = env('FUNCIONARIOS_SOURCE_HOST', 'mysql.plansul2.kinghost.net');
-        $user104  = env('FUNCIONARIOS_SOURCE_USER', 'plansul104');
-        $pass104  = env('FUNCIONARIOS_SOURCE_PASS', 'plansul104');
-        $db104    = env('FUNCIONARIOS_SOURCE_DB',   'plansul104');
-
-        $sshCmd104 = "ssh plansul@ftp.plansul.info \"mysql -h {$host104} -u {$user104} -p'{$pass104}' {$db104} -e 'SELECT matricula, nome, dtadmissao, cargo FROM funcionarios;'\" 2>&1";
-
-        $output104 = shell_exec($sshCmd104);
-        $lines104  = array_filter(explode("\n", trim($output104 ?? '')));
+        $host104 = env('FUNCIONARIOS_SOURCE_HOST', 'mysql.plansul2.kinghost.net');
+        $user104 = env('FUNCIONARIOS_SOURCE_USER', 'plansul104');
+        $pass104 = env('FUNCIONARIOS_SOURCE_PASS', 'plansul104');
+        $db104   = env('FUNCIONARIOS_SOURCE_DB',   'plansul104');
 
         $novos104 = 0;
         $erros104 = 0;
 
-        if (!empty($lines104) && strpos($output104, 'ERROR') === false) {
-            $this->info("✓ Fetched " . count($lines104) . " linhas do plansul104");
+        // Conexão PDO direta ao MySQL do plansul104 (sem SSH — funciona em produção e local)
+        try {
+            $dsn104 = "mysql:host={$host104};dbname={$db104};charset=utf8";
+            $pdo104 = new \PDO($dsn104, $user104, $pass104, [
+                \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_NUM,
+                \PDO::ATTR_TIMEOUT            => 30,
+            ]);
 
-            $header104 = null;
-            foreach ($lines104 as $line) {
-                if ($header104 === null) {
-                    $header104 = explode("\t", $line);
-                    continue;
-                }
-                $v = explode("\t", $line);
-                if (count($v) < 2) continue;
+            $stmt = $pdo104->query("SELECT matricula, nome, dtadmissao, cargo FROM funcionarios");
+            $rows104 = $stmt->fetchAll();
 
+            $this->info("✓ Fetched " . count($rows104) . " funcionários do plansul104 (PDO direto)");
+
+            foreach ($rows104 as $v) {
                 $matricula = trim($v[0]);
                 $nome      = trim($v[1] ?? '');
 
                 if (!$matricula || !$nome) continue;
 
-                // Só inserir se NÃO existe no banco local
                 $existe = DB::table('funcionarios')
                     ->where('CDMATRFUNCIONARIO', $matricula)
                     ->exists();
@@ -278,9 +275,10 @@ class SyncKinghostData extends Command
 
             $this->info("\n✅ plansul104 — novos inseridos: {$novos104}, erros: {$erros104}");
             Log::info("✅ [SYNC FUNC104] Novos={$novos104}, Erros={$erros104}");
-        } else {
-            $this->warn("⚠️  Não foi possível conectar ao plansul104 (continuando sem ele)");
-            Log::warning("⚠️  [SYNC FUNC104] Falha ao conectar: " . ($output104 ?? 'sem retorno'));
+
+        } catch (\Exception $e) {
+            $this->warn("⚠️  Não foi possível conectar ao plansul104: " . $e->getMessage());
+            Log::warning("⚠️  [SYNC FUNC104] Falha PDO: " . $e->getMessage());
         }
 
         // ============================================================================
