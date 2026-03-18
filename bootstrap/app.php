@@ -23,6 +23,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Adicionar middleware global para verificar expiração da sessão
         $middleware->append(\App\Http\Middleware\CheckSessionExpiration::class);
 
+        // Sincronização automática com KingHost (substitui crontab bloqueado na hospedagem)
+        // Roda sync:kinghost-data em background 1x a cada 8 horas via primeira requisição do intervalo
+        $middleware->append(\App\Http\Middleware\AutoSyncKinghost::class);
+
         // Exceções de CSRF para rotas API
         $middleware->validateCsrfTokens(except: [
             'api/*',
