@@ -214,7 +214,77 @@ class SyncKinghostData extends Command
         Log::info("✅ [SYNC PROJETOS] Criados=$created, Atualizados=$updated, Erros=$errors, Total=$localProjetos");
 
         // ============================================================================
-        // 3. AUDITORIA FINAL
+        // 3. SINCRONIZAR NOVOS FUNCIONÁRIOS (plansul104 — sistema RH complementar)
+        // ============================================================================
+        $this->line("\n📋 ETAPA 3: Verificando novos funcionários em plansul104");
+        $this->line("==========================================================");
+
+        $host104  = env('FUNCIONARIOS_SOURCE_HOST', 'mysql.plansul2.kinghost.net');
+        $user104  = env('FUNCIONARIOS_SOURCE_USER', 'plansul104');
+        $pass104  = env('FUNCIONARIOS_SOURCE_PASS', 'plansul104');
+        $db104    = env('FUNCIONARIOS_SOURCE_DB',   'plansul104');
+
+        $sshCmd104 = "ssh plansul@ftp.plansul.info \"mysql -h {$host104} -u {$user104} -p'{$pass104}' {$db104} -e 'SELECT matricula, nome, dtadmissao, cargo FROM funcionarios;'\" 2>&1";
+
+        $output104 = shell_exec($sshCmd104);
+        $lines104  = array_filter(explode("\n", trim($output104 ?? '')));
+
+        $novos104 = 0;
+        $erros104 = 0;
+
+        if (!empty($lines104) && strpos($output104, 'ERROR') === false) {
+            $this->info("✓ Fetched " . count($lines104) . " linhas do plansul104");
+
+            $header104 = null;
+            foreach ($lines104 as $line) {
+                if ($header104 === null) {
+                    $header104 = explode("\t", $line);
+                    continue;
+                }
+                $v = explode("\t", $line);
+                if (count($v) < 2) continue;
+
+                $matricula = trim($v[0]);
+                $nome      = trim($v[1] ?? '');
+
+                if (!$matricula || !$nome) continue;
+
+                // Só inserir se NÃO existe no banco local
+                $existe = DB::table('funcionarios')
+                    ->where('CDMATRFUNCIONARIO', $matricula)
+                    ->exists();
+
+                if (!$existe) {
+                    try {
+                        if (!$dryRun) {
+                            DB::table('funcionarios')->insert([
+                                'CDMATRFUNCIONARIO' => $matricula,
+                                'NMFUNCIONARIO'     => $nome,
+                                'DTADMISSAO'        => trim($v[2] ?? null) ?: null,
+                                'CDCARGO'           => trim($v[3] ?? ''),
+                                'CODFIL'            => '',
+                                'UFPROJ'            => '',
+                            ]);
+                        }
+                        $novos104++;
+                        $this->line("   ➕ Novo: [{$matricula}] {$nome}");
+                        Log::info("➕ [SYNC FUNC104] Novo funcionário: [{$matricula}] {$nome}");
+                    } catch (\Exception $e) {
+                        $erros104++;
+                        $this->warn("⚠️  Erro ao inserir [{$matricula}]: " . $e->getMessage());
+                    }
+                }
+            }
+
+            $this->info("\n✅ plansul104 — novos inseridos: {$novos104}, erros: {$erros104}");
+            Log::info("✅ [SYNC FUNC104] Novos={$novos104}, Erros={$erros104}");
+        } else {
+            $this->warn("⚠️  Não foi possível conectar ao plansul104 (continuando sem ele)");
+            Log::warning("⚠️  [SYNC FUNC104] Falha ao conectar: " . ($output104 ?? 'sem retorno'));
+        }
+
+        // ============================================================================
+        // 4. AUDITORIA FINAL
         // ============================================================================
         $this->line("\n📊 AUDITORIA FINAL");
         $this->line("==================");
