@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Patrimonio;
 use App\Models\Funcionario;
+use App\Models\TermoCodigo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -49,7 +50,7 @@ class TermoDocxController extends Controller
             $this->authorize('view', $patrimonio);
 
             $items = collect([$patrimonio]);
-            $filename = $this->generateFilename($patrimonio->funcionario, 'single');
+            $filename = $this->generateFilename($items, $patrimonio->funcionario, 'single');
 
             return $this->generateDocument($items, $patrimonio->funcionario, $filename);
         } catch (\Throwable $e) {
@@ -110,7 +111,7 @@ class TermoDocxController extends Controller
 
             // Usar o primeiro funcionário para nomeação do arquivo
             $funcionario = $items->first()->funcionario;
-            $filename = $this->generateFilename($funcionario, 'lote');
+            $filename = $this->generateFilename($items, $funcionario, 'lote');
 
             Log::info('Documento de Termo Gerado', [
                 'user_id' => Auth::id(),
@@ -181,6 +182,7 @@ class TermoDocxController extends Controller
 
             // Aplicar negrito aos valores preenchidos
             $this->applyBoldFormatting($tempFile);
+            $this->appendSendPhotoNotice($tempFile);
 
             // Log de sucesso
             Log::info('Termo DOCX gerado com sucesso', [
@@ -543,12 +545,94 @@ class TermoDocxController extends Controller
      * @param string $type 'single' ou 'lote'
      * @return string
      */
-    protected function generateFilename(?Funcionario $funcionario, string $type = 'single'): string
+    protected function generateFilename($items, ?Funcionario $funcionario, string $type = 'single'): string
     {
+        $tituloPersonalizado = $this->resolveCustomTitleFilename($items);
+        if ($tituloPersonalizado !== null) {
+            return $tituloPersonalizado . '.docx';
+        }
+
+        $codigoTermo = $this->extractCodigoTermo($items);
+        if ($codigoTermo !== null) {
+            return 'Termo ' . $codigoTermo . '.docx';
+        }
+
         $timestamp = now()->format('Ymd_His');
         $matricula = $funcionario?->CDMATRFUNCIONARIO ?? 'SEM_MATRICULA';
 
         return "termo_responsabilidade_{$matricula}_{$type}_{$timestamp}.docx";
+    }
+
+    protected function resolveCustomTitleFilename($items): ?string
+    {
+        $codigoTermo = $this->extractCodigoTermo($items);
+        if ($codigoTermo === null || !TermoCodigo::hasTituloColumn()) {
+            return null;
+        }
+
+        $titulo = trim((string) TermoCodigo::query()
+            ->where('codigo', $codigoTermo)
+            ->value('titulo'));
+
+        if ($titulo === '') {
+            return null;
+        }
+
+        return $this->sanitizeFilename($titulo);
+    }
+
+    protected function extractCodigoTermo($items): ?string
+    {
+        $primeiroItem = collect($items)->first();
+        $codigoTermo = trim((string) ($primeiroItem->NMPLANTA ?? ''));
+
+        return $codigoTermo !== '' ? $codigoTermo : null;
+    }
+
+    protected function sanitizeFilename(string $name): string
+    {
+        $name = trim($name);
+        $name = preg_replace('/[\\\\\\/:\*\?"<>\|]+/u', ' ', $name);
+        $name = preg_replace('/\s+/u', ' ', (string) $name);
+        $name = trim((string) $name, ". \t\n\r\0\x0B");
+
+        return $name !== '' ? $name : 'Termo';
+    }
+
+    protected function appendSendPhotoNotice(string $filePath): void
+    {
+        $notice = 'Após assinar, envie uma foto deste termo para 48 9187-9877.';
+
+        try {
+            $zip = new \ZipArchive();
+            if ($zip->open($filePath) !== true) {
+                Log::warning('Não foi possível abrir o DOCX para inserir o recado de envio da foto.');
+                return;
+            }
+
+            $xmlContent = $zip->getFromName('word/document.xml');
+            if (!$xmlContent || str_contains($xmlContent, $notice)) {
+                $zip->close();
+                return;
+            }
+
+            $escapedNotice = htmlspecialchars($notice, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+            $paragraph = '<w:p><w:pPr><w:jc w:val="both"/></w:pPr><w:r><w:t xml:space="preserve">' . $escapedNotice . '</w:t></w:r></w:p>';
+
+            $pattern = '/(<w:p\b[^>]*>.*?<w:t>DEVOLUÇÃO<\/w:t>.*?<\/w:p>)/s';
+            $updatedXml = preg_replace($pattern, $paragraph . '$1', $xmlContent, 1, $count);
+
+            if ($count === 0 || !is_string($updatedXml)) {
+                $updatedXml = str_replace('</w:body>', $paragraph . '</w:body>', $xmlContent);
+            }
+
+            $zip->addFromString('word/document.xml', $updatedXml);
+            $zip->close();
+        } catch (\Throwable $e) {
+            Log::warning('Não foi possível inserir o recado de envio da foto no termo.', [
+                'erro' => $e->getMessage(),
+            ]);
+        }
     }
 }
 
