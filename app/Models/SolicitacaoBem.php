@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -11,6 +12,7 @@ class SolicitacaoBem extends Model
 {
     public const STATUS_PENDENTE = 'PENDENTE';
     public const STATUS_AGUARDANDO_CONFIRMACAO = 'AGUARDANDO_CONFIRMACAO';
+    public const STATUS_LIBERACAO = 'LIBERACAO';
     public const STATUS_CONFIRMADO = 'CONFIRMADO';
     public const STATUS_NAO_ENVIADO = 'NAO_ENVIADO';
     public const STATUS_NAO_RECEBIDO = 'NAO_RECEBIDO';
@@ -56,6 +58,7 @@ class SolicitacaoBem extends Model
         return [
             self::STATUS_PENDENTE,
             self::STATUS_AGUARDANDO_CONFIRMACAO,
+            self::STATUS_LIBERACAO,
             self::STATUS_CONFIRMADO,
             self::STATUS_NAO_ENVIADO,
             self::STATUS_NAO_RECEBIDO,
@@ -80,6 +83,11 @@ class SolicitacaoBem extends Model
     public function historicoStatus(): HasMany
     {
         return $this->hasMany(SolicitacaoBemStatusHistorico::class, 'solicitacao_id');
+    }
+
+    public function ultimoHistoricoStatus(): HasOne
+    {
+        return $this->hasOne(SolicitacaoBemStatusHistorico::class, 'solicitacao_id')->latestOfMany();
     }
 
     public function projeto(): BelongsTo

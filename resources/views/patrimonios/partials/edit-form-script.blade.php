@@ -51,7 +51,9 @@
       'NUMOF': 'Número OC',
       'NMPLANTA': 'Planta',
       'PESO': 'Peso',
-      'TAMANHO': 'Dimensões'
+      'TAMANHO': 'Dimensões',
+      'CDMATRGERENTE': 'Matrícula Gerente Responsável',
+      'VOLTAGEM': 'Voltagem'
     };
 
     // Cache de nomes de projetos, locais e funcionÇ­rios
@@ -78,6 +80,12 @@
     const nomeFuncionarioOriginal = dadosOriginais.NOMEFUNCIONARIOORIGINAL;
     if (cdFuncionarioOriginal) {
       funcionariosCache[cdFuncionarioOriginal] = nomeFuncionarioOriginal;
+    }
+
+    const cdGerenteOriginal = dadosOriginais.CDMATRGERENTE;
+    const nomeGerenteOriginal = dadosOriginais.NOMEGERENTEORIGINAL;
+    if (cdGerenteOriginal) {
+      funcionariosCache[cdGerenteOriginal] = nomeGerenteOriginal;
     }
 
     // Buscar nome do projeto via AJAX
@@ -318,8 +326,8 @@
               </div>
             </div>
           `;
-          } else if (campo === 'CDMATRFUNCIONARIO') {
-            // Tratamento especial para CDMATRFUNCIONARIO - mostrar com nome bem destacado
+          } else if (campo === 'CDMATRFUNCIONARIO' || campo === 'CDMATRGERENTE') {
+            // Tratamento especial para matrículas - mostrar com nome bem destacado
             const nomeAnterior = funcionariosCache[valorAnterior] || '';
             const nomeNovo = await obterNomeFuncionario(valorNovo);
 
@@ -435,7 +443,8 @@
           ? false
           : Boolean(dadosOriginais.NUSEQOBJ) || Boolean(alpineData.isNovoCodigo);
       if (requireCodigoObjeto && !alpineData.formData.NUSEQOBJ) erros.push('Código do Objeto é obrigatório');
-      if (!alpineData.formData.CDMATRFUNCIONARIO) erros.push('Matrícula do Responsável é obrigatória');
+      if (alpineData.formData.CDMATRFUNCIONARIO && !alpineData.formData.CDMATRGERENTE) erros.push('Matrícula do Gerente Responsável é obrigatória');
+      if (!alpineData.formData.CDMATRFUNCIONARIO && alpineData.formData.CDMATRGERENTE) erros.push('Matrícula do Responsável é obrigatória quando houver gerente');
       if (!alpineData.formData.SITUACAO) erros.push('Situação é obrigatória');
       if (erros.length > 0) {
         alert('❌ Erros de validação:\n\n' + erros.join('\n'));

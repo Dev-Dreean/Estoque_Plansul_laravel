@@ -41,6 +41,7 @@ class Patrimonio extends Model
         'DTLAUDO',
         'DEPATRIMONIO',
         'CDMATRFUNCIONARIO',
+        'CDMATRGERENTE',
         'CDLOCALINTERNO',
         'CDPROJETO',
         'USUARIO',
@@ -51,7 +52,7 @@ class Patrimonio extends Model
         'NMPLANTA',
         'PESO',
         'TAMANHO',
-        'FLTERMORESPONSABILIDADE',
+        'VOLTAGEM',
     ];
 
     protected $casts = [
@@ -117,6 +118,11 @@ class Patrimonio extends Model
     public function funcionario(): BelongsTo
     {
         return $this->belongsTo(Funcionario::class, 'CDMATRFUNCIONARIO', 'CDMATRFUNCIONARIO');
+    }
+
+    public function gerenteResponsavel(): BelongsTo
+    {
+        return $this->belongsTo(Funcionario::class, 'CDMATRGERENTE', 'CDMATRFUNCIONARIO');
     }
 
     /**
@@ -420,5 +426,4 @@ class Patrimonio extends Model
         return $query->whereRaw("{$effectiveUfSql} IN ({$placeholders})", $ufs);
     }
 }
-
 

@@ -756,6 +756,7 @@ class PatrimonioController extends Controller
                 'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,A DISPOSICAO,À DISPOSIÇÃO,A DISPOSIÇÃO,DISPONIVEL',
 
                 'CDMATRFUNCIONARIO' => 'nullable|integer|exists:funcionarios,CDMATRFUNCIONARIO',
+                'CDMATRGERENTE' => 'nullable|integer|exists:funcionarios,CDMATRFUNCIONARIO',
 
                 'NUMOF' => 'nullable|integer',
 
@@ -781,11 +782,13 @@ class PatrimonioController extends Controller
 
                 'TAMANHO' => 'nullable|string|max:100',
 
-                'FLTERMORESPONSABILIDADE' => 'nullable|string|in:S,N',
+                'VOLTAGEM' => 'nullable|string|max:20',
 
             ]);
 
 
+
+            $this->validarVinculosResponsabilidade($validated);
 
             // Regra especial para almoxarifado central (999915) e em transito (2002)
 
@@ -907,6 +910,8 @@ class PatrimonioController extends Controller
 
             'CDMATRFUNCIONARIO' => isset($validated['CDMATRFUNCIONARIO']) ? (int) $validated['CDMATRFUNCIONARIO'] : null,
 
+            'CDMATRGERENTE' => isset($validated['CDMATRGERENTE']) ? (int) $validated['CDMATRGERENTE'] : null,
+
             'NUMOF' => $validated['NUMOF'] ?? null,
 
             'DEHISTORICO' => $validated['DEHISTORICO'] ?? null,
@@ -929,7 +934,7 @@ class PatrimonioController extends Controller
 
             'TAMANHO' => $validated['TAMANHO'] ?? null,
 
-            'FLTERMORESPONSABILIDADE' => $validated['FLTERMORESPONSABILIDADE'] ?? 'N',
+            'VOLTAGEM' => $validated['VOLTAGEM'] ?? null,
 
             'USUARIO' => $usuarioCriador,
 
@@ -968,7 +973,7 @@ class PatrimonioController extends Controller
         // Carregar relações para exibir dados corretos no formulário
         // FONTE DE VERDADE: Carregar projeto diretamente via CDPROJETO
 
-        $patrimonio->load(['local.projeto', 'projeto', 'funcionario']);
+        $patrimonio->load(['local.projeto', 'projeto', 'funcionario', 'gerenteResponsavel']);
         $this->attachLocalCorreto($patrimonio);
 
 
@@ -1005,11 +1010,8 @@ class PatrimonioController extends Controller
 
 
 
-        // TODO: Substitua estes arrays pelas suas consultas reais ao banco de dados.
-
-        $projetos = Tabfant::select('CDPROJETO', 'NOMEPROJETO')->distinct()->orderBy('NOMEPROJETO')->get();
-
-
+        // Projetos carregados via AJAX no frontend — não precisa carregar aqui
+        $projetos = collect([]);
 
         $isModal = $request->boolean('modal');
         $view = $isModal ? 'patrimonios.partials.form-edit' : 'patrimonios.edit';
@@ -1093,7 +1095,7 @@ class PatrimonioController extends Controller
                 $errors = new \Illuminate\Support\MessageBag($e->errors());
 
                 // FONTE DE VERDADE: Carregar projeto diretamente via CDPROJETO
-                $patrimonio->load(['local.projeto', 'projeto', 'funcionario']);
+                $patrimonio->load(['local.projeto', 'projeto', 'funcionario', 'gerenteResponsavel']);
                 $this->attachLocalCorreto($patrimonio);
                 $ultimaVerificacao = null;
                 try {
@@ -1159,6 +1161,8 @@ class PatrimonioController extends Controller
             'CDPROJETO_old' => $patrimonio->CDPROJETO,
 
             'CDMATRFUNCIONARIO_old' => $patrimonio->CDMATRFUNCIONARIO,
+
+            'CDMATRGERENTE_old' => $patrimonio->CDMATRGERENTE,
 
             'SITUACAO_old' => $patrimonio->SITUACAO,
 
@@ -1237,6 +1241,8 @@ class PatrimonioController extends Controller
             'CDPROJETO_after' => $newProjeto,
 
             'CDMATRFUNCIONARIO_after' => $patrimonio->CDMATRFUNCIONARIO,
+
+            'CDMATRGERENTE_after' => $patrimonio->CDMATRGERENTE,
 
             'SITUACAO_after' => $newSituacao,
 
@@ -1925,7 +1931,7 @@ class PatrimonioController extends Controller
             $ttl = 300; // 5 minutos
             $patrimonio = Cache::get($cacheKey);
             if (!$patrimonio) {
-                $patrimonio = Patrimonio::with(['local.projeto', 'projeto', 'funcionario'])->where('NUPATRIMONIO', $numero)->first();
+                $patrimonio = Patrimonio::with(['local.projeto', 'projeto', 'funcionario', 'gerenteResponsavel'])->where('NUPATRIMONIO', $numero)->first();
                 if ($patrimonio) {
                     $this->attachLocalCorreto($patrimonio);
                     Cache::put($cacheKey, $patrimonio, $ttl);
@@ -2033,7 +2039,7 @@ class PatrimonioController extends Controller
             $ttl = 300;
             $patrimonio = Cache::get($cacheKey);
             if (!$patrimonio) {
-                $patrimonio = Patrimonio::with(['local.projeto', 'projeto', 'funcionario'])->where('NUSEQPATR', $id)->first();
+                $patrimonio = Patrimonio::with(['local.projeto', 'projeto', 'funcionario', 'gerenteResponsavel'])->where('NUSEQPATR', $id)->first();
                 if ($patrimonio) {
                     $this->attachLocalCorreto($patrimonio);
                     Cache::put($cacheKey, $patrimonio, $ttl);
@@ -3884,6 +3890,7 @@ class PatrimonioController extends Controller
             return [];
         }
 
+        /** @var User */
         $usuario = Auth::user();
         $loginAtual = $this->normalizarLoginTermo((string) ($usuario->NMLOGIN ?? ''));
         $podeAdministrar = $usuario && ($usuario->isGod() || $usuario->isAdmin());
@@ -4733,7 +4740,7 @@ class PatrimonioController extends Controller
         
         // FONTE DE VERDADE: Carregar projeto diretamente via CDPROJETO, não via local
 
-        $query = Patrimonio::with(['funcionario', 'local', 'projeto', 'creator']);
+        $query = Patrimonio::with(['funcionario', 'gerenteResponsavel', 'local', 'projeto', 'creator']);
 
 
 
@@ -5473,11 +5480,13 @@ class PatrimonioController extends Controller
 
             'TAMANHO' => 'nullable|string|max:100',
 
-            'FLTERMORESPONSABILIDADE' => 'nullable|string|in:S,N',
+            'VOLTAGEM' => 'nullable|string|max:20',
 
             // Matricula precisa existir na tabela funcionarios
 
             'CDMATRFUNCIONARIO' => 'nullable|integer',
+
+            'CDMATRGERENTE' => 'nullable|integer',
 
         ]);
 
@@ -5500,6 +5509,26 @@ class PatrimonioController extends Controller
                 ]);
             }
         }
+
+        if (array_key_exists('CDMATRGERENTE', $data) && $data['CDMATRGERENTE'] !== null && $data['CDMATRGERENTE'] !== '') {
+            $cdMatGerente = (int) $data['CDMATRGERENTE'];
+            $existsGerente = DB::table('funcionarios')->where('CDMATRFUNCIONARIO', $cdMatGerente)->exists();
+            $isSameLegacyGerente = $patrimonio && (string) $patrimonio->CDMATRGERENTE === (string) $cdMatGerente;
+            if (!$existsGerente && !$isSameLegacyGerente) {
+                throw ValidationException::withMessages([
+                    'CDMATRGERENTE' => 'Matricula do gerente responsavel nao encontrada no sistema.',
+                ]);
+            }
+            if (!$existsGerente && $isSameLegacyGerente) {
+                Log::warning('Matricula gerente legado nao encontrada em funcionarios; mantendo valor existente.', [
+                    'CDMATRGERENTE' => $cdMatGerente,
+                    'NUSEQPATR' => $patrimonio?->NUSEQPATR,
+                    'NUPATRIMONIO' => $patrimonio?->NUPATRIMONIO,
+                ]);
+            }
+        }
+
+        $this->validarVinculosResponsabilidade($data);
 
         Log::info('[VALIDATE] Dados após validação inicial', [
 
@@ -5662,6 +5691,47 @@ class PatrimonioController extends Controller
 
 
     /* === Rotas solicitadas para geração e atribuição direta de códigos (fluxo simplificado) === */
+
+    private function validarVinculosResponsabilidade(array $data): void
+
+    {
+
+        $matriculaResponsavel = trim((string) ($data['CDMATRFUNCIONARIO'] ?? ''));
+
+        $matriculaGerente = trim((string) ($data['CDMATRGERENTE'] ?? ''));
+
+
+
+        if (($matriculaResponsavel === '' && $matriculaGerente === '')
+            || ($matriculaResponsavel !== '' && $matriculaGerente !== '')) {
+
+            return;
+
+        }
+
+
+
+        if ($matriculaResponsavel === '') {
+
+            throw ValidationException::withMessages([
+
+                'CDMATRFUNCIONARIO' => 'Informe a matricula do responsavel para vincular o gerente.',
+
+            ]);
+
+        }
+
+
+
+        throw ValidationException::withMessages([
+
+            'CDMATRGERENTE' => 'Informe a matricula do gerente responsavel junto com o responsavel do patrimonio.',
+
+        ]);
+
+    }
+
+
 
     private function normalizeConferidoFlag(mixed $value): ?string
 

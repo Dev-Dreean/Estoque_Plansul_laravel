@@ -8,7 +8,9 @@
     <div class="py-12" x-data="solicitacaoBemsIndex()"
         data-projetos='@json($projetos ?? [])'
         data-confirm-url="{{ route('solicitacoes-bens.confirm', ['solicitacao' => '__ID__']) }}"
-        data-approve-url="{{ route('solicitacoes-bens.approve', ['solicitacao' => '__ID__']) }}"
+        data-forward-url="{{ route('solicitacoes-bens.forward-to-liberacao', ['solicitacao' => '__ID__']) }}"
+        data-approve-url="{{ route('solicitacoes-bens.release', ['solicitacao' => '__ID__']) }}"
+        data-send-url="{{ route('solicitacoes-bens.send', ['solicitacao' => '__ID__']) }}"
         data-cancel-url="{{ route('solicitacoes-bens.cancel', ['solicitacao' => '__ID__']) }}">
         <div class="w-full sm:px-6 lg:px-8">
             @if(session('success'))
@@ -74,7 +76,13 @@
                             $canCreateSolicitacao = $isAdmin || ($userForCreate?->temAcessoTela('1013') ?? false);
                         @endphp
                         @if($canCreateSolicitacao)
-                            <button type="button" @click="openCreateModal()" class="bg-plansul-blue hover:bg-opacity-90 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
+                            <button
+                                type="button"
+                                @click="openCreateModal()"
+                                class="text-white font-semibold py-2 px-4 rounded inline-flex items-center transition"
+                                style="background-color:#5b21b6;"
+                                onmouseover="this.style.backgroundColor='#4c1d95'"
+                                onmouseout="this.style.backgroundColor='#5b21b6'">
                                 <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
                                 <span>Nova solicitacao</span>
                             </button>
@@ -86,6 +94,7 @@
                             // Mesma paleta dos cards do acompanhamento
                             'PENDENTE' => 'bg-yellow-400 text-black border border-yellow-500',
                             'AGUARDANDO_CONFIRMACAO' => 'bg-blue-400 text-black border border-blue-500',
+                            'LIBERACAO' => 'bg-violet-300 text-black border border-violet-500',
                             'CONFIRMADO' => 'bg-purple-400 text-black border border-purple-600',
                             'RECEBIDO' => 'bg-green-400 text-black border border-green-600',
                             'NAO_ENVIADO' => 'bg-orange-400 text-black border border-orange-500',
@@ -128,7 +137,7 @@
 
                             return mb_convert_case(mb_strtolower($valor, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
                         };
-                        $currentSort = $sort ?? request('sort', 'created_at');
+                        $currentSort = $sort ?? request('sort', 'updated_at');
                         $currentDirection = $direction ?? request('direction', 'desc');
                         $nextDirection = fn ($col) => ($currentSort === $col && $currentDirection === 'asc') ? 'desc' : 'asc';
                         $sortMark = fn ($col) => ($currentSort === $col) ? ($currentDirection === 'asc' ? '^' : 'v') : '-';
@@ -136,21 +145,28 @@
 
                     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <thead class="text-xs uppercase text-white" style="background-color:#5b21b6;">
                                 <tr>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'id', 'direction' => $nextDirection('id'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Cód. <span class="text-[10px]">{{ $sortMark('id') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'itens', 'direction' => $nextDirection('itens'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Itens <span class="text-[10px]">{{ $sortMark('itens') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'solicitante', 'direction' => $nextDirection('solicitante'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Solicitante <span class="text-[10px]">{{ $sortMark('solicitante') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'local_destino', 'direction' => $nextDirection('local_destino'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Local destino <span class="text-[10px]">{{ $sortMark('local_destino') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'uf', 'direction' => $nextDirection('uf'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">UF <span class="text-[10px]">{{ $sortMark('uf') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'status', 'direction' => $nextDirection('status'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Status <span class="text-[10px]">{{ $sortMark('status') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'created_at', 'direction' => $nextDirection('created_at'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">Criado <span class="text-[10px]">{{ $sortMark('created_at') }}</span></a></th>
-                                    <th class="px-4 py-2">Ações</th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'id', 'direction' => $nextDirection('id'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Cód. <span class="text-[10px] text-violet-200">{{ $sortMark('id') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'itens', 'direction' => $nextDirection('itens'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Itens <span class="text-[10px] text-violet-200">{{ $sortMark('itens') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'solicitante', 'direction' => $nextDirection('solicitante'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Solicitante <span class="text-[10px] text-violet-200">{{ $sortMark('solicitante') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'local_destino', 'direction' => $nextDirection('local_destino'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Local destino <span class="text-[10px] text-violet-200">{{ $sortMark('local_destino') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'uf', 'direction' => $nextDirection('uf'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">UF <span class="text-[10px] text-violet-200">{{ $sortMark('uf') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'status', 'direction' => $nextDirection('status'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Status <span class="text-[10px] text-violet-200">{{ $sortMark('status') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'created_at', 'direction' => $nextDirection('created_at'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Criado <span class="text-[10px] text-violet-200">{{ $sortMark('created_at') }}</span></a></th>
+                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'updated_at', 'direction' => $nextDirection('updated_at'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Atualizado <span class="text-[10px] text-violet-200">{{ $sortMark('updated_at') }}</span></a></th>
+                                    <th class="px-4 py-2 text-white">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($solicitacoes as $solicitacao)
-                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors cursor-pointer" @click="openShowModal({{ $solicitacao->id }})">
+                                    <tr
+                                        class="border-b border-slate-200 dark:border-gray-700 transition-colors cursor-pointer"
+                                        style="background-color: {{ $loop->odd ? '#ffffff' : '#f5f0ff' }};"
+                                        onmouseover="this.style.backgroundColor='{{ $loop->odd ? '#f5f3ff' : '#ede9fe' }}'"
+                                        onmouseout="this.style.backgroundColor='{{ $loop->odd ? '#ffffff' : '#f5f0ff' }}'"
+                                        @click="openShowModal({{ $solicitacao->id }})"
+                                    >
                                         <td class="px-4 py-2 font-semibold text-gray-900 dark:text-white">#{{ $solicitacao->id }}</td>
                                         <td class="px-4 py-2">{{ $solicitacao->itens_count ?? 0 }}</td>
                                         <td class="px-4 py-2">
@@ -160,9 +176,37 @@
                                         <td class="px-4 py-2">{{ $formatDisplay($solicitacao->local_destino ?? '-') }}</td>
                                         <td class="px-4 py-2">{{ $solicitacao->uf ?? '-' }}</td>
                                         <td class="px-4 py-2">
-                                            <x-status-badge :status="$solicitacao->status" :color-map="$statusColors" />
+                                            @php
+                                                $statusVisual = $solicitacao->status === 'NAO_ENVIADO'
+                                                    ? 'CANCELADO'
+                                                    : ($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== '' ? 'ENVIADO' : $solicitacao->status);
+                                                $motivoStatus = trim((string) ($solicitacao->justificativa_cancelamento ?? ''));
+                                                if (mb_strtolower($motivoStatus, 'UTF-8') === 'sem estoque no momento') {
+                                                    $motivoStatus = 'Sem estoque';
+                                                }
+                                            @endphp
+                                            <x-status-badge :status="$statusVisual" :color-map="$statusColors" />
+                                            @if($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) === '')
+                                                <div class="mt-0.5 max-w-[140px] truncate text-[11px] leading-3 text-gray-400" title="{{ trim((string) ($solicitacao->tracking_code ?? '')) !== '' ? 'Enviado' : 'Aguardando envio' }}">
+                                                    {{ trim((string) ($solicitacao->tracking_code ?? '')) !== '' ? 'Enviado' : 'Aguardando envio' }}
+                                                </div>
+                                            @endif
+                                            @if($solicitacao->status === 'NAO_ENVIADO' && $motivoStatus !== '')
+                                                <div class="mt-0.5 max-w-[140px] truncate text-[11px] leading-3 text-gray-400" title="{{ $motivoStatus }}">
+                                                    {{ \Illuminate\Support\Str::limit($motivoStatus, 28) }}
+                                                </div>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-2">{{ optional($solicitacao->created_at)->format('d/m/Y H:i') }}</td>
+                                        <td class="px-4 py-2">
+                                            <div class="text-gray-900 dark:text-gray-100">{{ optional($solicitacao->updated_at)->format('d/m/Y H:i') }}</div>
+                                            @php
+                                                $usuarioUltimaMovimentacao = trim((string) ($solicitacao->ultimoHistoricoStatus?->usuario?->NOMEUSER ?? $solicitacao->ultimoHistoricoStatus?->usuario?->NMLOGIN ?? ''));
+                                            @endphp
+                                            @if($usuarioUltimaMovimentacao !== '')
+                                                <div class="text-xs text-gray-500">por {{ $shortPersonName($usuarioUltimaMovimentacao) }}</div>
+                                            @endif
+                                        </td>
                                         <td class="px-4 py-2">
                                             @php
                                                 $isOwner = $currentUserId
@@ -170,10 +214,15 @@
                                                 if (!$isOwner && $currentUserMatricula !== '') {
                                                     $isOwner = trim((string) ($solicitacao->solicitante_matricula ?? '')) === $currentUserMatricula;
                                                 }
-                                                $canConfirm = $currentUser?->temAcessoTela('1011') ?? false;
-                                                $canApprove = ($currentUser?->temAcessoTela('1014') ?? false)
+                                                $canConfirm = ($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1019') ?? false);
+                                                $canForward = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1012') ?? false))
                                                     && $solicitacao->status === 'AGUARDANDO_CONFIRMACAO';
-                                                $canCancel = ($currentUser?->temAcessoTela('1015') ?? false)
+                                                $canRelease = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1020') ?? false))
+                                                    && $solicitacao->status === 'LIBERACAO';
+                                                $canSend = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1014') ?? false))
+                                                    && $solicitacao->status === 'CONFIRMADO'
+                                                    && trim((string) ($solicitacao->tracking_code ?? '')) === '';
+                                                $canCancel = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1015') ?? false))
                                                     && $solicitacao->status === 'PENDENTE';
                                             @endphp
                                             <div class="flex items-center gap-2" @click.stop>
@@ -186,11 +235,29 @@
                                                     </button>
                                                 @endif
 
-                                                @if($canApprove)
-                                                    <button type="button" title="Aprovar" @click="mostrarModalAprovar({{ $solicitacao->id }})" 
+                                                @if($canForward)
+                                                    <button type="button" title="Encaminhar para liberação" @click="mostrarModalEncaminharLiberacao({{ $solicitacao->id }})" 
+                                                        class="inline-flex items-center justify-center p-1.5 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/30 rounded-lg transition">
+                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                                        </svg>
+                                                    </button>
+                                                @endif
+
+                                                @if($canRelease)
+                                                    <button type="button" title="Liberar pedido" @click="mostrarModalAprovar({{ $solicitacao->id }})" 
                                                         class="inline-flex items-center justify-center p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition">
                                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </button>
+                                                @endif
+
+                                                @if($canSend)
+                                                    <button type="button" title="Enviar pedido" @click="mostrarModalEnviar({{ $solicitacao->id }})" 
+                                                        class="inline-flex items-center justify-center p-1.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition">
+                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                                         </svg>
                                                     </button>
                                                 @endif
@@ -218,7 +285,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="px-4 py-3 text-center text-gray-500">Nenhuma solicitacao encontrada.</td>
+                                        <td colspan="9" class="px-4 py-3 text-center text-gray-500">Nenhuma solicitacao encontrada.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -259,11 +326,42 @@
                         </div>
                     </div>
 
-                    <!-- Modal: Aprovar (Quick) -->
+                    <!-- Modal: Encaminhar para Liberação (Quick) -->
+                    <div x-show="showQuickForwardModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-violet-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Encaminhar para Liberação</h3>
+                                <button @click="fecharModais()" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" :action="urlForward()" class="p-6 space-y-4">
+                                @csrf
+                                @method('POST')
+
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    Confirme para encaminhar esta solicitação para a etapa de liberação final.
+                                </p>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition">
+                                        Encaminhar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Modal: Liberar Pedido (Quick) -->
                     <div x-show="showQuickApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
                             <div class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
-                                <h3 class="text-sm font-bold">Pedido Enviado</h3>
+                                <h3 class="text-sm font-bold">Liberar Pedido</h3>
                                 <button @click="fecharModais()" class="text-white/70 hover:text-white">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -273,9 +371,40 @@
                             <form method="POST" :action="urlApprove()" class="p-6 space-y-4">
                                 @csrf
                                 @method('POST')
-                                
+
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    Informe o código de rastreio para marcar o pedido como enviado.
+                                    Confirme para concluir a etapa de <strong>Liberação</strong> e mover a solicitação para <strong>Envio</strong>.
+                                </p>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">
+                                        Liberar Pedido
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Modal: Enviar Pedido (Quick) -->
+                    <div x-show="showQuickSendModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-indigo-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Enviar Pedido</h3>
+                                <button @click="fecharModais()" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" :action="urlSend()" class="p-6 space-y-4">
+                                @csrf
+                                @method('POST')
+
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    Informe o código de rastreio para registrar o envio do pedido.
                                 </p>
 
                                 <div>
@@ -289,8 +418,8 @@
                                     <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
                                     </button>
-                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">
-                                        Confirmar Envio
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition">
+                                        Enviar Pedido
                                     </button>
                                 </div>
                             </form>
@@ -765,18 +894,43 @@
                     step: showStep2 ? 2 : 1,
                     item: (itensOld && itensOld.length) ? buildItem(itensOld[0]) : buildItem(),
                     nextStep() {
-                        const fields = ['projeto_id', 'setor', 'local_destino'];
-                        for (const id of fields) {
-                            const el = document.getElementById(id);
-                            if (!el) continue;
-                            if (!String(el.value || '').trim()) {
-                                if (typeof el.reportValidity === 'function') {
-                                    el.reportValidity();
+                        const validations = [
+                            {
+                                valueEl: document.getElementById('projeto_id'),
+                                focusEl: document.getElementById('projetoSearch'),
+                                message: 'Selecione um projeto da lista.',
+                            },
+                            {
+                                valueEl: document.getElementById('local_destino'),
+                                focusEl: document.getElementById('localDestinoSearch'),
+                                message: 'Informe o local de destino.',
+                            },
+                        ];
+
+                        for (const validation of validations) {
+                            const valueEl = validation.valueEl;
+                            const focusEl = validation.focusEl || valueEl;
+
+                            if (!valueEl || !focusEl) {
+                                continue;
+                            }
+
+                            if (!String(valueEl.value || '').trim()) {
+                                if (typeof focusEl.setCustomValidity === 'function') {
+                                    focusEl.setCustomValidity(validation.message);
                                 }
-                                el.focus();
+                                if (typeof focusEl.reportValidity === 'function') {
+                                    focusEl.reportValidity();
+                                }
+                                focusEl.focus();
                                 return;
                             }
+
+                            if (typeof focusEl.setCustomValidity === 'function') {
+                                focusEl.setCustomValidity('');
+                            }
                         }
+
                         this.step = 2;
                     },
                 };
@@ -1046,7 +1200,9 @@
             function solicitacaoBemsIndex() {
                 return {
                     confirmUrlBase: '',
+                    forwardUrlBase: '',
                     approveUrlBase: '',
+                    sendUrlBase: '',
                     cancelUrlBase: '',
                     tags: [],
                     inputValue: '',
@@ -1090,7 +1246,9 @@
                     },
                     init() {
                         this.confirmUrlBase = this.$el?.dataset?.confirmUrl || '';
+                        this.forwardUrlBase = this.$el?.dataset?.forwardUrl || '';
                         this.approveUrlBase = this.$el?.dataset?.approveUrl || '';
+                        this.sendUrlBase = this.$el?.dataset?.sendUrl || '';
                         this.cancelUrlBase = this.$el?.dataset?.cancelUrl || '';
                         const params = new URLSearchParams(window.location.search);
                         const multiSearch = params.getAll('search[]');
@@ -1578,20 +1736,32 @@
 
                     // Modais rápidos (Confirmar/Aprovar/Cancelar)
                     showQuickConfirmModal: false,
+                    showQuickForwardModal: false,
                     showQuickApproveModal: false,
+                    showQuickSendModal: false,
                     showQuickCancelModal: false,
                     selectedSolicitacaoId: null,
                     urlConfirm() { return this.confirmUrlBase.replace('__ID__', this.selectedSolicitacaoId); },
+                    urlForward() { return this.forwardUrlBase.replace('__ID__', this.selectedSolicitacaoId); },
                     urlApprove() { return this.approveUrlBase.replace('__ID__', this.selectedSolicitacaoId); },
+                    urlSend() { return this.sendUrlBase.replace('__ID__', this.selectedSolicitacaoId); },
                     urlCancel() { return this.cancelUrlBase.replace('__ID__', this.selectedSolicitacaoId); },
 
                     mostrarModalConfirmar(id) {
                         this.selectedSolicitacaoId = id;
                         this.showQuickConfirmModal = true;
                     },
+                    mostrarModalEncaminharLiberacao(id) {
+                        this.selectedSolicitacaoId = id;
+                        this.showQuickForwardModal = true;
+                    },
                     mostrarModalAprovar(id) {
                         this.selectedSolicitacaoId = id;
                         this.showQuickApproveModal = true;
+                    },
+                    mostrarModalEnviar(id) {
+                        this.selectedSolicitacaoId = id;
+                        this.showQuickSendModal = true;
                     },
                     mostrarModalCancelar(id) {
                         this.selectedSolicitacaoId = id;
@@ -1599,7 +1769,9 @@
                     },
                     fecharModais() {
                         this.showQuickConfirmModal = false;
+                        this.showQuickForwardModal = false;
                         this.showQuickApproveModal = false;
+                        this.showQuickSendModal = false;
                         this.showQuickCancelModal = false;
                     }
                 };

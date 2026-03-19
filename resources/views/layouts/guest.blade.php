@@ -16,10 +16,14 @@
         // Early theme (guest): prioriza localStorage, depois cookie e por fim preferência do sistema
         (function() {
             try {
+                var allowedThemes = ['light', 'dark'];
                 var c = document.cookie.match(/(?:^|; )theme=([^;]+)/);
                 var ct = c ? decodeURIComponent(c[1]) : null;
                 var s = localStorage.getItem('theme');
-                var t = s || ct;
+                var t = allowedThemes.includes(s) ? s : ct;
+                if (!allowedThemes.includes(t)) {
+                    t = null;
+                }
                 if (!t) {
                     var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                     t = prefersDark ? 'dark' : 'light';

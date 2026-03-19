@@ -1,4 +1,4 @@
-@props(['patrimonio' => null, 'ultimaVerificacao' => null])
+@props(['patrimonio' => null, 'ultimaVerificacao' => null, 'nomesIniciais' => []])
 
 @php
   $rawConferido = old('FLCONFERIDO', $patrimonio?->FLCONFERIDO);
@@ -31,7 +31,8 @@
   x-init="init(); if (patSearch && !isPersistedEditMode) { $nextTick(() => buscarPatrimonio()); }"
   @keydown.enter.prevent="handleEnter($event)" class="space-y-3 text-sm"
   data-patrimonio='@json($patrimonio)'
-  data-old='@json(old())'>
+  data-old='@json(old())'
+  data-nomes-iniciais='@json($nomesIniciais)'>
 
   {{-- GRUPO 1: 4 Inputs lado a lado - Botão Gerar, Número Patrimonio, OC, Descrição e Código do Objeto --}}
   @if($patrimonio)
@@ -73,10 +74,10 @@
       <div class="flex items-center justify-between gap-1.5">
         <div class="flex items-start gap-1.5 min-w-0">
           <div class="mt-0.5 flex-shrink-0" :style="conferido ? 'color: var(--ok);' : 'color: var(--danger);'">
-            <svg x-show="conferido" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <svg x-show="conferido" class="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 00-1.06 1.06l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
             </svg>
-            <svg x-show="!conferido" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <svg x-show="!conferido" class="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <circle cx="12" cy="12" r="9" />
               <path d="M12 7v6" stroke-linecap="round" />
               <path d="M12 16h.01" stroke-linecap="round" />
@@ -84,7 +85,7 @@
           </div>
 
           <div class="min-w-0 leading-snug">
-            <div class="text-[11px] sm:text-xs font-semibold tracking-wide" :style="conferido ? 'color: var(--ok);' : 'color: var(--danger);'">
+            <div class="text-xs sm:text-sm lg:text-base font-semibold tracking-wide" :style="conferido ? 'color: var(--ok);' : 'color: var(--danger);'">
               <template x-if="conferido">
                 <span>
                   PATRIMÔNIO VERIFICADO POR <span class="font-mono font-semibold text-emerald-200" x-text="ultimaUsuario || '-'"></span>
@@ -99,13 +100,13 @@
 
         <div class="flex items-center justify-end gap-1.5 flex-shrink-0">
           <template x-if="!conferido">
-            <span class="text-[11px] sm:text-xs text-[var(--text-soft)]">
+            <span class="text-xs sm:text-sm text-[var(--text-soft)]">
               Clique em <span class="font-semibold">Atualizar Patrimonio</span> para salvar.
             </span>
           </template>
           <button
             type="button"
-            class="px-2.5 py-1 rounded text-[11px] font-semibold border border-[var(--border)] bg-[var(--surface)] hover:opacity-90"
+            class="px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm font-semibold border border-[var(--border)] bg-[var(--surface)] hover:opacity-90"
             @click="pendingAction = conferido ? 'unverify' : 'verify'; confirmOpen = true"
           >
             <span x-text="conferido ? 'Desmarcar verificação' : 'Marcar como verificado'"></span>
@@ -297,8 +298,8 @@
     </div>
   </div>
 
-  {{-- GRUPO 3: Observação, Peso e Dimensões --}}
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+  {{-- GRUPO 3: Observação, Peso, Dimensões e Voltagem --}}
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
     <div class="md:col-span-2">
       <label for="DEHISTORICO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
       <textarea
@@ -311,7 +312,7 @@
         style="min-height: 32px; height: 32px; padding: 6px 8px; line-height: 1.5;"
         placeholder="Digite suas observações..."></textarea>
     </div>
-    <div class="grid grid-cols-2 gap-2">
+    <div class="grid grid-cols-3 gap-2">
       <div>
         <label for="PESO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Peso (kg)</label>
         <input x-model="formData.PESO" id="PESO" name="PESO" type="number" step="0.01" tabindex="7"
@@ -319,10 +320,16 @@
           placeholder="Ex: 15.50" />
       </div>
       <div>
-      <label for="TAMANHO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Dimensões</label>
+        <label for="TAMANHO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Dimensões</label>
         <input x-model="formData.TAMANHO" id="TAMANHO" name="TAMANHO" type="text" tabindex="8"
           class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500"
           placeholder="Ex: 10x20x30 cm" />
+      </div>
+      <div>
+        <label for="VOLTAGEM" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Voltagem</label>
+        <input x-model="formData.VOLTAGEM" id="VOLTAGEM" name="VOLTAGEM" type="text" tabindex="9"
+          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500"
+          placeholder="Ex: 110V" />
       </div>
     </div>
   </div>
@@ -566,26 +573,66 @@
           </div>
         </template>
       </div>
-      <p class="mt-1 text-xs text-gray-500" x-show="formData.CDMATRFUNCIONARIO && userSelectedName">Selecionado: <span class="font-semibold" x-text="userSelectedName"></span></p>
       <x-input-error class="mt-2" :messages="$errors->get('CDMATRFUNCIONARIO')" />
+    </div>
+
+    <div class="relative" @click.away="showManagerDropdown=false">
+      <label for="matricula_gerente_busca" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Matrícula do Gerente Responsável</label>
+      <div class="relative">
+        <input id="matricula_gerente_busca"
+          x-model="managerSearch"
+          @focus="abrirDropdownGerentes()"
+          @blur.debounce.150ms="showManagerDropdown=false"
+          @input.debounce.600ms="(function(){ const t=String(managerSearch||'').trim(); if(t.length>0){ showManagerDropdown=true; buscarGerentes(); } else { showManagerDropdown=false; gerentes=[]; highlightedManagerIndex=-1; } })()"
+          @keydown.down.prevent="navegarGerentes(1)"
+          @keydown.up.prevent="navegarGerentes(-1)"
+          @keydown.enter.prevent="selecionarGerenteEnter()"
+          @keydown.tab.prevent="selecionarGerenteTab($event)"
+          @keydown.escape.prevent="showManagerDropdown=false"
+          @blur="normalizarMatriculaGerenteBusca()"
+          type="text"
+          placeholder="Digite matrícula ou nome"
+          tabindex="17"
+          class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm pr-14 focus:ring-2 focus:ring-indigo-500"
+          autocomplete="off" />
+        <input type="hidden" name="CDMATRGERENTE" :value="formData.CDMATRGERENTE" />
+        <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
+          <div class="flex items-center gap-1">
+            <button type="button" x-show="formData.CDMATRGERENTE" @click="limparGerente" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none" title="Limpar seleção" tabindex="-1">×</button>
+            <button type="button" @click="abrirDropdownGerentes(true)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none" title="Abrir lista" tabindex="-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div x-show="showManagerDropdown" x-transition class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-56 overflow-y-auto text-xs">
+        <template x-if="loadingManagers">
+          <div class="p-2 text-gray-500 text-center">Buscando...</div>
+        </template>
+        <template x-if="!loadingManagers && gerentes.length === 0">
+          <div class="p-2 text-gray-500 text-center" x-text="managerSearch.trim()==='' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
+        </template>
+        <template x-for="(g, i) in (gerentes || [])" :key="g.CDMATRFUNCIONARIO || i">
+          <div data-manager-item @click="selecionarGerente(g)"
+            @mouseover="highlightedManagerIndex = i"
+            :class="['px-3 py-1.5 cursor-pointer', highlightedManagerIndex === i ? 'bg-indigo-100 dark:bg-indigo-900' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+            <span class="font-mono text-indigo-600 dark:text-indigo-400" x-text="g.CDMATRFUNCIONARIO"></span>
+            <span class="ml-2 text-gray-700 dark:text-gray-300" x-text="' - ' + (g.NMFUNCIONARIO || g.NOMEUSER || g.NOME || g.nome || '')"></span>
+          </div>
+        </template>
+      </div>
+      <x-input-error class="mt-2" :messages="$errors->get('CDMATRGERENTE')" />
     </div>
 
     <div>
       <label for="DTAQUISICAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Data da OC</label>
-      <input x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" @keydown.tab.prevent="focusNext($event.target)" tabindex="17" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <input x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" @keydown.tab.prevent="focusNext($event.target)" tabindex="18" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
 
     <div>
-      <label for="FLTERMORESPONSABILIDADE" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Termo de Responsabilidade Enviado</label>
-      <select x-model="formData.FLTERMORESPONSABILIDADE" id="FLTERMORESPONSABILIDADE" name="FLTERMORESPONSABILIDADE" tabindex="18"
-        class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500">
-        <option value="N">Não</option>
-        <option value="S">Sim</option>
-      </select>
-    </div>
-
-    <div>
-      <label for="DTBAIXA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Data de Baixa do Patrimonio</label>
+      <label for="DTBAIXA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Data de Baixa do Patrimônio</label>
       <input x-model="formData.DTBAIXA"
         id="DTBAIXA"
         name="DTBAIXA"
@@ -891,6 +938,11 @@
       } catch (e) {
         config.old = {};
       }
+      try {
+        config.nomesIniciais = ds.nomesIniciais ? JSON.parse(ds.nomesIniciais) : {};
+      } catch (e) {
+        config.nomesIniciais = {};
+      }
     }
     const initialLocalInfo = config.patrimonio?.local || null;
     const persistedPatrimonioId = config.patrimonio?.NUSEQPATR || null;
@@ -934,9 +986,10 @@
           return d.includes('T') ? d.split('T')[0] : (d.includes(' ') ? d.split(' ')[0] : d);
         })() : '')),
         CDMATRFUNCIONARIO: (config.old?.CDMATRFUNCIONARIO ?? config.patrimonio?.CDMATRFUNCIONARIO) || '',
+        CDMATRGERENTE: (config.old?.CDMATRGERENTE ?? config.patrimonio?.CDMATRGERENTE) || '',
         PESO: (config.old?.PESO ?? config.patrimonio?.PESO) || '',
         TAMANHO: (config.old?.TAMANHO ?? config.patrimonio?.TAMANHO) || '',
-        FLTERMORESPONSABILIDADE: (config.old?.FLTERMORESPONSABILIDADE ?? config.patrimonio?.FLTERMORESPONSABILIDADE) || 'N',
+        VOLTAGEM: (config.old?.VOLTAGEM ?? config.patrimonio?.VOLTAGEM) || '',
       },
       // == ESTADO DA UI ==
       loading: false,
@@ -947,13 +1000,28 @@
       nomeProjeto: '',
       locais: [],
       // Autocomplete Usuário
-      userSearch: '',
+      userSearch: (config.nomesIniciais?.nomeFuncionario && config.patrimonio?.CDMATRFUNCIONARIO)
+        ? `${config.patrimonio.CDMATRFUNCIONARIO} - ${config.nomesIniciais.nomeFuncionario}`
+        : '',
       usuarios: [],
       highlightedUserIndex: -1,
       loadingUsers: false,
       showUserDropdown: false,
-      userSelectedName: '',
+      userSelectedName: (config.nomesIniciais?.nomeFuncionario && config.patrimonio?.CDMATRFUNCIONARIO)
+        ? `${config.patrimonio.CDMATRFUNCIONARIO} - ${config.nomesIniciais.nomeFuncionario}`
+        : '',
       userFetchController: null, // ⚡ AbortController para cancelar requisições anteriores
+      managerSearch: (config.nomesIniciais?.nomeGerente && config.patrimonio?.CDMATRGERENTE)
+        ? `${config.patrimonio.CDMATRGERENTE} - ${config.nomesIniciais.nomeGerente}`
+        : '',
+      gerentes: [],
+      highlightedManagerIndex: -1,
+      loadingManagers: false,
+      showManagerDropdown: false,
+      managerSelectedName: (config.nomesIniciais?.nomeGerente && config.patrimonio?.CDMATRGERENTE)
+        ? `${config.patrimonio.CDMATRGERENTE} - ${config.nomesIniciais.nomeGerente}`
+        : '',
+      managerFetchController: null,
       // Autocomplete Descrição (antes chamado de Código)
       descricaoSearch: (config.old?.DEOBJETO ?? (config.patrimonio?.DEOBJETO || config.patrimonio?.DEPATRIMONIO)) || '',
       codigosLista: [],
@@ -970,17 +1038,19 @@
       highlightedProjetoAssociadoIndex: -1,
 
       // Autocomplete Projetos (Novo - Seleção de Projeto Primário)
-      projetoSearch: '',
+      projetoSearch: (config.nomesIniciais?.nomeProjeto)
+        ? `${config.patrimonio?.CDPROJETO ?? ''} - ${config.nomesIniciais.nomeProjeto}`.trim().replace(/^\s*-\s*/, '')
+        : '',
       projetosDisponiveisList: [],
       loadingProjetos: false,
       showProjetoDropdown: false,
       highlightedProjetoIndex: -1,
 
       // === SISTEMA SIMPLIFICADO DE LOCAIS ===
-      codigoLocalDigitado: '', // Código digitado pelo usuário
-      codigoLocalSelecionado: '', // Código (cdlocal) efetivamente selecionado; evita submit com CDLOCAL antigo
-      localNome: '', // ? Nome do local (preenchido automaticamente)
-      nomeLocalBusca: '', // ? Valor para o campo readonly x-model
+      codigoLocalDigitado: config.nomesIniciais?.cdlocal || '', // Pré-populado do PHP
+      codigoLocalSelecionado: config.nomesIniciais?.cdlocal || '', // Pré-populado do PHP
+      localNome: config.nomesIniciais?.nomeLocal || '',
+      nomeLocalBusca: config.nomesIniciais?.nomeLocal || '', // Pré-populado do PHP via form-edit
       locaisEncontrados: [], // Array de locais retornados pela API
       localSelecionadoId: null, // ID do local selecionado no dropdown
       mostrarDropdownBusca: false, // Controla visibilidade do dropdown de busca
@@ -1357,6 +1427,18 @@
               }
             }
 
+            if (data.hasOwnProperty('CDMATRGERENTE') && data.CDMATRGERENTE) {
+              const matriculaGerente = String(data.CDMATRGERENTE || '').trim();
+              this.formData.CDMATRGERENTE = matriculaGerente.replace(/[^0-9]/g, '');
+
+              if (data.gerente_responsavel && data.gerente_responsavel.NMFUNCIONARIO) {
+                const nomeGerente = this.normalizarNomePessoaAutocomplete(String(data.gerente_responsavel.NMFUNCIONARIO || '').trim());
+                this.managerSelectedName = `${matriculaGerente} - ${nomeGerente}`;
+                this.managerSearch = this.managerSelectedName;
+                this.showManagerDropdown = false;
+              }
+            }
+
             // Preenchimento de inputs é monitorado pela função aguardarPreenchimentoInputsModal no index.blade.php
           }
         } catch (error) {
@@ -1368,11 +1450,7 @@
       selecionarUsuario(usuario) {
         if (!usuario) return;
         const matricula = String(usuario.CDMATRFUNCIONARIO || usuario.matricula || '').trim();
-        let nomeLimpo = String(usuario.NOMEUSER || usuario.NMFUNCIONARIO || '').trim();
-        nomeLimpo = nomeLimpo.replace(/\d{2}\/\d{2}\/\d{4}/g, '');
-        nomeLimpo = nomeLimpo.replace(/\s+\d+\s*$/g, '');
-        nomeLimpo = nomeLimpo.replace(/[^\p{L}\s-]/gu, '').trim();
-        nomeLimpo = nomeLimpo.replace(/\s+/g, ' ').trim();
+        const nomeLimpo = this.normalizarNomePessoaAutocomplete(String(usuario.NOMEUSER || usuario.NMFUNCIONARIO || '').trim());
 
         this.formData.CDMATRFUNCIONARIO = matricula.replace(/[^0-9]/g, '');
         this.userSelectedName = `${this.formData.CDMATRFUNCIONARIO} - ${nomeLimpo}`.trim();
@@ -1381,12 +1459,21 @@
 
         this.$nextTick(() => {
           setTimeout(() => {
-            const dtAquisicao = document.getElementById('DTAQUISICAO');
-            if (dtAquisicao) {
-              dtAquisicao.focus();
+            const gerente = document.getElementById('matricula_gerente_busca');
+            if (gerente) {
+              gerente.focus();
             }
           }, 50);
         });
+      },
+
+      normalizarNomePessoaAutocomplete(nome) {
+        let nomeLimpo = String(nome || '').trim();
+        nomeLimpo = nomeLimpo.replace(/\d{2}\/\d{2}\/\d{4}/g, '');
+        nomeLimpo = nomeLimpo.replace(/\s+\d+\s*$/g, '');
+        nomeLimpo = nomeLimpo.replace(/[^\p{L}\s-]/gu, '').trim();
+        nomeLimpo = nomeLimpo.replace(/\s+/g, ' ').trim();
+        return nomeLimpo;
       },
 
       // Sanitiza o campo visivel removendo datas/numeros apos o nome e garante que o hidden receba so a matricula
@@ -1546,6 +1633,177 @@
           if (!list) return;
           const items = list.querySelectorAll('[data-user-item]');
           const el = items[this.highlightedUserIndex];
+          if (el && typeof el.scrollIntoView === 'function') {
+            const parentRect = list.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            if (elRect.top < parentRect.top || elRect.bottom > parentRect.bottom) {
+              el.scrollIntoView({
+                block: 'nearest'
+              });
+            }
+          }
+        });
+      },
+
+      selecionarGerente(gerente) {
+        if (!gerente) return;
+        const matricula = String(gerente.CDMATRFUNCIONARIO || gerente.matricula || '').trim();
+        const nomeLimpo = this.normalizarNomePessoaAutocomplete(String(gerente.NOMEUSER || gerente.NMFUNCIONARIO || '').trim());
+
+        this.formData.CDMATRGERENTE = matricula.replace(/[^0-9]/g, '');
+        this.managerSelectedName = `${this.formData.CDMATRGERENTE} - ${nomeLimpo}`.trim();
+        this.managerSearch = this.managerSelectedName;
+        this.showManagerDropdown = false;
+
+        this.$nextTick(() => {
+          setTimeout(() => {
+            const dtAquisicao = document.getElementById('DTAQUISICAO');
+            if (dtAquisicao) {
+              dtAquisicao.focus();
+            }
+          }, 50);
+        });
+      },
+      normalizarMatriculaGerenteBusca() {
+        let s = String(this.managerSearch || '');
+        s = s.replace(/\d{2}\/\d{2}\/\d{4}/g, '');
+        s = s.replace(/\s+\d+\s*$/, '');
+        s = s.replace(/\s+/g, ' ').trim();
+        const m = s.match(/^(\d{1,12})\s*-\s*([^\d]+?)(?:\s+.*)?$/);
+        if (m) {
+          s = `${m[1]} - ${m[2].trim()}`;
+        }
+        this.managerSearch = s.trim();
+        const onlyMat = this.managerSearch.match(/^(\d{1,12})\b/);
+        if (onlyMat) {
+          this.formData.CDMATRGERENTE = onlyMat[1];
+        }
+      },
+      abrirDropdownGerentes(force = false) {
+        this.showManagerDropdown = true;
+        const termo = String(this.managerSearch || '').trim();
+        if (termo !== '' || force) {
+          this.buscarGerentes();
+        }
+      },
+      async buscarGerentes() {
+        const termo = String(this.managerSearch || '').trim();
+        if (termo.length === 0) {
+          this.gerentes = [];
+          this.highlightedManagerIndex = -1;
+          return;
+        }
+
+        if (this.managerFetchController) {
+          this.managerFetchController.abort();
+        }
+
+        this.managerFetchController = new AbortController();
+        this.loadingManagers = true;
+
+        try {
+          const resp = await fetch(`/api/funcionarios/pesquisar?q=${encodeURIComponent(termo)}`, {
+            credentials: 'same-origin',
+            signal: this.managerFetchController.signal
+          });
+
+          if (resp.ok) {
+            this.gerentes = await resp.json();
+            this.highlightedManagerIndex = this.gerentes.length > 0 ? 0 : -1;
+          } else {
+            this.gerentes = [];
+            this.highlightedManagerIndex = -1;
+          }
+        } catch (e) {
+          if (e.name === 'AbortError') {
+            return;
+          }
+          console.error('Erro ao buscar gerentes:', e);
+          this.gerentes = [];
+          this.highlightedManagerIndex = -1;
+        } finally {
+          this.loadingManagers = false;
+          this.managerFetchController = null;
+        }
+      },
+      selecionarGerenteEnter() {
+        if (!this.showManagerDropdown) return;
+        if (this.highlightedManagerIndex < 0 || this.highlightedManagerIndex >= this.gerentes.length) return;
+        this.selecionarGerente(this.gerentes[this.highlightedManagerIndex]);
+      },
+      selecionarGerenteTab(event) {
+        const termo = this.managerSearch.trim();
+        if (termo === '') return;
+
+        if (this.gerentes && this.gerentes.length > 0) {
+          this.selecionarGerente(this.gerentes[0]);
+          this.$nextTick(() => {
+            try {
+              event.target?.form?.querySelector('[tabindex="18"]')?.focus();
+            } catch (e) {
+              console.warn('Erro ao focar próximo campo:', e);
+            }
+          });
+          return;
+        }
+
+        if (this.loadingManagers) {
+          setTimeout(() => {
+            this.selecionarGerenteTab(event);
+          }, 150);
+          return;
+        }
+
+        this.loadingManagers = true;
+        fetch(`/api/funcionarios/pesquisar?q=${encodeURIComponent(termo)}`)
+          .then(resp => {
+            if (resp.ok) return resp.json();
+            throw new Error('Erro na busca');
+          })
+          .then(data => {
+            this.gerentes = data || [];
+            if (this.gerentes.length > 0) {
+              this.selecionarGerente(this.gerentes[0]);
+            }
+            try {
+              event.target?.form?.querySelector('[tabindex="18"]')?.focus();
+            } catch (e) {
+              console.warn('Erro ao focar próximo campo:', e);
+            }
+          })
+          .catch(e => {
+            console.error('Falha ao buscar gerentes:', e);
+            try {
+              event.target?.form?.querySelector('[tabindex="18"]')?.focus();
+            } catch (err) {
+              console.warn('Erro ao focar próximo campo:', err);
+            }
+          })
+          .finally(() => {
+            this.loadingManagers = false;
+          });
+      },
+      limparGerente() {
+        this.formData.CDMATRGERENTE = '';
+        this.managerSelectedName = '';
+        this.managerSearch = '';
+        this.gerentes = [];
+        this.showManagerDropdown = true;
+        this.highlightedManagerIndex = -1;
+      },
+      navegarGerentes(delta) {
+        if (!this.showManagerDropdown || this.gerentes.length === 0) return;
+        const max = this.gerentes.length - 1;
+        if (this.highlightedManagerIndex === -1) {
+          this.highlightedManagerIndex = 0;
+        } else {
+          this.highlightedManagerIndex = Math.min(max, Math.max(0, this.highlightedManagerIndex + delta));
+        }
+        this.$nextTick(() => {
+          const list = this.$root.querySelector('[x-show="showManagerDropdown"]');
+          if (!list) return;
+          const items = list.querySelectorAll('[data-manager-item]');
+          const el = items[this.highlightedManagerIndex];
           if (el && typeof el.scrollIntoView === 'function') {
             const parentRect = list.getBoundingClientRect();
             const elRect = el.getBoundingClientRect();
@@ -2866,12 +3124,15 @@
           SITUACAO: document.getElementById('SITUACAO')?.value || 'EM USO',
           NMPLANTA: this.formData.NMPLANTA,
           CDMATRFUNCIONARIO: this.formData.CDMATRFUNCIONARIO,
+          CDMATRGERENTE: this.formData.CDMATRGERENTE,
           DTAQUISICAO: this.formData.DTAQUISICAO,
           DTBAIXA: this.formData.DTBAIXA,
           // Campos de busca
           patSearch: this.patSearch,
           userSearch: this.userSearch,
           userSelectedName: this.userSelectedName,
+          managerSearch: this.managerSearch,
+          managerSelectedName: this.managerSelectedName,
         };
 
         // 2. Limpar dados do modal
@@ -3203,6 +3464,7 @@
             this.formData.MODELO = this.estadoTemporario.MODELO || '';
             this.formData.NMPLANTA = this.estadoTemporario.NMPLANTA || '';
             this.formData.CDMATRFUNCIONARIO = this.estadoTemporario.CDMATRFUNCIONARIO || '';
+            this.formData.CDMATRGERENTE = this.estadoTemporario.CDMATRGERENTE || '';
             this.formData.DTAQUISICAO = this.estadoTemporario.DTAQUISICAO || '';
             this.formData.DTBAIXA = this.estadoTemporario.DTBAIXA || '';
 
@@ -3210,6 +3472,8 @@
             this.patSearch = this.estadoTemporario.patSearch || '';
             this.userSearch = this.estadoTemporario.userSearch || '';
             this.userSelectedName = this.estadoTemporario.userSelectedName || '';
+            this.managerSearch = this.estadoTemporario.managerSearch || '';
+            this.managerSelectedName = this.estadoTemporario.managerSelectedName || '';
 
             // Restaurar situação
             await this.$nextTick();
@@ -3833,6 +4097,7 @@
           CDPROJETO: this.formData.CDPROJETO,
           CDLOCAL: this.formData.CDLOCAL,
           CDMATRFUNCIONARIO: this.formData.CDMATRFUNCIONARIO,
+          CDMATRGERENTE: this.formData.CDMATRGERENTE,
           SITUACAO: this.formData.SITUACAO,
           MARCA: this.formData.MARCA,
           MODELO: this.formData.MODELO,
@@ -3872,20 +4137,10 @@
             }
           }
           await this.carregarDadosEdicao();
-
-          // Após carregar o patrimonio, garantir que a lista de locais do projeto seja carregada em segundo plano
-          if (this.formData.CDPROJETO) {
-            try {
-              await this.buscarProjetoELocais();
-              console.log('? [INIT] Locais do projeto carregados para edição');
-            } catch (e) {
-              console.warn('?? [INIT] Falha ao carregar locais do projeto na edição', e);
-            }
-          }
         }
 
-        // Carregar lista de projetos existentes para os modais
-        await this.carregarProjetosExistentes();
+        // Sinaliza ao modal que o formulário está completamente pronto
+        document.dispatchEvent(new CustomEvent('patrimonio-form-ready'));
         console.log('='.repeat(80) + '\n');
       },
 
@@ -3951,9 +4206,9 @@
             console.log(`? [CARREGA EDIÇÃO] patSearch sincronizado: ${this.patSearch}`);
           }
 
-          // 1?? CARREGAR NOME DO PROJETO
-          if (this.formData.CDPROJETO) {
-            console.log(`?? [CARREGA EDIÇÃO] Carregando projeto ${this.formData.CDPROJETO}...`);
+          // 1️⃣ CARREGAR NOME DO PROJETO
+          if (this.formData.CDPROJETO && !this.projetoSearch) {
+            console.log(`🔍 [CARREGA EDIÇÃO] Carregando projeto ${this.formData.CDPROJETO}...`);
             try {
               const projResp = await fetch(`/api/projetos/pesquisar?q=${this.formData.CDPROJETO}`);
               if (projResp.ok) {
@@ -3961,19 +4216,23 @@
                 const projeto = projetos.find(p => String(p.CDPROJETO) === String(this.formData.CDPROJETO));
                 if (projeto) {
                   this.projetoSearch = `${projeto.CDPROJETO} - ${projeto.NOMEPROJETO}`;
-                  console.log(`? [CARREGA EDIÇÃO] Projeto: ${this.projetoSearch}`);
+                  console.log(`✅ [CARREGA EDIÇÃO] Projeto: ${this.projetoSearch}`);
                 } else {
                   console.warn(`⚠️  [CARREGA EDIÇÃO] Projeto ${this.formData.CDPROJETO} não encontrado no retorno da API.`);
                 }
               }
             } catch (e) {
-              console.warn(`?? [CARREGA EDIÇÃO] Erro ao carregar projeto:`, e);
+              console.warn(`⚠️ [CARREGA EDIÇÃO] Erro ao carregar projeto:`, e);
             }
+          } else if (this.projetoSearch) {
+            console.log(`✅ [CARREGA EDIÇÃO] Projeto já pré-populado do PHP: ${this.projetoSearch}`);
           }
 
-          // 2?? CARREGAR LOCAL
-          if (this.formData.CDLOCAL) {
-            console.log(`?? [CARREGA EDIÇÃO] Carregando local ${this.formData.CDLOCAL} (normalização por projeto)...`);
+          // 2️⃣ CARREGAR LOCAL — pula AJAX se PHP já resolveu o nome e código
+          if (this.formData.CDLOCAL && this.nomeLocalBusca && this.codigoLocalSelecionado) {
+            console.log(`✅ [CARREGA EDIÇÃO] Local já pré-populado do PHP: ${this.codigoLocalSelecionado} - ${this.nomeLocalBusca}`);
+          } else if (this.formData.CDLOCAL) {
+            console.log(`🔍 [CARREGA EDIÇÃO] Carregando local ${this.formData.CDLOCAL} (normalização por projeto)...`);
             try {
               const buscarLocalFallback = async () => {
                 try {
@@ -4101,31 +4360,34 @@
             }
           }
 
-          // 3️⃣ CARREGAR CÓDIGO DO OBJETO
-          // ✅ Verifica se código é válido antes de fazer fetch (patrimônios legados podem ter NULL)
+          // 3️⃣ CARREGAR CÓDIGO DO OBJETO — pula se descrição já está preenchida do PHP
           if (this.formData.NUSEQOBJ && this.formData.NUSEQOBJ !== '' && this.formData.NUSEQOBJ !== 'null') {
-            console.log(`🔍 [CARREGA EDIÇÃO] Carregando código ${this.formData.NUSEQOBJ}...`);
-            try {
-              const codResp = await fetch(`/api/codigos/buscar/${this.formData.NUSEQOBJ}`);
-              if (codResp.ok) {
-                const codigo = await codResp.json();
-                if (codigo && codigo.descricao) {
-                  this.descricaoSearch = codigo.descricao;
-                  this.formData.DEOBJETO = codigo.descricao;
-                  console.log(`✅ [CARREGA EDIÇÃO] Código: ${this.descricaoSearch}`);
+            if (this.descricaoSearch) {
+              console.log(`✅ [CARREGA EDIÇÃO] Código já pré-populado do PHP: ${this.descricaoSearch}`);
+            } else {
+              console.log(`🔍 [CARREGA EDIÇÃO] Carregando código ${this.formData.NUSEQOBJ}...`);
+              try {
+                const codResp = await fetch(`/api/codigos/buscar/${this.formData.NUSEQOBJ}`);
+                if (codResp.ok) {
+                  const codigo = await codResp.json();
+                  if (codigo && codigo.descricao) {
+                    this.descricaoSearch = codigo.descricao;
+                    this.formData.DEOBJETO = codigo.descricao;
+                    console.log(`✅ [CARREGA EDIÇÃO] Código: ${this.descricaoSearch}`);
+                  }
+                } else {
+                  console.warn(`⚠️  [CARREGA EDIÇÃO] Código ${this.formData.NUSEQOBJ} não encontrado (status ${codResp.status})`);
                 }
-              } else {
-                console.warn(`⚠️  [CARREGA EDIÇÃO] Código ${this.formData.NUSEQOBJ} não encontrado (status ${codResp.status})`);
+              } catch (e) {
+                console.warn(`⚠️  [CARREGA EDIÇÃO] Erro ao carregar código:`, e);
               }
-            } catch (e) {
-              console.warn(`⚠️  [CARREGA EDIÇÃO] Erro ao carregar código:`, e);
             }
           } else {
             console.log(`ℹ️  [CARREGA EDIÇÃO] Sem código do objeto (patrimônio legado)`);
           }
 
           // 4️⃣ CARREGAR FUNCIONÁRIO RESPONSÁVEL
-          if (this.formData.CDMATRFUNCIONARIO) {
+          if (this.formData.CDMATRFUNCIONARIO && !this.userSearch) {
             console.log(`🔍 [CARREGA EDIÇÃO] Carregando funcionário ${this.formData.CDMATRFUNCIONARIO}...`);
             try {
               const funcResp = await fetch(`/api/funcionarios/pesquisar?q=${this.formData.CDMATRFUNCIONARIO}`);
@@ -4146,8 +4408,31 @@
                 }
               }
             } catch (e) {
-              console.warn(`?? [CARREGA EDIÇÃO] Erro ao carregar funcionário:`, e);
+              console.warn(`⚠️ [CARREGA EDIÇÃO] Erro ao carregar funcionário:`, e);
             }
+          } else if (this.userSearch) {
+            console.log(`✅ [CARREGA EDIÇÃO] Funcionário já pré-populado do PHP: ${this.userSearch}`);
+          }
+
+          if (this.formData.CDMATRGERENTE && !this.managerSearch) {
+            console.log(`🔍 [CARREGA EDIÇÃO] Carregando gerente ${this.formData.CDMATRGERENTE}...`);
+            try {
+              const gerenteResp = await fetch(`/api/funcionarios/pesquisar?q=${this.formData.CDMATRGERENTE}`);
+              if (gerenteResp.ok) {
+                const gerentes = await gerenteResp.json();
+                const gerente = gerentes.find(g => String(g.CDMATRFUNCIONARIO) === String(this.formData.CDMATRGERENTE));
+                if (gerente) {
+                  const nomeGerente = this.normalizarNomePessoaAutocomplete(String(gerente.NMFUNCIONARIO || '').trim());
+                  this.managerSelectedName = `${this.formData.CDMATRGERENTE} - ${nomeGerente}`;
+                  this.managerSearch = this.managerSelectedName;
+                  console.log(`✅ [CARREGA EDIÇÃO] Gerente: ${this.managerSelectedName}`);
+                }
+              }
+            } catch (e) {
+              console.warn(`⚠️ [CARREGA EDIÇÃO] Erro ao carregar gerente:`, e);
+            }
+          } else if (this.managerSearch) {
+            console.log(`✅ [CARREGA EDIÇÃO] Gerente já pré-populado do PHP: ${this.managerSearch}`);
           }
 
           console.log('? [CARREGA EDIÇÃO] Carregamento completo finalizado!');
@@ -4219,6 +4504,11 @@
         if (!this.formData.CDPROJETO) {
           alert('Selecione um projeto primeiro');
           return;
+        }
+
+        // Carregar projetos existentes de forma lazy (só quando necessário)
+        if (!this.projetosExistentes.length) {
+          this.carregarProjetosExistentes();
         }
 
         // Buscar dados do local atual

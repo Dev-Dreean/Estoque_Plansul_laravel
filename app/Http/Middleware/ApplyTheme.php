@@ -17,7 +17,7 @@ class ApplyTheme
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $available = ['light', 'dark', 'brown', 'beige'];
+        $available = ['light', 'dark'];
 
         $sessionTheme = session('theme');
         $userTheme = Auth::check() ? Auth::user()->theme : null;

@@ -5,6 +5,7 @@
     $statusColors = [
         'PENDENTE' => 'bg-yellow-400 text-black border border-yellow-500',
         'AGUARDANDO_CONFIRMACAO' => 'bg-blue-400 text-black border border-blue-500',
+        'LIBERACAO' => 'bg-violet-300 text-black border border-violet-500',
         'CONFIRMADO' => 'bg-purple-400 text-black border border-purple-600',
         'RECEBIDO' => 'bg-green-400 text-black border border-green-600',
         'NAO_ENVIADO' => 'bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-500/35 dark:text-amber-100 dark:border-amber-300/55',
@@ -39,7 +40,9 @@
         || ($authUserMatricula !== '' && $authUserMatricula === $solicitanteMatricula);
     $canMarkNotReceived = $canMarkReceived;
     $canConfirmAction = (bool) ($canConfirmAction ?? false);
-    $canApproveAction = (bool) ($canApproveAction ?? false);
+    $canForwardAction = (bool) ($canForwardAction ?? false);
+    $canReleaseAction = (bool) ($canReleaseAction ?? false);
+    $canSendAction = (bool) ($canSendAction ?? false);
     $canCancelAction = (bool) ($canCancelAction ?? false);
     $canReturnAction = (bool) ($canReturnAction ?? false);
     $canRecriarCancelada = (bool) ($canRecriarCancelada ?? false);
@@ -48,6 +51,9 @@
         || $canMarkNotReceived
         || $canContestNotReceived
         || $canRecriarCancelada;
+    $statusBadgeAtual = $solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== ''
+        ? 'ENVIADO'
+        : $solicitacao->status;
 
     $gridClass = 'grid-cols-1';
     $leftColClass = '';
@@ -58,7 +64,10 @@
         <div class="{{ $wrapperClass }}" x-data="{
                 showUpdate: true,
                 showConfirmModal: false,
+                showForwardModal: false,
                 showApproveModal: false,
+                showSendModal: false,
+                showNotSentModal: false,
                 showReceiveModal: false,
                 showNotReceivedModal: false,
                 showContestNotReceivedModal: false,
@@ -103,16 +112,32 @@
                                 Confirmar Solicitação
                             </button>
                         @endif
-                        @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $canApproveAction)
-                            <button type="button" @click="showApproveModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                                Pedido Enviado
+                        @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $canForwardAction)
+                            <button type="button" @click="showForwardModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold transition shadow-sm"
+                                style="background:#7c3aed;border:1px solid #8b5cf6;color:#ffffff;">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                                Encaminhar para Liberação
                             </button>
                         @endif
-                        @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $canReturnAction)
-                            <button type="button" @click="showReturnModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 transition shadow-sm">
+                        @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $canForwardAction)
+                            <button type="button" @click="showNotSentModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold transition shadow-sm"
+                                style="background:#dc2626;border:1px solid #f87171;color:#ffffff;">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM9 9l6 6m0-6l-6 6" /></svg>
+                                Cancelar Solicita&ccedil;&atilde;o
+                            </button>
+                        @endif
+                        @if(in_array($solicitacao->status, ['AGUARDANDO_CONFIRMACAO', 'LIBERACAO'], true) && $canReturnAction)
+                            <button type="button" @click="showReturnModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold transition shadow-sm"
+                                style="background:#d97706;border:1px solid #f59e0b;color:#ffffff;">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12a9 9 0 1015.364-6.364M3 12H9m-6 0l3-3m-3 3l3 3" /></svg>
-                                Voltar para Pendente
+                                Voltar para Em Análise
+                            </button>
+                        @endif
+                        @if($solicitacao->status === 'LIBERACAO' && $canReleaseAction)
+                            <button type="button" @click="showApproveModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold transition shadow-sm"
+                                style="background:#2563eb;border:1px solid #60a5fa;color:#ffffff;">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                Liberar Pedido
                             </button>
                         @endif
                         @if($solicitacao->status === 'PENDENTE' && $canCancelAction)
@@ -127,14 +152,21 @@
                                 Solicitar Novamente
                             </button>
                         @endif
-                        @if($solicitacao->status === 'CONFIRMADO' && $canMarkReceived)
+                        @if($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) === '' && $canSendAction)
+                            <button type="button" @click="showSendModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold transition shadow-sm"
+                                style="background:#4f46e5;border:1px solid #818cf8;color:#ffffff;">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                                Enviar Pedido
+                            </button>
+                        @endif
+                        @if($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== '' && $canMarkReceived)
                             <button type="button" @click="showReceiveModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-bold transition shadow-sm"
                                 style="background:#22d3ee;border:1px solid #67e8f9;color:#082f49;">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                 Confirmar Recebimento
                             </button>
                         @endif
-                        @if($solicitacao->status === 'CONFIRMADO' && $canMarkNotReceived)
+                        @if($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== '' && $canMarkNotReceived)
                             <button type="button" @click="showNotReceivedModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold transition shadow-sm"
                                 style="background:#e11d48;border:1px solid #fb7185;color:#fff;">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM9 9l6 6m0-6l-6 6" /></svg>
@@ -168,8 +200,9 @@
                 $etapaAtual = match ($statusAtualTopo) {
                     'PENDENTE', 'CANCELADO' => 1,
                     'AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO' => 2,
-                    'CONFIRMADO', 'NAO_RECEBIDO' => 3,
-                    'RECEBIDO' => 4,
+                    'LIBERACAO' => 3,
+                    'CONFIRMADO', 'NAO_RECEBIDO' => 4,
+                    'RECEBIDO' => 5,
                     default => 1,
                 };
                 $nomeCurto = function (?string $nome): string {
@@ -191,23 +224,28 @@
                 $projetoCodigo = (string) ($solicitacao->projeto?->CDPROJETO ?? '-');
                 $projetoNome = (string) ($solicitacao->projeto?->NOMEPROJETO ?? '');
                 $projetoLabel = trim($projetoCodigo . ($projetoNome !== '' ? ' - ' . $projetoNome : ''));
-                $separacaoLiberada = in_array($statusFluxo, ['AGUARDANDO_CONFIRMACAO', 'CONFIRMADO', 'RECEBIDO', 'NAO_ENVIADO', 'NAO_RECEBIDO'], true)
+                $analiseLiberada = in_array($statusFluxo, ['AGUARDANDO_CONFIRMACAO', 'LIBERACAO', 'CONFIRMADO', 'RECEBIDO', 'NAO_ENVIADO', 'NAO_RECEBIDO'], true)
                     || $statusHistorico->contains('AGUARDANDO_CONFIRMACAO')
+                    || $statusHistorico->contains('LIBERACAO')
                     || $statusHistorico->contains('CONFIRMADO')
                     || $statusHistorico->contains('RECEBIDO')
                     || $statusHistorico->contains('NAO_ENVIADO')
                     || $statusHistorico->contains('NAO_RECEBIDO');
-                $freteLiberado = in_array($statusFluxo, ['CONFIRMADO', 'RECEBIDO', 'NAO_RECEBIDO', 'NAO_ENVIADO'], true)
+                $liberacaoLiberada = in_array($statusFluxo, ['LIBERACAO', 'CONFIRMADO', 'RECEBIDO', 'NAO_RECEBIDO'], true)
+                    || $statusHistorico->contains('LIBERACAO')
                     || $statusHistorico->contains('CONFIRMADO')
                     || $statusHistorico->contains('RECEBIDO')
-                    || $statusHistorico->contains('NAO_ENVIADO')
                     || $statusHistorico->contains('NAO_RECEBIDO');
-                $envioLiberado = $freteLiberado;
+                $envioLiberado = in_array($statusFluxo, ['CONFIRMADO', 'RECEBIDO', 'NAO_RECEBIDO'], true)
+                    || $statusHistorico->contains('CONFIRMADO')
+                    || $statusHistorico->contains('RECEBIDO')
+                    || $statusHistorico->contains('NAO_RECEBIDO');
                 $statusEnvioTexto = match ($statusFluxo) {
                     'RECEBIDO' => 'Entregue',
-                    'CONFIRMADO' => 'Enviado',
+                    'CONFIRMADO' => trim((string) ($solicitacao->tracking_code ?? '')) !== '' ? 'Enviado' : 'Aguardando envio',
+                    'LIBERACAO' => 'Aguardando liberação final',
                     'NAO_RECEBIDO' => 'Não recebido',
-                    'NAO_ENVIADO' => 'Não enviado',
+                    'NAO_ENVIADO' => 'Cancelado',
                     'AGUARDANDO_CONFIRMACAO' => 'Em análise',
                     'CANCELADO' => 'Cancelado',
                     default => 'Pendente',
@@ -215,6 +253,7 @@
                 $statusEnvioClass = match ($statusFluxo) {
                     'RECEBIDO' => 'bg-cyan-100 text-cyan-800 border border-cyan-200 dark:bg-cyan-500/20 dark:text-cyan-200 dark:border-cyan-400/40',
                     'CONFIRMADO' => 'bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-500/20 dark:text-blue-200 dark:border-blue-400/40',
+                    'LIBERACAO' => 'bg-violet-100 text-violet-800 border border-violet-200 dark:bg-violet-500/20 dark:text-violet-200 dark:border-violet-400/40',
                     'NAO_RECEBIDO' => 'bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-500/20 dark:text-rose-200 dark:border-rose-400/40',
                     'NAO_ENVIADO' => 'bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-500/20 dark:text-amber-200 dark:border-amber-400/40',
                     'CANCELADO' => 'bg-red-100 text-red-800 border border-red-200 dark:bg-red-500/20 dark:text-red-200 dark:border-red-400/40',
@@ -229,20 +268,21 @@
                 );
                 $motivoFluxo = trim((string) data_get($ultimoHistoricoComMotivo, 'motivo', $solicitacao->justificativa_cancelamento ?? ''));
                 if ($statusFluxo === 'PENDENTE' && $ultimoStatusNaoPendente !== '') {
-                    $statusEnvioTexto = 'Retornou para pendente';
+                    $statusEnvioTexto = 'Retornou para solicitado';
                     $statusEnvioClass = 'bg-indigo-100 text-indigo-800 border border-indigo-200 dark:bg-indigo-500/25 dark:text-indigo-100 dark:border-indigo-300/40';
                 }
                 $interrupcao = match ($statusAtualTopo) {
                     'CANCELADO' => ['label' => 'Cancelado', 'class' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 border border-red-200 dark:border-red-800'],
-                    'NAO_ENVIADO' => ['label' => 'Pedido não enviado', 'class' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200 dark:border-amber-800'],
+                    'NAO_ENVIADO' => ['label' => 'Cancelado', 'class' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200 dark:border-amber-800'],
                     'NAO_RECEBIDO' => ['label' => 'Pedido não recebido', 'class' => 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border border-rose-200 dark:border-rose-800'],
                     default => null,
                 };
                 $stepsTopo = [
-                    ['n' => 1, 'label' => 'Criado'],
+                    ['n' => 1, 'label' => 'Solicitado'],
                     ['n' => 2, 'label' => 'Em Análise'],
-                    ['n' => 3, 'label' => 'Enviado'],
-                    ['n' => 4, 'label' => 'Recebido'],
+                    ['n' => 3, 'label' => 'Liberação'],
+                    ['n' => 4, 'label' => 'Envio'],
+                    ['n' => 5, 'label' => 'Recebido'],
                 ];
                 $historicoCards = $historicoStatusTopo
                     ->sortBy('created_at')
@@ -282,7 +322,7 @@
                 <div class="p-4">
                     <div class="relative flex items-center justify-between">
                         <div class="absolute top-4 left-0 w-full h-0.5 bg-gray-200 dark:bg-gray-700"></div>
-                        <div class="absolute top-4 left-0 h-0.5 bg-indigo-500 transition-all duration-500" style="width: {{ (($etapaAtual - 1) / 3) * 100 }}%"></div>
+                        <div class="absolute top-4 left-0 h-0.5 bg-indigo-500 transition-all duration-500" style="width: {{ (($etapaAtual - 1) / 4) * 100 }}%"></div>
                         @foreach($stepsTopo as $stepTopo)
                             @php
                                 $ativo = $stepTopo['n'] <= $etapaAtual;
@@ -322,8 +362,11 @@
                                         $secaoCard = match (true) {
                                             $acaoCard === 'contestar_nao_recebido' => 'Contestação',
                                             $acaoCard === 'retornar' => 'Retorno',
-                                            $statusCard === 'AGUARDANDO_CONFIRMACAO' => 'Separação',
-                                            $statusCard === 'CONFIRMADO', $statusCard === 'NAO_ENVIADO' => 'Expedição',
+                                            $statusCard === 'AGUARDANDO_CONFIRMACAO' => 'Em análise',
+                                            $statusCard === 'LIBERACAO' => 'Liberação',
+                                            $acaoCard === 'liberar_pedido', $statusCard === 'CONFIRMADO' => 'Liberação',
+                                            $statusCard === 'CONFIRMADO' => 'Envio',
+                                            $statusCard === 'NAO_ENVIADO' => 'Cancelamento',
                                             $statusCard === 'RECEBIDO', $statusCard === 'NAO_RECEBIDO' => 'Recebimento',
                                             $statusCard === 'CANCELADO' => 'Cancelamento',
                                             default => 'Solicitação',
@@ -331,20 +374,24 @@
 
                                         $tituloCard = match (true) {
                                             $acaoCard === 'contestar_nao_recebido' => 'Não recebido contestado',
-                                            $acaoCard === 'retornar' => 'Retornou para pendente',
-                                            $acaoCard === 'confirmar', $statusCard === 'AGUARDANDO_CONFIRMACAO' => 'Separação confirmada',
-                                            $acaoCard === 'enviar', $statusCard === 'CONFIRMADO' => 'Pedido enviado',
-                                            $statusCard === 'NAO_ENVIADO' => 'Pedido não enviado',
+                                            $acaoCard === 'retornar' => 'Retornou para solicitado',
+                                            $acaoCard === 'confirmar', $statusCard === 'AGUARDANDO_CONFIRMACAO' => 'Solicitação em análise',
+                                            $acaoCard === 'encaminhar_liberacao', $statusCard === 'LIBERACAO' => 'Encaminhado para liberação',
+                                            $acaoCard === 'liberar_pedido', $statusCard === 'CONFIRMADO' => 'Pedido liberado',
+                                            $acaoCard === 'enviar_pedido', $statusCard === 'CONFIRMADO' => 'Pedido enviado',
+                                            $acaoCard === 'liberar_enviar', $statusCard === 'CONFIRMADO' => 'Pedido enviado',
+                                            $statusCard === 'NAO_ENVIADO' => 'Solicitação cancelada',
                                             $statusCard === 'NAO_RECEBIDO' => 'Pedido não recebido',
                                             $statusCard === 'RECEBIDO' => 'Recebimento confirmado',
                                             $statusCard === 'CANCELADO' => 'Solicitação cancelada',
-                                            default => 'Solicitação criada',
+                                            default => 'Solicitação realizada',
                                         };
 
                                         $paletteCard = match ($secaoCard) {
                                             'Solicitação' => ['border' => 'border-yellow-400 dark:border-yellow-400', 'bar' => 'bg-yellow-400', 'border_style' => 'border-color:#facc15;', 'bar_style' => 'background-color:#facc15;', 'tag_style' => 'background-color:#facc15;border-color:#eab308;color:#000;'],
-                                            'Separação' => ['border' => 'border-blue-400 dark:border-blue-400', 'bar' => 'bg-blue-400', 'border_style' => 'border-color:#60a5fa;', 'bar_style' => 'background-color:#60a5fa;', 'tag_style' => 'background-color:#60a5fa;border-color:#3b82f6;color:#000;'],
-                                            'Expedição' => ['border' => 'border-purple-600 dark:border-purple-500', 'bar' => 'bg-purple-600', 'border_style' => 'border-color:#7c3aed;', 'bar_style' => 'background-color:#7c3aed;', 'tag_style' => 'background-color:#a78bfa;border-color:#7c3aed;color:#000;'],
+                                            'Em análise' => ['border' => 'border-blue-400 dark:border-blue-400', 'bar' => 'bg-blue-400', 'border_style' => 'border-color:#60a5fa;', 'bar_style' => 'background-color:#60a5fa;', 'tag_style' => 'background-color:#60a5fa;border-color:#3b82f6;color:#000;'],
+                                            'Liberação' => ['border' => 'border-violet-500 dark:border-violet-400', 'bar' => 'bg-violet-500', 'border_style' => 'border-color:#8b5cf6;', 'bar_style' => 'background-color:#8b5cf6;', 'tag_style' => 'background-color:#c4b5fd;border-color:#8b5cf6;color:#000;'],
+                                            'Envio' => ['border' => 'border-purple-600 dark:border-purple-500', 'bar' => 'bg-purple-600', 'border_style' => 'border-color:#7c3aed;', 'bar_style' => 'background-color:#7c3aed;', 'tag_style' => 'background-color:#a78bfa;border-color:#7c3aed;color:#000;'],
                                             'Recebimento' => ['border' => 'border-green-400 dark:border-green-400', 'bar' => 'bg-green-400', 'border_style' => 'border-color:#22c55e;', 'bar_style' => 'background-color:#22c55e;', 'tag_style' => 'background-color:#4ade80;border-color:#22c55e;color:#000;'],
                                             'Contestação' => ['border' => 'border-violet-400 dark:border-violet-400', 'bar' => 'bg-violet-400', 'border_style' => 'border-color:#a78bfa;', 'bar_style' => 'background-color:#a78bfa;', 'tag_style' => 'background-color:#c4b5fd;border-color:#a78bfa;color:#000;'],
                                             'Retorno' => ['border' => 'border-amber-400 dark:border-amber-400', 'bar' => 'bg-amber-400', 'border_style' => 'border-color:#f59e0b;', 'bar_style' => 'background-color:#f59e0b;', 'tag_style' => 'background-color:#fbbf24;border-color:#f59e0b;color:#000;'],
@@ -354,11 +401,12 @@
                                         $bordaCard = $paletteCard['border'];
 
                                         $statusCardLabel = match ($statusCard) {
-                                            'PENDENTE' => 'Pendente',
+                                            'PENDENTE' => 'Solicitado',
                                             'AGUARDANDO_CONFIRMACAO' => 'Aguardando confirmação',
-                                            'CONFIRMADO' => 'Confirmado',
+                                            'LIBERACAO' => 'Liberação',
+                                            'CONFIRMADO' => 'Envio',
                                             'RECEBIDO' => 'Recebido',
-                                            'NAO_ENVIADO' => 'Não enviado',
+                                            'NAO_ENVIADO' => 'Cancelado',
                                             'NAO_RECEBIDO' => 'Não recebido',
                                             'CANCELADO' => 'Cancelado',
                                             default => 'Pendente',
@@ -368,8 +416,9 @@
                                         $bordaCardStyle = $paletteCard['border_style'];
                                         $faixaCardStyle = $paletteCard['bar_style'];
                                         $isSolicitacaoCard = $secaoCard === 'Solicitação';
-                                        $isSeparacaoCard = $secaoCard === 'Separação';
-                                        $isExpedicaoCard = $secaoCard === 'Expedição';
+                                        $isSeparacaoCard = $secaoCard === 'Em análise';
+                                        $isLiberacaoCard = $secaoCard === 'Liberação';
+                                        $isEnvioCard = $secaoCard === 'Envio';
                                         $isRecebimentoCard = $secaoCard === 'Recebimento';
                                         $isExcecaoCard = in_array($secaoCard, ['Contestação', 'Retorno', 'Cancelamento'], true);
                                         $rastreioCard = trim((string) ($solicitacao->tracking_code ?? ''));
@@ -396,7 +445,7 @@
                                                     <dd class="font-semibold text-gray-900 dark:text-gray-100 break-words">{{ $primeiroItemDescricao ?: '-' }}</dd>
                                                 </div>
 
-                                                @if($isSolicitacaoCard || $isSeparacaoCard || $isExpedicaoCard || $isRecebimentoCard)
+                                                @if($isSolicitacaoCard || $isSeparacaoCard || $isLiberacaoCard || $isEnvioCard || $isRecebimentoCard)
                                                     <div class="grid grid-cols-[84px,1fr] gap-x-2">
                                                         <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Projeto</dt>
                                                         <dd class="font-semibold text-gray-900 dark:text-gray-100 truncate" title="{{ $projetoLabel !== '' ? $projetoLabel : '-' }}">{{ $projetoLabel !== '' ? $projetoLabel : '-' }}</dd>
@@ -432,7 +481,7 @@
                                                     </div>
                                                 @endif
 
-                                                @if(($isExpedicaoCard || $isRecebimentoCard || $isExcecaoCard) && $rastreioCard !== '')
+                                                @if(($isEnvioCard || $isRecebimentoCard || $isExcecaoCard) && $rastreioCard !== '')
                                                     <div class="grid grid-cols-[84px,1fr] gap-x-2">
                                                         <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Rastreio</dt>
                                                         <dd class="font-semibold text-gray-900 dark:text-gray-100 break-all">{{ $rastreioCard }}</dd>
@@ -442,7 +491,7 @@
                                                 @if($acaoCard === 'retornar' && $statusAnteriorCard !== '')
                                                     <div class="grid grid-cols-[84px,1fr] gap-x-2">
                                                         <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Retorno</dt>
-                                                        <dd class="font-semibold text-amber-700 dark:text-amber-300">{{ str_replace('_', ' ', $statusAnteriorCard) }} -> PENDENTE</dd>
+                                                        <dd class="font-semibold text-amber-700 dark:text-amber-300">{{ str_replace('_', ' ', $statusAnteriorCard) }} -> SOLICITADO</dd>
                                                     </div>
                                                 @endif
 
@@ -530,7 +579,7 @@
                                     <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Destinação: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->destination_type ? 'Filial/Projeto' : '-' }}</span></div>
                                     <div class="flex items-center gap-2 mt-2">
                                         <span class="text-xs text-slate-500 dark:text-slate-400">Status:</span>
-                                        <x-status-badge :status="$solicitacao->status" :color-map="$statusColors" class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full shadow-sm" />
+                                        <x-status-badge :status="$statusBadgeAtual" :color-map="$statusColors" class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full shadow-sm" />
                                     </div>
                                     <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Criado em: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ optional($solicitacao->created_at)->format('d/m/Y H:i') }}</span></div>
                                     @if($solicitacao->tracking_code)
@@ -604,7 +653,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.confirm', $solicitacao->id) }}" class="p-6 space-y-4">
+                            <form method="POST" action="{{ route('solicitacoes-bens.confirm', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
                                 @csrf
                                 @method('POST')
                                 <p class="text-sm text-gray-600 dark:text-gray-400">Confirme para mover a solicitação para <strong>Em Análise</strong>.</p>
@@ -620,22 +669,80 @@
                         </div>
                     </div>
 
-                    <!-- MODAL: Pedido Enviado -->
+                    <!-- MODAL: Encaminhar para Liberação -->
+                    <div x-show="showForwardModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-violet-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Encaminhar para Liberação</h3>
+                                <button @click="showForwardModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.forward-to-liberacao', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
+                                @csrf
+                                @method('POST')
+
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Confirme para encaminhar a solicitação para a etapa final de liberação.</p>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showForwardModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition">
+                                        Encaminhar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- MODAL: Liberar Pedido -->
                     <div x-show="showApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
                             <div class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
-                                <h3 class="text-sm font-bold">Pedido Enviado</h3>
+                                <h3 class="text-sm font-bold">Liberar Pedido</h3>
                                 <button @click="showApproveModal = false" class="text-white/70 hover:text-white">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.approve', $solicitacao->id) }}" class="p-6 space-y-4">
+                            <form method="POST" action="{{ route('solicitacoes-bens.release', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
                                 @csrf
                                 @method('POST')
 
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Informe o código de rastreio para registrar o envio.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Confirme para concluir a etapa de <strong>Liberação</strong> e mover a solicitação para <strong>Envio</strong>.</p>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showApproveModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">
+                                        Liberar Pedido
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- MODAL: Enviar Pedido -->
+                    <div x-show="showSendModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-indigo-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Enviar Pedido</h3>
+                                <button @click="showSendModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.send', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
+                                @csrf
+                                @method('POST')
+
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Informe o código de rastreio para registrar o envio do pedido.</p>
                                 <div>
                                     <label for="tracking_code_enviado" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Rastreio *</label>
                                     <input type="text" id="tracking_code_enviado" name="tracking_code" required
@@ -644,11 +751,65 @@
                                 </div>
 
                                 <div class="flex gap-2 pt-4">
-                                    <button type="button" @click="showApproveModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                    <button type="button" @click="showSendModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
                                     </button>
-                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">
-                                        Salvar Envio
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition">
+                                        Enviar Pedido
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- MODAL: Cancelar Solicitação -->
+                    <div x-show="showNotSentModal" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6 dark:bg-black/70" style="display:none;">
+                        <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl" x-data="{ motivoPadrao: '', outroMotivo: '' }">
+                            <div class="flex items-center justify-between bg-rose-600 px-6 py-4 text-white">
+                                <h3 class="text-sm font-bold">Cancelar Solicitação</h3>
+                                <button @click="showNotSentModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.not-sent', $solicitacao->id) }}" class="space-y-4 p-6" data-modal-form>
+                                @csrf
+                                @method('POST')
+
+                                <p class="text-sm leading-6 text-slate-600">Use esta opção quando a solicitação não puder seguir no fluxo. Selecione um motivo comum ou descreva manualmente o cancelamento.</p>
+                                <div class="space-y-1">
+                                    <label for="motivo_padrao_cancelamento" class="mb-1 block text-xs font-medium text-slate-700">Motivo comum</label>
+                                    <select id="motivo_padrao_cancelamento"
+                                        x-model="motivoPadrao"
+                                        @change="
+                                            if (motivoPadrao && motivoPadrao !== 'OUTRO') {
+                                                $refs.justificativaNaoEnviado.value = motivoPadrao;
+                                            } else if (motivoPadrao === 'OUTRO') {
+                                                $refs.justificativaNaoEnviado.value = outroMotivo;
+                                            } else {
+                                                $refs.justificativaNaoEnviado.value = '';
+                                            }
+                                        "
+                                        class="block h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-xs text-slate-800 shadow-sm focus:border-rose-400 focus:ring-rose-400">
+                                        <option value="">Selecione...</option>
+                                        <option value="Sem estoque">Sem estoque</option>
+                                        <option value="OUTRO">Outro motivo</option>
+                                    </select>
+                                </div>
+                                <div x-show="motivoPadrao === 'OUTRO'" x-transition style="display: none;">
+                                    <label for="justificativa_nao_enviado" class="mb-1 block text-xs font-medium text-slate-700">Motivo do cancelamento *</label>
+                                    <textarea id="justificativa_nao_enviado" name="justificativa_nao_enviado" x-model="outroMotivo" :required="motivoPadrao === 'OUTRO'" rows="3" x-ref="justificativaNaoEnviado"
+                                        class="block w-full rounded-md border border-slate-300 bg-white p-3 text-xs text-slate-800 shadow-sm focus:border-rose-400 focus:ring-rose-400"
+                                        placeholder="Descreva o motivo do cancelamento da solicitação..."></textarea>
+                                </div>
+
+                                <div class="grid gap-3 pt-4 sm:grid-cols-2">
+                                    <button type="button" @click="showNotSentModal = false" class="inline-flex w-full items-center justify-center rounded-lg border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200">
+                                        Voltar
+                                    </button>
+                                    <button type="submit" class="inline-flex w-full items-center justify-center rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-700">
+                                        Confirmar Cancelamento
                                     </button>
                                 </div>
                             </form>
@@ -666,7 +827,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.receive', $solicitacao->id) }}" class="p-6 space-y-4">
+                            <form method="POST" action="{{ route('solicitacoes-bens.receive', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
                                 @csrf
                                 @method('POST')
 
@@ -696,7 +857,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.not-received', $solicitacao->id) }}" class="p-6 space-y-4">
+                            <form method="POST" action="{{ route('solicitacoes-bens.not-received', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
                                 @csrf
                                 @method('POST')
 
@@ -731,7 +892,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.contest-not-received', $solicitacao->id) }}" class="p-6 space-y-4">
+                            <form method="POST" action="{{ route('solicitacoes-bens.contest-not-received', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
                                 @csrf
                                 @method('POST')
 
@@ -740,7 +901,7 @@
                                     <select id="status_destino" name="status_destino" required
                                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3">
                                         <option value="">Selecione...</option>
-                                        <option value="PENDENTE">Criado (Pendente)</option>
+                                        <option value="PENDENTE">Solicitado</option>
                                         <option value="AGUARDANDO_CONFIRMACAO">Em análise</option>
                                         <option value="CONFIRMADO">Enviado</option>
                                     </select>
@@ -769,18 +930,18 @@
                     <div x-show="showReturnModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
                             <div class="bg-amber-600 text-white px-6 py-4 flex items-center justify-between">
-                                <h3 class="text-sm font-bold">Voltar para An&aacute;lise</h3>
+                                <h3 class="text-sm font-bold">Voltar para Em An&aacute;lise</h3>
                                 <button @click="showReturnModal = false" class="text-white/70 hover:text-white">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.return-to-analysis', $solicitacao->id) }}" class="p-6 space-y-4">
+                            <form method="POST" action="{{ route('solicitacoes-bens.return-to-analysis', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
                                 @csrf
                                 @method('POST')
 
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Descreva o problema para retornar a solicita&ccedil;&atilde;o para an&aacute;lise.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Descreva o motivo para retornar a solicita&ccedil;&atilde;o para <strong>Em An&aacute;lise</strong>.</p>
 
                                 <div>
                                     <label for="motivo_retorno" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo *</label>
@@ -794,16 +955,16 @@
                                         Cancelar
                                     </button>
                                     <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition border border-amber-700/70">
-                                        Voltar para an&aacute;lise
+                                        Voltar para Em An&aacute;lise
                                     </button>
                                 </div>
                             </form>
                         </div>
                     </div>
                     <!-- MODAL: Cancelar Solicitação -->
-                    <div x-show="showCancelModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
-                            <div class="bg-red-600 text-white px-6 py-4 flex items-center justify-between">
+                    <div x-show="showCancelModal" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6 dark:bg-black/70" style="display:none;">
+                        <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                            <div class="flex items-center justify-between bg-red-600 px-6 py-4 text-white">
                                 <h3 class="text-sm font-bold">Cancelar Solicitação</h3>
                                 <button @click="showCancelModal = false" class="text-white/70 hover:text-white">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -811,22 +972,22 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.cancel', $solicitacao->id) }}" class="p-6 space-y-4">
+                            <form method="POST" action="{{ route('solicitacoes-bens.cancel', $solicitacao->id) }}" class="space-y-4 p-6" data-modal-form>
                                 @csrf
                                 @method('POST')
                                 
                                 <div>
-                                    <label for="justificativa_cancelamento" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo do Cancelamento *</label>
+                                    <label for="justificativa_cancelamento" class="mb-1 block text-xs font-medium text-slate-700">Motivo do Cancelamento *</label>
                                     <textarea id="justificativa_cancelamento" name="justificativa_cancelamento" required rows="3"
-                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        class="block w-full rounded-md border border-slate-300 bg-white p-3 text-xs text-slate-800 shadow-sm focus:border-red-400 focus:ring-red-400"
                                         placeholder="Descreva o motivo do cancelamento..."></textarea>
                                 </div>
 
-                                <div class="flex gap-2 pt-4">
-                                    <button type="button" @click="showCancelModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                <div class="grid gap-3 pt-4 sm:grid-cols-2">
+                                    <button type="button" @click="showCancelModal = false" class="inline-flex w-full items-center justify-center rounded-lg border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200">
                                         Voltar
                                     </button>
-                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition">
+                                    <button type="submit" class="inline-flex w-full items-center justify-center rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-700">
                                         Cancelar Solicitação
                                     </button>
                                 </div>
@@ -845,7 +1006,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.recreate-cancelled', $solicitacao->id) }}" class="p-6 space-y-4">
+                            <form method="POST" action="{{ route('solicitacoes-bens.recreate-cancelled', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
                                 @csrf
                                 @method('POST')
 
@@ -908,7 +1069,7 @@
                         $steps = [
                             [
                                 'id' => 'PENDENTE',
-                                'label' => 'Criado',
+                                'label' => 'Solicitado',
                                 'desc' => 'Solicitação Aberta',
                                 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
                             ],

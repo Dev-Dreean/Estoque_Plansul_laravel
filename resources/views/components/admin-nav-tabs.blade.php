@@ -22,12 +22,6 @@
       'route' => 'cadastro-tela.index',
       'activePattern' => 'cadastro-tela.*',
     ],
-    [
-      'codigo' => '1008',
-      'label' => 'Tema',
-      'route' => 'settings.theme',
-      'activePattern' => 'settings.theme*',
-    ],
   ])->filter(function ($tab) use ($user) {
     return $user
       && $user->temAcessoTela($tab['codigo'])

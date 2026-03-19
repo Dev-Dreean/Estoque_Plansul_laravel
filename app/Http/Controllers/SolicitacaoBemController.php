@@ -29,6 +29,7 @@ class SolicitacaoBemController extends Controller
     private const TELA_SOLICITACOES_GERENCIAR_VISIBILIDADE = 1017;
     private const TELA_SOLICITACOES_VISUALIZACAO_RESTRITA = 1018;
     private const TELA_SOLICITACOES_TRIAGEM_INICIAL = 1019;
+    private const TELA_SOLICITACOES_LIBERACAO_ENVIO = 1020;
 
     public function index(Request $request): View
     {
@@ -83,18 +84,24 @@ class SolicitacaoBemController extends Controller
             'status' => 'status',
             'itens' => 'itens_count',
             'created_at' => 'created_at',
+            'updated_at' => 'updated_at',
         ];
-        $sort = (string) $request->input('sort', 'created_at');
+        $sort = (string) $request->input('sort', 'updated_at');
         if (!array_key_exists($sort, $sortableColumns)) {
-            $sort = 'created_at';
+            $sort = 'updated_at';
         }
         $direction = strtolower((string) $request->input('direction', 'desc'));
         if (!in_array($direction, ['asc', 'desc'], true)) {
             $direction = 'desc';
         }
 
+        $query->withCount('itens');
+
+        if (Schema::hasTable('solicitacoes_bens_status_historico')) {
+            $query->with(['ultimoHistoricoStatus.usuario']);
+        }
+
         $solicitacoes = $query
-            ->withCount('itens')
             ->orderBy($sortableColumns[$sort], $direction)
             ->orderByDesc('id')
             ->paginate($perPage)
@@ -261,12 +268,16 @@ class SolicitacaoBemController extends Controller
         $canRecriarCancelada = $this->canRecreateCancelled($user, $solicitacao);
 
         $canConfirmAction = $this->canConfirmSolicitacao($user);
-        $canApproveAction = $this->canApproveSolicitacao($user);
+        $canForwardAction = $this->canForwardToLiberacao($user);
+        $canReleaseAction = $this->canReleaseAndSend($user);
+        $canSendAction = $this->canSendSolicitacao($user);
         $canCancelAction = $this->canCancelSolicitacao($user);
         $canReturnAction = $this->canReturnSolicitacao($user);
         $canManage = $this->canUpdateSolicitacao($user)
             || $canConfirmAction
-            || $canApproveAction
+            || $canForwardAction
+            || $canReleaseAction
+            || $canSendAction
             || $canCancelAction
             || $canReturnAction;
         $canContestNotReceived = $this->canContestNotReceived($user);
@@ -278,7 +289,9 @@ class SolicitacaoBemController extends Controller
                 'isModal',
                 'canManage',
                 'canConfirmAction',
-                'canApproveAction',
+                'canForwardAction',
+                'canReleaseAction',
+                'canSendAction',
                 'canCancelAction',
                 'canReturnAction',
                 'canContestNotReceived',
@@ -297,7 +310,9 @@ class SolicitacaoBemController extends Controller
             'isModal',
             'canManage',
             'canConfirmAction',
-            'canApproveAction',
+            'canForwardAction',
+            'canReleaseAction',
+            'canSendAction',
             'canCancelAction',
             'canReturnAction',
             'canContestNotReceived',
@@ -418,12 +433,16 @@ class SolicitacaoBemController extends Controller
             $canOwnerEditPending = $this->canEditAsOwnerPending($user, $solicitacao);
             $canRecriarCancelada = $this->canRecreateCancelled($user, $solicitacao);
             $canConfirmAction = $this->canConfirmSolicitacao($user);
-            $canApproveAction = $this->canApproveSolicitacao($user);
+            $canForwardAction = $this->canForwardToLiberacao($user);
+            $canReleaseAction = $this->canReleaseAndSend($user);
+            $canSendAction = $this->canSendSolicitacao($user);
             $canCancelAction = $this->canCancelSolicitacao($user);
             $canReturnAction = $this->canReturnSolicitacao($user);
             $canManage = $this->canUpdateSolicitacao($user)
                 || $canConfirmAction
-                || $canApproveAction
+                || $canForwardAction
+                || $canReleaseAction
+                || $canSendAction
                 || $canCancelAction
                 || $canReturnAction;
             $canContestNotReceived = $this->canContestNotReceived($user);
@@ -436,7 +455,9 @@ class SolicitacaoBemController extends Controller
                 'isModal',
                 'canManage',
                 'canConfirmAction',
-                'canApproveAction',
+                'canForwardAction',
+                'canReleaseAction',
+                'canSendAction',
                 'canCancelAction',
                 'canReturnAction',
                 'canContestNotReceived',
@@ -741,8 +762,13 @@ HTML;
         if ($user->isAdmin()) {
             return true;
         }
-        // Visualização geral é exclusiva da triagem inicial.
-        return $this->canTriagemInicial($user);
+
+        return $this->canTriagemInicial($user)
+            || $user->temAcessoTela((string) self::TELA_SOLICITACOES_VER_TODAS)
+            || $user->temAcessoTela((string) self::TELA_SOLICITACOES_ATUALIZAR)
+            || $user->temAcessoTela((string) User::TELA_SOLICITACOES_APROVAR)
+            || $user->temAcessoTela((string) User::TELA_SOLICITACOES_CANCELAR)
+            || $user->temAcessoTela((string) self::TELA_SOLICITACOES_LIBERACAO_ENVIO);
     }
 
     private function isVisualizacaoRestrita(?User $user): bool
@@ -793,7 +819,7 @@ HTML;
             return true;
         }
 
-        if ($this->canTriagemInicial($user)) {
+        if ($this->canViewAllSolicitacoes($user)) {
             return true;
         }
 
@@ -889,7 +915,7 @@ HTML;
         return $this->canTriagemInicial($user);
     }
 
-    private function canApproveSolicitacao(?User $user): bool
+    private function canForwardToLiberacao(?User $user): bool
     {
         if (!$user) {
             return false;
@@ -898,6 +924,30 @@ HTML;
         if ($user->isAdmin()) {
             return true;
         }
+        return $user->temAcessoTela((string) User::TELA_SOLICITACOES_ATUALIZAR);
+    }
+
+    private function canReleaseAndSend(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $user->temAcessoTela((string) self::TELA_SOLICITACOES_LIBERACAO_ENVIO);
+    }
+
+    private function canSendSolicitacao(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+
         return $user->temAcessoTela((string) User::TELA_SOLICITACOES_APROVAR);
     }
 
@@ -921,7 +971,8 @@ HTML;
         if ($user->isAdmin()) {
             return true;
         }
-        return $user->temAcessoTela((string) User::TELA_SOLICITACOES_APROVAR);
+        return $this->canForwardToLiberacao($user)
+            || $this->canReleaseAndSend($user);
     }
 
     private function applyOwnerScope($query, ?User $user): void
@@ -995,9 +1046,11 @@ HTML;
         return [
             SolicitacaoBem::STATUS_PENDENTE,
             SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO,
+            SolicitacaoBem::STATUS_LIBERACAO,
             SolicitacaoBem::STATUS_CONFIRMADO,
             SolicitacaoBem::STATUS_NAO_ENVIADO,
             SolicitacaoBem::STATUS_NAO_RECEBIDO,
+            SolicitacaoBem::STATUS_RECEBIDO,
             SolicitacaoBem::STATUS_CANCELADO,
         ];
     }
@@ -1341,15 +1394,112 @@ HTML;
      * Aprovar Solicitação (confirmação final)
      * Somente o solicitante original pode fazer
      */
+    public function forwardToLiberacao(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canForwardToLiberacao($user)) {
+            return $this->denyAccess($request, 'Você não tem permissão para encaminhar para liberação.');
+        }
+
+        if ($solicitacao->status !== SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO) {
+            return $this->denyAccess($request, 'Apenas solicitações em análise podem ser encaminhadas para liberação.');
+        }
+
+        $statusAnterior = $solicitacao->status;
+        $solicitacao->update([
+            'status' => SolicitacaoBem::STATUS_LIBERACAO,
+            'tracking_code' => null,
+            'confirmado_por_id' => null,
+            'confirmado_em' => null,
+        ]);
+
+        $this->registrarHistoricoStatus(
+            $solicitacao,
+            $statusAnterior,
+            SolicitacaoBem::STATUS_LIBERACAO,
+            'encaminhar_liberacao',
+            'Solicitação encaminhada para liberação final.'
+        );
+
+        Log::info('[SOLICITACOES] Solicitação encaminhada para liberação', [
+            'solicitacao_id' => $solicitacao->id,
+            'encaminhado_por' => $user?->NMLOGIN,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitação encaminhada para liberação com sucesso.',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Solicitação encaminhada para liberação com sucesso.');
+    }
+
+    public function release(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canReleaseAndSend($user)) {
+            return $this->denyAccess($request, 'Você não tem permissão para liberar o pedido.');
+        }
+
+        if ($solicitacao->status !== SolicitacaoBem::STATUS_LIBERACAO) {
+            return $this->denyAccess($request, 'Apenas solicitações em liberação podem ser liberadas.');
+        }
+
+        if (empty($solicitacao->matricula_recebedor) && !empty($solicitacao->solicitante_matricula)) {
+            $solicitacao->forceFill([
+                'matricula_recebedor' => $solicitacao->solicitante_matricula,
+                'nome_recebedor' => $solicitacao->nome_recebedor ?: $solicitacao->solicitante_nome,
+            ])->save();
+        }
+
+        if (empty($solicitacao->matricula_recebedor)) {
+            return $this->denyAccess($request, 'Informe o recebedor antes de liberar o pedido.');
+        }
+
+        $statusAnterior = $solicitacao->status;
+        $solicitacao->update([
+            'status' => SolicitacaoBem::STATUS_CONFIRMADO,
+            'tracking_code' => null,
+            'confirmado_por_id' => null,
+            'confirmado_em' => null,
+        ]);
+
+        $this->registrarHistoricoStatus(
+            $solicitacao,
+            $statusAnterior,
+            SolicitacaoBem::STATUS_CONFIRMADO,
+            'liberar_pedido',
+            'Pedido liberado para envio.'
+        );
+
+        Log::info('[SOLICITACOES] Pedido liberado', [
+            'solicitacao_id' => $solicitacao->id,
+            'liberado_por' => $user?->NMLOGIN,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pedido liberado com sucesso.',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Pedido liberado com sucesso.');
+    }
+
     public function approve(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
     {
         /** @var User|null $user */
         $user = Auth::user();
-        if (!$this->canApproveSolicitacao($user)) {
+        if (!$this->canReleaseAndSend($user)) {
             return $this->denyAccess($request, 'Você não tem permissão para registrar pedido enviado.');
         }
 
-        if ($solicitacao->status !== SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO) {
+        if ($solicitacao->status !== SolicitacaoBem::STATUS_LIBERACAO) {
             return $this->denyAccess($request, 'Apenas solicitações em análise podem ser marcadas como pedido enviado.');
         }
 
@@ -1361,17 +1511,18 @@ HTML;
         }
 
         if (empty($solicitacao->matricula_recebedor)) {
-            return $this->denyAccess($request, 'Informe o recebedor antes de marcar como pedido enviado.');
+            return $this->denyAccess($request, 'Informe o recebedor antes de liberar e enviar o pedido.');
         }
 
         $validated = $request->validate([
             'tracking_code' => ['required', 'string', 'max:100'],
         ]);
 
+        $trackingCode = trim((string) $validated['tracking_code']);
         $statusAnterior = $solicitacao->status;
         $solicitacao->update([
             'status' => SolicitacaoBem::STATUS_CONFIRMADO,
-            'tracking_code' => trim((string) $validated['tracking_code']),
+            'tracking_code' => $trackingCode,
             'confirmado_por_id' => $user->getAuthIdentifier(),
             'confirmado_em' => now(),
         ]);
@@ -1380,13 +1531,68 @@ HTML;
             $solicitacao,
             $statusAnterior,
             SolicitacaoBem::STATUS_CONFIRMADO,
-            'enviar',
-            null
+            'liberar_enviar',
+            'Rastreio: ' . $trackingCode
         );
 
-        Log::info('[SOLICITACOES] Pedido marcado como enviado', [
+        Log::info('[SOLICITACOES] Envio registrado', [
             'solicitacao_id' => $solicitacao->id,
             'enviado_por' => $user->NMLOGIN,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Envio registrado com sucesso.',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Envio registrado com sucesso.');
+    }
+
+    /**
+     * Marcar pedido como não enviado (fecha fluxo com justificativa)
+     */
+    public function send(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canSendSolicitacao($user)) {
+            return $this->denyAccess($request, 'Você não tem permissão para enviar o pedido.');
+        }
+
+        if ($solicitacao->status !== SolicitacaoBem::STATUS_CONFIRMADO) {
+            return $this->denyAccess($request, 'Apenas solicitações na etapa de envio podem ser enviadas.');
+        }
+
+        if (trim((string) ($solicitacao->tracking_code ?? '')) !== '') {
+            return $this->denyAccess($request, 'Este pedido já possui envio registrado.');
+        }
+
+        $validated = $request->validate([
+            'tracking_code' => ['required', 'string', 'max:100'],
+        ]);
+
+        $trackingCode = trim((string) $validated['tracking_code']);
+        $statusAnterior = $solicitacao->status;
+        $solicitacao->update([
+            'tracking_code' => $trackingCode,
+            'confirmado_por_id' => $user?->getAuthIdentifier(),
+            'confirmado_em' => now(),
+        ]);
+
+        $this->registrarHistoricoStatus(
+            $solicitacao,
+            $statusAnterior,
+            SolicitacaoBem::STATUS_CONFIRMADO,
+            'enviar_pedido',
+            'Rastreio: ' . $trackingCode
+        );
+
+        Log::info('[SOLICITACOES] Pedido enviado', [
+            'solicitacao_id' => $solicitacao->id,
+            'enviado_por' => $user?->NMLOGIN,
+            'tracking_code' => $trackingCode,
         ]);
 
         if ($request->expectsJson()) {
@@ -1399,14 +1605,11 @@ HTML;
         return redirect()->back()->with('success', 'Pedido enviado com sucesso.');
     }
 
-    /**
-     * Marcar pedido como não enviado (fecha fluxo com justificativa)
-     */
     public function notSent(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
     {
         /** @var User|null $user */
         $user = Auth::user();
-        if (!$this->canApproveSolicitacao($user)) {
+        if (!$this->canForwardToLiberacao($user)) {
             return $this->denyAccess($request, 'Você não tem permissão para registrar pedido não enviado.');
         }
 
@@ -1464,7 +1667,7 @@ HTML;
             return $this->denyAccess($request, 'Você não tem permissão para informar o recebimento desta solicitação.');
         }
 
-        if ($solicitacao->status !== SolicitacaoBem::STATUS_CONFIRMADO) {
+        if ($solicitacao->status !== SolicitacaoBem::STATUS_CONFIRMADO || trim((string) ($solicitacao->tracking_code ?? '')) === '') {
             return $this->denyAccess($request, 'Apenas solicitações enviadas podem ser encerradas como recebidas.');
         }
 
@@ -1671,7 +1874,7 @@ HTML;
             return $this->denyAccess($request, 'Você não tem permissão para retornar a Solicitação para análise.');
         }
 
-        if (!in_array($solicitacao->status, [SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO, SolicitacaoBem::STATUS_NAO_ENVIADO], true)) {
+        if (!in_array($solicitacao->status, [SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO, SolicitacaoBem::STATUS_NAO_ENVIADO, SolicitacaoBem::STATUS_LIBERACAO], true)) {
             return $this->denyAccess($request, 'Apenas solicitações em análise ou não enviadas podem voltar para pendente.');
         }
 
@@ -1691,8 +1894,11 @@ HTML;
         $destinationType = $solicitacao->destination_type ?: SolicitacaoBem::DESTINATION_PROJETO;
 
         $statusAnterior = $solicitacao->status;
+        $statusDestino = $solicitacao->status === SolicitacaoBem::STATUS_LIBERACAO
+            ? SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO
+            : SolicitacaoBem::STATUS_PENDENTE;
         $solicitacao->update([
-            "status" => SolicitacaoBem::STATUS_PENDENTE,
+            "status" => $statusDestino,
             "observacao_controle" => $observacaoNova,
             "tracking_code" => null,
             "destination_type" => $destinationType,
@@ -1702,7 +1908,7 @@ HTML;
         $this->registrarHistoricoStatus(
             $solicitacao,
             $statusAnterior,
-            SolicitacaoBem::STATUS_PENDENTE,
+            $statusDestino,
             'retornar',
             $motivo
         );

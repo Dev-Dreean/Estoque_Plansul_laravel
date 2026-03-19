@@ -12,7 +12,6 @@
     ['label' => 'Locais', 'href' => route('projetos.index'), 'icon' => 'map'],
     ['label' => 'Usuários', 'href' => route('usuarios.index'), 'icon' => 'users'],
     ['label' => 'Telas', 'href' => route('cadastro-tela.index'), 'icon' => 'window'],
-    ['label' => 'Tema', 'href' => route('settings.theme'), 'icon' => 'swatch'],
   ];
 
   $icons = [
@@ -116,7 +115,7 @@
               <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-800 text-amber-300">&#9790;</span>
               <div class="leading-tight">
                 <p class="font-semibold">Tema</p>
-                <p class="text-xs text-slate-400">Dark / White</p>
+                <p class="text-xs text-slate-400">Claro / Escuro</p>
               </div>
             </div>
             <button

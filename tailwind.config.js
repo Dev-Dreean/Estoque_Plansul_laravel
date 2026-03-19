@@ -21,6 +21,9 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            screens: {
+                '3xl': '1920px',
+            },
             // Brand colors
             colors: {
                 'plansul-blue': '#00529B',

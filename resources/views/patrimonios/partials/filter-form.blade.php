@@ -1,6 +1,6 @@
 ﻿@php
   use Carbon\Carbon;
-  $filterKeys = ['nupatrimonio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','conferido','matr_responsavel','cadastrado_por','numof','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate','uf'];
+  $filterKeys = ['nupatrimonio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','conferido','matr_responsavel','matr_gerente','cadastrado_por','numof','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate','uf'];
   $badgeColors = [
     'nupatrimonio' => 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700',
     'cdprojeto' => 'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-blue-200 border-gray-400 dark:border-blue-700',
@@ -11,6 +11,7 @@
     'situacao' => 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700',
     'conferido' => 'bg-lime-100 dark:bg-lime-900 text-lime-700 dark:text-lime-300 border-lime-200 dark:border-lime-700',
     'matr_responsavel' => 'bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-700',
+    'matr_gerente' => 'bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700',
     'cadastrado_por' => 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700',
     'numof' => 'bg-violet-100 dark:bg-violet-900 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-700',
     'dtaquisicao_de' => 'bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-200 border-rose-200 dark:border-rose-700',
@@ -121,6 +122,7 @@
               'situacao' => 'Situação',
               'conferido' => 'Conferido (todos)',
               'matr_responsavel' => 'Responsável',
+              'matr_gerente' => 'Gerente',
               'cadastrado_por' => 'Cadastrado Por',
               'numof' => 'O.C',
               'dtaquisicao_de' => 'Aquisição De',
@@ -538,6 +540,14 @@
             name="matr_responsavel"
             placeholder="Responsável (matrícula ou nome)"
             value="{{ request('matr_responsavel') }}"
+          />
+        </div>
+        <div class="flex-1 min-w-[150px] max-w-[210px] basis-[170px]">
+          <x-employee-autocomplete 
+            id="matr_gerente_search"
+            name="matr_gerente"
+            placeholder="Gerente (matrícula ou nome)"
+            value="{{ request('matr_gerente') }}"
           />
         </div>
         <div class="flex-1 min-w-[100px] max-w-[140px] basis-[110px]">

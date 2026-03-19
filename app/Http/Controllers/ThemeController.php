@@ -4,23 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Log;
 
 class ThemeController extends Controller
 {
-    private array $available = ['light', 'dark', 'brown', 'beige'];
-
-    public function index(Request $request)
-    {
-        // Recupera o tema compartilhado no middleware ou fallback
-        $shared = View::getShared();
-        $active = $shared['activeTheme'] ?? session('theme') ?? (Auth::check() ? Auth::user()->theme : null) ?? 'light';
-        return view('settings.theme', [
-            'active' => $active,
-            'available' => $this->available,
-        ]);
-    }
+    private array $available = ['light', 'dark'];
 
     public function update(Request $request)
     {
@@ -77,8 +65,15 @@ class ThemeController extends Controller
         // Sinalizamos via session flash para JS disparar evento (caso queira usar depois)
         session()->flash('theme_changed', $theme);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Tema atualizado com sucesso.',
+                'theme' => $theme,
+            ])->withCookie($cookie);
+        }
+
         return back()->withCookie($cookie)
-            ->with('success', 'Tema atualizado para "' . $theme . '".');
+            ->with('success', 'Tema atualizado com sucesso.');
     }
 }
 

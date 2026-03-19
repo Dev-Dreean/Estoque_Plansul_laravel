@@ -42,6 +42,7 @@ class RelatorioController extends Controller
     {
         try {
             $this->normalizeSituacaoInput($request);
+            $this->validateProjetoLocalFilters($request);
 
             if (!$request->filled('tipo_relatorio')) {
                 $request->merge(['tipo_relatorio' => 'numero']);
@@ -194,6 +195,7 @@ class RelatorioController extends Controller
     private function getQueryFromRequest(Request $request)
     {
         $this->normalizeSituacaoInput($request);
+        $this->validateProjetoLocalFilters($request);
 
         if (!$request->filled('tipo_relatorio')) {
             $request->merge(['tipo_relatorio' => 'numero']);
@@ -294,9 +296,9 @@ class RelatorioController extends Controller
             if ($val !== '') {
                 $locaisProjeto = collect();
                 try {
-                    $projeto = Tabfant::where('CDPROJETO', $val)->first(['id']);
-                    if ($projeto) {
-                        $locaisProjeto = LocalProjeto::where('tabfant_id', $projeto->id)
+                    $projetoIds = Tabfant::where('CDPROJETO', $val)->pluck('id');
+                    if ($projetoIds->isNotEmpty()) {
+                        $locaisProjeto = LocalProjeto::whereIn('tabfant_id', $projetoIds->all())
                             ->pluck('cdlocal');
                     }
                 } catch (\Throwable $e) {
@@ -347,6 +349,77 @@ class RelatorioController extends Controller
                 });
             }
         }
+    }
+
+    private function validateProjetoLocalFilters(Request $request): void
+    {
+        $cdprojeto = $this->normalizeLookupCode($request->input('cdprojeto'));
+        $cdlocal = $this->normalizeLookupCode($request->input('cdlocal'));
+
+        $request->merge([
+            'cdprojeto' => $cdprojeto,
+            'cdlocal' => $cdlocal,
+        ]);
+
+        if ($cdlocal !== '' && $cdprojeto === '') {
+            throw ValidationException::withMessages([
+                'cdprojeto' => 'Selecione um projeto antes de informar o local físico.',
+            ]);
+        }
+
+        if ($cdprojeto === '') {
+            return;
+        }
+
+        $projetoIds = Tabfant::where('CDPROJETO', $cdprojeto)->pluck('id');
+        if ($projetoIds->isEmpty()) {
+            throw ValidationException::withMessages([
+                'cdprojeto' => "Projeto com código {$cdprojeto} não encontrado.",
+            ]);
+        }
+
+        if ($cdlocal === '') {
+            return;
+        }
+
+        $local = LocalProjeto::with('projeto')
+            ->where('cdlocal', $cdlocal)
+            ->whereIn('tabfant_id', $projetoIds->all())
+            ->first();
+
+        if ($local) {
+            return;
+        }
+
+        $localOutroProjeto = LocalProjeto::with('projeto')
+            ->where('cdlocal', $cdlocal)
+            ->first();
+
+        if ($localOutroProjeto) {
+            $projetoLocal = $localOutroProjeto->projeto?->NOMEPROJETO ?? 'outro projeto';
+
+            throw ValidationException::withMessages([
+                'cdlocal' => "O local físico {$cdlocal} não pertence ao projeto informado. Ele está vinculado a {$projetoLocal}.",
+            ]);
+        }
+
+        throw ValidationException::withMessages([
+            'cdlocal' => "Local físico com código {$cdlocal} não encontrado para o projeto informado.",
+        ]);
+    }
+
+    private function normalizeLookupCode(mixed $value): string
+    {
+        $texto = trim((string) ($value ?? ''));
+        if ($texto === '') {
+            return '';
+        }
+
+        if (preg_match('/^(\d+)/', $texto, $matches) === 1) {
+            return $matches[1];
+        }
+
+        return $texto;
     }
 
     private function applySituacaoFilter($query, $raw): void
@@ -953,4 +1026,3 @@ HTML;
         return response()->download($tempPath)->deleteFileAfterSend(true);
     }
 }
-

@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
   <x-patrimonio-nav-tabs />
 
   @php
@@ -49,7 +49,7 @@
                   <option value="EM USO">EM USO</option>
                   <option value="CONSERTO">CONSERTO</option>
                   <option value="BAIXA">BAIXA</option>
-                  <option value="A DISPOSICAO">A DISPOSIÇÃO</option>
+                  <option value="A DISPOSICAO">A DISPOSIÇ?O</option>
                 </select>
                 <button id="bulk-apply" class="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out shadow-sm">
                   Aplicar Situação
@@ -76,7 +76,7 @@
                 {{-- Header --}}
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                   <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar Alteração</h3>
-                  <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Revise os patrimônios selecionados</p>
+              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Revise os patrimônios selecionados</p>
                 </div>
 
                 {{-- Conteúdo compacto --}}
@@ -103,10 +103,10 @@
                   </div>
                 </div>
 
-                {{-- Footer com ações --}}
+                {{-- Footer com aç?es --}}
                 <div class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-3">
                   <button id="bulk-confirm-cancel" class="px-4 py-2 rounded-md text-sm font-semibold border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition">Cancelar</button>
-                  <button id="bulk-confirm-yes" class="px-4 py-2 rounded-md text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition">✓ Confirmar</button>
+                  <button id="bulk-confirm-yes" class="px-4 py-2 rounded-md text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition">âœ“ Confirmar</button>
                 </div>
               </div>
             </div>
@@ -157,7 +157,6 @@
 
     @include('patrimonios.partials.modals.relatorio')
     @include('patrimonios.partials.modals.termo')
-
     @unless($isConsultor)
       <style>
         /* Bulk modal isolated theme (safe to remove) */
@@ -364,7 +363,7 @@
                   x-transition:leave-end="opacity-0 -translate-y-1"
                 >
                   <p class="text-sm text-orange-900 dark:text-orange-100">
-                    <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Buscar patrimônios</span> preenche os dados para você. Assim, você só edita o que precisar.
+                    <span class="font-bold text-orange-600 dark:text-orange-300 text-[15px]">Buscar patrimônios</span> preenche os dados para voc?. Assim, voc? só edita o que precisar.
                   </p>
                   <div class="mt-4 grid grid-cols-3 gap-3 min-w-[520px]" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.75rem;">
                   <div class="rounded-lg border border-orange-200 dark:border-orange-700 bg-transparent p-3">
@@ -599,7 +598,9 @@
             <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white" x-text="formModalTitle"></h3>
             <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400" x-text="formModalSubtitle" x-show="formModalSubtitle"></p>
           </div>
-          <button type="button" @click="closeFormModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">×</button>
+          <button type="button" @click="closeFormModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" title="Fechar">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
         </div>
         <div class="relative flex-1 min-h-0 overflow-hidden">
           <div id="patrimonio-form-modal-body" class="h-full min-h-0 overflow-y-auto overscroll-contain"></div>
@@ -1107,11 +1108,11 @@
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, 'text/html');
           
-          // ✅ Atualizar tabela
+          // âœ… Atualizar tabela
           const fresh = doc.querySelector('#patrimonios-table-content');
           if (fresh && tableContent) tableContent.innerHTML = fresh.innerHTML;
 
-          // ✅ Atualizar tags de filtro - procura em todo o documento
+          // âœ… Atualizar tags de filtro - procura em todo o documento
           // As tags estão em patrimonios/partials/filter-form dentro de patrimonios-tags div
           const freshTags = doc.querySelector('#patrimonios-tags');
           const tagsContainer = document.querySelector('#patrimonios-tags');
@@ -1293,7 +1294,7 @@
           updateConferidoToggle();
         });
         
-        // ✅ Novo: Listener para deletar em massa
+        // âœ… Novo: Listener para deletar em massa
         const bulkDelete = document.querySelector('#bulk-delete');
         let pendingDeleteIds = new Set();
         const bulkDeleteEndpoint = "{{ route('patrimonios.bulk-delete') }}";
@@ -1311,7 +1312,7 @@
           const title = document.querySelector('#bulk-confirm-title');
           const desc = document.querySelector('#bulk-confirm-desc');
           
-          if (title) title.textContent = '⚠️ Confirmar exclusão em massa';
+          if (title) title.textContent = 'âš ï¸ Confirmar exclusão em massa';
           if (desc) desc.textContent = 'Esta ação é irreversível! Os patrimônios serão deletados permanentemente.';
           
           if (!bulkConfirmModal || !bulkConfirmList) return;
@@ -1323,7 +1324,7 @@
             item.className = 'flex justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-1 last:border-0';
             const left = document.createElement('div');
             left.className = 'font-semibold text-gray-900 dark:text-white';
-            left.textContent = `Nº Patrimonio ${patr}`;
+            left.textContent = `NÂº Patrimonio ${patr}`;
             item.appendChild(left);
             bulkConfirmList.appendChild(item);
           });
@@ -1360,7 +1361,7 @@
         
         bulkDelete?.addEventListener('click', applyBulkDelete);
         
-        // ✅ Modificar o listener do botão YES para detectar operação
+        // âœ… Modificar o listener do botão YES para detectar operação
         const originalConfirmYes = bulkConfirmYes?.onclick;
                 bulkConfirmYes?.addEventListener('click', () => {
           if (pendingDeleteIds.size > 0) {
@@ -1408,6 +1409,20 @@
           tipoRelatorio: 'numero',
           relatorioErrors: {},
           relatorioGlobalError: null,
+          relatorioProjetoFiltro: '',
+          relatorioLocalFiltro: '',
+          relatorioProjetosCatalogo: @js(collect($projetos ?? [])->map(fn ($projeto) => [
+            'codigo' => (string) ($projeto->codigo ?? ''),
+            'descricao' => (string) ($projeto->descricao ?? ''),
+          ])->values()->all()),
+          relatorioProjetosFiltrados: [],
+          relatorioLocais: [],
+          relatorioLocaisFiltrados: [],
+          relatorioLocaisLoading: false,
+          relatorioProjetoAtivo: false,
+          relatorioProjetoRequestCode: '',
+          relatorioProjetoDropdownOpen: false,
+          relatorioLocalDropdownOpen: false,
           formModalOpen: false,
           formModalLoading: false,
           formModalTitle: '',
@@ -1445,7 +1460,10 @@
             });
             this.$watch('relatorioModalOpen', (open) => {
               if (!open) return;
-              this.$nextTick(() => this.resetSituacaoBuscaDefaults());
+              this.$nextTick(() => {
+                this.resetSituacaoBuscaDefaults();
+                this.syncRelatorioProjetoLocalState();
+              });
             });
             this.$watch('formModalOpen', (open) => {
               document.documentElement.classList.toggle('overflow-hidden', open);
@@ -1478,6 +1496,215 @@
               if (!(input instanceof HTMLInputElement)) return;
               input.checked = defaults.has(String(input.value || '').trim().toUpperCase());
             });
+          },
+          getRelatorioError(key) {
+            const value = this.relatorioErrors ? this.relatorioErrors[key] : null;
+            if (Array.isArray(value)) {
+              return value[0] || null;
+            }
+            return value || null;
+          },
+          normalizeRelatorioLookupValue(value) {
+            const texto = String(value ?? '').trim();
+            if (texto === '') return '';
+            const match = texto.match(/^(\d+)/);
+            return match ? match[1] : texto;
+          },
+          normalizarRelatorioProjetoCampo() {
+            const normalized = this.normalizeRelatorioLookupValue(this.relatorioProjetoFiltro);
+            this.relatorioProjetoFiltro = normalized;
+            const projetoInput = document.getElementById('relatorio_cdprojeto');
+            if (projetoInput) {
+              projetoInput.value = normalized;
+            }
+          },
+          filtrarRelatorioProjetos() {
+            const termo = String(this.relatorioProjetoFiltro || '').trim().toLowerCase();
+            const projetos = Array.isArray(this.relatorioProjetosCatalogo) ? this.relatorioProjetosCatalogo : [];
+            this.relatorioProjetosFiltrados = projetos
+              .filter((projeto) => {
+                if (termo === '') return true;
+                const codigo = String(projeto?.codigo || '').toLowerCase();
+                const descricao = String(projeto?.descricao || '').toLowerCase();
+                return codigo.includes(termo) || descricao.includes(termo);
+              })
+              .slice(0, 40);
+            this.relatorioProjetoDropdownOpen = true;
+          },
+          abrirDropdownProjetoRelatorio(force = false) {
+            if (force || !this.relatorioProjetoDropdownOpen) {
+              this.filtrarRelatorioProjetos();
+            }
+            this.relatorioProjetoDropdownOpen = true;
+          },
+          selecionarProjetoRelatorio(projeto) {
+            const codigo = String(projeto?.codigo || '').trim();
+            this.relatorioProjetoFiltro = codigo;
+            this.relatorioProjetoDropdownOpen = false;
+            this.onRelatorioProjetoInput(codigo);
+          },
+          limparProjetoRelatorio() {
+            this.relatorioProjetoFiltro = '';
+            this.relatorioLocalFiltro = '';
+            this.relatorioProjetoAtivo = false;
+            this.relatorioProjetoRequestCode = '';
+            this.relatorioLocais = [];
+            this.relatorioLocaisFiltrados = [];
+            this.relatorioProjetoDropdownOpen = false;
+            this.relatorioLocalDropdownOpen = false;
+            this.relatorioErrors = {
+              ...this.relatorioErrors,
+              cdprojeto: null,
+              cdlocal: null,
+            };
+          },
+          filtrarRelatorioLocais() {
+            const termo = String(this.relatorioLocalFiltro || '').trim().toLowerCase();
+            const locais = Array.isArray(this.relatorioLocais) ? this.relatorioLocais : [];
+            this.relatorioLocaisFiltrados = locais
+              .filter((local) => {
+                if (termo === '') return true;
+                const codigo = String(local?.cdlocal || '').toLowerCase();
+                const descricao = String(local?.delocal ?? local?.LOCAL ?? '').toLowerCase();
+                return codigo.includes(termo) || descricao.includes(termo);
+              })
+              .slice(0, 60);
+            this.relatorioLocalDropdownOpen = this.relatorioProjetoAtivo;
+          },
+          abrirDropdownLocalRelatorio(force = false) {
+            if (!this.relatorioProjetoAtivo || this.relatorioLocaisLoading) {
+              return;
+            }
+            if (force || !this.relatorioLocalDropdownOpen) {
+              this.filtrarRelatorioLocais();
+            }
+            this.relatorioLocalDropdownOpen = true;
+          },
+          selecionarLocalRelatorio(local) {
+            this.relatorioLocalFiltro = String(local?.cdlocal || '').trim();
+            this.relatorioLocalDropdownOpen = false;
+          },
+          limparLocalRelatorio() {
+            this.relatorioLocalFiltro = '';
+            this.relatorioLocalDropdownOpen = false;
+            this.relatorioErrors = {
+              ...this.relatorioErrors,
+              cdlocal: null,
+            };
+          },
+          syncRelatorioProjetoLocalState() {
+            const projetoInput = document.getElementById('relatorio_cdprojeto');
+            const localInput = document.getElementById('relatorio_cdlocal');
+            this.relatorioProjetoFiltro = projetoInput ? projetoInput.value : this.relatorioProjetoFiltro;
+            this.relatorioLocalFiltro = localInput ? localInput.value : this.relatorioLocalFiltro;
+            this.filtrarRelatorioProjetos();
+            this.onRelatorioProjetoInput(this.relatorioProjetoFiltro);
+          },
+          async onRelatorioProjetoInput(value) {
+            const codigoProjeto = this.normalizeRelatorioLookupValue(value);
+            this.relatorioProjetoFiltro = String(value ?? '').trim();
+            this.relatorioProjetoAtivo = false;
+            this.relatorioLocais = [];
+            this.relatorioLocaisFiltrados = [];
+            this.relatorioProjetoRequestCode = codigoProjeto;
+            this.relatorioErrors = {
+              ...this.relatorioErrors,
+              cdprojeto: null,
+              cdlocal: null,
+            };
+
+            if (this.relatorioLocalFiltro !== '') {
+              this.relatorioLocalFiltro = '';
+              const localInput = document.getElementById('relatorio_cdlocal');
+              if (localInput) {
+                localInput.value = '';
+              }
+            }
+
+            if (codigoProjeto === '') {
+              this.relatorioProjetoRequestCode = '';
+              this.relatorioLocaisLoading = false;
+              return;
+            }
+
+            this.relatorioLocaisLoading = true;
+
+            try {
+              const projetoResponse = await fetch(`/api/projetos/nome/${encodeURIComponent(codigoProjeto)}`, {
+                headers: {
+                  'Accept': 'application/json',
+                  'X-Requested-With': 'XMLHttpRequest',
+                },
+              });
+
+              if (!projetoResponse.ok) {
+                throw new Error(`HTTP ${projetoResponse.status}`);
+              }
+
+              const projeto = await projetoResponse.json();
+              if (this.relatorioProjetoRequestCode !== codigoProjeto) {
+                return;
+              }
+
+              if (!projeto?.exists) {
+                this.relatorioErrors = {
+                  ...this.relatorioErrors,
+                  cdprojeto: 'Projeto não encontrado.',
+                };
+                this.relatorioLocalDropdownOpen = false;
+                this.relatorioProjetoDropdownOpen = true;
+                return;
+              }
+
+              const url = new URL("{{ route('api.locais.buscar') }}", window.location.origin);
+              url.searchParams.set('cdprojeto', codigoProjeto);
+              url.searchParams.set('termo', '');
+
+              const response = await fetch(url.toString(), {
+                headers: {
+                  'Accept': 'application/json',
+                  'X-Requested-With': 'XMLHttpRequest',
+                },
+              });
+
+              if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+              }
+
+              const locais = await response.json();
+              if (this.relatorioProjetoRequestCode !== codigoProjeto) {
+                return;
+              }
+              this.relatorioProjetoFiltro = codigoProjeto;
+              const projetoInput = document.getElementById('relatorio_cdprojeto');
+              if (projetoInput) {
+                projetoInput.value = codigoProjeto;
+              }
+              this.relatorioLocais = Array.isArray(locais) ? locais : [];
+              this.relatorioProjetoAtivo = true;
+              this.filtrarRelatorioLocais();
+            } catch (error) {
+              console.error('[RELATORIO] Falha ao carregar locais do projeto', error);
+              if (this.relatorioProjetoRequestCode !== codigoProjeto) {
+                return;
+              }
+              this.relatorioProjetoAtivo = false;
+              this.relatorioLocais = [];
+              this.relatorioLocaisFiltrados = [];
+              this.relatorioErrors = {
+                ...this.relatorioErrors,
+                cdprojeto: 'Não foi possível carregar os locais do projeto informado.',
+              };
+            } finally {
+              if (this.relatorioProjetoRequestCode === codigoProjeto) {
+                this.relatorioLocaisLoading = false;
+              }
+            }
+          },
+          formatRelatorioLocalOption(local) {
+            const codigo = String(local?.cdlocal ?? '').trim();
+            const descricao = String(local?.delocal ?? local?.LOCAL ?? '').trim();
+            return descricao !== '' ? `${codigo} - ${descricao}` : codigo;
           },
           abrirRelatorio() {
             this.relatorioModalOpen = true;
@@ -1773,8 +2000,6 @@
               .catch((err) => {
                 console.error('[PATRI] Modal fetch error', err);
                 modalBody.innerHTML = '<div class="p-6 text-sm text-red-600">Falha ao carregar formulario.</div>';
-              })
-              .finally(() => {
                 this.formModalLoading = false;
               });
           },
@@ -1796,6 +2021,19 @@
           applyFormModalHtml(html) {
             const modalBody = document.getElementById('patrimonio-form-modal-body');
             if (!modalBody) return;
+
+            // Escuta o sinal de que o Alpine init() terminou para esconder o spinner
+            const self = this;
+            const readyHandler = () => { self.formModalLoading = false; };
+            document.addEventListener('patrimonio-form-ready', readyHandler, { once: true });
+            // Fallback: se o evento nunca disparar, oculta após 15s
+            const fallbackTimer = setTimeout(() => {
+              document.removeEventListener('patrimonio-form-ready', readyHandler);
+              if (self.formModalLoading) self.formModalLoading = false;
+            }, 15000);
+            // Quando o evento disparar, cancela o fallback
+            document.addEventListener('patrimonio-form-ready', () => clearTimeout(fallbackTimer), { once: true });
+
             renderPatrimonioModalContent(html, modalBody);
             if (window.Alpine && typeof window.Alpine.initTree === 'function') {
               window.Alpine.initTree(modalBody);
@@ -1850,7 +2088,7 @@
                   return;
                 }
               }
-              // ✅ SUCESSO: Fechar modal e recarregar grid via AJAX (mantendo filtros e paginação)
+              // âœ… SUCESSO: Fechar modal e recarregar grid via AJAX (mantendo filtros e paginação)
               this.closeFormModal();
               if (window.ajaxFetchPatrimonios) {
                 window.ajaxFetchPatrimonios();
@@ -1871,6 +2109,21 @@
             this.relatorioErrors = {};
             this.relatorioGlobalError = null;
             const formData = new FormData(event.target);
+            const cdprojeto = this.normalizeRelatorioLookupValue(formData.get('cdprojeto'));
+            const cdlocal = this.normalizeRelatorioLookupValue(formData.get('cdlocal'));
+
+            formData.set('cdprojeto', cdprojeto);
+            formData.set('cdlocal', cdlocal);
+
+            if (cdlocal && !cdprojeto) {
+              this.relatorioErrors = {
+                cdprojeto: 'Selecione um projeto antes de informar o local físico.',
+              };
+              this.relatorioGlobalError = 'Validação falhou';
+              this.isLoading = false;
+              this.reportLoading = false;
+              return;
+            }
 
             fetch("{{ route('relatorios.patrimonios.gerar') }}", {
               method: 'POST',
@@ -1952,7 +2205,7 @@
           exportarRelatorio(formato) {
             if (this.reportLoading) return;
 
-            // PDF: abre nova aba com HTML para impressão (sem DomPDF — sem limite de memória)
+            // PDF: abre nova aba com HTML para impressão (sem DomPDF ? sem limite de memória)
             if (formato === 'pdf') {
               const action = "{{ route('relatorios.patrimonios.imprimir') }}";
               const form = document.createElement('form');
@@ -2196,7 +2449,7 @@
             
             console.log('[PATRI] Preenchendo modal com:', patrimonio);
             
-            // Preencher campos com acesso correto às propriedades
+            // Preencher campos com acesso correto Ã s propriedades
             // FONTE DE VERDADE: Sempre usar CDPROJETO direto do patrimonio, não do local
             let projetoTexto = '-';
             if (patrimonio.CDPROJETO && patrimonio.projeto) {
@@ -2214,6 +2467,8 @@
               'consulta-projeto': projetoTexto,
               'consulta-local': patrimonio.local?.delocal || '-',
               'consulta-responsavel': patrimonio.funcionario?.NMFUNCIONARIO || patrimonio.CDMATRFUNCIONARIO || '-',
+              'consulta-gerente': patrimonio.gerente_responsavel?.NMFUNCIONARIO || patrimonio.CDMATRGERENTE || '-',
+              'consulta-voltagem': patrimonio.VOLTAGEM || '-',
               'consulta-situacao': patrimonio.SITUACAO || '-',
               'consulta-usuario': patrimonio.USUARIO || '-',
               'consulta-dtaquisicao': patrimonio.DTAQUISICAO ? new Date(patrimonio.DTAQUISICAO).toLocaleDateString('pt-BR') : '-',
@@ -2252,8 +2507,8 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full h-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         {{-- Header --}}
         <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4 flex justify-between items-center">
-          <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">📋 Consulta de Patrimonio</h3>
-          <button onclick="patrimoniosIndex().fecharConsultaModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none">×</button>
+          <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">“‹ Consulta de Patrimonio</h3>
+          <button onclick="patrimoniosIndex().fecharConsultaModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none">Ã—</button>
         </div>
 
         {{-- Content --}}
@@ -2261,7 +2516,7 @@
           {{-- Identificação --}}
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
-              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Nº Patrimonio</p>
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">NÂº Patrimonio</p>
               <p id="consulta-nupatrimonio" class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white min-h-7 break-words">-</p>
             </div>
             <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
@@ -2311,9 +2566,21 @@
               <p id="consulta-responsavel" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
             </div>
             <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+              <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Gerente Responsável</p>
+              <p id="consulta-gerente" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-1 gap-4 sm:gap-6">
+            <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
               <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Criado por</p>
               <p id="consulta-usuario" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
             </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm">
+            <p class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-3">Voltagem</p>
+            <p id="consulta-voltagem" class="text-base sm:text-lg text-gray-900 dark:text-white min-h-6 break-words">-</p>
           </div>
 
           {{-- Datas --}}

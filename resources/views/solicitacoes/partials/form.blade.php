@@ -98,7 +98,7 @@
                                 <div class="relative" @click.away="showLocalDrop=false">
                                     <input id="localDestinoSearch" type="text" x-model="localDestinoSearch"
                                         @focus="abrirDropdownLocal()"
-                                        @input="filtrarLocais()"
+                                        @input="filtrarLocais(); localSelecionado = String($el.value || '').trim()"
                                         @keydown.down.prevent="localIndex = Math.min(localIndex+1, locaisFiltrados.length-1)"
                                         @keydown.up.prevent="localIndex = Math.max(localIndex-1, 0)"
                                         @keydown.enter.prevent="selecionarLocal(locaisFiltrados[localIndex])"
@@ -107,7 +107,7 @@
                                         :class="projetoSelecionado ? 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200' : 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-500 cursor-not-allowed'"
                                         placeholder="Selecione o projeto primeiro..."
                                         required />
-                                    <input type="hidden" id="local_destino" name="local_destino" :value="localSelecionado" />
+                                    <input type="hidden" id="local_destino" name="local_destino" :value="String(localSelecionado || localDestinoSearch || '').trim()" />
                                     <button type="button" x-show="localDestinoSearch && projetoSelecionado" @click="limparLocal()" class="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" tabindex="-1">×</button>
                                     <div x-show="showLocalDrop" x-transition class="absolute z-[999] top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg overflow-hidden text-xs">
                                         <div style="max-height: 180px; overflow-y: auto;">

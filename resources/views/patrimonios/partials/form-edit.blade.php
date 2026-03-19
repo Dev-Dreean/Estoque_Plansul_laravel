@@ -61,6 +61,19 @@
     }
   }
 
+  $nomeGerenteOriginal = '';
+  if ($patrimonio->CDMATRGERENTE) {
+    try {
+      $gerente = App\Models\Funcionario::where('CDMATRFUNCIONARIO', $patrimonio->CDMATRGERENTE)->first();
+      $nomeGerenteOriginal = $gerente?->NMFUNCIONARIO ?? '';
+      if (strlen($nomeGerenteOriginal) > 25) {
+        $nomeGerenteOriginal = substr($nomeGerenteOriginal, 0, 25) . '...';
+      }
+    } catch (\Exception $e) {
+      $nomeGerenteOriginal = '';
+    }
+  }
+
   $dadosOriginais = [
     'NUPATRIMONIO' => $patrimonio->NUPATRIMONIO ?? '',
     'NUSEQOBJ' => $patrimonio->CODOBJETO ?? '',
@@ -71,6 +84,8 @@
     'DENOMELOCAL' => $nomeLocalOriginal,
     'CDMATRFUNCIONARIO' => $patrimonio->CDMATRFUNCIONARIO ?? '',
     'NOMEFUNCIONARIOORIGINAL' => $nomeFuncionarioOriginal,
+    'CDMATRGERENTE' => $patrimonio->CDMATRGERENTE ?? '',
+    'NOMEGERENTEORIGINAL' => $nomeGerenteOriginal,
     'SITUACAO' => $patrimonio->SITUACAO ?? '',
     'FLCONFERIDO' => $patrimonio->FLCONFERIDO ?? '',
     'MARCA' => $patrimonio->MARCA ?? '',
@@ -82,6 +97,7 @@
     'NMPLANTA' => $patrimonio->NMPLANTA ?? '',
     'PESO' => $patrimonio->PESO ?? '',
     'TAMANHO' => $patrimonio->TAMANHO ?? '',
+    'VOLTAGEM' => $patrimonio->VOLTAGEM ?? '',
   ];
 @endphp
 
@@ -104,7 +120,16 @@
             <input type="hidden" name="modal" value="1">
           @endif
 
-          <x-patrimonio-form :patrimonio="$patrimonio" :ultima-verificacao="$ultimaVerificacao" />
+          <x-patrimonio-form
+            :patrimonio="$patrimonio"
+            :ultima-verificacao="$ultimaVerificacao"
+            :nomes-iniciais="[
+              'nomeProjeto'     => $nomeProjetoOriginal,
+              'nomeFuncionario' => $nomeFuncionarioOriginal,
+              'nomeGerente'     => $nomeGerenteOriginal,
+              'nomeLocal'       => $nomeLocalOriginal,
+              'cdlocal'         => (string) ($patrimonio->CDLOCAL ?? ''),
+            ]" />
 
           <div class="flex flex-wrap items-center gap-2 {{ $isModal ? 'mt-4 pt-4' : 'mt-6 pt-6' }} border-t border-gray-200 dark:border-gray-700">
             @if($isModal)

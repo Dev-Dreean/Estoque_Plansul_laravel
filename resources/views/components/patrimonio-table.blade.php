@@ -5,7 +5,7 @@
   <x-patrimonio-table :patrimonios="$patrimonios" :columns="['nupatrimonio', 'descricao']" />
   
   COLUNAS PREDEFINIDAS (patrimonios):
-  - nupatrimonio, numof, codobjeto, nmplanta, nuserie, projeto, local, modelo, marca, descricao, situacao, dtaquisicao, dtoperacao, responsavel, cadastrador
+  - nupatrimonio, numof, codobjeto, nmplanta, nuserie, projeto, local, modelo, marca, descricao, situacao, dtaquisicao, dtoperacao, responsavel, gerente, cadastrador
   
   COLUNAS CUSTOMIZADAS (via slot):
   - Use @props para colunas customizadas em outras models
@@ -42,7 +42,9 @@
 
 @php
   $compact = ($density === 'compact');
-  $cellPadding = $compact ? 'px-2 py-1.5' : 'px-2 py-2';
+  $cellPadding = $compact
+    ? 'px-2 py-2 2xl:px-3 2xl:py-2.5 3xl:px-4 3xl:py-3'
+    : 'px-2 py-2 2xl:px-4 2xl:py-3 3xl:px-5 3xl:py-3.5';
   $headerPadding = $cellPadding;
   $tableText = $compact ? 'text-[10px]' : 'text-[11px]';
   // Compatibilidade com nome antigo
@@ -62,7 +64,8 @@
     'situacao' => 'Status',
     'dtaquisicao' => 'Dt. OC',
     'dtoperacao' => 'Dt. Cad.',
-    'responsavel' => 'Resp.',
+    'responsavel' => 'Resp & Gerente',
+    'gerente' => 'Gerente',
     'cadastrador' => 'Cad. Por',
     'termo_responsabilidade' => 'Termo Resp.',
     // Colunas auxiliares (mantidas caso sejam usadas)
@@ -81,8 +84,8 @@
 @endphp
 
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg z-0 min-w-0">
-  <table class="w-full text-[11px] sm:text-xs md:text-[13px] lg:text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-    <thead class="text-[11px] sm:text-xs md:text-[13px] lg:text-sm uppercase bg-blue-900 dark:bg-blue-900 text-white font-bold shadow-sm">
+  <table class="w-full text-[10px] lg:text-[10px] xl:text-xs 2xl:text-sm 3xl:text-base text-left rtl:text-right text-gray-500 dark:text-gray-400">
+    <thead class="text-[10px] lg:text-[10px] xl:text-xs 2xl:text-sm 3xl:text-base uppercase bg-blue-900 dark:bg-blue-900 text-white font-bold shadow-sm">
       <tr class="divide-x divide-gray-200 dark:divide-gray-700">
         @if($showCheckbox)
           <th class="{{ $headerPadding }} w-12">
@@ -104,7 +107,7 @@
                 ? request()->fullUrlWithQuery(array_merge($baseQuery, ['sort' => $col, 'direction' => $nextDir]))
                 : null;
             @endphp
-            <th class="{{ $headerPadding }} {{ $col === 'situacao' ? 'text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs' : '' }} {{ $col === 'conferido' ? 'text-center w-12' : '' }} whitespace-nowrap">
+            <th class="{{ $headerPadding }} {{ $col === 'situacao' ? 'text-[8px] lg:text-[9px] xl:text-[10px] 2xl:text-xs 3xl:text-[13px]' : '' }} {{ $col === 'conferido' ? 'text-center w-12' : '' }} whitespace-nowrap">
               @if($sortable)
                 <a href="{{ $sortUrl }}"
                   data-ajax-sort
@@ -128,7 +131,7 @@
       </tr>
     </thead>
     
-    <tbody class="text-[13px] sm:text-sm md:text-[15px] lg:text-base font-semibold">
+    <tbody class="text-[11px] lg:text-[11px] xl:text-xs 2xl:text-sm 3xl:text-base font-semibold">
       @forelse ($data as $item)
         @php
           $rowSituacao = trim(preg_replace('/[\r\n]+/', ' ', (string)($item->SITUACAO ?? '')));
@@ -163,7 +166,7 @@
           @foreach($displayColumns as $col)
             {{-- PATRIMÔNIO COLUMNS --}}
             @if($col === 'nupatrimonio')
-              <td class="{{ $headerPadding }} whitespace-nowrap truncate font-semibold" title="{{ $item->NUPATRIMONIO ?? 'N/A' }}">{{ $item->NUPATRIMONIO ?? 'N/A' }}</td>
+              <td class="{{ $headerPadding }} whitespace-nowrap truncate font-bold text-[11px] xl:text-xs 2xl:text-sm 3xl:text-base text-indigo-700 dark:text-indigo-300" title="{{ $item->NUPATRIMONIO ?? 'N/A' }}">{{ $item->NUPATRIMONIO ?? 'N/A' }}</td>
             
             @elseif($col === 'conferido')
               @php
@@ -206,9 +209,9 @@
                   $projectName = $project->NMPROJETO ?? $project->NOMEPROJETO ?? null;
                 @endphp
                 @if($project)
-                  <div class="leading-tight max-w-[100px] sm:max-w-[120px]">
-                    <span class="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 truncate block" title="{{ $project->CDPROJETO }}">{{ $project->CDPROJETO }}</span>
-                    <div class="text-[10px] text-gray-600 dark:text-gray-400 truncate" title="{{ $projectName }}">{{ Str::limit($projectName, 12, '...') }}</div>
+                  <div class="leading-tight max-w-[60px] lg:max-w-[65px] xl:max-w-[75px] 2xl:max-w-[90px] 3xl:max-w-[120px] overflow-hidden">
+                    <span class="font-mono text-[10px] xl:text-xs 2xl:text-sm 3xl:text-base font-semibold text-blue-600 dark:text-blue-400 truncate block" title="{{ $project->CDPROJETO }}">{{ $project->CDPROJETO }}</span>
+                    <div class="text-[9px] xl:text-[10px] 2xl:text-xs 3xl:text-sm text-gray-600 dark:text-gray-400 truncate" title="{{ $projectName }}">{{ Str::limit($projectName, 10, '...') }}</div>
                   </div>
                 @else
                   <span class="text-gray-400 text-[10px]">—</span>
@@ -217,19 +220,19 @@
             @elseif($col === 'local')
               <td class="{{ $headerPadding }}">
                 @if($item->local)
-                  <div class="leading-tight">
-                    <span class="font-mono text-xs font-semibold text-green-600 dark:text-green-400">{{ $item->local->CDLOCAL ?? $item->local->cdlocal }}</span>
-                    <div class="text-[10px] text-gray-600 dark:text-gray-400 truncate" title="{{ $item->local->LOCAL ?? $item->local->delocal }}">{{ Str::limit($item->local->LOCAL ?? $item->local->delocal, 10, '...') }}</div>
+                  <div class="leading-tight max-w-[70px] lg:max-w-[75px] xl:max-w-[85px] 2xl:max-w-[100px] 3xl:max-w-[130px] overflow-hidden">
+                    <span class="font-mono text-[10px] xl:text-xs 2xl:text-sm 3xl:text-base font-semibold text-green-600 dark:text-green-400">{{ $item->local->CDLOCAL ?? $item->local->cdlocal }}</span>
+                    <div class="text-[9px] xl:text-[10px] 2xl:text-xs 3xl:text-sm text-gray-600 dark:text-gray-400 truncate" title="{{ $item->local->LOCAL ?? $item->local->delocal }}">{{ Str::limit($item->local->LOCAL ?? $item->local->delocal, 12, '...') }}</div>
                   </div>
                 @else
                   <span class="text-gray-400 text-xs">—</span>
                 @endif
               </td>
             @elseif($col === 'modelo')
-              <td class="{{ $headerPadding }} truncate max-w-[120px]" title="{{ $item->MODELO }}">{{ $item->MODELO ? Str::limit($item->MODELO, 18, '...') : '—' }}</td>
+              <td class="{{ $headerPadding }} truncate max-w-[80px] xl:max-w-[120px] 2xl:max-w-[160px] 3xl:max-w-[200px]" title="{{ $item->MODELO }}">{{ $item->MODELO ? Str::limit($item->MODELO, 22, '...') : '—' }}</td>
             
             @elseif($col === 'marca')
-              <td class="{{ $headerPadding }} truncate max-w-[120px]" title="{{ $item->MARCA }}">{{ $item->MARCA ? Str::limit($item->MARCA, 18, '...') : '—' }}</td>
+              <td class="{{ $headerPadding }} truncate max-w-[80px] xl:max-w-[120px] 2xl:max-w-[160px] 3xl:max-w-[200px]" title="{{ $item->MARCA }}">{{ $item->MARCA ? Str::limit($item->MARCA, 22, '...') : '—' }}</td>
             
             @elseif($col === 'descricao')
               @php 
@@ -248,10 +251,10 @@
                   $displayText = '—';
                 }
               @endphp
-              <td class="{{ $headerPadding }} font-semibold text-gray-900 dark:text-white truncate max-w-[140px] sm:max-w-[180px]" title="{{ $item->DEPATRIMONIO }}">
+              <td class="{{ $headerPadding }} font-semibold text-gray-900 dark:text-white truncate max-w-[80px] lg:max-w-[90px] xl:max-w-[110px] 2xl:max-w-[150px] 3xl:max-w-[200px] overflow-hidden" title="{{ $item->DEPATRIMONIO }}">
                 @if($displayText !== '—')
                   <span title="{{ $displayText }}">
-                    {{ Str::limit($displayText, 10, '...') }}
+                    {{ Str::limit($displayText, 14, '...') }}
                   </span>
                 @else
                   <span class="text-gray-400">—</span>
@@ -284,7 +287,7 @@
                   }
                 @endphp
                 @if($displaySituacao)
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold {{ $badgeClasses }} shadow-sm">
+                  <span class="inline-flex items-center px-1.5 py-0.5 2xl:px-2.5 2xl:py-1 rounded-full text-[9px] xl:text-[10px] 2xl:text-xs 3xl:text-sm font-semibold {{ $badgeClasses }} shadow-sm whitespace-nowrap">
                     {{ $displaySituacao }}
                   </span>
                 @else
@@ -300,30 +303,80 @@
             
             @elseif($col === 'responsavel')
               <td class="{{ $headerPadding }}">
-                @if($item->responsavel)
-                  <div class="leading-tight">
-                    <span class="font-mono text-xs">{{ $item->responsavel->CDMATRFUNCIONARIO }}</span>
-                    <div class="text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[110px]">{{ $item->responsavel->NMFUNCIONARIO }}</div>
+                @php
+                  $responsavel = $item->funcionario ?? $item->responsavel ?? null;
+                  $gerente = $item->gerenteResponsavel ?? null;
+                  $formatarPessoaPatrimonio = function ($pessoa, $matriculaFallback = null) {
+                    if (!$pessoa && blank($matriculaFallback)) {
+                      return null;
+                    }
+
+                    $matricula = $pessoa->CDMATRFUNCIONARIO ?? $matriculaFallback;
+                    $nomeCompleto = trim((string) ($pessoa->NMFUNCIONARIO ?? ''));
+
+                    if ($nomeCompleto === '') {
+                      return trim((string) $matricula);
+                    }
+
+                    $partes = preg_split('/\s+/', $nomeCompleto);
+                    $nomeExibido = count($partes) >= 2
+                      ? $partes[0] . ' ' . end($partes)
+                      : $nomeCompleto;
+
+                    return trim((string) $matricula) . ' - ' . $nomeExibido;
+                  };
+
+                  $linhaResponsavel = $formatarPessoaPatrimonio($responsavel, $item->CDMATRFUNCIONARIO ?? null);
+                  $linhaGerente = $formatarPessoaPatrimonio($gerente, $item->CDMATRGERENTE ?? null);
+                @endphp
+                @if($linhaResponsavel || $linhaGerente)
+                  <div class="min-w-[150px] xl:min-w-[180px] 2xl:min-w-[220px] space-y-0.5">
+                    <div class="block truncate max-w-[150px] xl:max-w-[180px] 2xl:max-w-[230px] 3xl:max-w-[270px]" title="{{ $linhaResponsavel ?: 'Responsável não informado' }}">
+                      <span class="block font-mono text-[10px] xl:text-xs 2xl:text-sm 3xl:text-base leading-tight text-amber-700 dark:text-amber-400">
+                        {{ $linhaResponsavel ?: '—' }}
+                      </span>
+                    </div>
+                    <div class="block truncate max-w-[150px] xl:max-w-[180px] 2xl:max-w-[230px] 3xl:max-w-[270px]" title="{{ $linhaGerente ?: 'Gerente não informado' }}">
+                      <span class="block font-mono text-[10px] xl:text-xs 2xl:text-sm 3xl:text-base leading-tight text-blue-700 dark:text-blue-400">
+                        {{ $linhaGerente ?: '—' }}
+                      </span>
+                    </div>
                   </div>
+                @else
+                  <span class="text-gray-400 text-[10px]">—</span>
+                @endif
+              </td>
+
+            @elseif($col === 'gerente')
+              <td class="{{ $headerPadding }}">
+                @php
+                  $gerente = $item->gerenteResponsavel ?? null;
+                @endphp
+                @if($gerente)
+                  @php
+                    $nomeCompletoGerente = trim((string) ($gerente->NMFUNCIONARIO ?? ''));
+                    $partesGerente = preg_split('/\s+/', $nomeCompletoGerente);
+                    $nomeGerenteExibido = count($partesGerente) >= 2
+                      ? $partesGerente[0] . ' ' . end($partesGerente)
+                      : $nomeCompletoGerente;
+                  @endphp
+                  <div class="leading-tight">
+                    <span class="font-mono text-[10px] xl:text-xs 2xl:text-sm 3xl:text-base">{{ $gerente->CDMATRFUNCIONARIO }}</span>
+                    <div class="text-[9px] xl:text-[10px] 2xl:text-xs 3xl:text-sm text-gray-500 dark:text-gray-400 truncate max-w-[90px] xl:max-w-[130px] 2xl:max-w-[170px] 3xl:max-w-[210px]">{{ $nomeGerenteExibido }}</div>
+                  </div>
+                @elseif(!empty($item->CDMATRGERENTE))
+                  <span class="font-mono text-[10px] 2xl:text-xs 3xl:text-sm">{{ $item->CDMATRGERENTE }}</span>
                 @else
                   <span class="text-gray-400 text-[10px]">—</span>
                 @endif
               </td>
             
             @elseif($col === 'cadastrador')
-              <td class="{{ $headerPadding }} truncate max-w-[100px]">{{ $item->cadastrado_por_nome ?? '—' }}</td>
+              <td class="{{ $headerPadding }} truncate max-w-[80px] xl:max-w-[120px] 2xl:max-w-[160px] 3xl:max-w-[200px]" title="{{ $item->cadastrado_por_nome ?? '' }}">{{ $item->cadastrado_por_nome ? Str::limit($item->cadastrado_por_nome, 22, '...') : '—' }}</td>
             
             @elseif($col === 'termo_responsabilidade')
-              <td class="{{ $headerPadding }} text-center">
-                @php
-                  $flTermo = strtoupper(trim((string) ($item->FLTERMORESPONSABILIDADE ?? 'N')));
-                  $termoEnviado = in_array($flTermo, ['S', '1', 'Y'], true);
-                @endphp
-                @if($termoEnviado)
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300" title="Termo enviado">Sim</span>
-                @else
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" title="Termo pendente">Não</span>
-                @endif
+              <td class="{{ $headerPadding }} truncate max-w-[80px]" title="{{ $item->VOLTAGEM ?? '—' }}">
+                {{ $item->VOLTAGEM ? Str::limit($item->VOLTAGEM, 10, '...') : '—' }}
               </td>
             
             {{-- CUSTOM COLUMNS: renderiza via slot nomeado --}}

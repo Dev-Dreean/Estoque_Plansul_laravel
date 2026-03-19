@@ -1,7 +1,7 @@
 @props([
     'count' => 0,
     'title' => null,
-    'max' => 99,
+    'max' => 9999,
 ])
 
 @php
@@ -13,7 +13,7 @@
 
 @if($safeCount > 0)
   <span
-    {{ $attributes->merge(['class' => 'inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-[10px] font-semibold bg-red-600 text-white shadow-sm']) }}
+    {{ $attributes->merge(['class' => 'inline-flex items-center justify-center min-w-[2.25rem] h-5 px-2 rounded-full text-[10px] font-semibold bg-red-600 text-white shadow-sm']) }}
     title="{{ $label }}"
     aria-label="{{ $label }}"
   >

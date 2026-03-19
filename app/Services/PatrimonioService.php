@@ -46,7 +46,7 @@ class PatrimonioService
             'perfil' => $user->PERFIL ?? null,
         ]);
 
-        $query = Patrimonio::with(['funcionario', 'local.projeto', 'creator']);
+        $query = Patrimonio::with(['funcionario', 'gerenteResponsavel', 'local.projeto', 'projeto', 'creator']);
 
         // TODOS podem ver TODOS os patrimônios (sem restrição de supervisão)
         // Filtros aplicados apenas via formulário de busca
@@ -496,6 +496,42 @@ class PatrimonioService
             }
         }
 
+        if ($request->filled('matr_gerente')) {
+            $val = trim((string) $request->input('matr_gerente'));
+            if ($val !== '') {
+                $matrValues = array_map('trim', explode(',', $val));
+                $matrValues = array_filter($matrValues, function ($v) {
+                    return $v !== '';
+                });
+
+                if (count($matrValues) > 0) {
+                    if (count(array_filter($matrValues, 'is_numeric')) === count($matrValues)) {
+                        $query->whereIn('CDMATRGERENTE', $matrValues);
+                    } else {
+                        $query->where(function ($q) use ($matrValues) {
+                            foreach ($matrValues as $valor) {
+                                if (is_numeric($valor)) {
+                                    $q->orWhere('CDMATRGERENTE', $valor);
+                                } else {
+                                    $usuario = User::where('NMLOGIN', $valor)
+                                        ->orWhereRaw('LOWER(NOMEUSER) LIKE ?', ['%' . mb_strtolower($valor) . '%'])
+                                        ->first();
+
+                                    if ($usuario) {
+                                        $q->orWhere('CDMATRGERENTE', $usuario->CDMATRFUNCIONARIO);
+                                    } else {
+                                        $q->orWhereHas('gerenteResponsavel', function ($qf) use ($valor) {
+                                            $qf->whereRaw('LOWER(NOMEFUNCIONARIO) LIKE ?', ['%' . mb_strtolower($valor) . '%']);
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
         $this->aplicarFiltroDataRange($query, $request, 'dtaquisicao_de', 'dtaquisicao_ate', 'DTAQUISICAO', 'filtrar_aquisicao');
         $this->aplicarFiltroDataRange($query, $request, 'dtcadastro_de', 'dtcadastro_ate', 'DTOPERACAO', 'filtrar_cadastro');
     }
@@ -522,6 +558,7 @@ class PatrimonioService
             'dtaquisicao' => 'DTAQUISICAO',
             'dtoperacao' => 'DTOPERACAO',
             'responsavel' => 'CDMATRFUNCIONARIO',
+            'gerente' => 'CDMATRGERENTE',
             'cadastrador' => 'USUARIO',
         ];
 
@@ -570,6 +607,7 @@ class PatrimonioService
             'DTOPERACAO' => fn($p) => !blank($p->DTOPERACAO),
             'SITUACAO' => fn($p) => !blank($p->SITUACAO),
             'CDMATRFUNCIONARIO' => fn($p) => !blank($p->CDMATRFUNCIONARIO),
+            'CDMATRGERENTE' => fn($p) => !blank($p->CDMATRGERENTE),
             'CADASTRADOR' => fn($p) => !blank($p->USUARIO) || !blank($p->creator?->NOMEUSER),
         ];
 
@@ -599,6 +637,7 @@ class PatrimonioService
             'DTOPERACAO' => 'Dt. Cadastro',
             'SITUACAO' => 'Situacao',
             'CDMATRFUNCIONARIO' => 'Responsavel',
+            'CDMATRGERENTE' => 'Gerente',
             'CADASTRADOR' => 'Cadastrador',
         ];
 

@@ -5,25 +5,26 @@
         </h2>
     </x-slot>
 
-    <div class="py-8">
+    <div class="py-8 bg-white dark:bg-slate-950">
         <div class="w-full sm:px-6 lg:px-8">
             @include('solicitacoes.partials.subnav')
 
             @if(($historicoDisponivel ?? true) === false)
-                <div class="bg-amber-50 border border-amber-300 text-amber-800 shadow-sm sm:rounded-lg p-4 mb-4">
+                <div class="bg-amber-50/90 border border-amber-300 text-amber-900 shadow-sm sm:rounded-xl p-4 mb-4">
                     O histórico detalhado de status ainda não está disponível neste banco de dados. A tela continua acessível, mas sem registros até que essa tabela exista no ambiente.
                 </div>
             @endif
 
-            <div x-data="{ open: false }" class="bg-panel border border-app p-4 rounded-lg mb-6">
-                <div class="flex justify-between items-center">
-                    <h3 class="font-semibold text-lg text-app">Filtros de Busca</h3>
+            <div x-data="{ open: false }" class="p-4 rounded-xl mb-6 shadow-sm dark:bg-slate-900/90 dark:border-slate-700" style="background-color:#fcfbff;border:1px solid #e9ddff;">
+                    <div class="flex justify-between items-center">
+                    <h3 class="font-semibold text-lg text-slate-800 dark:text-slate-100">Filtros de Busca</h3>
                     <button
                         type="button"
                         @click="open = !open"
                         :aria-expanded="open.toString()"
                         aria-controls="filtros-historico-solicitacoes"
-                        class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-app bg-panel-alt text-app hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-md transition focus:outline-none focus:ring-2 dark:border-sky-900 dark:bg-sky-950/50 dark:text-sky-300 dark:hover:bg-sky-900/60"
+                        style="border:1px solid #ddd6fe;background-color:#f8f5ff;color:#7c3aed;"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -32,7 +33,7 @@
                     </button>
                 </div>
 
-                <div x-show="open" x-transition class="mt-4" style="display: none;">
+                    <div x-show="open" x-transition class="mt-4" style="display: none;">
                     <form method="GET" action="{{ route('solicitacoes-bens.historico') }}" id="filtros-historico-solicitacoes" class="flex flex-nowrap items-end gap-3 w-full">
                         <div class="flex-[2.6] min-w-0">
                             <label for="search" class="sr-only">Busca</label>
@@ -42,7 +43,8 @@
                                 name="search"
                                 value="{{ request('search') }}"
                                 placeholder="Buscar por motivo, solicitante ou usuário"
-                                class="h-10 px-3 w-full text-sm border border-app bg-panel-alt text-app placeholder:text-soft rounded-md"
+                                class="h-10 px-3 w-full text-sm rounded-md shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                style="border:1px solid #e9ddff;background-color:#ffffff;color:#334155;"
                             />
                         </div>
 
@@ -54,13 +56,14 @@
                                 name="solicitacao_id"
                                 value="{{ request('solicitacao_id') }}"
                                 placeholder="Nº Solicitação"
-                                class="h-10 px-3 w-full text-sm border border-app bg-panel-alt text-app placeholder:text-soft rounded-md"
+                                class="h-10 px-3 w-full text-sm rounded-md shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                style="border:1px solid #e9ddff;background-color:#ffffff;color:#334155;"
                             />
                         </div>
 
                         <div class="flex-[1.2] min-w-0">
                             <label for="status" class="sr-only">Status</label>
-                            <select id="status" name="status" class="h-10 px-3 w-full text-sm border border-app bg-panel-alt text-app rounded-md">
+                            <select id="status" name="status" class="h-10 px-3 w-full text-sm rounded-md shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" style="border:1px solid #e9ddff;background-color:#ffffff;color:#334155;">
                                 <option value="">Todos os status</option>
                                 @foreach(($statusOptions ?? []) as $status)
                                     <option value="{{ $status }}" @selected(request('status') === $status)>{{ $status }}</option>
@@ -75,7 +78,8 @@
                                 id="data_inicio"
                                 name="data_inicio"
                                 value="{{ request('data_inicio') }}"
-                                class="h-10 px-3 w-full text-sm border border-app bg-panel-alt text-app rounded-md"
+                                class="h-10 px-3 w-full text-sm rounded-md shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                                style="border:1px solid #e9ddff;background-color:#ffffff;color:#334155;"
                             />
                         </div>
 
@@ -86,21 +90,22 @@
                                 id="data_fim"
                                 name="data_fim"
                                 value="{{ request('data_fim') }}"
-                                class="h-10 px-3 w-full text-sm border border-app bg-panel-alt text-app rounded-md"
+                                class="h-10 px-3 w-full text-sm rounded-md shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                                style="border:1px solid #e9ddff;background-color:#ffffff;color:#334155;"
                             />
                         </div>
 
                         <div class="w-[110px] shrink-0">
                             <label for="per_page" class="sr-only">Itens por página</label>
-                            <select id="per_page" name="per_page" class="h-10 px-3 w-full text-sm border border-app bg-panel-alt text-app rounded-md">
+                            <select id="per_page" name="per_page" class="h-10 px-3 w-full text-sm rounded-md shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" style="border:1px solid #e9ddff;background-color:#ffffff;color:#334155;">
                                 @foreach([10, 30, 50, 100, 200] as $opt)
                                     <option value="{{ $opt }}" @selected((int) request('per_page', 30) === $opt)>{{ $opt }}</option>
                                 @endforeach
                             </select>
                         </div>
 
-                        <x-primary-button class="h-10 px-4 shrink-0">Filtrar</x-primary-button>
-                        <a href="{{ route('solicitacoes-bens.historico') }}" class="h-10 inline-flex items-center px-3 text-sm text-muted hover:text-app rounded-md shrink-0">
+                        <x-primary-button class="h-10 px-4 shrink-0 focus:ring-violet-500" style="background-color:#6d28d9;">Filtrar</x-primary-button>
+                        <a href="{{ route('solicitacoes-bens.historico') }}" class="h-10 inline-flex items-center px-3 text-sm rounded-md shrink-0 dark:text-slate-400 dark:hover:text-slate-100" style="color:#7c3aed;">
                             Limpar
                         </a>
                     </form>
@@ -142,12 +147,25 @@
                         'CRIADO' => 'background-color:#cbd5e1;color:#000000;border-color:#94a3b8;',
                         'PENDENTE' => 'background-color:#facc15;color:#000000;border-color:#eab308;',
                         'AGUARDANDO_CONFIRMACAO' => 'background-color:#60a5fa;color:#000000;border-color:#3b82f6;',
+                        'LIBERACAO' => 'background-color:#c4b5fd;color:#000000;border-color:#8b5cf6;',
                         'CONFIRMADO' => 'background-color:#c084fc;color:#000000;border-color:#9333ea;',
                         'RECEBIDO' => 'background-color:#4ade80;color:#000000;border-color:#16a34a;',
                         'NAO_ENVIADO' => 'background-color:#fb923c;color:#000000;border-color:#f97316;',
                         'NAO_RECEBIDO' => 'background-color:#fda4af;color:#000000;border-color:#f43f5e;',
                         'CANCELADO' => 'background-color:#f87171;color:#000000;border-color:#dc2626;',
                         default => 'background-color:#cbd5e1;color:#000000;border-color:#94a3b8;',
+                    };
+                };
+                $statusLabel = function (string $status) use ($normalizeStatus): string {
+                    return match ($normalizeStatus($status)) {
+                        'CRIADO' => 'SOLICITADO',
+                        'AGUARDANDO_CONFIRMACAO' => 'AGUARDANDO CONFIRMACAO',
+                        'LIBERACAO' => 'LIBERACAO',
+                        'CONFIRMADO' => 'ENVIO',
+                        'ENVIADO' => 'ENVIADO',
+                        'NAO_ENVIADO' => 'CANCELADO',
+                        'NAO_RECEBIDO' => 'NAO RECEBIDO',
+                        default => $normalizeStatus($status) !== '' ? $normalizeStatus($status) : '-',
                     };
                 };
             @endphp
@@ -158,22 +176,25 @@
                         $historicos = $solicitacao->historicoStatus;
                         $ultimo = $historicos->first();
                         $statusAtualRaw = (string) ($ultimo?->status_novo ?? $solicitacao->status ?? 'PENDENTE');
+                        if ($normalizeStatus($statusAtualRaw) === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== '') {
+                            $statusAtualRaw = 'ENVIADO';
+                        }
                         $statusAtual = $normalizeStatus($statusAtualRaw);
                         $badge = $statusBadge($statusAtualRaw);
                         $projetoCodigo = (string) ($solicitacao->projeto->CDPROJETO ?? '-');
                         $projetoNome = (string) ($solicitacao->projeto->NOMEPROJETO ?? '');
                     @endphp
-                    <div x-data="{ expanded: false }" class="bg-panel shadow-sm rounded-lg border border-app overflow-hidden">
-                        <button type="button" @click="expanded = !expanded" class="w-full text-left px-4 py-3 hover:bg-panel-alt transition">
+                    <div x-data="{ expanded: false }" class="overflow-hidden rounded-2xl shadow-sm transition dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700" style="border:1px solid #ddd6fe;background-color:#f8f5ff;" @mouseenter="$el.style.backgroundColor='#f1eaff'" @mouseleave="$el.style.backgroundColor='#f8f5ff'">
+                        <button type="button" @click="expanded = !expanded" class="w-full text-left px-4 py-3 transition" style="background-color:#f8f5ff;">
                             <div class="flex items-center justify-between gap-3">
                                 <div class="min-w-0">
                                     <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="text-sm font-bold text-app">Solicitação #{{ $solicitacao->id }}</span>
+                                        <span class="text-sm font-bold text-slate-900 dark:text-white">Solicitação #{{ $solicitacao->id }}</span>
                                         <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold border" style="{{ $badge }}">
-                                            {{ $statusAtual !== '' ? $statusAtual : 'PENDENTE' }}
+                                            {{ $statusLabel($statusAtualRaw !== '' ? $statusAtualRaw : 'PENDENTE') }}
                                         </span>
                                     </div>
-                                    <div class="mt-1 text-xs text-muted">
+                                    <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
                                         <span class="font-semibold">Solicitante:</span> {{ $solicitacao->solicitante_nome ?? '-' }}
                                         <span class="mx-2">|</span>
                                         <span class="font-semibold">Projeto:</span> {{ $projetoCodigo }}@if($projetoNome !== '') - {{ $projetoNome }}@endif
@@ -182,26 +203,26 @@
                                     </div>
                                 </div>
                                 <div class="text-right shrink-0">
-                                    <div class="text-xs text-muted">Última movimentação</div>
-                                    <div class="text-sm font-semibold text-app">
+                                    <div class="text-xs text-slate-500 dark:text-slate-400">Última movimentação</div>
+                                    <div class="text-sm font-semibold text-slate-900 dark:text-white">
                                         {{ optional($ultimo?->created_at)->format('d/m/Y H:i') ?: '-' }}
                                     </div>
-                                    <div class="mt-1 text-[11px] text-indigo-500">
+                                    <div class="mt-1 text-[11px] dark:text-sky-400" style="color:#8b5cf6;">
                                         <span x-text="expanded ? 'Contrair' : 'Expandir'"></span>
                                     </div>
                                 </div>
                             </div>
                         </button>
 
-                        <div x-show="expanded" x-transition class="border-t border-app p-4 bg-panel-alt">
+                        <div x-show="expanded" x-transition class="p-4 dark:border-slate-700 dark:bg-slate-800/90" style="border-top:1px solid #ddd6fe;background-color:#f3edff;">
                             <div class="overflow-x-auto">
-                                <table class="w-full text-xs md:text-sm text-left text-app">
-                                    <thead class="uppercase text-[11px] bg-panel text-muted">
+                                <table class="w-full min-w-[980px] table-fixed text-xs md:text-sm text-left text-slate-700 dark:text-slate-200">
+                                    <thead class="uppercase text-[11px] dark:bg-slate-800 dark:text-slate-300" style="background-color:#ebe3ff;color:#6d28d9;">
                                         <tr>
-                                            <th class="px-3 py-2 w-[140px]">Data</th>
-                                            <th class="px-3 py-2 w-[180px]">Status</th>
-                                            <th class="px-3 py-2">Detalhe</th>
-                                            <th class="px-3 py-2 w-[200px]">Usuário</th>
+                                            <th class="px-3 py-2 w-[180px] whitespace-nowrap">Data</th>
+                                            <th class="px-3 py-2 w-[280px] whitespace-nowrap">Status</th>
+                                            <th class="px-3 py-2 w-[360px] whitespace-nowrap">Detalhe</th>
+                                            <th class="px-3 py-2 w-[240px] whitespace-nowrap">Usuário</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -216,40 +237,46 @@
                                                     $statusAnteriorRaw = 'CRIADO';
                                                 }
                                                 $badgeAnterior = $statusAnterior !== '' ? $statusBadge($statusAnteriorRaw) : '';
-                                                $badgeLinha = $statusBadge($statusNovo !== '' ? $statusNovoRaw : 'PENDENTE');
+                                                $statusNovoExibicao = $statusNovoRaw;
+                                                if ($statusNovo === 'CONFIRMADO' && trim((string) ($registro->motivo ?? '')) !== '' && str_starts_with(trim((string) $registro->motivo), 'Rastreio:')) {
+                                                    $statusNovoExibicao = 'ENVIADO';
+                                                }
+                                                $badgeLinha = $statusBadge($statusNovo !== '' ? $statusNovoExibicao : 'PENDENTE');
                                                 $usuarioNome = trim((string) ($registro->usuario->NOMEUSER ?? $registro->usuario->NMLOGIN ?? '-'));
                                             @endphp
-                                            <tr class="border-b border-app">
-                                                <td class="px-3 py-2 whitespace-nowrap">
+                                            <tr class="dark:border-slate-700" style="border-bottom:1px solid #ece7f7;background-color:{{ $loop->odd ? '#ffffff' : '#fcfaff' }};">
+                                                <td class="px-3 py-2 align-middle whitespace-nowrap">
                                                     {{ optional($registro->created_at)->format('d/m/Y H:i') ?: '-' }}
                                                 </td>
-                                                <td class="px-3 py-2">
-                                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                                <td class="px-3 py-2 align-middle whitespace-nowrap">
+                                                    <div class="flex items-center gap-1.5 whitespace-nowrap">
                                                         @if($statusAnterior !== '')
                                                             <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold border" style="{{ $badgeAnterior }}">
-                                                                {{ $statusAnterior }}
+                                                                {{ $statusLabel($statusAnteriorRaw) }}
                                                             </span>
                                                             <svg class="w-3 h-3 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                                             </svg>
                                                         @endif
                                                         <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold border" style="{{ $badgeLinha }}">
-                                                            {{ $statusNovo !== '' ? $statusNovo : '-' }}
+                                                            {{ $statusLabel($statusNovoExibicao) }}
                                                         </span>
                                                     </div>
                                                 </td>
-                                                <td class="px-3 py-2">
+                                                <td class="px-3 py-2 align-middle whitespace-nowrap overflow-hidden text-ellipsis" title="{{ trim((string) ($registro->motivo ?? '')) !== '' ? $registro->motivo : 'Sem detalhe informado' }}">
                                                     @if(trim((string) ($registro->motivo ?? '')) !== '')
-                                                        {{ $registro->motivo }}
+                                                        <span class="block overflow-hidden text-ellipsis whitespace-nowrap">{{ $registro->motivo }}</span>
                                                     @else
-                                                        Sem detalhe informado
+                                                        <span class="block overflow-hidden text-ellipsis whitespace-nowrap">Sem detalhe informado</span>
                                                     @endif
                                                 </td>
-                                                <td class="px-3 py-2">{{ $usuarioNome !== '' ? $usuarioNome : '-' }}</td>
+                                                <td class="px-3 py-2 align-middle whitespace-nowrap overflow-hidden text-ellipsis" title="{{ $usuarioNome !== '' ? $usuarioNome : '-' }}">
+                                                    <span class="block overflow-hidden text-ellipsis whitespace-nowrap">{{ $usuarioNome !== '' ? $usuarioNome : '-' }}</span>
+                                                </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="4" class="px-3 py-4 text-center text-muted">
+                                                <td colspan="4" class="px-3 py-4 text-center text-slate-500 dark:text-slate-400">
                                                     Nenhuma movimentação encontrada para esta solicitação.
                                                 </td>
                                             </tr>

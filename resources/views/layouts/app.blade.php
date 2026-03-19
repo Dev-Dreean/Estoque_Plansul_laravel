@@ -17,10 +17,14 @@
     // Tema inicial
     (function() {
       try {
+        var allowedThemes = ['light', 'dark'];
         var cookie = document.cookie.match(/(?:^|; )theme=([^;]+)/);
         var cookieTheme = cookie ? decodeURIComponent(cookie[1]) : null;
         var stored = localStorage.getItem('theme');
-        var t = stored || cookieTheme;
+        var t = allowedThemes.includes(stored) ? stored : cookieTheme;
+        if (!allowedThemes.includes(t)) {
+          t = null;
+        }
         if (!t) {
           // Usa preferência do sistema se não houver armazenamento
           var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -58,15 +62,17 @@
   <?php $___themeChanged = json_encode(session('theme_changed')); ?>
   <script>
     window.addEventListener('DOMContentLoaded', function() {
+      var allowedThemes = ['light', 'dark'];
       var t = JSON.parse('{!! $___themeChanged !!}');
-      if (t) {
+      if (allowedThemes.includes(t)) {
         document.documentElement.setAttribute('data-theme', t);
         try {
           localStorage.setItem('theme', t);
         } catch (e) {}
         window.dispatchEvent(new CustomEvent('theme-changed', {
           detail: {
-            theme: t
+            theme: t,
+            isDark: t === 'dark'
           }
         }));
       }
@@ -203,9 +209,7 @@
       $showAdminTabs =
         request()->routeIs('projetos.*') ||
         request()->routeIs('usuarios.*') ||
-        request()->routeIs('cadastro-tela.*') ||
-        request()->routeIs('settings.theme') ||
-        request()->routeIs('settings.theme.*');
+        request()->routeIs('cadastro-tela.*');
     @endphp
     @if($showAdminTabs)
       <x-admin-nav-tabs />

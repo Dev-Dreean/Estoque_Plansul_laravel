@@ -145,11 +145,8 @@ Route::middleware('auth')->group(function () {
 
 // GRUPO 2: Rotas principais — exigem autenticação + perfil completo
 Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])->group(function () {
-    // Configuração de Tema (apenas administradores)
-    Route::middleware(['admin', 'tela.access:1008'])->group(function () {
-        Route::get('/settings/theme', [\App\Http\Controllers\ThemeController::class, 'index'])->name('settings.theme');
-        Route::post('/settings/theme', [\App\Http\Controllers\ThemeController::class, 'update'])->name('settings.theme.update');
-    });
+    // Preferência de tema do usuário autenticado
+    Route::post('/preferencias/tema', [\App\Http\Controllers\ThemeController::class, 'update'])->name('theme.update');
 
     // Rotas do Dashboard/Gráficos (NUSEQTELA: 1001)
     Route::middleware('tela.access:1001')->prefix('dashboard')->group(function () {
@@ -252,8 +249,14 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         [SolicitacaoBemController::class, 'showModal'])->name('solicitacoes-bens.show-modal');
     Route::post('/solicitacoes-bens/{solicitacao}/confirm', 
         [SolicitacaoBemController::class, 'confirm'])->name('solicitacoes-bens.confirm');
+    Route::post('/solicitacoes-bens/{solicitacao}/forward-to-liberacao',
+        [SolicitacaoBemController::class, 'forwardToLiberacao'])->name('solicitacoes-bens.forward-to-liberacao');
+    Route::post('/solicitacoes-bens/{solicitacao}/release',
+        [SolicitacaoBemController::class, 'release'])->name('solicitacoes-bens.release');
     Route::post('/solicitacoes-bens/{solicitacao}/approve', 
         [SolicitacaoBemController::class, 'approve'])->name('solicitacoes-bens.approve');
+    Route::post('/solicitacoes-bens/{solicitacao}/send',
+        [SolicitacaoBemController::class, 'send'])->name('solicitacoes-bens.send');
     Route::post('/solicitacoes-bens/{solicitacao}/not-sent',
         [SolicitacaoBemController::class, 'notSent'])->name('solicitacoes-bens.not-sent');
     Route::post('/solicitacoes-bens/{solicitacao}/receive',
@@ -306,6 +309,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         Route::get('/codigos', [\App\Http\Controllers\TermoController::class, 'listarCodigos'])->name('codigos.index');
         Route::post('/codigos', [\App\Http\Controllers\TermoController::class, 'criarCodigo'])->name('codigos.store');
         Route::get('/codigos/sugestao', [\App\Http\Controllers\TermoController::class, 'sugestaoCodigo'])->name('codigos.sugestao');
+        Route::get('/responsabilidade/patrimonio/{id}/docx', [\App\Http\Controllers\TermoResponsabilidadeController::class, 'gerarPdfPorPatrimonio'])->name('responsabilidade.patrimonio.docx');
+        Route::post('/responsabilidade/massa/docx', [\App\Http\Controllers\TermoResponsabilidadeController::class, 'gerarDocxEmMassa'])->name('responsabilidade.massa.docx');
         Route::patch('/{codigo}/titulo', [\App\Http\Controllers\TermoController::class, 'atualizarTitulo'])->name('titulo.update');
         // Rotas DOCX usando PhpWord TemplateProcessor
         Route::post('/docx/zip', [\App\Http\Controllers\TermoDocxController::class, 'downloadZip'])->name('docx.zip');

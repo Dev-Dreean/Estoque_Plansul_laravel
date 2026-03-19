@@ -4,14 +4,14 @@
     'badge' => null,
 ])
 
-<div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-800 dark:bg-gray-950 p-4 flex flex-col">
-    <div class="flex items-start justify-between gap-3 pb-3">
+<div class="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm">
+    <div class="flex items-start justify-between gap-3 border-b border-gray-100 dark:border-gray-700 pb-4">
         <div class="flex-1">
-            <h3 class="text-sm font-semibold text-gray-100">{{ $title }}</h3>
-            <p class="text-xs text-gray-400 mt-1">{{ $description }}</p>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">{{ $title }}</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ $description }}</p>
         </div>
         @if($badge)
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
+            <span class="inline-flex items-center rounded-full bg-violet-50 dark:bg-violet-900/30 px-3 py-1 text-xs font-medium text-violet-700 dark:text-violet-300">
                 {{ $badge }}
             </span>
         @endif

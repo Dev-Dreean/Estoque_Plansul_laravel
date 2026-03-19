@@ -341,12 +341,12 @@ class CadastroTelaController extends Controller
             ['codigo' => 1004, 'nome' => 'Cadastro de Telas', 'rota' => '/cadastro-tela'],
             ['codigo' => 1006, 'nome' => 'Relatórios', 'rota' => '/relatorios'],
             ['codigo' => 1007, 'nome' => 'Histórico', 'rota' => '/historico'],
-            ['codigo' => 1008, 'nome' => 'Configurações de Tema', 'rota' => '/settings/theme'],
             ['codigo' => 1010, 'nome' => 'Solicitações de Bens', 'rota' => '/solicitacoes-bens'],
             ['codigo' => 1016, 'nome' => 'Histórico de Solicitações', 'rota' => '/solicitacoes-bens/historico'],
             ['codigo' => 1017, 'nome' => 'Solicitações - Gerenciar Visibilidade', 'rota' => '/solicitacoes-bens'],
             ['codigo' => 1018, 'nome' => 'Solicitações - Visualização Restrita', 'rota' => '/solicitacoes-bens'],
             ['codigo' => 1019, 'nome' => 'Solicitações - Triagem Inicial', 'rota' => '/solicitacoes-bens'],
+            ['codigo' => 1020, 'nome' => 'Solicitações - Liberação de Envio', 'rota' => '/solicitacoes-bens'],
         ];
     }
 

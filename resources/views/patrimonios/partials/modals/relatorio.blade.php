@@ -17,10 +17,10 @@
         <div>
           <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Relatório Geral de Bens
           </h3>
-          <template x-if="relatorioGlobalError">
+              <template x-if="relatorioGlobalError">
             <div class="mb-4 p-3 rounded-md bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-sm text-red-800 dark:text-red-300">
               <strong class="font-semibold" x-text="relatorioGlobalError"></strong>
-              <ul class="list-disc ml-5 mt-1 space-y-0.5" x-html="Object.values(relatorioErrors).map(e=>`<li>${e}</li>`).join('')"></ul>
+              <ul class="list-disc ml-5 mt-1 space-y-0.5" x-html="Object.values(relatorioErrors).flat().filter(Boolean).map(e => `<li>${e}</li>`).join('')"></ul>
             </div>
           </template>
           <form @submit.prevent="gerarRelatorio">
@@ -74,13 +74,102 @@
                 </div>
                 <div x-cloak x-show="open" x-transition class="mt-3">
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                  <div>
+                  <div class="relative" @click.away="relatorioProjetoDropdownOpen = false">
                     <label for="relatorio_cdprojeto" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Projeto</label>
-                    <input type="text" id="relatorio_cdprojeto" name="cdprojeto" list="relatorio_projetos" placeholder="Ex: 101" class="mt-1 h-11 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
+                    <input type="text"
+                      id="relatorio_cdprojeto"
+                      name="cdprojeto"
+                      x-model="relatorioProjetoFiltro"
+                      @focus="abrirDropdownProjetoRelatorio(true)"
+                      @blur.debounce.150ms="relatorioProjetoDropdownOpen = false"
+                      @input.debounce.250ms="filtrarRelatorioProjetos(); onRelatorioProjetoInput($event.target.value)"
+                      @keydown.escape.prevent="relatorioProjetoDropdownOpen = false"
+                      placeholder="Ex: 101"
+                      class="mt-1 h-11 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm pr-14" />
+                    <div class="absolute inset-y-0 right-0 top-6 flex items-center pr-3 gap-2">
+                      <button type="button"
+                        x-show="relatorioProjetoFiltro"
+                        @click="limparProjetoRelatorio()"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none"
+                        title="Limpar seleção"
+                        tabindex="-1">×</button>
+                      <button type="button"
+                        @click="abrirDropdownProjetoRelatorio(true)"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
+                        title="Abrir lista"
+                        tabindex="-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div x-show="relatorioProjetoDropdownOpen" x-transition class="absolute z-50 top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm">
+                      <template x-if="relatorioProjetosFiltrados.length === 0">
+                        <div class="p-2 text-gray-500" x-text="String(relatorioProjetoFiltro || '').trim() === '' ? 'Digite para buscar' : 'Nenhum resultado'"></div>
+                      </template>
+                      <template x-for="(projeto, index) in relatorioProjetosFiltrados" :key="`relatorio-projeto-${index}-${projeto.codigo}`">
+                        <div @click="selecionarProjetoRelatorio(projeto)"
+                          class="px-3 py-2 cursor-pointer hover:bg-indigo-50 dark:hover:bg-gray-700">
+                          <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="projeto.codigo"></span>
+                          <span class="ml-2 text-gray-700 dark:text-gray-300" x-text="`- ${projeto.descricao}`"></span>
+                        </div>
+                      </template>
+                    </div>
+                    <p class="text-xs text-red-500 mt-1" x-show="getRelatorioError('cdprojeto')" x-text="getRelatorioError('cdprojeto')"></p>
                   </div>
-                  <div>
+                  <div class="relative" @click.away="relatorioLocalDropdownOpen = false">
                     <label for="relatorio_cdlocal" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Local físico</label>
-                    <input type="text" id="relatorio_cdlocal" name="cdlocal" list="relatorio_locais" placeholder="Ex: 2002" class="mt-1 h-11 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm" />
+                    <input type="text"
+                      id="relatorio_cdlocal"
+                      name="cdlocal"
+                      x-model="relatorioLocalFiltro"
+                      @focus="abrirDropdownLocalRelatorio(true)"
+                      @blur.debounce.150ms="relatorioLocalDropdownOpen = false"
+                      @input="filtrarRelatorioLocais()"
+                      @keydown.escape.prevent="relatorioLocalDropdownOpen = false"
+                      :disabled="!relatorioProjetoAtivo || relatorioLocaisLoading"
+                      :placeholder="relatorioProjetoAtivo ? 'Digite código ou nome do local' : 'Selecione um projeto'"
+                      :class="{ 'opacity-60 cursor-not-allowed': !relatorioProjetoAtivo || relatorioLocaisLoading }"
+                      class="mt-1 h-11 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm pr-14" />
+                    <div class="absolute inset-y-0 right-0 top-6 flex items-center pr-3 gap-2">
+                      <button type="button"
+                        x-show="relatorioLocalFiltro && relatorioProjetoAtivo"
+                        @click="limparLocalRelatorio()"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none text-lg leading-none"
+                        title="Limpar seleção"
+                        tabindex="-1">×</button>
+                      <button type="button"
+                        @click="abrirDropdownLocalRelatorio(true)"
+                        :disabled="!relatorioProjetoAtivo || relatorioLocaisLoading"
+                        :class="[
+                          'focus:outline-none',
+                          relatorioProjetoAtivo && !relatorioLocaisLoading
+                            ? 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+                            : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                        ]"
+                        title="Abrir lista"
+                        tabindex="-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div x-show="relatorioLocalDropdownOpen" x-transition class="absolute z-50 top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm">
+                      <template x-if="relatorioLocaisLoading">
+                        <div class="p-2 text-gray-500">Carregando locais...</div>
+                      </template>
+                      <template x-if="!relatorioLocaisLoading && relatorioLocaisFiltrados.length === 0">
+                        <div class="p-2 text-gray-500" x-text="String(relatorioLocalFiltro || '').trim() === '' ? 'Nenhum local disponível para este projeto' : 'Nenhum resultado'"></div>
+                      </template>
+                      <template x-for="(local, index) in relatorioLocaisFiltrados" :key="`relatorio-local-${index}-${local.cdlocal}`">
+                        <div @click="selecionarLocalRelatorio(local)"
+                          class="px-3 py-2 cursor-pointer hover:bg-indigo-50 dark:hover:bg-gray-700">
+                          <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400" x-text="local.cdlocal"></span>
+                          <span class="ml-2 text-gray-700 dark:text-gray-300" x-text="`- ${local.delocal ?? local.LOCAL ?? ''}`"></span>
+                        </div>
+                      </template>
+                    </div>
+                    <p class="text-xs text-red-500 mt-1" x-show="getRelatorioError('cdlocal')" x-text="getRelatorioError('cdlocal')"></p>
                   </div>
                   <div>
                     <label for="relatorio_conferido" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Conferido</label>
@@ -96,16 +185,6 @@
                   </div>
                   </div>
                 </div>
-                <datalist id="relatorio_projetos">
-                  @foreach(($projetos ?? collect()) as $p)
-                    <option value="{{ $p->codigo }}">{{ $p->codigo }} - {{ $p->descricao }}</option>
-                  @endforeach
-                </datalist>
-                <datalist id="relatorio_locais">
-                  @foreach(($locais ?? collect()) as $l)
-                    <option value="{{ $l->codigo }}">{{ $l->codigo }} - {{ $l->descricao }}</option>
-                  @endforeach
-                </datalist>
               </div>
               <div x-show="tipoRelatorio === 'descricao'" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg" style="display:none;">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
