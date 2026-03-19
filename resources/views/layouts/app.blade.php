@@ -37,6 +37,21 @@
   </script>
 
   @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+  <!-- Transição de login: injetada no <head> para cobrir ANTES do primeiro paint -->
+  <script>
+    (function() {
+      try {
+        if (sessionStorage.getItem('fromLogin') === '1') {
+          // Injeta estilo que força o overlay visível antes de qualquer pixel renderizado
+          var s = document.createElement('style');
+          s.id = '_login-entry-override';
+          s.textContent = '#appEntryOverlay{display:flex!important;opacity:1!important;transition:none!important;}';
+          document.head.appendChild(s);
+        }
+      } catch(e) {}
+    })();
+  </script>
   
   
   @if(session('theme_changed'))
@@ -61,6 +76,55 @@
 </head>
 
 <body class="font-sans antialiased bg-base text-base-color" x-data="{persistTheme(){try{localStorage.setItem('theme', document.documentElement.getAttribute('data-theme'));}catch(e){}}}" x-init="persistTheme()" @theme-changed.window="persistTheme()">
+
+  <!-- Overlay de entrada após login — replica visual da tela de login -->
+  <div id="appEntryOverlay" style="display:none;position:fixed;inset:0;z-index:99999;pointer-events:none;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif;">
+    <!-- Mesmo background radial do login -->
+    <div style="position:absolute;inset:0;background:radial-gradient(circle at 75% 18%, rgba(251,146,60,0.28) 0%, rgba(251,146,60,0) 35%), radial-gradient(circle at 10% 20%, rgb(30,58,138) 0%, rgb(15,23,42) 90%);"></div>
+    <!-- Forma azul (shape-blue) -->
+    <div style="position:absolute;border-radius:50%;filter:blur(60px);background:rgb(37,99,235);width:600px;height:600px;top:-150px;left:-250px;opacity:0.15;animation:_ov-float 8s infinite alternate;"></div>
+    <!-- Forma laranja (shape-orange) -->
+    <div style="position:absolute;border-radius:50%;filter:blur(60px);background:rgb(251,146,60);width:600px;height:600px;bottom:-150px;right:-250px;opacity:0.30;animation:_ov-float 8s infinite alternate 5s;"></div>
+    <!-- Logo ao fundo, igual ao login -->
+    <img src="{{ asset('img/logo_plansul.svg') }}" alt="" aria-hidden="true"
+         style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:clamp(480px,72vw,980px);height:auto;opacity:0.2;filter:blur(4px);pointer-events:none;user-select:none;">
+    <!-- Pill de carregamento centralizado -->
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:14px;background:rgba(15,23,42,0.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.12);border-radius:999px;padding:14px 28px;">
+      <div style="width:20px;height:20px;border:2.5px solid rgba(255,255,255,0.25);border-top-color:#fb923c;border-radius:50%;animation:_ov-spin 0.8s linear infinite;flex-shrink:0;"></div>
+      <span style="color:rgba(226,232,240,0.9);font-size:0.92rem;font-weight:600;letter-spacing:0.05em;white-space:nowrap;">Carregando patrimônio&hellip;</span>
+    </div>
+    <style>
+      @keyframes _ov-spin  { to { transform: rotate(360deg); } }
+      @keyframes _ov-float { 0% { transform: translate(0,0); } 100% { transform: translate(20px,-20px); } }
+    </style>
+  </div>
+  <script>
+    (function() {
+      try {
+        if (sessionStorage.getItem('fromLogin') === '1') {
+          sessionStorage.removeItem('fromLogin');
+          // Página já coberta pelo CSS injetado no <head> — sem flash branco.
+          // Só revela a tela após o evento load (conteúdo pronto).
+          window.addEventListener('load', function() {
+            var el = document.getElementById('appEntryOverlay');
+            var override = document.getElementById('_login-entry-override');
+            if (!el) return;
+            // Garante display:flex explícito ANTES de remover o override,
+            // evitando que o inline display:none reapareça por um frame
+            el.style.display = 'flex';
+            if (override) override.remove();
+            el.style.transition = 'opacity 0.85s cubic-bezier(0.4,0,0.2,1)';
+            requestAnimationFrame(function() {
+              requestAnimationFrame(function() {
+                el.style.opacity = '0';
+                setTimeout(function() { el.style.display = 'none'; }, 900);
+              });
+            });
+          });
+        }
+      } catch(e) {}
+    })();
+  </script>
   
   <script>
     // 🛡️ Bloquear requisições a domínios de ads e extensões problemáticas

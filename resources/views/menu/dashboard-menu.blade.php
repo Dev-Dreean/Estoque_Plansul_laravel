@@ -1670,21 +1670,6 @@
                     @enderror
                 </div>
 
-                <div class="form-group remember-device">
-                    <label class="remember-device-label">
-                        <input 
-                            type="checkbox" 
-                            name="remember_device" 
-                            id="rememberDevice"
-                            class="remember-device-checkbox"
-                        >
-                        <span class="remember-device-text">
-                            <i class="fas fa-shield-check"></i>
-                            Confiar neste dispositivo por 7 dias
-                        </span>
-                    </label>
-                </div>
-
                 @if ($errors->has('nmlogin') || $errors->has('password'))
                     <div class="error-message">
                         <i class="fas fa-exclamation-circle"></i>
@@ -1902,7 +1887,6 @@
                     const submitBtn = loginForm.querySelector('button[type="submit"]');
                     const nmlogin = loginForm.querySelector('input[name="nmlogin"]').value;
                     const password = loginForm.querySelector('input[name="password"]').value;
-                    const rememberDevice = loginForm.querySelector('input[name="remember_device"]').checked;
                     // Use meta csrf token to avoid stale tokens in long-lived modals
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     
@@ -1922,7 +1906,6 @@
                             body: JSON.stringify({
                                 NMLOGIN: nmlogin,
                                 password: password,
-                                remember_device: rememberDevice,
                                 redirect_to: 'patrimonios.index'
                             })
                         });
@@ -1954,8 +1937,15 @@
                         }
 
                         if (response.ok) {
-                            // Login bem-sucedido, redirecionar
-                            window.location.href = data.redirect || '{{ route("patrimonios.index") }}';
+                            // Login bem-sucedido:
+                            // 1) Cobre INSTANTANEAMENTE com overlay do mesmo visual do login
+                            // 2) Navega no próximo frame (a nova página continua o overlay)
+                            const overlay = document.getElementById('loginTransitionOverlay');
+                            if (overlay) overlay.style.display = 'block';
+                            requestAnimationFrame(() => {
+                                try { sessionStorage.setItem('fromLogin', '1'); } catch(e) {}
+                                window.location.href = data.redirect || '{{ route("patrimonios.index") }}';
+                            });
                         } else {
                             // Erro de autenticação
                             alert(data.message || 'Usuário ou senha inválidos');
@@ -2076,6 +2066,14 @@
         });
 
     </script>
+
+    <!-- Overlay de transição: cobre a tela de login instantaneamente antes de navegar -->
+    <!-- Mesmo visual da página de login para transição seamless -->
+    <div id="loginTransitionOverlay" style="display:none;position:fixed;inset:0;z-index:99999;overflow:hidden;">
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at 75% 18%, rgba(251,146,60,0.28) 0%, rgba(251,146,60,0) 35%), radial-gradient(circle at 10% 20%, rgb(30,58,138) 0%, rgb(15,23,42) 90%);"></div>
+        <div style="position:absolute;border-radius:50%;filter:blur(60px);background:rgb(37,99,235);width:600px;height:600px;top:-150px;left:-250px;opacity:0.15;"></div>
+        <div style="position:absolute;border-radius:50%;filter:blur(60px);background:rgb(251,146,60);width:600px;height:600px;bottom:-150px;right:-250px;opacity:0.30;"></div>
+    </div>
 
     <!-- Loading Modal -->
     <div class="loading-modal" id="loadingModal">

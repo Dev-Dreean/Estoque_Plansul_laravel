@@ -43,16 +43,6 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('profile.completion.create');
         }
 
-        // Se o usuário marcou "Confiar neste dispositivo", definir expiração de 7 dias
-        if ($request->input('remember_device', false)) {
-            // Configurar sessão para expirar em 7 dias (10080 minutos)
-            config(['session.lifetime' => 10080]);
-            
-            // Salvar timestamp do login na sessão
-            $request->session()->put('login_timestamp', now()->timestamp);
-            $request->session()->put('remember_device', true);
-        }
-
         // Se for requisição AJAX, retornar JSON
         if ($request->expectsJson()) {
             return response()->json([
