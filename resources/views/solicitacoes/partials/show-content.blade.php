@@ -759,15 +759,21 @@
 
                                             <dl class="space-y-1.5 text-[12px] leading-snug">
                                                 @foreach($cardEtapa['detalhes'] as $detalhe)
-                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
-                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">{{ $detalhe['label'] }}</dt>
-                                                        <dd
-                                                            class="font-semibold {{ ($detalhe['label'] ?? '') === 'Motivo' ? 'sol-show__flow-reason' : 'break-words' }} {{ $detalhe['class'] ?? 'text-gray-900 dark:text-gray-100' }}"
-                                                            @if(($detalhe['label'] ?? '') === 'Motivo') title="{{ $detalhe['value'] }}" @endif
-                                                        >
-                                                            {{ $detalhe['value'] }}
-                                                        </dd>
-                                                    </div>
+                                                    @if(($detalhe['label'] ?? '') === 'Motivo')
+                                                        <div>
+                                                            <dd
+                                                                class="sol-show__flow-reason font-semibold {{ $detalhe['class'] ?? 'text-gray-900 dark:text-gray-100' }}"
+                                                                title="{{ $detalhe['value'] }}"
+                                                            >
+                                                                {{ $detalhe['value'] }}
+                                                            </dd>
+                                                        </div>
+                                                    @else
+                                                        <div class="grid grid-cols-[84px,1fr] gap-x-2">
+                                                            <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">{{ $detalhe['label'] }}</dt>
+                                                            <dd class="font-semibold break-words {{ $detalhe['class'] ?? 'text-gray-900 dark:text-gray-100' }}">{{ $detalhe['value'] }}</dd>
+                                                        </div>
+                                                    @endif
                                                 @endforeach
                                             </dl>
 

@@ -377,29 +377,26 @@
     }
 
     .sol-index__reason {
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 3;
+        display: block;
         overflow: hidden;
-        word-break: break-word;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
     .sol-show__step-reason {
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 4;
+        display: block;
         overflow: hidden;
         max-width: 11rem;
         margin-inline: auto;
-        word-break: break-word;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
     .sol-show__flow-reason {
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 4;
+        display: block;
         overflow: hidden;
-        word-break: break-word;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
     .sol-index__table-head {

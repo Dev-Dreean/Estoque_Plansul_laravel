@@ -96,7 +96,7 @@
                         @endif
                         @if(in_array($solicitacao->status, ['NAO_ENVIADO', 'CANCELADO'], true) && $motivoStatus !== '')
                             <div class="sol-index__reason mt-1 max-w-[180px] text-[11px] leading-4 text-slate-500" title="{{ $motivoStatus }}">
-                                <span class="font-medium text-slate-400">Motivo:</span> {{ $motivoStatus }}
+                                {{ $motivoStatus }}
                             </div>
                         @endif
                     </td>
