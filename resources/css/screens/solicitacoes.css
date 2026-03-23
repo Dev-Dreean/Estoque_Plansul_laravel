@@ -1,4 +1,5 @@
 @layer components {
+
     /* ----- SUBNAV ----- */
     .sol-subnav {
         @apply inline-flex overflow-hidden rounded-lg shadow-sm;
@@ -28,11 +29,11 @@
         background: var(--surface-3);
     }
 
-    .sol-subnav__tab + .sol-subnav__tab {
+    .sol-subnav__tab+.sol-subnav__tab {
         border-left: 1px solid #ddd6fe;
     }
 
-    .dark .sol-subnav__tab + .sol-subnav__tab {
+    .dark .sol-subnav__tab+.sol-subnav__tab {
         border-left-color: #4c1d95;
     }
 
@@ -373,6 +374,32 @@
         background-color: rgba(91, 33, 182, 0.95);
         color: #ffffff;
         box-shadow: 0 12px 32px -20px rgba(91, 33, 182, 0.95);
+    }
+
+    .sol-index__reason {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        overflow: hidden;
+        word-break: break-word;
+    }
+
+    .sol-show__step-reason {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+        overflow: hidden;
+        max-width: 11rem;
+        margin-inline: auto;
+        word-break: break-word;
+    }
+
+    .sol-show__flow-reason {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+        overflow: hidden;
+        word-break: break-word;
     }
 
     .sol-index__table-head {

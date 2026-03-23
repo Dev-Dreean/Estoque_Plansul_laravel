@@ -236,6 +236,15 @@
                 $motivoCancelamentoStepper = $isCancelamentoAtual
                     ? trim((string) data_get($ultimoEventoCancelamentoTopo, 'motivo', $solicitacao->justificativa_cancelamento ?? ''))
                     : '';
+                $ultimoHistoricoComMotivo = $historicoStatusTopo->reverse()->first(function ($hist) {
+                    return trim((string) ($hist->motivo ?? '')) !== '';
+                });
+                $motivoDetalhesCompleto = trim((string) data_get($ultimoHistoricoComMotivo, 'motivo', $solicitacao->justificativa_cancelamento ?? ''));
+                $rotuloMotivoDetalhes = match ($statusAtualTopo) {
+                    'CANCELADO', 'NAO_ENVIADO' => 'Motivo do cancelamento',
+                    'NAO_RECEBIDO' => 'Motivo do não recebimento',
+                    default => 'Motivo informado',
+                };
                 $etapaAtual = match ($statusAtualTopo) {
                     'PENDENTE', 'CANCELADO' => 1,
                     'AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO' => 2,
@@ -723,7 +732,7 @@
                                         {{ $isCancelamentoStep ? 'Cancelado' : $stepTopo['label'] }}
                                     </span>
                                     @if($isCancelamentoStep && $motivoCancelamentoStepper !== '')
-                                        <span class="mt-0.5 block text-[10px] leading-tight font-semibold text-red-600 dark:text-red-400">
+                                        <span class="sol-show__step-reason mt-0.5 block text-[10px] leading-tight font-semibold text-red-600 dark:text-red-400" title="{{ $motivoCancelamentoStepper }}">
                                             {{ $motivoCancelamentoStepper }}
                                         </span>
                                     @endif
@@ -752,7 +761,12 @@
                                                 @foreach($cardEtapa['detalhes'] as $detalhe)
                                                     <div class="grid grid-cols-[84px,1fr] gap-x-2">
                                                         <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">{{ $detalhe['label'] }}</dt>
-                                                        <dd class="font-semibold break-words {{ $detalhe['class'] ?? 'text-gray-900 dark:text-gray-100' }}">{{ $detalhe['value'] }}</dd>
+                                                        <dd
+                                                            class="font-semibold {{ ($detalhe['label'] ?? '') === 'Motivo' ? 'sol-show__flow-reason' : 'break-words' }} {{ $detalhe['class'] ?? 'text-gray-900 dark:text-gray-100' }}"
+                                                            @if(($detalhe['label'] ?? '') === 'Motivo') title="{{ $detalhe['value'] }}" @endif
+                                                        >
+                                                            {{ $detalhe['value'] }}
+                                                        </dd>
                                                     </div>
                                                 @endforeach
                                             </dl>
@@ -855,6 +869,12 @@
                                     </div>
                                     @if($solicitacao->tracking_code)
                                         <div class="mt-3 text-xs text-slate-500 dark:text-slate-400">Rastreio: <span class="font-mono font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->tracking_code }}</span></div>
+                                    @endif
+                                    @if($motivoDetalhesCompleto !== '')
+                                        <div class="mt-3 rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-3">
+                                            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">{{ $rotuloMotivoDetalhes }}</div>
+                                            <div class="text-sm leading-6 text-gray-900 dark:text-gray-100 whitespace-pre-line break-words">{{ $motivoDetalhesCompleto }}</div>
+                                        </div>
                                     @endif
                                 </div>
                             </div>
