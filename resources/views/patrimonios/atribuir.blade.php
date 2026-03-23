@@ -238,7 +238,7 @@
 
                   // Agrupar por DEPATRIMONIO + MODELO para mostrar quantidade
                   $grupo_patrimonios_agrupado = $grupo_patrimonios->groupBy(function($item) {
-                  return $item->DEPATRIMONIO . '|' . ($item->MODELO  '');
+                  return $item->DEPATRIMONIO . '|' . ($item->MODELO ?? '');
                   })->map(function($items) {
                   return [
                   'quantidade' => $items->count(),
@@ -246,7 +246,7 @@
                   'primeiro' => $items->first()
                   ];
                   });
-                  $termoMeta = !$is_sem_termo ? ($termosMetadados[(string) $grupo_codigo]  ['titulo' => null, 'pode_editar' => false]) : null;
+                  $termoMeta = !$is_sem_termo ? ($termosMetadados[(string) $grupo_codigo] ?? ['titulo' => null, 'pode_editar' => false]) : null;
                   $tituloPersonalizado = trim((string) data_get($termoMeta, 'titulo', ''));
                   $adminPodeEditarTitulo = auth()->check() && (auth()->user()->isGod() || auth()->user()->isAdmin());
                   $podeEditarTitulo = $adminPodeEditarTitulo || (bool) data_get($termoMeta, 'pode_editar', false);
