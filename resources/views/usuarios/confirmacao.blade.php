@@ -29,7 +29,7 @@
                             </svg>
                         </button>
 
-                        <a id="createAnotherBtn" href="{{ route('usuarios.create') }}" style="display:none;" class="px-4 py-2 bg-green-600 text-white rounded-md opacity-0 transition-opacity flex-shrink-0" role="button">Criar outro usuário</a>
+                        <a id="createAnotherBtn" href="{{ route('usuarios.create') }}" class="usuarios-confirmacao__next-link px-4 py-2 bg-green-600 text-white rounded-md transition-opacity flex-shrink-0" role="button">Criar outro usuário</a>
                     </div>
 
                     <p id="copiedMsg" class="text-sm text-green-600 mt-3 hidden">Credenciais copiadas para a área de transferência.</p>

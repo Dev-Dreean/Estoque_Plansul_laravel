@@ -265,26 +265,51 @@
   <script>
     // Desativa autocomplete global (exceto login)
     (function() {
-      const isLogin = /login|entrar/i.test(window.location.pathname);
-      if (isLogin) return;
+      const loginPattern = /login|entrar/i;
 
-      // Desativa autocomplete e correções automáticas
-      document.querySelectorAll('form').forEach(f => f.setAttribute('autocomplete', 'off'));
-      document.querySelectorAll('input, textarea, select').forEach(el => {
-        el.setAttribute('autocomplete', 'off');
-        el.setAttribute('autocapitalize', 'off');
-        el.setAttribute('autocorrect', 'off');
-        el.setAttribute('spellcheck', 'false');
-      });
+      function isLoginForm(form) {
+        if (!form) return false;
+        const action = String(form.getAttribute('action') || '');
+        if (loginPattern.test(window.location.pathname) || loginPattern.test(action)) return true;
+        if (['loginForm', 'loginModalForm'].includes(form.id)) return true;
+        if (form.querySelector('input[name="NMLOGIN"], input[name="nmlogin"], input[type="password"]')) return true;
+        return false;
+      }
 
-      // Evita restauração indesejada de valores em navegadores que usam bfcache
-      window.addEventListener('pageshow', (e) => {
-        if (e.persisted) {
-          document.querySelectorAll('input:not([type="hidden"]), textarea').forEach(el => {
-            if (el.defaultValue && el.value !== '') el.value = '';
-          });
-        }
-      });
+      function applyNoAutofill(root) {
+        const forms = root.querySelectorAll ? root.querySelectorAll('form') : [];
+        forms.forEach((form) => {
+          if (isLoginForm(form)) return;
+          form.setAttribute('autocomplete', 'off');
+        });
+
+        const fields = root.querySelectorAll ? root.querySelectorAll('input, textarea, select') : [];
+        fields.forEach((el) => {
+          const form = el.closest ? el.closest('form') : null;
+          if (isLoginForm(form)) return;
+
+          const type = String(el.getAttribute('type') || el.type || '').toLowerCase();
+          if (el.tagName === 'INPUT') {
+            if (['hidden', 'submit', 'button', 'checkbox', 'radio', 'file', 'image', 'reset'].includes(type)) {
+              el.setAttribute('autocomplete', 'off');
+            } else {
+              el.setAttribute('autocomplete', 'new-password');
+            }
+          } else {
+            el.setAttribute('autocomplete', 'off');
+          }
+
+          el.setAttribute('autocapitalize', 'off');
+          el.setAttribute('autocorrect', 'off');
+          el.setAttribute('spellcheck', 'false');
+        });
+      }
+
+      applyNoAutofill(document);
+
+      // Reaplica quando o DOM muda, porque modais e partials podem ser injetados depois.
+      const observer = new MutationObserver(() => applyNoAutofill(document));
+      observer.observe(document.documentElement, { childList: true, subtree: true });
 
       window.addEventListener('unload', function() {});
 
@@ -356,3 +381,4 @@
 </body>
 
 </html>
+

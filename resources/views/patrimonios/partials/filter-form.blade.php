@@ -185,7 +185,7 @@
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
       </svg>
-      <span class="sr-only">Expandir filtros</span>
+      <span class="sr-only">Abrir filtros</span>
     </button>
   </div>
   <div x-cloak x-show="open" x-transition class="mt-4 bg-gray-200 dark:bg-gray-800 rounded-lg p-4" :id="$id('filtro-patrimônios')">

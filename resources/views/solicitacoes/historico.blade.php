@@ -15,7 +15,7 @@
                 </div>
             @endif
 
-            <div x-data="{ open: false }" class="p-4 rounded-xl mb-6 shadow-sm dark:bg-slate-900/90 dark:border-slate-700" style="background-color:#fcfbff;border:1px solid #e9ddff;">
+            <div x-data="{ open: false }" class="sol-history-panel">
                     <div class="flex justify-between items-center">
                     <h3 class="font-semibold text-lg text-slate-800 dark:text-slate-100">Filtros de Busca</h3>
                     <button
@@ -23,13 +23,12 @@
                         @click="open = !open"
                         :aria-expanded="open.toString()"
                         aria-controls="filtros-historico-solicitacoes"
-                        class="inline-flex items-center justify-center w-8 h-8 rounded-md transition focus:outline-none focus:ring-2 dark:border-sky-900 dark:bg-sky-950/50 dark:text-sky-300 dark:hover:bg-sky-900/60"
-                        style="border:1px solid #ddd6fe;background-color:#f8f5ff;color:#7c3aed;"
+                        class="sol-history-panel__toggle"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
-                        <span class="sr-only">Expandir filtros</span>
+                        <span class="sr-only">Abrir filtros</span>
                     </button>
                 </div>
 
@@ -43,8 +42,7 @@
                                 name="search"
                                 value="{{ request('search') }}"
                                 placeholder="Buscar por motivo, solicitante ou usuário"
-                                class="h-10 px-3 w-full text-sm rounded-md shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
-                                style="border:1px solid #e9ddff;background-color:#ffffff;color:#334155;"
+                                class="sol-history-field dark:placeholder:text-slate-500"
                             />
                         </div>
 
@@ -56,14 +54,13 @@
                                 name="solicitacao_id"
                                 value="{{ request('solicitacao_id') }}"
                                 placeholder="Nº Solicitação"
-                                class="h-10 px-3 w-full text-sm rounded-md shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
-                                style="border:1px solid #e9ddff;background-color:#ffffff;color:#334155;"
+                                class="sol-history-field dark:placeholder:text-slate-500"
                             />
                         </div>
 
                         <div class="flex-[1.2] min-w-0">
                             <label for="status" class="sr-only">Status</label>
-                            <select id="status" name="status" class="h-10 px-3 w-full text-sm rounded-md shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" style="border:1px solid #e9ddff;background-color:#ffffff;color:#334155;">
+                            <select id="status" name="status" class="sol-history-field dark:text-slate-100">
                                 <option value="">Todos os status</option>
                                 @foreach(($statusOptions ?? []) as $status)
                                     <option value="{{ $status }}" @selected(request('status') === $status)>{{ $status }}</option>
@@ -78,8 +75,7 @@
                                 id="data_inicio"
                                 name="data_inicio"
                                 value="{{ request('data_inicio') }}"
-                                class="h-10 px-3 w-full text-sm rounded-md shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                                style="border:1px solid #e9ddff;background-color:#ffffff;color:#334155;"
+                                class="sol-history-field dark:text-slate-100"
                             />
                         </div>
 
@@ -90,22 +86,21 @@
                                 id="data_fim"
                                 name="data_fim"
                                 value="{{ request('data_fim') }}"
-                                class="h-10 px-3 w-full text-sm rounded-md shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-                                style="border:1px solid #e9ddff;background-color:#ffffff;color:#334155;"
+                                class="sol-history-field dark:text-slate-100"
                             />
                         </div>
 
                         <div class="w-[110px] shrink-0">
                             <label for="per_page" class="sr-only">Itens por página</label>
-                            <select id="per_page" name="per_page" class="h-10 px-3 w-full text-sm rounded-md shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" style="border:1px solid #e9ddff;background-color:#ffffff;color:#334155;">
+                            <select id="per_page" name="per_page" class="sol-history-field dark:text-slate-100">
                                 @foreach([10, 30, 50, 100, 200] as $opt)
                                     <option value="{{ $opt }}" @selected((int) request('per_page', 30) === $opt)>{{ $opt }}</option>
                                 @endforeach
                             </select>
                         </div>
 
-                        <x-primary-button class="h-10 px-4 shrink-0 focus:ring-violet-500" style="background-color:#6d28d9;">Filtrar</x-primary-button>
-                        <a href="{{ route('solicitacoes-bens.historico') }}" class="h-10 inline-flex items-center px-3 text-sm rounded-md shrink-0 dark:text-slate-400 dark:hover:text-slate-100" style="color:#7c3aed;">
+                        <x-primary-button class="sol-history-filter-button">Filtrar</x-primary-button>
+                        <a href="{{ route('solicitacoes-bens.historico') }}" class="sol-history-clear">
                             Limpar
                         </a>
                     </form>
@@ -184,8 +179,8 @@
                         $projetoCodigo = (string) ($solicitacao->projeto->CDPROJETO ?? '-');
                         $projetoNome = (string) ($solicitacao->projeto->NOMEPROJETO ?? '');
                     @endphp
-                    <div x-data="{ expanded: false }" class="overflow-hidden rounded-2xl shadow-sm transition dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700" style="border:1px solid #ddd6fe;background-color:#f8f5ff;" @mouseenter="$el.style.backgroundColor='#f1eaff'" @mouseleave="$el.style.backgroundColor='#f8f5ff'">
-                        <button type="button" @click="expanded = !expanded" class="w-full text-left px-4 py-3 transition" style="background-color:#f8f5ff;">
+                    <div x-data="{ expanded: false }" class="sol-history-card">
+                        <button type="button" @click="expanded = !expanded" class="sol-history-card__button">
                             <div class="flex items-center justify-between gap-3">
                                 <div class="min-w-0">
                                     <div class="flex items-center gap-2 flex-wrap">
@@ -207,17 +202,17 @@
                                     <div class="text-sm font-semibold text-slate-900 dark:text-white">
                                         {{ optional($ultimo?->created_at)->format('d/m/Y H:i') ?: '-' }}
                                     </div>
-                                    <div class="mt-1 text-[11px] dark:text-sky-400" style="color:#8b5cf6;">
-                                        <span x-text="expanded ? 'Contrair' : 'Expandir'"></span>
+                                    <div class="sol-history-card__expand mt-1 text-[11px] dark:text-sky-400">
+                                        <span x-text="expanded ? 'Fechar' : 'Abrir'"></span>
                                     </div>
                                 </div>
                             </div>
                         </button>
 
-                        <div x-show="expanded" x-transition class="p-4 dark:border-slate-700 dark:bg-slate-800/90" style="border-top:1px solid #ddd6fe;background-color:#f3edff;">
+                        <div x-show="expanded" x-transition class="sol-history-card__body">
                             <div class="overflow-x-auto">
                                 <table class="w-full min-w-[980px] table-fixed text-xs md:text-sm text-left text-slate-700 dark:text-slate-200">
-                                    <thead class="uppercase text-[11px] dark:bg-slate-800 dark:text-slate-300" style="background-color:#ebe3ff;color:#6d28d9;">
+                                    <thead class="sol-history-table-head">
                                         <tr>
                                             <th class="px-3 py-2 w-[180px] whitespace-nowrap">Data</th>
                                             <th class="px-3 py-2 w-[280px] whitespace-nowrap">Status</th>
@@ -244,7 +239,7 @@
                                                 $badgeLinha = $statusBadge($statusNovo !== '' ? $statusNovoExibicao : 'PENDENTE');
                                                 $usuarioNome = trim((string) ($registro->usuario->NOMEUSER ?? $registro->usuario->NMLOGIN ?? '-'));
                                             @endphp
-                                            <tr class="dark:border-slate-700" style="border-bottom:1px solid #ece7f7;background-color:{{ $loop->odd ? '#ffffff' : '#fcfaff' }};">
+                                            <tr class="sol-history-table-row {{ $loop->even ? 'sol-history-table-row--alt' : '' }}">
                                                 <td class="px-3 py-2 align-middle whitespace-nowrap">
                                                     {{ optional($registro->created_at)->format('d/m/Y H:i') ?: '-' }}
                                                 </td>

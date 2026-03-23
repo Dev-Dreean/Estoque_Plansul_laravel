@@ -35,6 +35,7 @@ class SolicitacaoBemController extends Controller
     {
         $perPage = max(10, min(200, $request->integer('per_page', 30)));
         $query = SolicitacaoBem::query();
+        $statusVisualFilters = $this->extractStatusVisualFilters($request);
         /** @var User|null $user */
         $user = Auth::user();
 
@@ -42,7 +43,9 @@ class SolicitacaoBemController extends Controller
             $this->applyOwnerScope($query, $user);
         }
 
-        if ($request->filled('status')) {
+        if (!empty($statusVisualFilters)) {
+            $this->applyStatusVisualFilters($query, $statusVisualFilters);
+        } elseif ($request->filled('status')) {
             $query->where('status', $request->input('status'));
         }
 
@@ -95,6 +98,7 @@ class SolicitacaoBemController extends Controller
             $direction = 'desc';
         }
 
+        $query->where('status', '!=', SolicitacaoBem::STATUS_ARQUIVADO);
         $query->withCount('itens');
 
         if (Schema::hasTable('solicitacoes_bens_status_historico')) {
@@ -109,6 +113,10 @@ class SolicitacaoBemController extends Controller
 
         $statusOptions = SolicitacaoBem::statusOptions();
         $projetos = $this->loadProjetosUnicos();
+
+        if ($request->header('X-Solicitacoes-Grid') === '1') {
+            return view('solicitacoes.partials.index-grid', compact('solicitacoes', 'sort', 'direction'));
+        }
 
         return view('solicitacoes.index', compact('solicitacoes', 'statusOptions', 'projetos', 'sort', 'direction'));
     }
@@ -1258,6 +1266,69 @@ HTML;
         return mb_strtoupper(preg_replace('/\s+/u', ' ', $nome) ?: $nome, 'UTF-8');
     }
 
+    private function extractStatusVisualFilters(Request $request): array
+    {
+        $statusVisual = $request->input('status_visual', []);
+
+        if (!is_array($statusVisual)) {
+            $statusVisual = [$statusVisual];
+        }
+
+        return array_values(array_unique(array_filter(array_map(function ($status) {
+            $status = trim((string) $status);
+            if ($status === '') {
+                return null;
+            }
+
+            return str_replace(['-', ' '], '_', mb_strtoupper($status, 'UTF-8'));
+        }, $statusVisual))));
+    }
+
+    private function applyStatusVisualFilters($query, array $statusVisualFilters): void
+    {
+        $query->where(function ($builder) use ($statusVisualFilters) {
+            foreach ($statusVisualFilters as $statusVisual) {
+                switch ($statusVisual) {
+                    case SolicitacaoBem::STATUS_PENDENTE:
+                    case SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO:
+                    case SolicitacaoBem::STATUS_LIBERACAO:
+                    case SolicitacaoBem::STATUS_RECEBIDO:
+                    case SolicitacaoBem::STATUS_NAO_RECEBIDO:
+                        $builder->orWhere('status', $statusVisual);
+                        break;
+
+                    case SolicitacaoBem::STATUS_CONFIRMADO:
+                        $builder->orWhere(function ($confirmadoQuery) {
+                            $confirmadoQuery
+                                ->where('status', SolicitacaoBem::STATUS_CONFIRMADO)
+                                ->where(function ($trackingQuery) {
+                                    $trackingQuery
+                                        ->whereNull('tracking_code')
+                                        ->orWhere('tracking_code', '');
+                                });
+                        });
+                        break;
+
+                    case 'ENVIADO':
+                        $builder->orWhere(function ($enviadoQuery) {
+                            $enviadoQuery
+                                ->where('status', SolicitacaoBem::STATUS_CONFIRMADO)
+                                ->whereNotNull('tracking_code')
+                                ->where('tracking_code', '!=', '');
+                        });
+                        break;
+
+                    case SolicitacaoBem::STATUS_CANCELADO:
+                        $builder->orWhereIn('status', [
+                            SolicitacaoBem::STATUS_CANCELADO,
+                            SolicitacaoBem::STATUS_NAO_ENVIADO,
+                        ]);
+                        break;
+                }
+            }
+        });
+    }
+
     private function jaPassouPorStatusFinal(SolicitacaoBem $solicitacao): bool
     {
         if (in_array($solicitacao->status, [SolicitacaoBem::STATUS_CONFIRMADO, SolicitacaoBem::STATUS_RECEBIDO], true)) {
@@ -1821,12 +1892,8 @@ HTML;
             return $this->denyAccess($request, 'Você não tem permissão para cancelar a Solicitação.');
         }
 
-        if ($solicitacao->status === SolicitacaoBem::STATUS_CANCELADO) {
-            return $this->denyAccess($request, 'Esta Solicitação já foi cancelada.');
-        }
-
-        if ($solicitacao->status !== SolicitacaoBem::STATUS_PENDENTE) {
-            return $this->denyAccess($request, 'Apenas solicitações pendentes podem ser canceladas.');
+        if (in_array($solicitacao->status, [SolicitacaoBem::STATUS_CANCELADO, SolicitacaoBem::STATUS_RECEBIDO], true)) {
+            return $this->denyAccess($request, 'Esta solicitação não pode mais ser cancelada.');
         }
 
         $validated = $request->validate([
@@ -1839,6 +1906,9 @@ HTML;
             'justificativa_cancelamento' => $validated['justificativa_cancelamento'],
             'cancelado_por_id' => $user->getAuthIdentifier(),
             'cancelado_em' => now(),
+            'tracking_code' => null,
+            'confirmado_por_id' => null,
+            'confirmado_em' => null,
         ]);
         $this->registrarHistoricoStatus(
             $solicitacao,
@@ -1874,12 +1944,14 @@ HTML;
             return $this->denyAccess($request, 'Você não tem permissão para retornar a Solicitação para análise.');
         }
 
-        if (!in_array($solicitacao->status, [SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO, SolicitacaoBem::STATUS_NAO_ENVIADO, SolicitacaoBem::STATUS_LIBERACAO], true)) {
-            return $this->denyAccess($request, 'Apenas solicitações em análise ou não enviadas podem voltar para pendente.');
-        }
-
-        if ($this->jaPassouPorStatusFinal($solicitacao)) {
-            return $this->denyAccess($request, 'Esta solicitação já passou por etapa final (enviado/recebido) e não pode retornar para pendente.');
+        if (!in_array($solicitacao->status, [
+            SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO,
+            SolicitacaoBem::STATUS_NAO_ENVIADO,
+            SolicitacaoBem::STATUS_LIBERACAO,
+            SolicitacaoBem::STATUS_CONFIRMADO,
+            SolicitacaoBem::STATUS_NAO_RECEBIDO,
+        ], true)) {
+            return $this->denyAccess($request, 'Esta solicitação não pode voltar para a etapa anterior.');
         }
 
         $validated = $request->validate([
@@ -1894,17 +1966,28 @@ HTML;
         $destinationType = $solicitacao->destination_type ?: SolicitacaoBem::DESTINATION_PROJETO;
 
         $statusAnterior = $solicitacao->status;
-        $statusDestino = $solicitacao->status === SolicitacaoBem::STATUS_LIBERACAO
-            ? SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO
-            : SolicitacaoBem::STATUS_PENDENTE;
-        $solicitacao->update([
-            "status" => $statusDestino,
-            "observacao_controle" => $observacaoNova,
-            "tracking_code" => null,
-            "destination_type" => $destinationType,
-            "confirmado_por_id" => null,
-            "confirmado_em" => null,
-        ]);
+        $statusDestino = match ($solicitacao->status) {
+            SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO,
+            SolicitacaoBem::STATUS_NAO_ENVIADO => SolicitacaoBem::STATUS_PENDENTE,
+            SolicitacaoBem::STATUS_LIBERACAO => SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO,
+            SolicitacaoBem::STATUS_CONFIRMADO => SolicitacaoBem::STATUS_LIBERACAO,
+            SolicitacaoBem::STATUS_NAO_RECEBIDO => SolicitacaoBem::STATUS_CONFIRMADO,
+            default => $solicitacao->status,
+        };
+
+        $payload = [
+            'status' => $statusDestino,
+            'observacao_controle' => $observacaoNova,
+            'destination_type' => $destinationType,
+        ];
+
+        if ($statusDestino !== SolicitacaoBem::STATUS_CONFIRMADO) {
+            $payload['tracking_code'] = null;
+            $payload['confirmado_por_id'] = null;
+            $payload['confirmado_em'] = null;
+        }
+
+        $solicitacao->update($payload);
         $this->registrarHistoricoStatus(
             $solicitacao,
             $statusAnterior,
@@ -1922,11 +2005,11 @@ HTML;
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Solicitação retornada para análise com sucesso!',
+                'message' => 'Solicitação retornada para a etapa anterior com sucesso!',
             ]);
         }
 
-        return redirect()->back()->with('success', 'Solicitação retornada para análise com sucesso!');
+        return redirect()->back()->with('success', 'Solicitação retornada para a etapa anterior com sucesso!');
     }
 
     /**
@@ -1985,6 +2068,7 @@ HTML;
             if (!empty($itens)) {
                 $novaSolicitacao->itens()->createMany($itens);
             }
+
         });
 
         if ($novaSolicitacao) {
@@ -2009,6 +2093,42 @@ HTML;
         return redirect()->route('solicitacoes-bens.index')->with('success', $mensagem);
     }
 
+
+    public function archiveCancelled(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canRecreateCancelled($user, $solicitacao)) {
+            return $this->denyAccess($request, 'Voce nao tem permissao para arquivar esta solicitacao.');
+        }
+
+        if ($solicitacao->status !== SolicitacaoBem::STATUS_CANCELADO) {
+            return $this->denyAccess($request, 'Apenas solicitacoes canceladas podem ser arquivadas.');
+        }
+
+        $statusAnterior = $solicitacao->status;
+        $solicitacao->update([
+            'status' => SolicitacaoBem::STATUS_ARQUIVADO,
+        ]);
+
+        $this->registrarHistoricoStatus(
+            $solicitacao,
+            $statusAnterior,
+            SolicitacaoBem::STATUS_ARQUIVADO,
+            'arquivar',
+            'Solicitacao arquivada manualmente.'
+        );
+
+        $mensagem = 'Solicitacao arquivada com sucesso.';
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $mensagem,
+            ]);
+        }
+
+        return redirect()->route('solicitacoes-bens.index')->with('success', $mensagem);
+    }
     private function solicitanteMatriculaValida(?User $user): bool
     {
         if (!$user) {
@@ -2046,6 +2166,7 @@ HTML;
         return redirect()->route('profile.completion.create')->with('error', $message);
     }
 }
+
 
 
 

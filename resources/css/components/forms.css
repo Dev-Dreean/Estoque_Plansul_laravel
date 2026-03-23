@@ -1,0 +1,42 @@
+@layer components {
+    .field,
+    .input-base {
+        @apply w-full rounded-md px-3 py-2 text-sm transition outline-none;
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+.field:focus,
+.input-base:focus {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px var(--ring)22;
+}
+
+    .field-sm,
+    .input-sm {
+        @apply px-2 py-1 text-xs;
+    }
+
+    .field-disabled {
+        background: var(--surface-2);
+        color: var(--text-soft);
+        cursor: not-allowed;
+    }
+}
+
+.link {
+    color: var(--accent);
+}
+
+.link:hover {
+    color: var(--accent-hover);
+}
+
+.link-muted {
+    color: var(--text-soft);
+}
+
+.link-muted:hover {
+    color: var(--text);
+}

@@ -69,7 +69,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
-                    <span class="sr-only">Expandir filtros adicionais</span>
+                    <span class="sr-only">Abrir filtros adicionais</span>
                   </button>
                 </div>
                 <div x-cloak x-show="open" x-transition class="mt-3">
@@ -401,20 +401,13 @@
       <div @click.outside="resultadosModalOpen = false" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-7xl p-6 max-h-[90vh] flex flex-col relative">
         
         {{-- OVERLAY DE LOADING --}}
-        <div x-show="reportLoading" class="absolute inset-0 bg-white/70 dark:bg-gray-800/70 rounded-lg backdrop-blur-sm flex items-center justify-center z-40" style="display: none;">
-          <div class="flex flex-col items-center gap-4">
-            {{-- Spinner --}}
-            <svg class="animate-spin h-12 w-12 text-indigo-600 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-            </svg>
-            {{-- Texto --}}
-            <div class="text-center">
-              <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">Carregando Relatório</p>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Por favor, aguarde...</p>
-            </div>
-          </div>
-        </div>
+        <x-modal-loading
+          x-show="reportLoading"
+          x-cloak
+          class="absolute inset-0 z-40 rounded-lg"
+          title="Carregando Relatório"
+          subtitle="Por favor, aguarde..."
+        />
 
         <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Resultado do Relatório</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">

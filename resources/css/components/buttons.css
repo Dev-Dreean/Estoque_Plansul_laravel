@@ -1,0 +1,67 @@
+@layer components {
+    .btn,
+    .btn-base {
+        @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+        background: var(--surface-2);
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+    .btn:hover,
+    .btn-base:hover {
+        background: var(--surface);
+    }
+
+    .btn-primary,
+    .btn-accent {
+        background: var(--accent);
+        color: #fff;
+        border: 1px solid var(--accent);
+    }
+
+    .btn-primary:hover,
+    .btn-accent:hover {
+        background: var(--accent-hover);
+    }
+
+    .btn-secondary,
+    .btn-neutral {
+        background: var(--surface-2);
+        color: var(--text);
+    }
+
+    .btn-secondary:hover,
+    .btn-neutral:hover {
+        background: var(--surface);
+    }
+
+    .btn-danger {
+        background: var(--danger);
+        color: #fff;
+        border: 1px solid var(--danger);
+    }
+
+    .btn-danger:hover {
+        filter: brightness(.92);
+    }
+
+    .btn-warning {
+        background: var(--warn);
+        color: #fff;
+        border: 1px solid var(--warn);
+    }
+
+    .btn-warning:hover {
+        filter: brightness(.95);
+    }
+
+    .btn-outlined {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+    .btn-outlined:hover {
+        background: var(--surface-2);
+    }
+}

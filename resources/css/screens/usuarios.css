@@ -1,0 +1,6 @@
+@layer components {
+    .usuarios-confirmacao__next-link {
+        display: none;
+        opacity: 0;
+    }
+}

@@ -33,8 +33,24 @@
 
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="w-1/2">
+                    @php
+                        $userForCreate = auth()->user();
+                        $isAdmin = $userForCreate?->isAdmin() ?? false;
+                        $canCreateSolicitacao = $isAdmin || ($userForCreate?->temAcessoTela('1013') ?? false);
+                        $statusTagOptions = [
+                            ['key' => 'PENDENTE', 'label' => 'Pendente'],
+                            ['key' => 'AGUARDANDO_CONFIRMACAO', 'label' => 'Aguardando confirmação'],
+                            ['key' => 'LIBERACAO', 'label' => 'Liberação'],
+                            ['key' => 'CONFIRMADO', 'label' => 'Envio'],
+                            ['key' => 'ENVIADO', 'label' => 'Enviado'],
+                            ['key' => 'RECEBIDO', 'label' => 'Recebido'],
+                            ['key' => 'NAO_RECEBIDO', 'label' => 'Não recebido'],
+                            ['key' => 'CANCELADO', 'label' => 'Cancelado'],
+                        ];
+                    @endphp
+
+                    <div class="sol-index__toolbar">
+                        <div class="sol-index__search-panel">
                             <div class="flex flex-col gap-1">
                                 <template x-if="tags.length > 0">
                                     <div class="flex flex-wrap items-center gap-2 mb-3">
@@ -53,7 +69,7 @@
                                     @keydown.backspace="removeLastTag()"
                                     type="text"
                                     placeholder="Buscar..."
-                                    :style="'width:' + Math.max(120, inputValue.length * 10) + 'px'"
+                                    :style="'width:' + Math.max(160, inputValue.length * 10) + 'px'"
                                     class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 rounded-md shadow-sm transition-all duration-200">
                                 <template x-if="inputValue.length > 0">
                                     <div class="w-full mt-1">
@@ -70,230 +86,49 @@
                             </div>
                         </div>
 
-                        @php
-                            $userForCreate = auth()->user();
-                            $isAdmin = $userForCreate?->isAdmin() ?? false;
-                            $canCreateSolicitacao = $isAdmin || ($userForCreate?->temAcessoTela('1013') ?? false);
-                        @endphp
                         @if($canCreateSolicitacao)
                             <button
                                 type="button"
                                 @click="openCreateModal()"
-                                class="text-white font-semibold py-2 px-4 rounded inline-flex items-center transition"
-                                style="background-color:#5b21b6;"
-                                onmouseover="this.style.backgroundColor='#4c1d95'"
-                                onmouseout="this.style.backgroundColor='#5b21b6'">
+                                class="sol-index__create-button">
                                 <x-heroicon-o-plus-circle class="w-5 h-5 mr-2" />
-                                <span>Nova solicitacao</span>
+                                <span>Nova solicitação</span>
                             </button>
                         @endif
                     </div>
 
-                    @php
-                        $statusColors = [
-                            // Mesma paleta dos cards do acompanhamento
-                            'PENDENTE' => 'bg-yellow-400 text-black border border-yellow-500',
-                            'AGUARDANDO_CONFIRMACAO' => 'bg-blue-400 text-black border border-blue-500',
-                            'LIBERACAO' => 'bg-violet-300 text-black border border-violet-500',
-                            'CONFIRMADO' => 'bg-purple-400 text-black border border-purple-600',
-                            'RECEBIDO' => 'bg-green-400 text-black border border-green-600',
-                            'NAO_ENVIADO' => 'bg-orange-400 text-black border border-orange-500',
-                            'NAO_RECEBIDO' => 'bg-rose-300 text-black border border-rose-500',
-                            'CANCELADO' => 'bg-red-400 text-black border border-red-600',
-                        ];
-                    @endphp
+                    <div class="sol-index__status-bar">
+                        <button
+                            type="button"
+                            @click="clearStatusTags()"
+                            class="sol-index__status-chip"
+                            :class="{ 'sol-index__status-chip--active': statusTags.length === 0 }">
+                            Todos
+                        </button>
+                        @foreach($statusTagOptions as $statusTag)
+                            <button
+                                type="button"
+                                @click="toggleStatusTag('{{ $statusTag['key'] }}')"
+                                class="sol-index__status-chip"
+                                data-status-chip="{{ $statusTag['key'] }}"
+                                :class="{ 'sol-index__status-chip--active': hasStatusTag('{{ $statusTag['key'] }}') }">
+                                {{ $statusTag['label'] }}
+                            </button>
+                        @endforeach
+                    </div>
 
-                    @php
-                        $currentUser = auth()->user();
-                        $currentUserId = $currentUser?->getAuthIdentifier();
-                        $currentUserMatricula = trim((string) ($currentUser?->CDMATRFUNCIONARIO ?? ''));
-                        $isAdminUser = $currentUser?->isAdmin() ?? false;
-                        $shortPersonName = function (?string $nome): string {
-                            $nome = trim((string) $nome);
-                            if ($nome === '') {
-                                return '-';
-                            }
-
-                            $partes = preg_split('/\s+/', $nome) ?: [];
-                            $qtd = count($partes);
-
-                            if ($qtd <= 2) {
-                                return mb_convert_case(mb_strtolower($nome, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
-                            }
-
-                            if ($qtd <= 4) {
-                                $resumo = $partes[0] . ' ' . $partes[1] . ' ' . $partes[$qtd - 1];
-                                return mb_convert_case(mb_strtolower($resumo, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
-                            }
-
-                            $resumo = $partes[0] . ' ' . $partes[$qtd - 1];
-                            return mb_convert_case(mb_strtolower($resumo, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
-                        };
-                        $formatDisplay = function (?string $valor): string {
-                            $valor = trim((string) $valor);
-                            if ($valor === '') {
-                                return '-';
-                            }
-
-                            return mb_convert_case(mb_strtolower($valor, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
-                        };
-                        $currentSort = $sort ?? request('sort', 'updated_at');
-                        $currentDirection = $direction ?? request('direction', 'desc');
-                        $nextDirection = fn ($col) => ($currentSort === $col && $currentDirection === 'asc') ? 'desc' : 'asc';
-                        $sortMark = fn ($col) => ($currentSort === $col) ? ($currentDirection === 'asc' ? '^' : 'v') : '-';
-                    @endphp
-
-                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                            <thead class="text-xs uppercase text-white" style="background-color:#5b21b6;">
-                                <tr>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'id', 'direction' => $nextDirection('id'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Cód. <span class="text-[10px] text-violet-200">{{ $sortMark('id') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'itens', 'direction' => $nextDirection('itens'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Itens <span class="text-[10px] text-violet-200">{{ $sortMark('itens') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'solicitante', 'direction' => $nextDirection('solicitante'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Solicitante <span class="text-[10px] text-violet-200">{{ $sortMark('solicitante') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'local_destino', 'direction' => $nextDirection('local_destino'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Local destino <span class="text-[10px] text-violet-200">{{ $sortMark('local_destino') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'uf', 'direction' => $nextDirection('uf'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">UF <span class="text-[10px] text-violet-200">{{ $sortMark('uf') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'status', 'direction' => $nextDirection('status'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Status <span class="text-[10px] text-violet-200">{{ $sortMark('status') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'created_at', 'direction' => $nextDirection('created_at'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Criado <span class="text-[10px] text-violet-200">{{ $sortMark('created_at') }}</span></a></th>
-                                    <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'updated_at', 'direction' => $nextDirection('updated_at'), 'page' => 1]) }}" class="inline-flex items-center gap-1 text-white hover:text-violet-200">Atualizado <span class="text-[10px] text-violet-200">{{ $sortMark('updated_at') }}</span></a></th>
-                                    <th class="px-4 py-2 text-white">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($solicitacoes as $solicitacao)
-                                    <tr
-                                        class="border-b border-slate-200 dark:border-gray-700 transition-colors cursor-pointer"
-                                        style="background-color: {{ $loop->odd ? '#ffffff' : '#f5f0ff' }};"
-                                        onmouseover="this.style.backgroundColor='{{ $loop->odd ? '#f5f3ff' : '#ede9fe' }}'"
-                                        onmouseout="this.style.backgroundColor='{{ $loop->odd ? '#ffffff' : '#f5f0ff' }}'"
-                                        @click="openShowModal({{ $solicitacao->id }})"
-                                    >
-                                        <td class="px-4 py-2 font-semibold text-gray-900 dark:text-white">#{{ $solicitacao->id }}</td>
-                                        <td class="px-4 py-2">{{ $solicitacao->itens_count ?? 0 }}</td>
-                                        <td class="px-4 py-2">
-                                            <div class="text-gray-900 dark:text-gray-100">{{ $shortPersonName($solicitacao->solicitante_nome ?? '-') }}</div>
-                                            <div class="text-xs text-gray-500">{{ $solicitacao->solicitante_matricula ?? '-' }}</div>
-                                        </td>
-                                        <td class="px-4 py-2">{{ $formatDisplay($solicitacao->local_destino ?? '-') }}</td>
-                                        <td class="px-4 py-2">{{ $solicitacao->uf ?? '-' }}</td>
-                                        <td class="px-4 py-2">
-                                            @php
-                                                $statusVisual = $solicitacao->status === 'NAO_ENVIADO'
-                                                    ? 'CANCELADO'
-                                                    : ($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== '' ? 'ENVIADO' : $solicitacao->status);
-                                                $motivoStatus = trim((string) ($solicitacao->justificativa_cancelamento ?? ''));
-                                                if (mb_strtolower($motivoStatus, 'UTF-8') === 'sem estoque no momento') {
-                                                    $motivoStatus = 'Sem estoque';
-                                                }
-                                            @endphp
-                                            <x-status-badge :status="$statusVisual" :color-map="$statusColors" />
-                                            @if($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) === '')
-                                                <div class="mt-0.5 max-w-[140px] truncate text-[11px] leading-3 text-gray-400" title="{{ trim((string) ($solicitacao->tracking_code ?? '')) !== '' ? 'Enviado' : 'Aguardando envio' }}">
-                                                    {{ trim((string) ($solicitacao->tracking_code ?? '')) !== '' ? 'Enviado' : 'Aguardando envio' }}
-                                                </div>
-                                            @endif
-                                            @if($solicitacao->status === 'NAO_ENVIADO' && $motivoStatus !== '')
-                                                <div class="mt-0.5 max-w-[140px] truncate text-[11px] leading-3 text-gray-400" title="{{ $motivoStatus }}">
-                                                    {{ \Illuminate\Support\Str::limit($motivoStatus, 28) }}
-                                                </div>
-                                            @endif
-                                        </td>
-                                        <td class="px-4 py-2">{{ optional($solicitacao->created_at)->format('d/m/Y H:i') }}</td>
-                                        <td class="px-4 py-2">
-                                            <div class="text-gray-900 dark:text-gray-100">{{ optional($solicitacao->updated_at)->format('d/m/Y H:i') }}</div>
-                                            @php
-                                                $usuarioUltimaMovimentacao = trim((string) ($solicitacao->ultimoHistoricoStatus?->usuario?->NOMEUSER ?? $solicitacao->ultimoHistoricoStatus?->usuario?->NMLOGIN ?? ''));
-                                            @endphp
-                                            @if($usuarioUltimaMovimentacao !== '')
-                                                <div class="text-xs text-gray-500">por {{ $shortPersonName($usuarioUltimaMovimentacao) }}</div>
-                                            @endif
-                                        </td>
-                                        <td class="px-4 py-2">
-                                            @php
-                                                $isOwner = $currentUserId
-                                                    && (string) $solicitacao->solicitante_id === (string) $currentUserId;
-                                                if (!$isOwner && $currentUserMatricula !== '') {
-                                                    $isOwner = trim((string) ($solicitacao->solicitante_matricula ?? '')) === $currentUserMatricula;
-                                                }
-                                                $canConfirm = ($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1019') ?? false);
-                                                $canForward = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1012') ?? false))
-                                                    && $solicitacao->status === 'AGUARDANDO_CONFIRMACAO';
-                                                $canRelease = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1020') ?? false))
-                                                    && $solicitacao->status === 'LIBERACAO';
-                                                $canSend = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1014') ?? false))
-                                                    && $solicitacao->status === 'CONFIRMADO'
-                                                    && trim((string) ($solicitacao->tracking_code ?? '')) === '';
-                                                $canCancel = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1015') ?? false))
-                                                    && $solicitacao->status === 'PENDENTE';
-                                            @endphp
-                                            <div class="flex items-center gap-2" @click.stop>
-                                                @if($canConfirm && $solicitacao->status === 'PENDENTE')
-                                                    <button type="button" title="Confirmar" @click="mostrarModalConfirmar({{ $solicitacao->id }})" 
-                                                        class="inline-flex items-center justify-center p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg transition">
-                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                        </svg>
-                                                    </button>
-                                                @endif
-
-                                                @if($canForward)
-                                                    <button type="button" title="Encaminhar para liberação" @click="mostrarModalEncaminharLiberacao({{ $solicitacao->id }})" 
-                                                        class="inline-flex items-center justify-center p-1.5 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/30 rounded-lg transition">
-                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                        </svg>
-                                                    </button>
-                                                @endif
-
-                                                @if($canRelease)
-                                                    <button type="button" title="Liberar pedido" @click="mostrarModalAprovar({{ $solicitacao->id }})" 
-                                                        class="inline-flex items-center justify-center p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition">
-                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                    </button>
-                                                @endif
-
-                                                @if($canSend)
-                                                    <button type="button" title="Enviar pedido" @click="mostrarModalEnviar({{ $solicitacao->id }})" 
-                                                        class="inline-flex items-center justify-center p-1.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition">
-                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                        </svg>
-                                                    </button>
-                                                @endif
-
-                                                @if($canCancel)
-                                                    <button type="button" title="Cancelar" @click="mostrarModalCancelar({{ $solicitacao->id }})" 
-                                                        class="inline-flex items-center justify-center p-1.5 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition">
-                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                @endif
-
-                                                @if($isAdminUser || $isOwner)
-                                                    <form method="POST" action="{{ route('solicitacoes-bens.destroy', $solicitacao) }}" onsubmit="return confirm('Remover a solicitacao #{{ $solicitacao->id }}?');" class="inline" @click.stop>
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="inline-flex items-center justify-center p-1.5 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition" title="Remover">
-                                                            <x-heroicon-o-trash class="h-4 w-4" />
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="9" class="px-4 py-3 text-center text-gray-500">Nenhuma solicitacao encontrada.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-
-                        <div class="mt-4">
-                            {{ $solicitacoes->links() }}
+                    <div class="sol-index__grid-shell">
+                        <div
+                            x-show="gridLoading"
+                            x-cloak
+                            class="sol-index__grid-loading"
+                            style="display: none;">
+                            Atualizando lista...
                         </div>
+                        <div id="solicitacoes-grid-container" x-ref="gridContainer" @click="handleGridClick($event)">
+                            @include('solicitacoes.partials.index-grid', ['solicitacoes' => $solicitacoes, 'sort' => $sort, 'direction' => $direction])
+                        </div>
+                    </div>
 
                         <!-- MODAIS RÁPIDOS -->
                         <!-- Modal: Confirmar (Quick) -->
@@ -307,7 +142,7 @@
                                         </svg>
                                     </button>
                             </div>
-                            <form method="POST" :action="urlConfirm()" class="p-6 space-y-4">
+                            <form method="POST" :action="urlConfirm()" class="p-6 space-y-4" @submit.prevent="submitQuickAction($event)">
                                 @csrf
                                 @method('POST')
 
@@ -337,7 +172,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" :action="urlForward()" class="p-6 space-y-4">
+                            <form method="POST" :action="urlForward()" class="p-6 space-y-4" @submit.prevent="submitQuickAction($event)">
                                 @csrf
                                 @method('POST')
 
@@ -368,7 +203,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" :action="urlApprove()" class="p-6 space-y-4">
+                            <form method="POST" :action="urlApprove()" class="p-6 space-y-4" @submit.prevent="submitQuickAction($event)">
                                 @csrf
                                 @method('POST')
 
@@ -399,7 +234,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" :action="urlSend()" class="p-6 space-y-4">
+                            <form method="POST" :action="urlSend()" class="p-6 space-y-4" @submit.prevent="submitQuickAction($event)">
                                 @csrf
                                 @method('POST')
 
@@ -437,13 +272,37 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" :action="urlCancel()" class="p-6 space-y-4">
+                            <form method="POST" :action="urlCancel()" class="p-6 space-y-4" @submit.prevent="submitQuickAction($event)" x-data="{ motivoPadrao: '', outroMotivo: '' }">
                                 @csrf
                                 @method('POST')
-                                
-                                <div>
-                                    <label for="quick_justificativa" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo do Cancelamento *</label>
-                                    <textarea id="quick_justificativa" name="justificativa_cancelamento" required rows="3"
+
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    Use esta opção quando a solicitação não puder seguir no fluxo. Selecione um motivo comum ou descreva manualmente o cancelamento.
+                                </p>
+
+                                <div class="space-y-1">
+                                    <label for="quick_motivo_padrao_cancelamento" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo comum</label>
+                                    <select id="quick_motivo_padrao_cancelamento"
+                                        x-model="motivoPadrao"
+                                        @change="
+                                            if (motivoPadrao && motivoPadrao !== 'OUTRO') {
+                                                $refs.quickJustificativa.value = motivoPadrao;
+                                            } else if (motivoPadrao === 'OUTRO') {
+                                                $refs.quickJustificativa.value = outroMotivo;
+                                            } else {
+                                                $refs.quickJustificativa.value = '';
+                                            }
+                                        "
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-10 px-3">
+                                        <option value="">Selecione...</option>
+                                        <option value="Sem estoque">Sem estoque</option>
+                                        <option value="OUTRO">Outro motivo</option>
+                                    </select>
+                                </div>
+
+                                <div x-show="motivoPadrao === 'OUTRO'" x-transition style="display:none;">
+                                    <label for="quick_justificativa" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo do cancelamento *</label>
+                                    <textarea id="quick_justificativa" name="justificativa_cancelamento" x-model="outroMotivo" :required="motivoPadrao === 'OUTRO'" rows="3" x-ref="quickJustificativa"
                                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
                                         placeholder="Descreva o motivo do cancelamento..."></textarea>
                                 </div>
@@ -559,41 +418,27 @@
             x-cloak
             class="fixed inset-0 z-[70] flex items-center justify-center pointer-events-none"
         >
-            <div class="flex flex-col items-center gap-6">
-                <div class="relative w-20 h-20">
-                    <svg class="w-full h-full animate-spin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" style="color: rgb(209, 213, 219);"></circle>
-                        <path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" style="color: rgb(99, 102, 241);"></path>
-                    </svg>
-                </div>
-                <div class="text-center">
-                    <h3 class="text-xl font-semibold text-white mb-2">Carregando...</h3>
-                    <p class="text-gray-300 text-sm">Preparando o formulário</p>
-                </div>
-            </div>
+            <x-modal-loading
+                class="fixed inset-0 z-[70] pointer-events-none"
+                title="Carregando formulário"
+                subtitle="Preparando os dados para edição..."
+            />
         </div>
 
         <!-- Loading Screen (Show modal) -->
         <div
-            x-show="showModalLoading"
+            x-show="showModalLoading && !showModalOpen"
             x-transition:leave="transition ease-out duration-300"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
             x-cloak
             class="fixed inset-0 z-[70] flex items-center justify-center pointer-events-none"
         >
-            <div class="flex flex-col items-center gap-6">
-                <div class="relative w-20 h-20">
-                    <svg class="w-full h-full animate-spin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" style="color: rgb(209, 213, 219);"></circle>
-                        <path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" style="color: rgb(99, 102, 241);"></path>
-                    </svg>
-                </div>
-                <div class="text-center">
-                    <h3 class="text-xl font-semibold text-white mb-2">Carregando...</h3>
-                    <p class="text-gray-300 text-sm">Buscando detalhes da solicitacao</p>
-                </div>
-            </div>
+            <x-modal-loading
+                class="fixed inset-0 z-[70] pointer-events-none"
+                title="Carregando Solicitação"
+                subtitle="Buscando os detalhes da solicitação..."
+            />
         </div>
 
         <!-- Modal Principal -->
@@ -755,9 +600,13 @@
                     </div>
                 </div>
                 <div class="relative flex-1 overflow-y-auto bg-white dark:bg-gray-800 min-h-[320px] solicitacao-modal-scroll">
-                    <div x-show="showModalLoading" class="absolute inset-0 flex items-center justify-center bg-white/90 dark:bg-gray-800/90 z-10">
-                        <div class="text-sm text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-800 px-4 py-2 rounded shadow-lg border border-indigo-200 dark:border-indigo-700 animate-pulse">Carregando detalhes...</div>
-                    </div>
+                    <x-modal-loading
+                        x-show="showModalLoading"
+                        x-cloak
+                        class="absolute inset-0 z-10"
+                        title="Carregando detalhes"
+                        subtitle="Atualizando o fluxo da solicitação..."
+                    />
                     <div id="solicitacao-show-modal-body" class="min-h-full" x-show="showModalContentReady" x-cloak></div>
                 </div>
             </div>
@@ -1205,7 +1054,11 @@
                     sendUrlBase: '',
                     cancelUrlBase: '',
                     tags: [],
+                    statusTags: [],
                     inputValue: '',
+                    gridLoading: false,
+                    gridAbortController: null,
+                    popstateHandler: null,
                     formModalOpen: false,
                     formModalLoading: false,
                     formModalTitle: '',
@@ -1250,18 +1103,79 @@
                         this.approveUrlBase = this.$el?.dataset?.approveUrl || '';
                         this.sendUrlBase = this.$el?.dataset?.sendUrl || '';
                         this.cancelUrlBase = this.$el?.dataset?.cancelUrl || '';
-                        const params = new URLSearchParams(window.location.search);
-                        const multiSearch = params.getAll('search[]');
-                        if (multiSearch.length > 0) {
-                            this.tags = multiSearch.map((t) => t.trim()).filter(Boolean);
-                        } else {
-                            const singleSearch = params.get('search');
-                            if (singleSearch) {
-                                this.tags = singleSearch.split(',').map((t) => t.trim()).filter(Boolean);
-                            }
-                        }
+                        this.syncFiltersFromUrl(window.location.href);
+                        this.popstateHandler = () => {
+                            this.syncFiltersFromUrl(window.location.href);
+                            this.loadGrid(window.location.href, { pushHistory: false, syncState: false });
+                        };
+                        window.addEventListener('popstate', this.popstateHandler);
                     },
 
+                    extractTagsFromParams(params) {
+                        const multiSearch = params.getAll('search[]').map((tag) => tag.trim()).filter(Boolean);
+                        if (multiSearch.length > 0) {
+                            return [...new Set(multiSearch)];
+                        }
+
+                        const singleSearch = params.get('search');
+                        if (!singleSearch) {
+                            return [];
+                        }
+
+                        return [...new Set(singleSearch.split(',').map((tag) => tag.trim()).filter(Boolean))];
+                    },
+
+                    normalizeStatusTag(status) {
+                        return String(status ?? '')
+                            .trim()
+                            .toUpperCase()
+                            .replace(/[-\s]+/g, '_');
+                    },
+
+                    extractStatusTagsFromParams(params) {
+                        const multiStatus = params.getAll('status_visual[]');
+                        const singleStatus = params.getAll('status_visual');
+
+                        return [...new Set(
+                            [...multiStatus, ...singleStatus]
+                                .map((status) => this.normalizeStatusTag(status))
+                                .filter(Boolean)
+                        )];
+                    },
+
+                    syncFiltersFromUrl(url) {
+                        const nextUrl = new URL(url, window.location.origin);
+                        this.tags = this.extractTagsFromParams(nextUrl.searchParams);
+                        this.statusTags = this.extractStatusTagsFromParams(nextUrl.searchParams);
+                    },
+
+                    hasStatusTag(status) {
+                        return this.statusTags.includes(this.normalizeStatusTag(status));
+                    },
+
+                    toggleStatusTag(status) {
+                        const normalizedStatus = this.normalizeStatusTag(status);
+                        if (!normalizedStatus) {
+                            return;
+                        }
+
+                        if (this.statusTags.includes(normalizedStatus)) {
+                            this.statusTags = this.statusTags.filter((item) => item !== normalizedStatus);
+                        } else {
+                            this.statusTags = [...this.statusTags, normalizedStatus];
+                        }
+
+                        this.applyFilters();
+                    },
+
+                    clearStatusTags() {
+                        if (this.statusTags.length === 0) {
+                            return;
+                        }
+
+                        this.statusTags = [];
+                        this.applyFilters();
+                    },
 
                     addTag() {
                         const value = this.inputValue.trim();
@@ -1285,16 +1199,101 @@
                     },
 
                     applyFilters() {
-                        const params = new URLSearchParams(window.location.search);
+                        const nextUrl = this.buildGridUrl({ resetPage: true });
+                        this.loadGrid(nextUrl, { pushHistory: true, syncState: false });
+                    },
+
+                    buildGridUrl({ resetPage = false, sourceUrl = window.location.href } = {}) {
+                        const nextUrl = new URL(sourceUrl, window.location.origin);
+                        const params = nextUrl.searchParams;
                         params.delete('search');
                         params.delete('search[]');
+                        params.delete('status_visual');
+                        params.delete('status_visual[]');
 
                         this.tags.forEach((tag) => params.append('search[]', tag));
-                        params.set('page', '1');
+                        this.statusTags.forEach((status) => params.append('status_visual[]', status));
 
-                        const query = params.toString();
-                        const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}`;
-                        window.location.href = nextUrl;
+                        if (resetPage) {
+                            params.set('page', '1');
+                        }
+
+                        return nextUrl.toString();
+                    },
+
+                    handleGridClick(event) {
+                        const link = event.target.closest('a[href]');
+                        if (!link || !this.$refs.gridContainer?.contains(link)) {
+                            return;
+                        }
+
+                        if (link.target === '_blank' || link.hasAttribute('download')) {
+                            return;
+                        }
+
+                        const nextUrl = new URL(link.href, window.location.origin);
+                        if (nextUrl.origin !== window.location.origin) {
+                            return;
+                        }
+
+                        event.preventDefault();
+                        this.loadGrid(nextUrl.toString(), { pushHistory: true, syncState: true });
+                    },
+
+                    async loadGrid(url, { pushHistory = true, syncState = false } = {}) {
+                        const nextUrl = typeof url === 'string' ? url : url.toString();
+                        if (syncState) {
+                            this.syncFiltersFromUrl(nextUrl);
+                        }
+
+                        if (this.gridAbortController) {
+                            this.gridAbortController.abort();
+                        }
+
+                        const controller = new AbortController();
+                        this.gridAbortController = controller;
+                        this.gridLoading = true;
+
+                        try {
+                            const response = await fetch(nextUrl, {
+                                signal: controller.signal,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'X-Solicitacoes-Grid': '1',
+                                    'Accept': 'text/html',
+                                },
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`Erro HTTP ${response.status}`);
+                            }
+
+                            const html = await response.text();
+                            if (!this.$refs.gridContainer) {
+                                throw new Error('Container da grade não encontrado.');
+                            }
+
+                            this.$refs.gridContainer.innerHTML = html;
+                            if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+                                window.Alpine.initTree(this.$refs.gridContainer);
+                            }
+
+                            if (pushHistory) {
+                                window.history.pushState({}, '', nextUrl);
+                            }
+                        } catch (error) {
+                            if (error.name === 'AbortError') {
+                                return;
+                            }
+
+                            console.error('[SOLICITACAO] Erro ao atualizar a grade', error);
+                            window.location.href = nextUrl;
+                        } finally {
+                            if (this.gridAbortController === controller) {
+                                this.gridAbortController = null;
+                                this.gridLoading = false;
+                            }
+                        }
                     },
 
                     csrf() {
@@ -1643,6 +1642,73 @@
                         }
                     },
 
+                    async refreshGrid() {
+                        const grid = document.querySelector('[data-solicitacoes-grid]');
+                        if (!grid) return;
+
+                        const response = await fetch(window.location.href, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'text/html',
+                            },
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Erro ao recarregar grid (${response.status})`);
+                        }
+
+                        const html = await response.text();
+                        const doc = new DOMParser().parseFromString(html, 'text/html');
+                        const nextGrid = doc.querySelector('[data-solicitacoes-grid]');
+                        if (!nextGrid) {
+                            throw new Error('Grid atualizado não encontrado na resposta.');
+                        }
+
+                        grid.innerHTML = nextGrid.innerHTML;
+
+                        if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+                            window.Alpine.initTree(grid);
+                        }
+                    },
+
+                    async refreshShowModal() {
+                        if (!this.currentSolicitacaoId) return;
+
+                        const modalBody = document.getElementById('solicitacao-show-modal-body');
+                        if (!modalBody) return;
+
+                        const url = "{{ url('solicitacoes-bens') }}/" + encodeURIComponent(this.currentSolicitacaoId) + "/show-modal";
+                        const response = await fetch(url, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'text/html',
+                            },
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Erro ao atualizar modal (${response.status})`);
+                        }
+
+                        const html = await response.text();
+                        let content = extractModalHtml(html, '[data-solicitacao-modal-content]');
+                        if (!content || !content.trim()) {
+                            content = html;
+                        }
+
+                        renderSolicitacaoModalContent(content, modalBody);
+                        if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+                            window.Alpine.initTree(modalBody);
+                        }
+                        bindSolicitacaoModalHandlers(
+                            modalBody,
+                            () => this.closeShowModal(),
+                            (form) => this.submitModalForm(form, 'solicitacao-show-modal-body')
+                        );
+                        this.hydrateShowModalAccessData(modalBody);
+                        this.showModalContentReady = true;
+                        this.showModalOpen = true;
+                    },
+
                     async submitModalForm(form, targetId) {
                         if (!form) return;
 
@@ -1688,8 +1754,13 @@
                                     return;
                                 }
                                 if (data.success) {
-                                    keepLoadingUntilNavigate = true;
-                                    window.location.reload();
+                                    await this.refreshGrid();
+
+                                    if (isFormModal) {
+                                        this.closeFormModal();
+                                    } else {
+                                        await this.refreshShowModal();
+                                    }
                                     return;
                                 }
 
@@ -1766,6 +1837,59 @@
                     mostrarModalCancelar(id) {
                         this.selectedSolicitacaoId = id;
                         this.showQuickCancelModal = true;
+                    },
+                    async submitQuickAction(event) {
+                        const form = event?.target;
+                        if (!form) return;
+
+                        const formData = new FormData(form);
+                        const method = (form.getAttribute('method') || 'POST').toUpperCase();
+
+                        try {
+                            const response = await fetch(form.action, {
+                                method,
+                                body: formData,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json, text/html',
+                                },
+                            });
+
+                            const contentType = response.headers.get('content-type') || '';
+                            const responseText = await response.text();
+
+                            if (!contentType.includes('application/json')) {
+                                throw new Error('Resposta inesperada ao salvar a ação rápida.');
+                            }
+
+                            let data = {};
+                            try {
+                                data = JSON.parse(responseText);
+                            } catch (error) {
+                                throw new Error('Resposta inválida do servidor.');
+                            }
+
+                            if (!response.ok || data.success === false) {
+                                throw new Error(
+                                    data.message
+                                    || Object.values(data.errors || {})?.[0]?.[0]
+                                    || 'Falha ao processar a ação.'
+                                );
+                            }
+
+                            this.fecharModais();
+                            await this.refreshGrid();
+
+                            if (this.showModalOpen && this.currentSolicitacaoId === this.selectedSolicitacaoId) {
+                                this.showModalLoading = true;
+                                await this.refreshShowModal();
+                            }
+                        } catch (error) {
+                            console.error('[SOLICITACAO] Quick action error', error);
+                            alert(error.message || 'Falha ao processar a ação.');
+                        } finally {
+                            this.showModalLoading = false;
+                        }
                     },
                     fecharModais() {
                         this.showQuickConfirmModal = false;

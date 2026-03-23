@@ -269,6 +269,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         [SolicitacaoBemController::class, 'returnToAnalysis'])->name('solicitacoes-bens.return-to-analysis');
     Route::post('/solicitacoes-bens/{solicitacao}/recreate-cancelled',
         [SolicitacaoBemController::class, 'recreateCancelled'])->name('solicitacoes-bens.recreate-cancelled');
+    Route::post('/solicitacoes-bens/{solicitacao}/archive-cancelled',
+        [SolicitacaoBemController::class, 'archiveCancelled'])->name('solicitacoes-bens.archive-cancelled');
     Route::post('/solicitacoes-bens/{solicitacao}/cancel', 
         [SolicitacaoBemController::class, 'cancel'])->name('solicitacoes-bens.cancel');
     Route::post('/solicitacoes-bens/{solicitacao}/permissoes',

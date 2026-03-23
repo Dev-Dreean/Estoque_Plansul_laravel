@@ -1,0 +1,76 @@
+.bg-panel {
+    background: var(--surface);
+}
+
+.bg-panel-alt {
+    background: var(--surface-2);
+}
+
+.panel,
+.panel-muted,
+.modal-surface {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: .75rem;
+}
+
+.panel-header {
+    background: var(--surface-2);
+}
+
+.badge {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium;
+    background: var(--surface-2);
+    color: var(--text-soft);
+}
+
+.badge-accent {
+    background: var(--accent);
+    color: #fff;
+}
+
+.badge-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+}
+
+.badge-green {
+    @apply badge;
+    background: #059669;
+    color: #fff;
+}
+
+.badge-red {
+    @apply badge;
+    background: #dc2626;
+    color: #fff;
+}
+
+.badge-indigo {
+    @apply badge;
+    background: #4f46e5;
+    color: #fff;
+}
+
+.code-badge {
+    @apply inline-flex items-center rounded-md px-2 py-1 text-xs font-medium shadow;
+    background: var(--accent);
+    color: #fff;
+}
+
+@layer components {
+    .section {
+        @apply overflow-hidden shadow-sm sm:rounded-lg;
+        background: var(--surface);
+    }
+
+    .section-body {
+        @apply p-6;
+        color: var(--text);
+    }
+
+    .card {
+        @apply rounded-lg p-4;
+        background: var(--surface-2);
+    }
+}

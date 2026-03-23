@@ -1,0 +1,144 @@
+/*
+ * Camada temporaria de compatibilidade.
+ * Mantem a aparencia atual enquanto a migracao sai de overrides globais
+ * para tokens e componentes semanticos.
+ */
+
+html[data-theme='light'] .table-var thead th,
+html[data-theme='light'] .table-clean thead th,
+html[data-theme='light'] .th,
+html[data-theme='light'] .table-head-cell {
+    background: #b1bcc8 !important;
+    color: #000 !important;
+}
+
+html[data-theme='light'] .table-var tbody tr,
+html[data-theme='light'] .table-clean tbody tr,
+html[data-theme='light'] .tr-hover {
+    background: #e5e7eb !important;
+}
+
+html[data-theme='light'] thead.bg-gray-50,
+html[data-theme='light'] thead.bg-gray-50 th {
+    background: #b1bcc8 !important;
+}
+
+html[data-theme='light'] .panel-header,
+html[data-theme='light'] .bg-panel,
+html[data-theme='light'] .bg-panel-alt {
+    background: #b1bcc8 !important;
+}
+
+html[data-theme='light'] .input-base,
+html[data-theme='light'] .field,
+html[data-theme='light'] input[type="search"],
+html[data-theme='light'] .search-filter {
+    background: #b1bcc8 !important;
+    border-color: #d1d5db !important;
+    color: #000 !important;
+}
+
+html[data-theme='light'] .bg-gray-50 {
+    background: #e5e7eb !important;
+}
+
+html[data-theme='light'] .text-gray-100,
+html[data-theme='light'] .text-gray-200,
+html[data-theme='light'] .text-gray-300,
+html[data-theme='light'] .text-gray-400,
+html[data-theme='light'] .text-gray-500,
+html[data-theme='light'] .text-gray-600,
+html[data-theme='light'] .text-gray-700,
+html[data-theme='light'] .text-gray-800 {
+    color: #000 !important;
+}
+
+html[data-theme='light'] .hover\:text-gray-100:hover,
+html[data-theme='light'] .hover\:text-gray-200:hover,
+html[data-theme='light'] .hover\:text-gray-300:hover,
+html[data-theme='light'] .hover\:text-gray-400:hover,
+html[data-theme='light'] .hover\:text-gray-500:hover,
+html[data-theme='light'] .hover\:text-gray-600:hover,
+html[data-theme='light'] .hover\:text-gray-700:hover,
+html[data-theme='light'] .hover\:text-gray-800:hover {
+    color: #000 !important;
+}
+
+@layer components {
+    .pdf-body {
+        @apply font-sans text-[10px] text-gray-800;
+    }
+
+    .pdf-header {
+        @apply mb-5 text-center;
+    }
+
+    .pdf-header h1 {
+        @apply m-0 text-lg font-bold;
+    }
+
+    .pdf-header p {
+        @apply my-1 text-xs;
+    }
+
+    .pdf-table {
+        @apply w-full border-collapse;
+    }
+
+    .pdf-table th,
+    .pdf-table td {
+        @apply border border-gray-300 p-1.5 text-left align-top;
+    }
+
+    .pdf-table thead {
+        @apply bg-gray-100;
+    }
+
+    .pdf-footer {
+        @apply mt-4 text-center text-[9px];
+    }
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: rgb(243 244 246);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-track {
+    background: rgb(31 41 55);
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgb(156 163 175);
+    border-radius: 4px;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgb(75 85 99);
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgb(107 114 128);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgb(107 114 128);
+}
+
+.telas-grid-wrapper {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto !important;
+    overflow-x: auto;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.no-page-scroll {
+    overflow: hidden !important;
+    height: 100vh;
+}

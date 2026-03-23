@@ -54,6 +54,13 @@
     $statusBadgeAtual = $solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== ''
         ? 'ENVIADO'
         : $solicitacao->status;
+    $returnButtonLabel = match ($solicitacao->status) {
+        'AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO' => 'Voltar para Solicitado',
+        'LIBERACAO' => 'Voltar para Em Análise',
+        'CONFIRMADO' => 'Voltar para Liberação',
+        'NAO_RECEBIDO' => 'Voltar para Envio',
+        default => 'Voltar um status',
+    };
 
     $gridClass = 'grid-cols-1';
     $leftColClass = '';
@@ -74,8 +81,22 @@
                 showReturnModal: false,
                 showCancelModal: false,
                 showRecreateCancelledModal: false,
-                showDetails: false,
+                showArchiveCancelledModal: false,
                 openSection: 'history',
+                closeActionModals() {
+                    this.showConfirmModal = false;
+                    this.showForwardModal = false;
+                    this.showApproveModal = false;
+                    this.showSendModal = false;
+                    this.showNotSentModal = false;
+                    this.showReceiveModal = false;
+                    this.showNotReceivedModal = false;
+                    this.showContestNotReceivedModal = false;
+                    this.showReturnModal = false;
+                    this.showCancelModal = false;
+                    this.showRecreateCancelledModal = false;
+                    this.showArchiveCancelledModal = false;
+                },
                 toggleSection(section) {
                     this.openSection = this.openSection === section ? '' : section;
                 }
@@ -113,37 +134,30 @@
                             </button>
                         @endif
                         @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $canForwardAction)
-                            <button type="button" @click="showForwardModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold transition shadow-sm"
-                                style="background:#7c3aed;border:1px solid #8b5cf6;color:#ffffff;">
+                            <button type="button" @click="showForwardModal = true" class="sol-flow-action sol-flow-action--forward">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                                 Encaminhar para Liberação
                             </button>
                         @endif
-                        @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $canForwardAction)
-                            <button type="button" @click="showNotSentModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold transition shadow-sm"
-                                style="background:#dc2626;border:1px solid #f87171;color:#ffffff;">
+                        @if(!in_array($solicitacao->status, ['CANCELADO', 'RECEBIDO'], true) && $canCancelAction)
+                            <button type="button" @click="showCancelModal = true" class="sol-flow-action sol-flow-action--cancel">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM9 9l6 6m0-6l-6 6" /></svg>
                                 Cancelar Solicita&ccedil;&atilde;o
                             </button>
                         @endif
-                        @if(in_array($solicitacao->status, ['AGUARDANDO_CONFIRMACAO', 'LIBERACAO'], true) && $canReturnAction)
-                            <button type="button" @click="showReturnModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold transition shadow-sm"
-                                style="background:#d97706;border:1px solid #f59e0b;color:#ffffff;">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12a9 9 0 1015.364-6.364M3 12H9m-6 0l3-3m-3 3l3 3" /></svg>
-                                Voltar para Em Análise
-                            </button>
-                        @endif
                         @if($solicitacao->status === 'LIBERACAO' && $canReleaseAction)
-                            <button type="button" @click="showApproveModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold transition shadow-sm"
-                                style="background:#2563eb;border:1px solid #60a5fa;color:#ffffff;">
+                            <button type="button" @click="showApproveModal = true" class="sol-flow-action sol-flow-action--release">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                 Liberar Pedido
                             </button>
                         @endif
-                        @if($solicitacao->status === 'PENDENTE' && $canCancelAction)
-                            <button type="button" @click="showCancelModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition shadow-sm">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                                Cancelar Solicitação
+                        @php
+                            $canGoBackOneStep = in_array($solicitacao->status, ['AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO', 'LIBERACAO', 'CONFIRMADO', 'NAO_RECEBIDO'], true);
+                        @endphp
+                        @if($canGoBackOneStep && $canReturnAction)
+                            <button type="button" @click="showReturnModal = true" class="sol-flow-action sol-flow-action--return">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12a9 9 0 1015.364-6.364M3 12H9m-6 0l3-3m-3 3l3 3" /></svg>
+                                {{ $returnButtonLabel }}
                             </button>
                         @endif
                         @if($solicitacao->status === 'CANCELADO' && $canRecriarCancelada)
@@ -151,24 +165,25 @@
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8 8 0 106.582 9m0 0H9m-4 0V4" /></svg>
                                 Solicitar Novamente
                             </button>
+                            <button type="button" @click="showArchiveCancelledModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-gray-500 hover:bg-gray-600 transition shadow-sm">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M7 8V6a1 1 0 011-1h8a1 1 0 011 1v2m-1 0v10a2 2 0 01-2 2H10a2 2 0 01-2-2V8m3 4v5m4-5v5" /></svg>
+                                Arquivar Solicitação
+                            </button>
                         @endif
                         @if($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) === '' && $canSendAction)
-                            <button type="button" @click="showSendModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold transition shadow-sm"
-                                style="background:#4f46e5;border:1px solid #818cf8;color:#ffffff;">
+                            <button type="button" @click="showSendModal = true" class="sol-flow-action sol-flow-action--send">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                                 Enviar Pedido
                             </button>
                         @endif
                         @if($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== '' && $canMarkReceived)
-                            <button type="button" @click="showReceiveModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-bold transition shadow-sm"
-                                style="background:#22d3ee;border:1px solid #67e8f9;color:#082f49;">
+                            <button type="button" @click="showReceiveModal = true" class="sol-flow-action sol-flow-action--receive">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                 Confirmar Recebimento
                             </button>
                         @endif
                         @if($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== '' && $canMarkNotReceived)
-                            <button type="button" @click="showNotReceivedModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold transition shadow-sm"
-                                style="background:#e11d48;border:1px solid #fb7185;color:#fff;">
+                            <button type="button" @click="showNotReceivedModal = true" class="sol-flow-action sol-flow-action--not-received">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM9 9l6 6m0-6l-6 6" /></svg>
                                 Pedido Não Recebido
                             </button>
@@ -197,6 +212,30 @@
                     ->filter()
                     ->map(fn ($status) => strtoupper((string) $status))
                     ->values();
+                $mapearStatusParaEtapa = function (?string $status): int {
+                    return match (strtoupper(trim((string) $status))) {
+                        'PENDENTE' => 1,
+                        'AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO' => 2,
+                        'LIBERACAO' => 3,
+                        'CONFIRMADO', 'NAO_RECEBIDO' => 4,
+                        'RECEBIDO' => 5,
+                        default => 1,
+                    };
+                };
+                $ultimoEventoCancelamentoTopo = $historicoStatusTopo->reverse()->first(function ($hist) {
+                    $statusNovo = strtoupper((string) ($hist->status_novo ?? ''));
+                    $acao = strtolower((string) ($hist->acao ?? ''));
+
+                    return in_array($acao, ['cancelar', 'nao_enviado'], true)
+                        || in_array($statusNovo, ['CANCELADO', 'NAO_ENVIADO'], true);
+                });
+                $isCancelamentoAtual = in_array($statusAtualTopo, ['CANCELADO', 'NAO_ENVIADO'], true);
+                $etapaCancelamento = $isCancelamentoAtual
+                    ? $mapearStatusParaEtapa(data_get($ultimoEventoCancelamentoTopo, 'status_anterior', $statusAtualTopo))
+                    : null;
+                $motivoCancelamentoStepper = $isCancelamentoAtual
+                    ? trim((string) data_get($ultimoEventoCancelamentoTopo, 'motivo', $solicitacao->justificativa_cancelamento ?? ''))
+                    : '';
                 $etapaAtual = match ($statusAtualTopo) {
                     'PENDENTE', 'CANCELADO' => 1,
                     'AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO' => 2,
@@ -205,6 +244,17 @@
                     'RECEBIDO' => 5,
                     default => 1,
                 };
+                if ($isCancelamentoAtual && $etapaCancelamento !== null) {
+                    $etapaAtual = $etapaCancelamento;
+                }
+                $progressBlueWidth = (($etapaAtual - 1) / 4) * 100;
+                $progressRedLeft = 0;
+                $progressRedWidth = 0;
+                if ($isCancelamentoAtual && $etapaAtual > 1) {
+                    $progressBlueWidth = (($etapaAtual - 2) / 4) * 100;
+                    $progressRedLeft = $progressBlueWidth;
+                    $progressRedWidth = 25;
+                }
                 $nomeCurto = function (?string $nome): string {
                     $nome = trim((string) $nome);
                     if ($nome === '') {
@@ -240,43 +290,6 @@
                     || $statusHistorico->contains('CONFIRMADO')
                     || $statusHistorico->contains('RECEBIDO')
                     || $statusHistorico->contains('NAO_RECEBIDO');
-                $statusEnvioTexto = match ($statusFluxo) {
-                    'RECEBIDO' => 'Entregue',
-                    'CONFIRMADO' => trim((string) ($solicitacao->tracking_code ?? '')) !== '' ? 'Enviado' : 'Aguardando envio',
-                    'LIBERACAO' => 'Aguardando liberação final',
-                    'NAO_RECEBIDO' => 'Não recebido',
-                    'NAO_ENVIADO' => 'Cancelado',
-                    'AGUARDANDO_CONFIRMACAO' => 'Em análise',
-                    'CANCELADO' => 'Cancelado',
-                    default => 'Pendente',
-                };
-                $statusEnvioClass = match ($statusFluxo) {
-                    'RECEBIDO' => 'bg-cyan-100 text-cyan-800 border border-cyan-200 dark:bg-cyan-500/20 dark:text-cyan-200 dark:border-cyan-400/40',
-                    'CONFIRMADO' => 'bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-500/20 dark:text-blue-200 dark:border-blue-400/40',
-                    'LIBERACAO' => 'bg-violet-100 text-violet-800 border border-violet-200 dark:bg-violet-500/20 dark:text-violet-200 dark:border-violet-400/40',
-                    'NAO_RECEBIDO' => 'bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-500/20 dark:text-rose-200 dark:border-rose-400/40',
-                    'NAO_ENVIADO' => 'bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-500/20 dark:text-amber-200 dark:border-amber-400/40',
-                    'CANCELADO' => 'bg-red-100 text-red-800 border border-red-200 dark:bg-red-500/20 dark:text-red-200 dark:border-red-400/40',
-                    default => 'bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-500/20 dark:text-yellow-200 dark:border-yellow-400/40',
-                };
-                $ultimoHistoricoNaoPendente = $historicoStatusTopo->reverse()->first(
-                    fn ($h) => strtoupper((string) ($h->status_novo ?? '')) !== 'PENDENTE'
-                );
-                $ultimoStatusNaoPendente = strtoupper((string) data_get($ultimoHistoricoNaoPendente, 'status_novo', ''));
-                $ultimoHistoricoComMotivo = $historicoStatusTopo->reverse()->first(
-                    fn ($h) => trim((string) ($h->motivo ?? '')) !== ''
-                );
-                $motivoFluxo = trim((string) data_get($ultimoHistoricoComMotivo, 'motivo', $solicitacao->justificativa_cancelamento ?? ''));
-                if ($statusFluxo === 'PENDENTE' && $ultimoStatusNaoPendente !== '') {
-                    $statusEnvioTexto = 'Retornou para solicitado';
-                    $statusEnvioClass = 'bg-indigo-100 text-indigo-800 border border-indigo-200 dark:bg-indigo-500/25 dark:text-indigo-100 dark:border-indigo-300/40';
-                }
-                $interrupcao = match ($statusAtualTopo) {
-                    'CANCELADO' => ['label' => 'Cancelado', 'class' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 border border-red-200 dark:border-red-800'],
-                    'NAO_ENVIADO' => ['label' => 'Cancelado', 'class' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200 dark:border-amber-800'],
-                    'NAO_RECEBIDO' => ['label' => 'Pedido não recebido', 'class' => 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 border border-rose-200 dark:border-rose-800'],
-                    default => null,
-                };
                 $stepsTopo = [
                     ['n' => 1, 'label' => 'Solicitado'],
                     ['n' => 2, 'label' => 'Em Análise'],
@@ -284,7 +297,7 @@
                     ['n' => 4, 'label' => 'Envio'],
                     ['n' => 5, 'label' => 'Recebido'],
                 ];
-                $historicoCards = $historicoStatusTopo
+                $historicoEtapas = $historicoStatusTopo
                     ->sortBy('created_at')
                     ->values()
                     ->filter(function ($hist) {
@@ -294,8 +307,8 @@
                     })
                     ->values();
 
-                if ($historicoCards->isEmpty()) {
-                    $historicoCards = collect([
+                if ($historicoEtapas->isEmpty()) {
+                    $historicoEtapas = collect([
                         (object) [
                             'status_novo' => \App\Models\SolicitacaoBem::STATUS_PENDENTE,
                             'status_anterior' => null,
@@ -306,6 +319,374 @@
                         ],
                     ]);
                 }
+
+                $buscarPrimeiroHistorico = fn (callable $callback) => $historicoEtapas->first($callback);
+                $buscarUltimoHistorico = fn (callable $callback) => $historicoEtapas->reverse()->first($callback);
+                $formatarDataHoraHistorico = function ($historico, $fallback = null): array {
+                    $dataBase = data_get($historico, 'created_at') ?: $fallback;
+
+                    return [
+                        'data' => optional($dataBase)->format('d/m/Y') ?: '-',
+                        'hora' => optional($dataBase)->format('H:i') ?: '-',
+                    ];
+                };
+                $formatarResponsavelHistorico = function ($historico, ?string $fallbackNome = null, ?string $fallbackMatricula = null) use ($nomeCurto): string {
+                    $nomeUsuario = trim((string) data_get($historico, 'usuario.NOMEUSER', data_get($historico, 'usuario.NMLOGIN', '')));
+                    $matriculaUsuario = trim((string) data_get($historico, 'usuario.CDMATRFUNCIONARIO', ''));
+
+                    $nomeBase = $nomeUsuario !== '' ? $nomeCurto($nomeUsuario) : trim((string) $fallbackNome);
+                    $matriculaBase = $matriculaUsuario !== '' ? $matriculaUsuario : trim((string) $fallbackMatricula);
+
+                    if ($nomeBase === '' && $matriculaBase === '') {
+                        return '-';
+                    }
+
+                    return trim($nomeBase . ($matriculaBase !== '' ? ' (' . $matriculaBase . ')' : ''));
+                };
+                $paletasEtapa = [
+                    'Solicitado' => ['border_class' => 'border-yellow-400 dark:border-yellow-400', 'border_style' => 'border-color:#facc15;', 'bar_style' => 'background-color:#facc15;', 'tag_style' => 'background-color:#facc15;border-color:#eab308;color:#000;'],
+                    'Em Análise' => ['border_class' => 'border-blue-400 dark:border-blue-400', 'border_style' => 'border-color:#60a5fa;', 'bar_style' => 'background-color:#60a5fa;', 'tag_style' => 'background-color:#60a5fa;border-color:#3b82f6;color:#000;'],
+                    'Liberação' => ['border_class' => 'border-violet-500 dark:border-violet-400', 'border_style' => 'border-color:#8b5cf6;', 'bar_style' => 'background-color:#8b5cf6;', 'tag_style' => 'background-color:#c4b5fd;border-color:#8b5cf6;color:#000;'],
+                    'Envio' => ['border_class' => 'border-sky-500 dark:border-sky-400', 'border_style' => 'border-color:#0ea5e9;', 'bar_style' => 'background-color:#0ea5e9;', 'tag_style' => 'background-color:#dbeafe;border-color:#60a5fa;color:#1e3a8a;'],
+                    'Envio Concluido' => ['border_class' => 'border-cyan-500 dark:border-cyan-400', 'border_style' => 'border-color:#06b6d4;', 'bar_style' => 'background-color:#06b6d4;', 'tag_style' => 'background-color:#cffafe;border-color:#22d3ee;color:#155e75;'],
+                    'Recebido' => ['border_class' => 'border-green-400 dark:border-green-400', 'border_style' => 'border-color:#22c55e;', 'bar_style' => 'background-color:#22c55e;', 'tag_style' => 'background-color:#4ade80;border-color:#22c55e;color:#000;'],
+                    'Não Recebido' => ['border_class' => 'border-rose-400 dark:border-rose-400', 'border_style' => 'border-color:#fb7185;', 'bar_style' => 'background-color:#fb7185;', 'tag_style' => 'background-color:#fecdd3;border-color:#fb7185;color:#881337;'],
+                    'Cancelado' => ['border_class' => 'border-red-400 dark:border-red-400', 'border_style' => 'border-color:#f87171;', 'bar_style' => 'background-color:#f87171;', 'tag_style' => 'background-color:#fecaca;border-color:#f87171;color:#7f1d1d;'],
+                    'Retornado' => ['border_class' => 'border-orange-400 dark:border-orange-400', 'border_style' => 'border-color:#fb923c;', 'bar_style' => 'background-color:#fb923c;', 'tag_style' => 'background-color:#fed7aa;border-color:#fb923c;color:#9a3412;'],
+                ];
+                $montarCardEtapa = function (
+                    string $secao,
+                    string $titulo,
+                    string $statusLabel,
+                    ?object $historico,
+                    array $detalhes,
+                    ?string $responsavel = null,
+                    ?string $fallbackNome = null,
+                    ?string $fallbackMatricula = null,
+                    $fallbackData = null,
+                    ?string $paleta = null
+                ) use ($formatarDataHoraHistorico, $formatarResponsavelHistorico, $paletasEtapa): array {
+                    $cores = $paletasEtapa[$paleta ?: $secao] ?? $paletasEtapa['Solicitado'];
+                    $dataHora = $formatarDataHoraHistorico($historico, $fallbackData);
+                    $responsavelFinal = $responsavel ?: $formatarResponsavelHistorico($historico, $fallbackNome, $fallbackMatricula);
+
+                    return [
+                        'secao' => $secao,
+                        'titulo' => $titulo,
+                        'status_label' => $statusLabel,
+                        'data' => $dataHora['data'],
+                        'hora' => $dataHora['hora'],
+                        'detalhes' => collect($detalhes)->filter(fn ($detalhe) => trim((string) ($detalhe['value'] ?? '')) !== '')->values()->all(),
+                        'responsavel' => $responsavelFinal,
+                        'border_class' => $cores['border_class'],
+                        'border_style' => $cores['border_style'],
+                        'bar_style' => $cores['bar_style'],
+                        'tag_style' => $cores['tag_style'],
+                    ];
+                };
+
+                $histSolicitado = $buscarPrimeiroHistorico(function ($hist) {
+                    $status = strtoupper((string) ($hist->status_novo ?? ''));
+                    $acao = strtolower((string) ($hist->acao ?? ''));
+                    return $status === 'PENDENTE' || $acao === 'criado';
+                }) ?? $historicoEtapas->first();
+                $histAnalise = $buscarUltimoHistorico(function ($hist) {
+                    $status = strtoupper((string) ($hist->status_novo ?? ''));
+                    $acao = strtolower((string) ($hist->acao ?? ''));
+                    return $status === 'AGUARDANDO_CONFIRMACAO' || $acao === 'confirmar';
+                });
+                $histLiberacaoEncaminhada = $buscarUltimoHistorico(function ($hist) {
+                    $status = strtoupper((string) ($hist->status_novo ?? ''));
+                    $acao = strtolower((string) ($hist->acao ?? ''));
+                    return $acao === 'encaminhar_liberacao' || $status === 'LIBERACAO';
+                });
+                $histLiberacaoFinal = $buscarUltimoHistorico(
+                    fn ($hist) => strtolower((string) ($hist->acao ?? '')) === 'liberar_pedido'
+                );
+                $histEnvio = $buscarUltimoHistorico(function ($hist) use ($solicitacao) {
+                    $status = strtoupper((string) ($hist->status_novo ?? ''));
+                    $acao = strtolower((string) ($hist->acao ?? ''));
+                    return in_array($acao, ['enviar_pedido', 'liberar_enviar'], true)
+                        || ($status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== '');
+                });
+                $histRecebimento = $buscarUltimoHistorico(function ($hist) {
+                    $status = strtoupper((string) ($hist->status_novo ?? ''));
+                    $acao = strtolower((string) ($hist->acao ?? ''));
+                    return in_array($status, ['RECEBIDO', 'NAO_RECEBIDO'], true) || $acao === 'contestar_nao_recebido';
+                });
+
+                $detalhesBase = [
+                    ['label' => 'Item', 'value' => $primeiroItemDescricao ?: '-'],
+                    ['label' => 'Projeto', 'value' => $projetoLabel !== '' ? $projetoLabel : '-'],
+                    ['label' => 'Local', 'value' => $solicitacao->local_destino ?: '-'],
+                ];
+                $detalhesPessoa = $mesmoSolicitanteRecebedor
+                    ? [['label' => 'Pessoa', 'value' => $solicitanteNomeCurto]]
+                    : [
+                        ['label' => 'Solicitante', 'value' => $solicitanteNomeCurto],
+                        ['label' => 'Recebedor', 'value' => $recebedorNomeCurto],
+                    ];
+                $responsavelSolicitante = trim($solicitanteNomeCurto . ($solicitanteMatricula !== '' ? ' (' . $solicitanteMatricula . ')' : ''));
+                $recebedorMatriculaCard = trim((string) ($solicitacao->matricula_recebedor ?: $solicitacao->solicitante_matricula ?: '-'));
+                $rastreioAtual = trim((string) ($solicitacao->tracking_code ?? ''));
+                $etapaAnaliseConcluida = in_array($statusFluxo, ['AGUARDANDO_CONFIRMACAO', 'LIBERACAO', 'CONFIRMADO', 'RECEBIDO', 'NAO_ENVIADO', 'NAO_RECEBIDO'], true)
+                    || $histAnalise !== null;
+                $etapaLiberacaoConcluida = in_array($statusFluxo, ['LIBERACAO', 'CONFIRMADO', 'RECEBIDO', 'NAO_RECEBIDO'], true)
+                    || $histLiberacaoEncaminhada !== null
+                    || $histLiberacaoFinal !== null;
+                $etapaEnvioConcluida = in_array($statusFluxo, ['CONFIRMADO', 'RECEBIDO', 'NAO_RECEBIDO'], true)
+                    || $histEnvio !== null;
+                $etapaRecebimentoConcluida = in_array($statusFluxo, ['RECEBIDO', 'NAO_RECEBIDO'], true)
+                    || $histRecebimento !== null;
+
+                $mapearEtapaFluxo = function (?string $status): ?string {
+                    $status = strtoupper(trim((string) $status));
+
+                    return match ($status) {
+                        'PENDENTE' => 'Solicitado',
+                        'AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO' => 'Em Análise',
+                        'LIBERACAO' => 'Liberação',
+                        'CONFIRMADO', 'NAO_RECEBIDO' => 'Envio',
+                        'RECEBIDO' => 'Recebido',
+                        default => null,
+                    };
+                };
+
+                $cardSolicitado = $montarCardEtapa(
+                    'Solicitado',
+                    'Solicitação realizada',
+                    'Solicitado',
+                    $histSolicitado,
+                    array_merge($detalhesBase, $detalhesPessoa),
+                    $responsavelSolicitante !== '' ? $responsavelSolicitante : '-',
+                    $solicitanteNomeCurto,
+                    $solicitanteMatricula,
+                    $solicitacao->created_at
+                );
+                $cardAnalise = $etapaAnaliseConcluida
+                    ? $montarCardEtapa(
+                        'Em Análise',
+                        $histAnalise ? 'Solicitação em análise' : 'Aguardando análise',
+                        $histAnalise ? 'Aguardando confirmação' : 'Pendente',
+                        $histAnalise,
+                        array_merge($detalhesBase, $detalhesPessoa, [
+                            ['label' => 'Matrícula', 'value' => $recebedorMatriculaCard !== '' ? $recebedorMatriculaCard : '-'],
+                        ]),
+                        null,
+                        null,
+                        $solicitacao->solicitante_matricula ?? null
+                    )
+                    : null;
+                $cardLiberacao = null;
+                if ($etapaLiberacaoConcluida) {
+                    $cardLiberacao = $histLiberacaoFinal
+                        ? $montarCardEtapa(
+                            'Liberação',
+                            'Pedido liberado',
+                            'Liberado',
+                            $histLiberacaoFinal,
+                            array_merge($detalhesBase, [
+                                ['label' => 'Motivo', 'value' => trim((string) ($histLiberacaoFinal->motivo ?? '')) ?: 'Pedido liberado para envio.'],
+                            ])
+                        )
+                        : $montarCardEtapa(
+                            'Liberação',
+                            'Encaminhado para liberação',
+                            'Aguardando liberação',
+                            $histLiberacaoEncaminhada,
+                            array_merge($detalhesBase, [
+                                ['label' => 'Motivo', 'value' => trim((string) ($histLiberacaoEncaminhada->motivo ?? '')) ?: 'Solicitação encaminhada para liberação final.'],
+                            ])
+                        );
+                }
+                $cardEnvio = null;
+                if ($etapaEnvioConcluida) {
+                    $cardEnvio = $histEnvio
+                        ? $montarCardEtapa(
+                            'Envio',
+                            'Pedido enviado',
+                            'Enviado',
+                            $histEnvio,
+                            array_merge($detalhesBase, [
+                                ['label' => 'Rastreio', 'value' => $rastreioAtual !== '' ? $rastreioAtual : 'Sem rastreio informado'],
+                                ['label' => 'Recebimento', 'value' => 'Aguardando confirmação do recebimento.'],
+                            ]),
+                            null,
+                            null,
+                            null,
+                            null,
+                            'Envio Concluido'
+                        )
+                        : $montarCardEtapa(
+                            'Envio',
+                            'Aguardando envio do pedido',
+                            'Aguardando envio',
+                            null,
+                            array_merge($detalhesBase, [
+                                ['label' => 'Rastreio', 'value' => 'Aguardando informação de rastreio.'],
+                            ]),
+                            '-',
+                            null,
+                            null,
+                            $solicitacao->updated_at
+                        );
+                }
+                $cardRecebimento = null;
+                if ($etapaRecebimentoConcluida) {
+                    $cardRecebimento = $statusFluxo === 'NAO_RECEBIDO'
+                        ? $montarCardEtapa(
+                            'Recebido',
+                            'Pedido não recebido',
+                            'Não recebido',
+                            $histRecebimento,
+                            array_merge($detalhesBase, [
+                                ['label' => 'Rastreio', 'value' => $rastreioAtual !== '' ? $rastreioAtual : 'Sem rastreio informado'],
+                                ['label' => 'Motivo', 'value' => trim((string) data_get($histRecebimento, 'motivo', '')) ?: 'Pedido sinalizado como não recebido.'],
+                            ]),
+                            null,
+                            null,
+                            null,
+                            $solicitacao->updated_at,
+                            'Não Recebido'
+                        )
+                        : $montarCardEtapa(
+                            'Recebido',
+                            'Recebimento confirmado',
+                            'Recebido',
+                            $histRecebimento,
+                            array_merge($detalhesBase, [
+                                ['label' => 'Rastreio', 'value' => $rastreioAtual !== '' ? $rastreioAtual : 'Sem rastreio informado'],
+                            ]),
+                            null,
+                            null,
+                            null,
+                            $solicitacao->updated_at
+                        );
+                }
+
+                $cardsFluxo = [];
+                $etapasInseridas = [];
+                $adicionarEtapa = function (string $chave, ?array $card) use (&$cardsFluxo, &$etapasInseridas): void {
+                    if ($card === null || isset($etapasInseridas[$chave])) {
+                        return;
+                    }
+
+                    $cardsFluxo[] = $card;
+                    $etapasInseridas[$chave] = true;
+                };
+                $montarCardEspecial = function (string $tipo, object $historico) use (
+                    $montarCardEtapa,
+                    $mapearEtapaFluxo,
+                    $detalhesBase,
+                    $solicitacao
+                ): array {
+                    $motivo = trim((string) ($historico->motivo ?? ''));
+                    if ($motivo === '' && $tipo === 'Cancelado') {
+                        $motivo = trim((string) ($solicitacao->justificativa_cancelamento ?? ''));
+                    }
+
+                    if ($tipo === 'Cancelado') {
+                        $etapaOrigem = $mapearEtapaFluxo($historico->status_anterior ?? null)
+                            ?: $mapearEtapaFluxo($historico->status_novo ?? null)
+                            ?: 'Fluxo atual';
+
+                        return $montarCardEtapa(
+                            'Cancelado',
+                            'Solicitação cancelada',
+                            'Cancelado',
+                            $historico,
+                            array_merge($detalhesBase, [
+                                ['label' => 'Etapa', 'value' => $etapaOrigem],
+                                ['label' => 'Motivo', 'value' => $motivo !== '' ? $motivo : 'Motivo não informado.'],
+                            ]),
+                            null,
+                            null,
+                            null,
+                            null,
+                            'Cancelado'
+                        );
+                    }
+
+                    $etapaOrigem = $mapearEtapaFluxo($historico->status_anterior ?? null) ?: 'Etapa anterior';
+                    $etapaDestino = $mapearEtapaFluxo($historico->status_novo ?? null) ?: 'Etapa atual';
+
+                    return $montarCardEtapa(
+                        'Retornado',
+                        'Retornou para etapa anterior',
+                        'Retornado',
+                        $historico,
+                        array_merge($detalhesBase, [
+                            ['label' => 'De', 'value' => $etapaOrigem],
+                            ['label' => 'Para', 'value' => $etapaDestino],
+                            ['label' => 'Motivo', 'value' => $motivo !== '' ? $motivo : 'Motivo não informado.'],
+                        ]),
+                        null,
+                        null,
+                        null,
+                        null,
+                        'Retornado'
+                    );
+                };
+
+                foreach ($historicoEtapas as $hist) {
+                    $statusNovoHistorico = strtoupper((string) ($hist->status_novo ?? ''));
+                    $acaoHistorico = strtolower((string) ($hist->acao ?? ''));
+
+                    if ($statusNovoHistorico === 'PENDENTE' || $acaoHistorico === 'criado') {
+                        $adicionarEtapa('solicitado', $cardSolicitado);
+                    }
+
+                    if (
+                        $statusNovoHistorico === 'AGUARDANDO_CONFIRMACAO'
+                        || $acaoHistorico === 'confirmar'
+                        || ($acaoHistorico === 'retornar' && $statusNovoHistorico === 'AGUARDANDO_CONFIRMACAO')
+                    ) {
+                        $adicionarEtapa('analise', $cardAnalise);
+                    }
+
+                    if (
+                        $statusNovoHistorico === 'LIBERACAO'
+                        || in_array($acaoHistorico, ['encaminhar_liberacao', 'liberar_pedido'], true)
+                    ) {
+                        $adicionarEtapa('liberacao', $cardLiberacao);
+                    }
+
+                    if (
+                        $statusNovoHistorico === 'CONFIRMADO'
+                        || in_array($acaoHistorico, ['enviar_pedido', 'liberar_enviar'], true)
+                    ) {
+                        $adicionarEtapa('envio', $cardEnvio);
+                    }
+
+                    if (in_array($statusNovoHistorico, ['RECEBIDO', 'NAO_RECEBIDO'], true) || $acaoHistorico === 'contestar_nao_recebido') {
+                        $adicionarEtapa('recebido', $cardRecebimento);
+                    }
+
+                    if (
+                        in_array($acaoHistorico, ['cancelar', 'nao_enviado'], true)
+                        || in_array($statusNovoHistorico, ['CANCELADO', 'NAO_ENVIADO'], true)
+                    ) {
+                        $cardsFluxo[] = $montarCardEspecial('Cancelado', $hist);
+                    }
+
+                    if ($acaoHistorico === 'retornar') {
+                        $cardsFluxo[] = $montarCardEspecial('Retornado', $hist);
+                    }
+                }
+
+                $adicionarEtapa('solicitado', $cardSolicitado);
+                if ($etapaAnaliseConcluida) {
+                    $adicionarEtapa('analise', $cardAnalise);
+                }
+                if ($etapaLiberacaoConcluida) {
+                    $adicionarEtapa('liberacao', $cardLiberacao);
+                }
+                if ($etapaEnvioConcluida) {
+                    $adicionarEtapa('envio', $cardEnvio);
+                }
+                if ($etapaRecebimentoConcluida) {
+                    $adicionarEtapa('recebido', $cardRecebimento);
+                }
             @endphp
 
             <div class="mb-3 bg-[color:var(--solicitacao-modal-bg,#fcfdff)] dark:bg-slate-900/90 shadow-sm rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 overflow-hidden">
@@ -315,197 +696,70 @@
                         Acompanhamento do Pedido
                     </h3>
                     <button type="button" @click="toggleSection('history')" class="ml-auto inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors">
-                        <span x-text="openSection === 'history' ? 'Contrair' : 'Expandir'"></span>
+                        <span x-text="openSection === 'history' ? 'Fechar' : 'Abrir'"></span>
                         <svg class="w-3 h-3 transition-transform" :class="openSection === 'history' ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                     </button>
                 </div>
                 <div class="p-4">
                     <div class="relative flex items-center justify-between">
-                        <div class="absolute top-4 left-0 w-full h-0.5 bg-gray-200 dark:bg-gray-700"></div>
-                        <div class="absolute top-4 left-0 h-0.5 bg-indigo-500 transition-all duration-500" style="width: {{ (($etapaAtual - 1) / 4) * 100 }}%"></div>
+                        <div class="absolute top-4 left-4 right-4 h-0.5">
+                            <div class="absolute inset-0 bg-gray-200 dark:bg-gray-700"></div>
+                            <div class="absolute top-0 left-0 h-0.5 bg-indigo-500 transition-all duration-500" style="width: {{ $progressBlueWidth }}%"></div>
+                        @if($progressRedWidth > 0)
+                                <div class="absolute top-0 h-0.5 bg-red-500 transition-all duration-500" style="left: {{ $progressRedLeft }}%; width: {{ $progressRedWidth }}%;"></div>
+                        @endif
+                        </div>
                         @foreach($stepsTopo as $stepTopo)
                             @php
-                                $ativo = $stepTopo['n'] <= $etapaAtual;
+                                $isCancelamentoStep = $isCancelamentoAtual && $stepTopo['n'] === $etapaAtual;
+                                $ativo = $isCancelamentoAtual ? $stepTopo['n'] < $etapaAtual : $stepTopo['n'] <= $etapaAtual;
                             @endphp
-                            <div class="relative z-10 flex flex-col items-center">
-                                <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold {{ $ativo ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white dark:bg-slate-900 border-gray-300 dark:border-gray-600 text-gray-400' }}">
+                            <div class="relative z-10 flex w-24 flex-col items-center">
+                                <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold {{ $isCancelamentoStep ? 'bg-red-500 border-red-500 text-white' : ($ativo ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white dark:bg-slate-900 border-gray-300 dark:border-gray-600 text-gray-400') }}">
                                     {{ $stepTopo['n'] }}
                                 </div>
-                                <span class="mt-2 text-[10px] {{ $ativo ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-400' }}">{{ $stepTopo['label'] }}</span>
+                                <div class="mt-2 min-h-[38px] text-center">
+                                    <span class="block text-[10px] {{ $isCancelamentoStep ? 'text-red-600 dark:text-red-400 font-semibold' : ($ativo ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-400') }}">
+                                        {{ $isCancelamentoStep ? 'Cancelado' : $stepTopo['label'] }}
+                                    </span>
+                                    @if($isCancelamentoStep && $motivoCancelamentoStepper !== '')
+                                        <span class="mt-0.5 block text-[10px] leading-tight font-semibold text-red-600 dark:text-red-400">
+                                            {{ $motivoCancelamentoStepper }}
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                         @endforeach
                     </div>
-                    @if($interrupcao)
-                        <div class="mt-3 text-center">
-                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold {{ $interrupcao['class'] }}">{{ $interrupcao['label'] }}</span>
-                        </div>
-                    @endif
-
                     <div x-show="openSection === 'history'" x-transition.duration.300ms class="mt-4 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] pt-4">
                         <div class="overflow-x-auto pb-1">
                             <div class="flex flex-nowrap gap-3 min-w-max">
-                                @foreach($historicoCards as $histCard)
-                                    @php
-                                        $statusCard = strtoupper((string) ($histCard->status_novo ?? ''));
-                                        $acaoCard = strtolower((string) ($histCard->acao ?? ''));
-                                        $motivoCard = trim((string) ($histCard->motivo ?? ''));
-                                        $statusAnteriorCard = strtoupper((string) ($histCard->status_anterior ?? ''));
-                                        $usuarioCard = trim((string) ($histCard->usuario->NOMEUSER ?? $histCard->usuario->NMLOGIN ?? '-'));
-                                        $usuarioCardPartes = array_values(array_filter(explode(' ', preg_replace('/\s+/u', ' ', $usuarioCard))));
-                                        $usuarioNomeCurtoCard = count($usuarioCardPartes) > 1
-                                            ? (($usuarioCardPartes[0] ?? '') . ' ' . ($usuarioCardPartes[count($usuarioCardPartes) - 1] ?? ''))
-                                            : $usuarioCard;
-                                        $usuarioMatriculaCard = trim((string) ($histCard->usuario->CDMATRFUNCIONARIO ?? $solicitacao->solicitante_matricula ?? '-'));
-                                        $dataCard = optional($histCard->created_at)->format('d/m/Y');
-                                        $horaCard = optional($histCard->created_at)->format('H:i');
-
-                                        $secaoCard = match (true) {
-                                            $acaoCard === 'contestar_nao_recebido' => 'Contestação',
-                                            $acaoCard === 'retornar' => 'Retorno',
-                                            $statusCard === 'AGUARDANDO_CONFIRMACAO' => 'Em análise',
-                                            $statusCard === 'LIBERACAO' => 'Liberação',
-                                            $acaoCard === 'liberar_pedido', $statusCard === 'CONFIRMADO' => 'Liberação',
-                                            $statusCard === 'CONFIRMADO' => 'Envio',
-                                            $statusCard === 'NAO_ENVIADO' => 'Cancelamento',
-                                            $statusCard === 'RECEBIDO', $statusCard === 'NAO_RECEBIDO' => 'Recebimento',
-                                            $statusCard === 'CANCELADO' => 'Cancelamento',
-                                            default => 'Solicitação',
-                                        };
-
-                                        $tituloCard = match (true) {
-                                            $acaoCard === 'contestar_nao_recebido' => 'Não recebido contestado',
-                                            $acaoCard === 'retornar' => 'Retornou para solicitado',
-                                            $acaoCard === 'confirmar', $statusCard === 'AGUARDANDO_CONFIRMACAO' => 'Solicitação em análise',
-                                            $acaoCard === 'encaminhar_liberacao', $statusCard === 'LIBERACAO' => 'Encaminhado para liberação',
-                                            $acaoCard === 'liberar_pedido', $statusCard === 'CONFIRMADO' => 'Pedido liberado',
-                                            $acaoCard === 'enviar_pedido', $statusCard === 'CONFIRMADO' => 'Pedido enviado',
-                                            $acaoCard === 'liberar_enviar', $statusCard === 'CONFIRMADO' => 'Pedido enviado',
-                                            $statusCard === 'NAO_ENVIADO' => 'Solicitação cancelada',
-                                            $statusCard === 'NAO_RECEBIDO' => 'Pedido não recebido',
-                                            $statusCard === 'RECEBIDO' => 'Recebimento confirmado',
-                                            $statusCard === 'CANCELADO' => 'Solicitação cancelada',
-                                            default => 'Solicitação realizada',
-                                        };
-
-                                        $paletteCard = match ($secaoCard) {
-                                            'Solicitação' => ['border' => 'border-yellow-400 dark:border-yellow-400', 'bar' => 'bg-yellow-400', 'border_style' => 'border-color:#facc15;', 'bar_style' => 'background-color:#facc15;', 'tag_style' => 'background-color:#facc15;border-color:#eab308;color:#000;'],
-                                            'Em análise' => ['border' => 'border-blue-400 dark:border-blue-400', 'bar' => 'bg-blue-400', 'border_style' => 'border-color:#60a5fa;', 'bar_style' => 'background-color:#60a5fa;', 'tag_style' => 'background-color:#60a5fa;border-color:#3b82f6;color:#000;'],
-                                            'Liberação' => ['border' => 'border-violet-500 dark:border-violet-400', 'bar' => 'bg-violet-500', 'border_style' => 'border-color:#8b5cf6;', 'bar_style' => 'background-color:#8b5cf6;', 'tag_style' => 'background-color:#c4b5fd;border-color:#8b5cf6;color:#000;'],
-                                            'Envio' => ['border' => 'border-purple-600 dark:border-purple-500', 'bar' => 'bg-purple-600', 'border_style' => 'border-color:#7c3aed;', 'bar_style' => 'background-color:#7c3aed;', 'tag_style' => 'background-color:#a78bfa;border-color:#7c3aed;color:#000;'],
-                                            'Recebimento' => ['border' => 'border-green-400 dark:border-green-400', 'bar' => 'bg-green-400', 'border_style' => 'border-color:#22c55e;', 'bar_style' => 'background-color:#22c55e;', 'tag_style' => 'background-color:#4ade80;border-color:#22c55e;color:#000;'],
-                                            'Contestação' => ['border' => 'border-violet-400 dark:border-violet-400', 'bar' => 'bg-violet-400', 'border_style' => 'border-color:#a78bfa;', 'bar_style' => 'background-color:#a78bfa;', 'tag_style' => 'background-color:#c4b5fd;border-color:#a78bfa;color:#000;'],
-                                            'Retorno' => ['border' => 'border-amber-400 dark:border-amber-400', 'bar' => 'bg-amber-400', 'border_style' => 'border-color:#f59e0b;', 'bar_style' => 'background-color:#f59e0b;', 'tag_style' => 'background-color:#fbbf24;border-color:#f59e0b;color:#000;'],
-                                            'Cancelamento' => ['border' => 'border-red-400 dark:border-red-400', 'bar' => 'bg-red-400', 'border_style' => 'border-color:#ef4444;', 'bar_style' => 'background-color:#ef4444;', 'tag_style' => 'background-color:#f87171;border-color:#ef4444;color:#000;'],
-                                            default => ['border' => 'border-slate-300 dark:border-slate-600', 'bar' => 'bg-slate-500', 'border_style' => 'border-color:#94a3b8;', 'bar_style' => 'background-color:#94a3b8;', 'tag_style' => 'background-color:#cbd5e1;border-color:#94a3b8;color:#000;'],
-                                        };
-                                        $bordaCard = $paletteCard['border'];
-
-                                        $statusCardLabel = match ($statusCard) {
-                                            'PENDENTE' => 'Solicitado',
-                                            'AGUARDANDO_CONFIRMACAO' => 'Aguardando confirmação',
-                                            'LIBERACAO' => 'Liberação',
-                                            'CONFIRMADO' => 'Envio',
-                                            'RECEBIDO' => 'Recebido',
-                                            'NAO_ENVIADO' => 'Cancelado',
-                                            'NAO_RECEBIDO' => 'Não recebido',
-                                            'CANCELADO' => 'Cancelado',
-                                            default => 'Pendente',
-                                        };
-                                        $statusCardStyle = $paletteCard['tag_style'];
-                                        $faixaCard = $paletteCard['bar'];
-                                        $bordaCardStyle = $paletteCard['border_style'];
-                                        $faixaCardStyle = $paletteCard['bar_style'];
-                                        $isSolicitacaoCard = $secaoCard === 'Solicitação';
-                                        $isSeparacaoCard = $secaoCard === 'Em análise';
-                                        $isLiberacaoCard = $secaoCard === 'Liberação';
-                                        $isEnvioCard = $secaoCard === 'Envio';
-                                        $isRecebimentoCard = $secaoCard === 'Recebimento';
-                                        $isExcecaoCard = in_array($secaoCard, ['Contestação', 'Retorno', 'Cancelamento'], true);
-                                        $rastreioCard = trim((string) ($solicitacao->tracking_code ?? ''));
-                                        $recebedorMatriculaCard = trim((string) ($solicitacao->matricula_recebedor ?: $solicitacao->solicitante_matricula ?: '-'));
-                                        $responsavelCard = $usuarioNomeCurtoCard !== '' ? $usuarioNomeCurtoCard : '-';
-                                        $responsavelCard .= $usuarioMatriculaCard !== '' ? ' (' . $usuarioMatriculaCard . ')' : '';
-                                    @endphp
-                                    <div class="w-[300px] shrink-0 rounded-xl border-2 {{ $bordaCard }} bg-[color:var(--solicitacao-modal-bg,#fcfdff)] dark:bg-slate-900/85 overflow-hidden shadow-sm" style="{{ $bordaCardStyle }}">
-                                        <div class="h-1 {{ $faixaCard }}" style="{{ $faixaCardStyle }}"></div>
+                                @foreach($cardsFluxo as $cardEtapa)
+                                    <div class="w-[300px] shrink-0 rounded-xl border-2 {{ $cardEtapa['border_class'] }} bg-[color:var(--solicitacao-modal-bg,#fcfdff)] dark:bg-slate-900/85 overflow-hidden shadow-sm" style="{{ $cardEtapa['border_style'] }}">
+                                        <div class="h-1" style="{{ $cardEtapa['bar_style'] }}"></div>
                                         <div class="px-3 py-2.5 border-b border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700/90 flex items-start justify-between gap-2">
                                             <div class="min-w-0">
-                                                <h4 class="text-[11px] font-bold tracking-[0.16em] text-slate-700 dark:text-slate-200 uppercase">{{ $secaoCard }}</h4>
-                                                <div class="text-[10px] text-slate-500 dark:text-slate-400">{{ $dataCard ?: '-' }} {{ $horaCard ?: '-' }}</div>
+                                                <h4 class="text-[11px] font-bold tracking-[0.16em] text-slate-700 dark:text-slate-200 uppercase">{{ $cardEtapa['secao'] }}</h4>
+                                                <div class="text-[10px] text-slate-500 dark:text-slate-400">{{ $cardEtapa['data'] }} {{ $cardEtapa['hora'] }}</div>
                                             </div>
-                                            <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap border" style="{{ $statusCardStyle }}">{{ $statusCardLabel }}</span>
+                                            <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap border" style="{{ $cardEtapa['tag_style'] }}">{{ $cardEtapa['status_label'] }}</span>
                                         </div>
 
                                         <div class="p-3 space-y-2.5">
-                                            <div class="text-[15px] leading-tight font-semibold text-gray-900 dark:text-gray-100">{{ $tituloCard }}</div>
+                                            <div class="text-[15px] leading-tight font-semibold text-gray-900 dark:text-gray-100">{{ $cardEtapa['titulo'] }}</div>
 
                                             <dl class="space-y-1.5 text-[12px] leading-snug">
-                                                <div class="grid grid-cols-[84px,1fr] gap-x-2">
-                                                    <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Item</dt>
-                                                    <dd class="font-semibold text-gray-900 dark:text-gray-100 break-words">{{ $primeiroItemDescricao ?: '-' }}</dd>
-                                                </div>
-
-                                                @if($isSolicitacaoCard || $isSeparacaoCard || $isLiberacaoCard || $isEnvioCard || $isRecebimentoCard)
+                                                @foreach($cardEtapa['detalhes'] as $detalhe)
                                                     <div class="grid grid-cols-[84px,1fr] gap-x-2">
-                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Projeto</dt>
-                                                        <dd class="font-semibold text-gray-900 dark:text-gray-100 truncate" title="{{ $projetoLabel !== '' ? $projetoLabel : '-' }}">{{ $projetoLabel !== '' ? $projetoLabel : '-' }}</dd>
+                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">{{ $detalhe['label'] }}</dt>
+                                                        <dd class="font-semibold break-words {{ $detalhe['class'] ?? 'text-gray-900 dark:text-gray-100' }}">{{ $detalhe['value'] }}</dd>
                                                     </div>
-                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
-                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Local</dt>
-                                                        <dd class="font-semibold text-gray-900 dark:text-gray-100 truncate" title="{{ $solicitacao->local_destino ?: '-' }}">{{ $solicitacao->local_destino ?: '-' }}</dd>
-                                                    </div>
-                                                @endif
-
-                                                @if($isSolicitacaoCard || $isSeparacaoCard)
-                                                    @if($mesmoSolicitanteRecebedor)
-                                                        <div class="grid grid-cols-[84px,1fr] gap-x-2">
-                                                            <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Pessoa</dt>
-                                                            <dd class="font-semibold text-gray-900 dark:text-gray-100 truncate" title="{{ $solicitanteNomeCurto }}">{{ $solicitanteNomeCurto }}</dd>
-                                                        </div>
-                                                    @else
-                                                        <div class="grid grid-cols-[84px,1fr] gap-x-2">
-                                                            <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Solicitante</dt>
-                                                            <dd class="font-semibold text-gray-900 dark:text-gray-100 truncate" title="{{ $solicitanteNomeCurto }}">{{ $solicitanteNomeCurto }}</dd>
-                                                        </div>
-                                                        <div class="grid grid-cols-[84px,1fr] gap-x-2">
-                                                            <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Recebedor</dt>
-                                                            <dd class="font-semibold text-gray-900 dark:text-gray-100 truncate" title="{{ $recebedorNomeCurto }}">{{ $recebedorNomeCurto }}</dd>
-                                                        </div>
-                                                    @endif
-                                                @endif
-
-                                                @if($isSeparacaoCard)
-                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
-                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Matrícula</dt>
-                                                        <dd class="font-semibold text-gray-900 dark:text-gray-100">{{ $recebedorMatriculaCard !== '' ? $recebedorMatriculaCard : '-' }}</dd>
-                                                    </div>
-                                                @endif
-
-                                                @if(($isEnvioCard || $isRecebimentoCard || $isExcecaoCard) && $rastreioCard !== '')
-                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
-                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Rastreio</dt>
-                                                        <dd class="font-semibold text-gray-900 dark:text-gray-100 break-all">{{ $rastreioCard }}</dd>
-                                                    </div>
-                                                @endif
-
-                                                @if($acaoCard === 'retornar' && $statusAnteriorCard !== '')
-                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
-                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Retorno</dt>
-                                                        <dd class="font-semibold text-amber-700 dark:text-amber-300">{{ str_replace('_', ' ', $statusAnteriorCard) }} -> SOLICITADO</dd>
-                                                    </div>
-                                                @endif
-
-                                                @if($motivoCard !== '')
-                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
-                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Motivo</dt>
-                                                        <dd class="font-semibold text-rose-700 dark:text-rose-300 break-words">{{ $motivoCard }}</dd>
-                                                    </div>
-                                                @endif
+                                                @endforeach
                                             </dl>
 
                                             <div class="pt-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700/90">
                                                 <div class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Responsável</div>
-                                                <div class="text-[12px] font-semibold text-gray-900 dark:text-gray-100">{{ $responsavelCard }}</div>
+                                                <div class="text-[12px] font-semibold text-gray-900 dark:text-gray-100">{{ $cardEtapa['responsavel'] }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -537,16 +791,16 @@
                                     <p class="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5">Resumo das informações principais</p>
                                 </div>
                             </div>
-                            <button type="button" @click="showDetails = !showDetails" class="ml-auto inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors">
-                                <span x-text="showDetails ? 'Contrair' : 'Expandir'"></span>
-                                <svg class="w-3 h-3 transition-transform" :class="showDetails ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <button type="button" @click="toggleSection('details')" class="ml-auto inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors">
+                                <span x-text="openSection === 'details' ? 'Fechar' : 'Abrir'"></span>
+                                <svg class="w-3 h-3 transition-transform" :class="openSection === 'details' ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
                         </div>
 
                         <!-- Grid de Informacoes -->
-                        <div class="p-4" x-show="showDetails" x-transition.duration.250ms>
+                        <div class="p-4" x-show="openSection === 'details'" x-transition.duration.250ms>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
                                     <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Solicitante</div>
@@ -573,17 +827,34 @@
                                 </div>
 
                                 <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
-                                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Projeto / Destinação</div>
-                                    <div class="text-base font-bold text-gray-900 dark:text-gray-100">{{ $solicitacao->projeto?->NOMEPROJETO ?? '-' }}</div>
-                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Cód: <span class="font-mono font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->projeto?->CDPROJETO ?? '-' }}</span></div>
-                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Destinação: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->destination_type ? 'Filial/Projeto' : '-' }}</span></div>
-                                    <div class="flex items-center gap-2 mt-2">
-                                        <span class="text-xs text-slate-500 dark:text-slate-400">Status:</span>
-                                        <x-status-badge :status="$statusBadgeAtual" :color-map="$statusColors" class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full shadow-sm" />
+                                    <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Projeto / Destinação</div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <div class="space-y-2">
+                                            <div>
+                                                <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Cód</div>
+                                                <div class="text-base font-bold text-gray-900 dark:text-gray-100">{{ $solicitacao->projeto?->CDPROJETO ?? '-' }}</div>
+                                            </div>
+                                            <div>
+                                                <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Destinação</div>
+                                                <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->destination_type ? 'Filial/Projeto' : '-' }}</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="space-y-2">
+                                            <div>
+                                                <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Status</div>
+                                                <div class="mt-1">
+                                                    <x-status-badge :status="$statusBadgeAtual" :color-map="$statusColors" class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full shadow-sm" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Criado em</div>
+                                                <div class="text-sm font-semibold text-gray-900 dark:text-gray-200">{{ optional($solicitacao->created_at)->format('d/m/Y H:i') }}</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Criado em: <span class="font-semibold text-gray-900 dark:text-gray-200">{{ optional($solicitacao->created_at)->format('d/m/Y H:i') }}</span></div>
                                     @if($solicitacao->tracking_code)
-                                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Rastreio: <span class="font-mono font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->tracking_code }}</span></div>
+                                        <div class="mt-3 text-xs text-slate-500 dark:text-slate-400">Rastreio: <span class="font-mono font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->tracking_code }}</span></div>
                                     @endif
                                 </div>
                             </div>
@@ -653,7 +924,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.confirm', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
+                            <form method="POST" action="{{ route('solicitacoes-bens.confirm', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
                                 @csrf
                                 @method('POST')
                                 <p class="text-sm text-gray-600 dark:text-gray-400">Confirme para mover a solicitação para <strong>Em Análise</strong>.</p>
@@ -680,7 +951,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.forward-to-liberacao', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
+                            <form method="POST" action="{{ route('solicitacoes-bens.forward-to-liberacao', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
                                 @csrf
                                 @method('POST')
 
@@ -709,7 +980,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.release', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
+                            <form method="POST" action="{{ route('solicitacoes-bens.release', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
                                 @csrf
                                 @method('POST')
 
@@ -738,7 +1009,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.send', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
+                            <form method="POST" action="{{ route('solicitacoes-bens.send', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
                                 @csrf
                                 @method('POST')
 
@@ -773,7 +1044,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.not-sent', $solicitacao->id) }}" class="space-y-4 p-6" data-modal-form>
+                            <form method="POST" action="{{ route('solicitacoes-bens.not-sent', $solicitacao->id) }}" class="space-y-4 p-6" data-modal-form @submit="closeActionModals()">
                                 @csrf
                                 @method('POST')
 
@@ -827,7 +1098,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.receive', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
+                            <form method="POST" action="{{ route('solicitacoes-bens.receive', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
                                 @csrf
                                 @method('POST')
 
@@ -857,7 +1128,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.not-received', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
+                            <form method="POST" action="{{ route('solicitacoes-bens.not-received', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
                                 @csrf
                                 @method('POST')
 
@@ -892,7 +1163,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.contest-not-received', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
+                            <form method="POST" action="{{ route('solicitacoes-bens.contest-not-received', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
                                 @csrf
                                 @method('POST')
 
@@ -930,18 +1201,18 @@
                     <div x-show="showReturnModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
                             <div class="bg-amber-600 text-white px-6 py-4 flex items-center justify-between">
-                                <h3 class="text-sm font-bold">Voltar para Em An&aacute;lise</h3>
+                                <h3 class="text-sm font-bold">{{ $returnButtonLabel ?? 'Voltar um status' }}</h3>
                                 <button @click="showReturnModal = false" class="text-white/70 hover:text-white">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.return-to-analysis', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
+                            <form method="POST" action="{{ route('solicitacoes-bens.return-to-analysis', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
                                 @csrf
                                 @method('POST')
 
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Descreva o motivo para retornar a solicita&ccedil;&atilde;o para <strong>Em An&aacute;lise</strong>.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Descreva o motivo para retornar a solicitação para a etapa anterior.</p>
 
                                 <div>
                                     <label for="motivo_retorno" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo *</label>
@@ -955,7 +1226,7 @@
                                         Cancelar
                                     </button>
                                     <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition border border-amber-700/70">
-                                        Voltar para Em An&aacute;lise
+                                        {{ $returnButtonLabel ?? 'Voltar um status' }}
                                     </button>
                                 </div>
                             </form>
@@ -963,7 +1234,7 @@
                     </div>
                     <!-- MODAL: Cancelar Solicitação -->
                     <div x-show="showCancelModal" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6 dark:bg-black/70" style="display:none;">
-                        <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                        <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl" x-data="{ motivoPadrao: '', outroMotivo: '' }">
                             <div class="flex items-center justify-between bg-red-600 px-6 py-4 text-white">
                                 <h3 class="text-sm font-bold">Cancelar Solicitação</h3>
                                 <button @click="showCancelModal = false" class="text-white/70 hover:text-white">
@@ -972,13 +1243,33 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.cancel', $solicitacao->id) }}" class="space-y-4 p-6" data-modal-form>
+                            <form method="POST" action="{{ route('solicitacoes-bens.cancel', $solicitacao->id) }}" class="space-y-4 p-6" data-modal-form @submit="closeActionModals()">
                                 @csrf
                                 @method('POST')
-                                
-                                <div>
-                                    <label for="justificativa_cancelamento" class="mb-1 block text-xs font-medium text-slate-700">Motivo do Cancelamento *</label>
-                                    <textarea id="justificativa_cancelamento" name="justificativa_cancelamento" required rows="3"
+
+                                <p class="text-sm leading-6 text-slate-600">Use esta opção quando a solicitação não puder seguir no fluxo. Selecione um motivo comum ou descreva manualmente o cancelamento.</p>
+                                <div class="space-y-1">
+                                    <label for="motivo_padrao_cancelamento_inicial" class="mb-1 block text-xs font-medium text-slate-700">Motivo comum</label>
+                                    <select id="motivo_padrao_cancelamento_inicial"
+                                        x-model="motivoPadrao"
+                                        @change="
+                                            if (motivoPadrao && motivoPadrao !== 'OUTRO') {
+                                                $refs.justificativaCancelamento.value = motivoPadrao;
+                                            } else if (motivoPadrao === 'OUTRO') {
+                                                $refs.justificativaCancelamento.value = outroMotivo;
+                                            } else {
+                                                $refs.justificativaCancelamento.value = '';
+                                            }
+                                        "
+                                        class="block h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-xs text-slate-800 shadow-sm focus:border-red-400 focus:ring-red-400">
+                                        <option value="">Selecione...</option>
+                                        <option value="Sem estoque">Sem estoque</option>
+                                        <option value="OUTRO">Outro motivo</option>
+                                    </select>
+                                </div>
+                                <div x-show="motivoPadrao === 'OUTRO'" x-transition style="display: none;">
+                                    <label for="justificativa_cancelamento" class="mb-1 block text-xs font-medium text-slate-700">Motivo do cancelamento *</label>
+                                    <textarea id="justificativa_cancelamento" name="justificativa_cancelamento" x-model="outroMotivo" :required="motivoPadrao === 'OUTRO'" rows="3" x-ref="justificativaCancelamento"
                                         class="block w-full rounded-md border border-slate-300 bg-white p-3 text-xs text-slate-800 shadow-sm focus:border-red-400 focus:ring-red-400"
                                         placeholder="Descreva o motivo do cancelamento..."></textarea>
                                 </div>
@@ -1006,7 +1297,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <form method="POST" action="{{ route('solicitacoes-bens.recreate-cancelled', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form>
+                            <form method="POST" action="{{ route('solicitacoes-bens.recreate-cancelled', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
                                 @csrf
                                 @method('POST')
 
@@ -1032,6 +1323,36 @@
                             </form>
                         </div>
                     </div>
+
+                    <div x-show="showArchiveCancelledModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-gray-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Arquivar Solicitação</h3>
+                                <button @click="showArchiveCancelledModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.archive-cancelled', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
+                                @csrf
+                                @method('POST')
+
+                                <p class="text-sm text-gray-600 dark:text-gray-300">
+                                    Esta solicitação cancelada será arquivada e deixará de aparecer na listagem principal.
+                                </p>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showArchiveCancelledModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Voltar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-gray-600 hover:bg-gray-700 rounded-lg transition">
+                                        Confirmar Arquivamento
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 @endif
             </div>
 
@@ -1045,7 +1366,7 @@
                         Acompanhamento do Pedido
                     </h3>
                     <button type="button" @click="toggleSection('history')" class="ml-auto inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors">
-                        <span x-text="openSection === 'history' ? 'Contrair' : 'Expandir'"></span>
+                        <span x-text="openSection === 'history' ? 'Fechar' : 'Abrir'"></span>
                         <svg class="w-3 h-3 transition-transform" :class="openSection === 'history' ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>

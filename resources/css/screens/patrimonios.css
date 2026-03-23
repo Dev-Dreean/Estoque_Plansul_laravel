@@ -1,0 +1,54 @@
+.patrimonio-page {
+    background: radial-gradient(900px 280px at 8% -10%, rgba(99, 102, 241, 0.05), transparent 60%), var(--bg);
+}
+
+.patrimonio-shell,
+.patrimonio-modal-shell {
+    background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    border-color: var(--border);
+}
+
+.patrimonio-modal-header {
+    background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface) 100%);
+    border-bottom: 1px solid var(--border);
+}
+
+.patrimonio-modal-body {
+    background: radial-gradient(800px 240px at 10% 0%, rgba(99, 102, 241, 0.06), transparent 60%), var(--surface);
+}
+
+.patrimonio-modal-body .bg-white {
+    background: var(--surface);
+}
+
+.patrimonio-modal-body .border-gray-200,
+.patrimonio-modal-body .border-gray-300 {
+    border-color: var(--border);
+}
+
+.patrimonio-modal-body input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]),
+.patrimonio-modal-body select,
+.patrimonio-modal-body textarea {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.patrimonio-modal-body input::placeholder,
+.patrimonio-modal-body textarea::placeholder {
+    color: var(--text-soft);
+}
+
+@layer components {
+    .codigo-popover {
+        @apply rounded bg-gray-900 px-2 py-1 text-xs text-gray-100 shadow;
+    }
+
+    .row-just-updated {
+        @apply bg-emerald-900/30 ring-2 ring-emerald-500/40 transition;
+    }
+
+    .row-just-cleared {
+        @apply bg-amber-900/20 ring-2 ring-amber-500/30 transition;
+    }
+}

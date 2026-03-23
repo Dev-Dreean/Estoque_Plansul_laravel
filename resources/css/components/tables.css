@@ -1,0 +1,87 @@
+@layer components {
+    .table-wrap {
+        @apply relative overflow-x-auto shadow-md sm:rounded-lg;
+    }
+
+    .table-base {
+        @apply text-left text-base rtl:text-right;
+        color: var(--text-soft);
+    }
+
+    .th,
+    .table-head-cell {
+        @apply px-4 py-3 text-xs font-semibold uppercase tracking-wide;
+        background: var(--surface-2);
+        color: var(--text-soft);
+    }
+
+    .td,
+    .table-cell {
+        @apply px-4 py-2 align-top;
+    }
+}
+
+.table-clean {
+    width: 100%;
+    border-spacing: 0;
+}
+
+.table-clean thead th {
+    background: var(--surface-2);
+    color: var(--text-soft);
+    font-size: 11px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    padding: .65rem .85rem;
+}
+
+.table-clean tbody td {
+    padding: .5rem .85rem;
+    font-size: .8125rem;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+}
+
+.table-clean tbody tr:hover {
+    background: var(--surface-2);
+}
+
+.table-var,
+.table-app {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    color: var(--text-soft);
+}
+
+.table-var thead th,
+.table-app thead th {
+    background: var(--surface-2);
+    color: var(--text-soft);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    padding: .75rem 1rem;
+}
+
+.table-var tbody tr,
+.table-app tbody tr,
+.tr-hover {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+}
+
+.table-var tbody tr:hover,
+.table-app tbody tr:hover,
+.tr-hover:hover {
+    background: var(--surface-2);
+}
+
+.table-var td,
+.table-app td {
+    padding: .5rem 1rem;
+    font-size: .8125rem;
+    color: var(--text);
+}

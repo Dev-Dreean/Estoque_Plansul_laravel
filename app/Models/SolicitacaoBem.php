@@ -18,6 +18,7 @@ class SolicitacaoBem extends Model
     public const STATUS_NAO_RECEBIDO = 'NAO_RECEBIDO';
     public const STATUS_RECEBIDO = 'RECEBIDO';
     public const STATUS_CANCELADO = 'CANCELADO';
+    public const STATUS_ARQUIVADO = 'ARQUIVADO';
     
     public const DESTINATION_FILIAL = 'FILIAL';
     public const DESTINATION_PROJETO = 'PROJETO';

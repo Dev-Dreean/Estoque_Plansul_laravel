@@ -1,0 +1,463 @@
+@layer components {
+    /* ----- SUBNAV ----- */
+    .sol-subnav {
+        @apply inline-flex overflow-hidden rounded-lg shadow-sm;
+        border: 1px solid #ddd6fe;
+        background: var(--surface);
+    }
+
+    .dark .sol-subnav {
+        border-color: #4c1d95;
+    }
+
+    .sol-subnav__tab {
+        @apply px-4 py-2 text-sm font-medium transition-colors;
+        background: var(--surface);
+        color: #6d28d9;
+    }
+
+    .dark .sol-subnav__tab {
+        color: #a78bfa;
+    }
+
+    .sol-subnav__tab:hover {
+        background-color: #f5f3ff;
+    }
+
+    .dark .sol-subnav__tab:hover {
+        background: var(--surface-3);
+    }
+
+    .sol-subnav__tab + .sol-subnav__tab {
+        border-left: 1px solid #ddd6fe;
+    }
+
+    .dark .sol-subnav__tab + .sol-subnav__tab {
+        border-left-color: #4c1d95;
+    }
+
+    .sol-subnav__tab--active {
+        background-color: #7c3aed;
+        color: #ffffff;
+    }
+
+    .dark .sol-subnav__tab--active {
+        background-color: #6d28d9;
+        color: #ffffff;
+    }
+
+    /* ----- HISTORY PANEL ----- */
+    .sol-history-panel {
+        @apply mb-6 rounded-xl p-4 shadow-sm;
+        background: var(--surface);
+        border: 1px solid var(--border);
+    }
+
+    .sol-history-panel__toggle {
+        @apply inline-flex h-8 w-8 items-center justify-center rounded-md transition focus:outline-none focus:ring-2;
+        border: 1px solid #ddd6fe;
+        background-color: #f8f5ff;
+        color: #7c3aed;
+    }
+
+    .dark .sol-history-panel__toggle {
+        border-color: var(--border);
+        background: var(--surface-2);
+        color: #7dd3fc;
+    }
+
+    .sol-history-field {
+        @apply h-10 w-full rounded-md px-3 text-sm shadow-sm;
+        border: 1px solid #e9ddff;
+        background: var(--surface);
+        color: var(--text);
+    }
+
+    .dark .sol-history-field {
+        border-color: var(--border);
+    }
+
+    .sol-history-field::placeholder {
+        color: var(--text-soft);
+    }
+
+    .sol-history-filter-button {
+        @apply h-10 shrink-0 px-4;
+        background-color: #6d28d9;
+    }
+
+    .sol-history-clear {
+        @apply inline-flex h-10 shrink-0 items-center rounded-md px-3 text-sm;
+        color: #7c3aed;
+    }
+
+    .dark .sol-history-clear {
+        color: var(--text-soft);
+    }
+
+    .dark .sol-history-clear:hover {
+        color: var(--text);
+    }
+
+    .sol-history-card {
+        @apply overflow-hidden rounded-2xl shadow-sm transition;
+        border: 1px solid #ddd6fe;
+        background: var(--surface);
+    }
+
+    .dark .sol-history-card {
+        border-color: var(--border);
+    }
+
+    .sol-history-card:hover {
+        background: var(--surface-2);
+    }
+
+    .sol-history-card__button {
+        @apply w-full px-4 py-3 text-left transition;
+        background: transparent;
+    }
+
+    .sol-history-card__expand {
+        color: #8b5cf6;
+    }
+
+    .sol-history-card__body {
+        @apply p-4;
+        border-top: 1px solid var(--border);
+        background: var(--surface-2);
+    }
+
+    .sol-history-table-head {
+        @apply uppercase text-[11px];
+        background: var(--surface-2);
+        color: #6d28d9;
+    }
+
+    .dark .sol-history-table-head {
+        color: #c4b5fd;
+    }
+
+    .sol-history-table-row {
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+    }
+
+    .sol-history-table-row--alt {
+        background: var(--surface-2);
+    }
+
+    /* ----- INDEX TABLE ----- */
+    .sol-index__create-button {
+        @apply inline-flex items-center rounded px-4 py-2 font-semibold text-white transition;
+        background-color: #5b21b6;
+    }
+
+    .sol-index__create-button:hover {
+        background-color: #4c1d95;
+    }
+
+    .sol-index__toolbar {
+        @apply mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between;
+    }
+
+    .sol-index__search-panel {
+        @apply min-w-0 flex-1;
+        max-width: 38rem;
+    }
+
+    .sol-index__status-bar {
+        @apply mb-5 flex flex-wrap items-center gap-2;
+    }
+
+    .sol-index__status-chip {
+        @apply inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition;
+        border-width: 1px;
+        border-color: #ddd6fe;
+        background-color: #ffffff;
+        color: #5b21b6;
+        box-shadow: 0 8px 18px -16px rgba(91, 33, 182, 0.75);
+        position: relative;
+    }
+
+    .sol-index__status-chip:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px -18px rgba(30, 41, 59, 0.55);
+    }
+
+    .sol-index__status-chip--active {
+        border-width: 2px;
+        transform: translateY(-2px) scale(1.03);
+        font-weight: 800;
+        box-shadow: 0 18px 36px -18px rgba(15, 23, 42, 0.42);
+    }
+
+    .sol-index__status-chip--active::before {
+        content: '';
+        width: 0.55rem;
+        height: 0.55rem;
+        margin-right: 0.45rem;
+        border-radius: 9999px;
+        flex-shrink: 0;
+        background-color: currentColor;
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
+    }
+
+    .sol-index__status-chip--active::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 9999px;
+        pointer-events: none;
+    }
+
+    .sol-index__status-chip:not([data-status-chip]) {
+        background-color: #ffffff;
+        color: #5b21b6;
+        border-color: #d8c8ff;
+    }
+
+    .sol-index__status-chip[data-status-chip='PENDENTE'] {
+        background-color: #fef3c7;
+        border-color: #facc15;
+        color: #854d0e;
+    }
+
+    .sol-index__status-chip[data-status-chip='AGUARDANDO_CONFIRMACAO'] {
+        background-color: #dbeafe;
+        border-color: #60a5fa;
+        color: #1d4ed8;
+    }
+
+    .sol-index__status-chip[data-status-chip='LIBERACAO'] {
+        background-color: #ede9fe;
+        border-color: #a78bfa;
+        color: #6d28d9;
+    }
+
+    .sol-index__status-chip[data-status-chip='CONFIRMADO'] {
+        background-color: #e0f2fe;
+        border-color: #7dd3fc;
+        color: #0c4a6e;
+    }
+
+    .sol-index__status-chip[data-status-chip='ENVIADO'] {
+        background-color: #cffafe;
+        border-color: #67e8f9;
+        color: #155e75;
+    }
+
+    .sol-index__status-chip[data-status-chip='RECEBIDO'] {
+        background-color: #dcfce7;
+        border-color: #4ade80;
+        color: #166534;
+    }
+
+    .sol-index__status-chip[data-status-chip='NAO_RECEBIDO'] {
+        background-color: #ffe4e6;
+        border-color: #fb7185;
+        color: #be123c;
+    }
+
+    .sol-index__status-chip[data-status-chip='CANCELADO'] {
+        background-color: #fee2e2;
+        border-color: #f87171;
+        color: #b91c1c;
+    }
+
+    .sol-index__status-chip--active:not([data-status-chip]) {
+        background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%);
+        color: #ffffff;
+        border-color: #4c1d95;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18), 0 16px 32px -20px rgba(76, 29, 149, 0.7);
+    }
+
+    .sol-index__status-chip--active:not([data-status-chip])::after {
+        box-shadow: 0 0 0 3px rgba(91, 33, 182, 0.32);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='PENDENTE'] {
+        background-color: #facc15;
+        border-color: #eab308;
+        color: #111827;
+        box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2), 0 16px 32px -20px rgba(161, 98, 7, 0.55);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='PENDENTE']::after {
+        box-shadow: 0 0 0 3px rgba(202, 138, 4, 0.35);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='AGUARDANDO_CONFIRMACAO'] {
+        background-color: #60a5fa;
+        border-color: #3b82f6;
+        color: #111827;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18), 0 16px 32px -20px rgba(29, 78, 216, 0.45);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='AGUARDANDO_CONFIRMACAO']::after {
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.32);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='LIBERACAO'] {
+        background-color: #c4b5fd;
+        border-color: #8b5cf6;
+        color: #111827;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18), 0 16px 32px -20px rgba(91, 33, 182, 0.45);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='LIBERACAO']::after {
+        box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.32);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='CONFIRMADO'] {
+        background-color: #dbeafe;
+        border-color: #60a5fa;
+        color: #1e3a8a;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18), 0 16px 32px -20px rgba(30, 64, 175, 0.4);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='CONFIRMADO']::after {
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.28);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='ENVIADO'] {
+        background-color: #cffafe;
+        border-color: #22d3ee;
+        color: #155e75;
+        box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18), 0 16px 32px -20px rgba(21, 94, 117, 0.45);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='ENVIADO']::after {
+        box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.3);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='RECEBIDO'] {
+        background-color: #4ade80;
+        border-color: #22c55e;
+        color: #111827;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18), 0 16px 32px -20px rgba(22, 101, 52, 0.45);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='RECEBIDO']::after {
+        box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.3);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='NAO_RECEBIDO'] {
+        background-color: #fda4af;
+        border-color: #f43f5e;
+        color: #111827;
+        box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.16), 0 16px 32px -20px rgba(190, 24, 93, 0.4);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='NAO_RECEBIDO']::after {
+        box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.28);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='CANCELADO'] {
+        background-color: #f87171;
+        border-color: #ef4444;
+        color: #111827;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16), 0 16px 32px -20px rgba(185, 28, 28, 0.45);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='CANCELADO']::after {
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
+    }
+
+    .sol-index__grid-shell {
+        position: relative;
+    }
+
+    .sol-index__grid-loading {
+        @apply absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-semibold;
+        background-color: rgba(91, 33, 182, 0.95);
+        color: #ffffff;
+        box-shadow: 0 12px 32px -20px rgba(91, 33, 182, 0.95);
+    }
+
+    .sol-index__table-head {
+        @apply text-xs uppercase text-white;
+        background-color: #5b21b6;
+    }
+
+    .sol-index__sort-link {
+        @apply inline-flex items-center gap-1 text-white;
+    }
+
+    .sol-index__sort-link:hover {
+        color: #ddd6fe;
+    }
+
+    .sol-index__row {
+        @apply cursor-pointer border-b transition-colors;
+        border-color: var(--border);
+    }
+
+    .sol-index__row--odd {
+        background: var(--surface);
+    }
+
+    .sol-index__row--odd:hover {
+        background: var(--surface-2);
+    }
+
+    .sol-index__row--even {
+        background-color: #f5f0ff;
+    }
+
+    .dark .sol-index__row--even {
+        background: var(--surface-2);
+    }
+
+    .sol-index__row--even:hover {
+        background-color: #ede9fe;
+    }
+
+    .dark .sol-index__row--even:hover {
+        background: var(--surface-3);
+    }
+
+    /* ----- FLOW ACTIONS ----- */
+    .sol-flow-action {
+        @apply inline-flex h-11 min-w-[220px] flex-1 items-center justify-center gap-2 rounded-lg px-3 text-xs font-semibold transition shadow-sm;
+        color: #ffffff;
+        border: 1px solid transparent;
+    }
+
+    .sol-flow-action--forward {
+        background: #7c3aed;
+        border-color: #8b5cf6;
+    }
+
+    .sol-flow-action--cancel {
+        background: #dc2626;
+        border-color: #f87171;
+    }
+
+    .sol-flow-action--return {
+        background: #d97706;
+        border-color: #f59e0b;
+    }
+
+    .sol-flow-action--release {
+        background: #2563eb;
+        border-color: #60a5fa;
+    }
+
+    .sol-flow-action--send {
+        background: #4f46e5;
+        border-color: #818cf8;
+    }
+
+    .sol-flow-action--receive {
+        background: #22d3ee;
+        border-color: #67e8f9;
+        color: #082f49;
+        font-weight: 700;
+    }
+
+    .sol-flow-action--not-received {
+        background: #e11d48;
+        border-color: #fb7185;
+    }
+}

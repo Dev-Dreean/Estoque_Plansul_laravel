@@ -1,5 +1,5 @@
 <x-app-layout>
-  {{-- Abas de navega??o do patrim?nio --}}
+  {{-- Abas de navegao do patrim?nio --}}
   <x-patrimonio-nav-tabs />
 
   <div x-data="window.atribuirPage()" x-init="init()" @atribuir-aplicar-filtros.window="aplicarFiltros()">
@@ -20,13 +20,13 @@
         @endif
         @if(session('warning'))
         <div class="mb-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded relative" role="alert">
-          <strong class="font-bold">Aten??o!</strong>
+          <strong class="font-bold">Ateno!</strong>
           <span class="block sm:inline">{{ session('warning') }}</span>
         </div>
         @endif
         @if($errors->any())
         <div class="mb-4 bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded relative" role="alert">
-          <strong class="font-bold">Erro de Valida??o!</strong>
+          <strong class="font-bold">Erro de Validao!</strong>
           <span class="block sm:inline">{{ $errors->first() }}</span>
         </div>
         @endif
@@ -84,7 +84,7 @@
 
                     const partes = [];
                     if (termo) partes.push('Termo=' + termo);
-                    if (num) partes.push('NÂº=' + num);
+                    if (num) partes.push('Nº=' + num);
                     if (desc) partes.push('Item=' + desc);
                     if (mod) partes.push('Modelo=' + mod);
                     if (proj) partes.push('Projeto=' + proj);
@@ -112,18 +112,18 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
-                    <span class="sr-only">Expandir filtros</span>
+                    <span class="sr-only">Abrir filtros</span>
                   </button>
                 </div>
                 <div x-show="open" x-transition class="mt-4" x-cloak :id="$id('filtro-atribuir')">
                   <div class="flex flex-row gap-3 sm:gap-4">
                     @if(request('status') == 'indisponivel')
                     <div class="flex-1 min-w-[150px]">
-                      <input type="text" id="filtro_termo" name="filtro_termo" value="{{ request('filtro_termo') }}" placeholder="NÂº Termo" @input="updateFiltroTexto()" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                      <input type="text" id="filtro_termo" name="filtro_termo" value="{{ request('filtro_termo') }}" placeholder="Nº Termo" @input="updateFiltroTexto()" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                     </div>
                     @endif
                     <div class="flex-1 min-w-[150px]">
-                      <input type="text" id="filtro_numero" name="filtro_numero" value="{{ request('filtro_numero') }}" placeholder="NÂº Patr." @input="updateFiltroTexto()" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
+                      <input type="text" id="filtro_numero" name="filtro_numero" value="{{ request('filtro_numero') }}" placeholder="Nº Patr." @input="updateFiltroTexto()" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                     </div>
                     <div class="flex-1 min-w-[150px]">
                       <input type="text" id="filtro_descricao" name="filtro_descricao" value="{{ request('filtro_descricao') }}" placeholder="Item" @input="updateFiltroTexto()" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md" />
@@ -167,7 +167,7 @@
                   </div>
                 </div>
               </div>
-              <!-- Barra de a??es: filtros Ã  esquerda, a??o de planilha Ã  direita -->
+              <!-- Barra de aes: filtros à esquerda, ao de planilha à direita -->
               <div class="flex flex-wrap items-center mb-4 gap-3 w-full" x-data="{ }">
                 <!-- Esquerda: Dispon?veis/Atribu?dos -->
                 <div class="flex flex-wrap items-center gap-3">
@@ -175,7 +175,7 @@
                   <a href="{{ route('patrimonios.atribuir.codigos', ['status'=>'indisponivel']) }}" class="text-[11px] px-3 py-2 rounded-md font-semibold border transition {{ request('status')=='indisponivel' ? 'bg-red-600 text-white border-red-600' : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-red-600/10 dark:hover:bg-red-600/10' }}">Atribu?dos</a>
                 </div>
 
-                <!-- Centro: contador quando houver sele??o -->
+                <!-- Centro: contador quando houver seleo -->
                 <div class="flex-1 min-w-[1rem]"></div>
                 @if(request('status') == 'indisponivel')
                 <button type="button"
@@ -194,7 +194,7 @@
                 </template>
               </div>
 
-              <!-- Forms para gera??o e atribui??o direta de c?digos -->
+              <!-- Forms para gerao e atribuio direta de c?digos -->
               <form id="form-gerar-codigo" method="POST" action="{{ route('patrimonios.gerarCodigo') }}" class="hidden">
                 @csrf
               </form>
@@ -224,7 +224,7 @@
                 on-checkbox-change="handleCheckboxChange($event)"
                 on-select-all-change="toggleAll($event)"
                 checkbox-class="patrimonio-checkbox"
-                empty-message="Nenhum patrim?nio encontrado. N?o h? patrim?nios dispon?veis para atribui??o ou nenhum atende aos filtros aplicados."
+                empty-message="Nenhum patrim?nio encontrado. N?o h? patrim?nios dispon?veis para atribuio ou nenhum atende aos filtros aplicados."
               />
               {{-- MODO ATRIBU?DOS: Mant?m estrutura original agrupada --}}
               @else
@@ -238,7 +238,7 @@
 
                   // Agrupar por DEPATRIMONIO + MODELO para mostrar quantidade
                   $grupo_patrimonios_agrupado = $grupo_patrimonios->groupBy(function($item) {
-                  return $item->DEPATRIMONIO . '|' . ($item->MODELO ?? '');
+                  return $item->DEPATRIMONIO . '|' . ($item->MODELO  '');
                   })->map(function($items) {
                   return [
                   'quantidade' => $items->count(),
@@ -246,7 +246,7 @@
                   'primeiro' => $items->first()
                   ];
                   });
-                  $termoMeta = !$is_sem_termo ? ($termosMetadados[(string) $grupo_codigo] ?? ['titulo' => null, 'pode_editar' => false]) : null;
+                  $termoMeta = !$is_sem_termo ? ($termosMetadados[(string) $grupo_codigo]  ['titulo' => null, 'pode_editar' => false]) : null;
                   $tituloPersonalizado = trim((string) data_get($termoMeta, 'titulo', ''));
                   $adminPodeEditarTitulo = auth()->check() && (auth()->user()->isGod() || auth()->user()->isAdmin());
                   $podeEditarTitulo = $adminPodeEditarTitulo || (bool) data_get($termoMeta, 'pode_editar', false);
@@ -259,7 +259,7 @@
                     :data-expanded="groupState[@js($grupo_id)] === true ? 'true' : 'false'">
                     <td colspan="5" class="px-4 py-4 bg-white dark:bg-gray-800 border-l-4 border-indigo-400 dark:border-indigo-400">
                       <div class="flex items-center justify-between gap-4">
-                        {{-- ?cone de Expandir + Info do Grupo --}}
+                        {{-- ?cone de Abrir + Info do Grupo --}}
                         <div class="flex items-center gap-4 flex-1 min-w-0">
                           <button type="button"
                             class="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-md border-2 border-indigo-400 dark:border-indigo-400 bg-white dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-indigo-700 transition transform"
@@ -366,7 +366,7 @@
                           </div>
                         </div>
 
-                        {{-- Bot?es de A??o (Baixar e Desatribuir) --}}
+                        {{-- Bot?es de Ao (Baixar e Desatribuir) --}}
                         <div class="flex-shrink-0 flex gap-2 items-center">
                           {{-- Badge de Quantidade --}}
                           <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600">
@@ -422,13 +422,13 @@
                       <input type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-600" @change="toggleGroupCheckboxes(@js($grupo_id), $event)">
                       @endif
                     </th>
-                    <th class="px-4 py-3">NÂº Pat.</th>
+                    <th class="px-4 py-3">Nº Pat.</th>
                     <th class="px-4 py-3">Itens</th>
                     <th class="px-4 py-3">Modelo</th>
                     <th class="px-4 py-3" colspan="2">Qntd</th>
                   </tr>
 
-                  {{-- Detalhes do Grupo (Linhas dos Itens Agrupados por Descri??o+Modelo) --}}
+                  {{-- Detalhes do Grupo (Linhas dos Itens Agrupados por Descrio+Modelo) --}}
                   @foreach($grupo_patrimonios_agrupado as $grupo_id_item => $grupo_dados)
                   <tr class="group-details border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                     data-group-id="{{ $grupo_id }}"
@@ -446,10 +446,10 @@
                     </td>
                     @php
                       $primeiro = $grupo_dados['primeiro'];
-                      $descRaw = trim((string) ($primeiro->DEPATRIMONIO ?? ''));
+                      $descRaw = trim((string) ($primeiro->DEPATRIMONIO  ''));
                       $descAscii = strtoupper(Str::ascii($descRaw));
                       $descUpper = strtoupper($descRaw);
-                      // Captura casos acentuados e casos corrompidos (SEM DESCRI??O etc)
+                      // Captura casos acentuados e casos corrompidos (SEM DESCRIO etc)
                       $semDescricao = $descRaw === '' ||
                         str_contains($descAscii, 'SEM DESCRICAO') ||
                         str_contains($descUpper, 'SEM DESCRI') ||
@@ -461,7 +461,7 @@
                       {{ Str::limit($displayDesc, 50) }}
                     </td>
                     <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
-                      {{ $grupo_dados['primeiro']->MODELO ?? '-' }}
+                      {{ $grupo_dados['primeiro']->MODELO  '-' }}
                     </td>
                     <td class="px-4 py-3" colspan="2">
                       <div class="flex items-center justify-between gap-3">
@@ -484,7 +484,7 @@
                           @if(request('status') == 'indisponivel')
                           N?o h? patrim?nios atribu?dos ou nenhum atende aos filtros aplicados.
                           @else
-                          N?o h? patrim?nios dispon?veis para atribui??o ou nenhum atende aos filtros aplicados.
+                          N?o h? patrim?nios dispon?veis para atribuio ou nenhum atende aos filtros aplicados.
                           @endif
                         </p>
                       </div>
@@ -666,7 +666,7 @@
           return `${projeto.CDPROJETO} - ${projeto.NOMEPROJETO}`;
         },
         async buscarProjetosTermo(termo) {
-          const consulta = String(termo ?? this.massPdfProjeto ?? '').trim();
+          const consulta = String(termo  this.massPdfProjeto  '').trim();
           const requestId = ++this.massPdfProjetoRequest;
           this.massPdfProjetoLoading = true;
           try {
@@ -983,12 +983,12 @@
             </div>
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
               <h3 class="text-lg leading-6 font-medium text-on-surface" id="modal-title">
-                Confirmar Atribui??o
+                Confirmar Atribuio
               </h3>
               <div class="mt-2">
                 <p class="text-sm text-muted">(Modal legado inativo)</p>
                 <p class="text-xs text-muted mt-1">
-                  Esta a??o n?o pode ser desfeita facilmente.
+                  Esta ao n?o pode ser desfeita facilmente.
                 </p>
               </div>
             </div>
@@ -1055,13 +1055,13 @@
     window.patrimonioAtribuirSelection = patrimonioAtribuirSelection;
     const atribuirCodigosBaseUrl = @json(route('patrimonios.atribuir.codigos'));
     const termosBaseUrl = @json(url('/termos'));
-    const initialGroupTitles = @json(collect($termosMetadados ?? [])->mapWithKeys(function ($meta, $codigo) {
-      return [(string) $codigo => trim((string) ($meta['titulo'] ?? ''))];
+    const initialGroupTitles = @json(collect($termosMetadados  [])->mapWithKeys(function ($meta, $codigo) {
+      return [(string) $codigo => trim((string) ($meta['titulo']  ''))];
     })->all());
 
     window.atribuirPage = function atribuirPage() {
       return {
-        // Anima??o custom: classe usada: animate-fadeInScale
+        // Animao custom: classe usada: animate-fadeInScale
         showFilters: false,
         showConfirmModal: false,
         showDesatribuirModal: false,
@@ -1109,7 +1109,7 @@
             }
           });
 
-          // Monitora sele??es para mostrar/esconder o footer com background
+          // Monitora selees para mostrar/esconder o footer com background
           const updateFooterVisibility = () => {
             const checkboxes = document.querySelectorAll('input.patrimonio-checkbox:checked, input.grupo-item-checkbox:checked');
             const htmlElement = document.documentElement;
@@ -1130,7 +1130,7 @@
             }
           });
 
-          // Verifica??o inicial
+          // Verificao inicial
           updateFooterVisibility();
           this.bindAjaxHandlers();
         },
@@ -1587,7 +1587,7 @@
         },
         async desatribuirGrupo(ids) {
           if (!ids || ids.length === 0) {
-            alert('Nenhum patrim?nio dispon?vel para desatribui??o.');
+            alert('Nenhum patrim?nio dispon?vel para desatribuio.');
             return;
           }
 
@@ -1596,7 +1596,7 @@
           }
 
           try {
-            // Usar a rota nova de desatribui??o via AJAX
+            // Usar a rota nova de desatribuio via AJAX
             const res = await fetch("{{ route('patrimonios.desatribuirCodigo') }}", {
               method: 'POST',
               headers: {
@@ -1626,7 +1626,7 @@
           }
 
           try {
-            // Usar a rota nova de desatribui??o via AJAX
+            // Usar a rota nova de desatribuio via AJAX
             const res = await fetch("{{ route('patrimonios.desatribuirCodigo') }}", {
               method: 'POST',
               headers: {
@@ -1650,10 +1650,10 @@
             alert('Erro ao desatribuir item. Tente novamente.');
           }
         },
-        // FUNÃ‡?O LEGADA - N?O USE MAIS
+        // FUNÇ?O LEGADA - N?O USE MAIS
         // Use o novo fluxo: footerAcoes() -> gerar() -> atribuir()
         async processarAtribuicaoLegacy() {
-          // Esta fun??o n?o deve ser chamada mais
+          // Esta funo n?o deve ser chamada mais
           console.warn('processarAtribuicao() legado n?o deve ser chamado!');
           return;
         },
@@ -1676,7 +1676,7 @@
           const params = this.buildFilterParams({ codigo: this.codigoTermo || null, page: null });
           this.ajaxFetchParams(params);
         },
-        // FUNÃ‡?O LEGADA - N?O USE MAIS
+        // FUNÇ?O LEGADA - N?O USE MAIS
         // Use desatribuirGrupo() ou footerDesatribuir()
         processarDesatribuicaoLegacy() {
           console.warn('processarDesatribuicao() legado n?o deve ser chamado!');
@@ -1701,7 +1701,7 @@
           const action = form.getAttribute('action');
           const ids = Array.from(form.querySelectorAll('input[name="ids[]"]')).map(i => i.value);
 
-          console.log('?? DOWNLOAD INICIADO', {
+          console.log(' DOWNLOAD INICIADO', {
             acao: 'submitDownloadForm',
             rota: action,
             ids: ids,
@@ -1717,7 +1717,7 @@
           const checkboxes = document.querySelectorAll('input.grupo-item-checkbox[data-grupo-id="' + grupoId + '"]:checked');
           const ids = Array.from(checkboxes).map(cb => cb.value);
 
-          // Atualizar o estado de sele??o do grupo
+          // Atualizar o estado de seleo do grupo
           if (ids.length > 0) {
             this.grupoSelecionados[grupoId] = ids;
           } else {
@@ -1732,7 +1732,7 @@
         toggleGroup(groupId) {
           this.groupState[groupId] = !this.groupState[groupId];
           this.$nextTick(() => {
-            // Atualizar icone de rota??o
+            // Atualizar icone de rotao
             const header = document.querySelector('tr[data-group-id="' + groupId + '"]');
             if (header) {
               header.style.transition = 'background-color 0.2s ease';
@@ -1782,13 +1782,13 @@
       transition: opacity 0.3s ease-out;
     }
 
-    /* Quando h? sele??o, mostrar footer */
+    /* Quando h? seleo, mostrar footer */
     .with-visible-footer .site-footer {
       opacity: 1;
       pointer-events: auto;
     }
 
-    /* Quando n?o h? sele??o, esconder footer */
+    /* Quando n?o h? seleo, esconder footer */
     .without-visible-footer .site-footer {
       opacity: 0;
       pointer-events: none;
@@ -1810,7 +1810,7 @@
         <span class="code-badge px-4 py-2 rounded-lg bg-indigo-600 text-white font-bold text-lg" x-text="generatedCode"></span>
         <div class="flex items-center gap-2">
           <button type="button" @click="atribuir()" class="btn-green" :disabled="qtdSelecionados===0 || state!=='generated'">
-            <span x-show="state==='generated'">âœ“ Atribuir</span>
+            <span x-show="state==='generated'">✓ Atribuir</span>
             <span x-show="state==='assigning'" class="inline-flex items-center gap-2">
               <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
@@ -1868,7 +1868,7 @@
           const update = () => {
             const ids = this.getSelectedIds();
             this.qtdSelecionados = ids.length;
-            // Mudar para estado 'generated' quando houver sele??o
+            // Mudar para estado 'generated' quando houver seleo
             if (this.qtdSelecionados > 0 && this.generatedCode && this.state === 'idle') {
               this.state = 'generated';
             } else if (this.qtdSelecionados === 0 && this.state === 'generated') {
@@ -1974,7 +1974,7 @@
           }
         },
         cancelar() {
-          // Limpar c?digo local (ele ser? descartado no backend ap?s expira??o)
+          // Limpar c?digo local (ele ser? descartado no backend ap?s expirao)
           this.generatedCode = null;
           this.state = 'idle';
         }
@@ -2058,16 +2058,16 @@
 
       // Se ? um formul?rio de download de termo
       if (action.includes('docx')) {
-        console.log('âœ… Iniciando download do Termo...', {
+        console.log('✅ Iniciando download do Termo...', {
           action: action,
           items: Array.from(form.querySelectorAll('input[name="ids[]"]')).length,
           timestamp: new Date().toISOString()
         });
       }
 
-      // Se ? formul?rio de atribui??o (n?o deveria ser ap?s clicar em "Baixar")
+      // Se ? formul?rio de atribuio (n?o deveria ser ap?s clicar em "Baixar")
       if (action.includes('atribuir.processar')) {
-        console.warn('âš ï¸ Formul?rio de atribui??o disparado', {
+        console.warn('⚠️ Formul?rio de atribuio disparado', {
           action: action,
           timestamp: new Date().toISOString()
         });

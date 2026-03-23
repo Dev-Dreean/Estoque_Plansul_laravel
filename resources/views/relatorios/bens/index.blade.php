@@ -34,7 +34,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
-                                <span class="sr-only">Expandir filtros</span>
+                                <span class="sr-only">Abrir filtros</span>
                             </button>
                         </div>
 
@@ -43,8 +43,8 @@
                                 <div class="grid gap-3 sm:gap-4" style="grid-template-columns: repeat(auto-fit,minmax(180px,1fr));">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Descrição</label>
-                                        <input type="text" name="descri��o" placeholder="Parte da descrição"
-                                            value="{{ request('descri��o') }}"
+                                        <input type="text" name="descrição" placeholder="Parte da descrição"
+                                            value="{{ request('descrição') }}"
                                             class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md" />
                                     </div>
 
@@ -57,11 +57,11 @@
 
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Cód. Tipo</label>
-                                        <select name="c�digo_tipo"
+                                        <select name="código_tipo"
                                             class="h-10 px-3 w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-200 rounded-md">
                                             <option value="">Todos</option>
                                             @foreach($tipos as $t)
-                                            <option value="{{ $t->NUSEQTIPOPATR }}" @selected(request('c�digo_tipo')==$t->NUSEQTIPOPATR)>
+                                            <option value="{{ $t->NUSEQTIPOPATR }}" @selected(request('código_tipo')==$t->NUSEQTIPOPATR)>
                                                 {{ $t->NUSEQTIPOPATR }} — {{ $t->DETIPOPATR }}
                                             </option>
                                             @endforeach
