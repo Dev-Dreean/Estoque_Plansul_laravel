@@ -233,9 +233,6 @@
                 $etapaCancelamento = $isCancelamentoAtual
                     ? $mapearStatusParaEtapa(data_get($ultimoEventoCancelamentoTopo, 'status_anterior', $statusAtualTopo))
                     : null;
-                $motivoCancelamentoStepper = $isCancelamentoAtual
-                    ? trim((string) data_get($ultimoEventoCancelamentoTopo, 'motivo', $solicitacao->justificativa_cancelamento ?? ''))
-                    : '';
                 $ultimoHistoricoComMotivo = $historicoStatusTopo->reverse()->first(function ($hist) {
                     return trim((string) ($hist->motivo ?? '')) !== '';
                 });
@@ -494,18 +491,14 @@
                             'Pedido liberado',
                             'Liberado',
                             $histLiberacaoFinal,
-                            array_merge($detalhesBase, [
-                                ['label' => 'Motivo', 'value' => trim((string) ($histLiberacaoFinal->motivo ?? '')) ?: 'Pedido liberado para envio.'],
-                            ])
+                            $detalhesBase
                         )
                         : $montarCardEtapa(
                             'Liberação',
                             'Encaminhado para liberação',
                             'Aguardando liberação',
                             $histLiberacaoEncaminhada,
-                            array_merge($detalhesBase, [
-                                ['label' => 'Motivo', 'value' => trim((string) ($histLiberacaoEncaminhada->motivo ?? '')) ?: 'Solicitação encaminhada para liberação final.'],
-                            ])
+                            $detalhesBase
                         );
                 }
                 $cardEnvio = null;
@@ -550,7 +543,6 @@
                             $histRecebimento,
                             array_merge($detalhesBase, [
                                 ['label' => 'Rastreio', 'value' => $rastreioAtual !== '' ? $rastreioAtual : 'Sem rastreio informado'],
-                                ['label' => 'Motivo', 'value' => trim((string) data_get($histRecebimento, 'motivo', '')) ?: 'Pedido sinalizado como não recebido.'],
                             ]),
                             null,
                             null,
@@ -589,11 +581,6 @@
                     $detalhesBase,
                     $solicitacao
                 ): array {
-                    $motivo = trim((string) ($historico->motivo ?? ''));
-                    if ($motivo === '' && $tipo === 'Cancelado') {
-                        $motivo = trim((string) ($solicitacao->justificativa_cancelamento ?? ''));
-                    }
-
                     if ($tipo === 'Cancelado') {
                         $etapaOrigem = $mapearEtapaFluxo($historico->status_anterior ?? null)
                             ?: $mapearEtapaFluxo($historico->status_novo ?? null)
@@ -606,7 +593,6 @@
                             $historico,
                             array_merge($detalhesBase, [
                                 ['label' => 'Etapa', 'value' => $etapaOrigem],
-                                ['label' => 'Motivo', 'value' => $motivo !== '' ? $motivo : 'Motivo não informado.'],
                             ]),
                             null,
                             null,
@@ -627,7 +613,6 @@
                         array_merge($detalhesBase, [
                             ['label' => 'De', 'value' => $etapaOrigem],
                             ['label' => 'Para', 'value' => $etapaDestino],
-                            ['label' => 'Motivo', 'value' => $motivo !== '' ? $motivo : 'Motivo não informado.'],
                         ]),
                         null,
                         null,
@@ -731,11 +716,6 @@
                                     <span class="block text-[10px] {{ $isCancelamentoStep ? 'text-red-600 dark:text-red-400 font-semibold' : ($ativo ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-400') }}">
                                         {{ $isCancelamentoStep ? 'Cancelado' : $stepTopo['label'] }}
                                     </span>
-                                    @if($isCancelamentoStep && $motivoCancelamentoStepper !== '')
-                                        <span class="sol-show__step-reason mt-0.5 block text-[10px] leading-tight font-semibold text-red-600 dark:text-red-400" title="{{ $motivoCancelamentoStepper }}">
-                                            {{ $motivoCancelamentoStepper }}
-                                        </span>
-                                    @endif
                                 </div>
                             </div>
                         @endforeach
@@ -759,21 +739,10 @@
 
                                             <dl class="space-y-1.5 text-[12px] leading-snug">
                                                 @foreach($cardEtapa['detalhes'] as $detalhe)
-                                                    @if(($detalhe['label'] ?? '') === 'Motivo')
-                                                        <div>
-                                                            <dd
-                                                                class="sol-show__flow-reason font-semibold {{ $detalhe['class'] ?? 'text-gray-900 dark:text-gray-100' }}"
-                                                                title="{{ $detalhe['value'] }}"
-                                                            >
-                                                                {{ $detalhe['value'] }}
-                                                            </dd>
-                                                        </div>
-                                                    @else
-                                                        <div class="grid grid-cols-[84px,1fr] gap-x-2">
-                                                            <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">{{ $detalhe['label'] }}</dt>
-                                                            <dd class="font-semibold break-words {{ $detalhe['class'] ?? 'text-gray-900 dark:text-gray-100' }}">{{ $detalhe['value'] }}</dd>
-                                                        </div>
-                                                    @endif
+                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
+                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">{{ $detalhe['label'] }}</dt>
+                                                        <dd class="font-semibold break-words {{ $detalhe['class'] ?? 'text-gray-900 dark:text-gray-100' }}">{{ $detalhe['value'] }}</dd>
+                                                    </div>
                                                 @endforeach
                                             </dl>
 
