@@ -446,7 +446,7 @@
                     </td>
                     @php
                       $primeiro = $grupo_dados['primeiro'];
-                      $descRaw = trim((string) ($primeiro->DEPATRIMONIO  ''));
+                            $descRaw = trim((string) ($primeiro->DEPATRIMONIO ?? ''));
                       $descAscii = strtoupper(Str::ascii($descRaw));
                       $descUpper = strtoupper($descRaw);
                       // Captura casos acentuados e casos corrompidos (SEM DESCRIO etc)
@@ -666,7 +666,7 @@
           return `${projeto.CDPROJETO} - ${projeto.NOMEPROJETO}`;
         },
         async buscarProjetosTermo(termo) {
-          const consulta = String(termo  this.massPdfProjeto  '').trim();
+          const consulta = String(termo || this.massPdfProjeto || '').trim();
           const requestId = ++this.massPdfProjetoRequest;
           this.massPdfProjetoLoading = true;
           try {
@@ -1055,8 +1055,8 @@
     window.patrimonioAtribuirSelection = patrimonioAtribuirSelection;
     const atribuirCodigosBaseUrl = @json(route('patrimonios.atribuir.codigos'));
     const termosBaseUrl = @json(url('/termos'));
-    const initialGroupTitles = @json(collect($termosMetadados  [])->mapWithKeys(function ($meta, $codigo) {
-      return [(string) $codigo => trim((string) ($meta['titulo']  ''))];
+    const initialGroupTitles = @json(collect($termosMetadados ?? [])->mapWithKeys(function ($meta, $codigo) {
+      return [(string) $codigo => trim((string) ($meta['titulo'] ?? ''))];
     })->all());
 
     window.atribuirPage = function atribuirPage() {
