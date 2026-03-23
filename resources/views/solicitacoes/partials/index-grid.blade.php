@@ -126,7 +126,7 @@
                                 && $solicitacao->status === 'CONFIRMADO'
                                 && trim((string) ($solicitacao->tracking_code ?? '')) === '';
                             $canCancel = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1015') ?? false))
-                                && !in_array($solicitacao->status, ['CANCELADO', 'RECEBIDO'], true);
+                                && !in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true);
                         @endphp
                         <div class="flex items-center gap-2" @click.stop>
                             @if($canConfirm && $solicitacao->status === 'PENDENTE')

@@ -139,7 +139,7 @@
                                 Encaminhar para Liberação
                             </button>
                         @endif
-                        @if(!in_array($solicitacao->status, ['CANCELADO', 'RECEBIDO'], true) && $canCancelAction)
+                        @if(!in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true) && $canCancelAction)
                             <button type="button" @click="showCancelModal = true" class="sol-flow-action sol-flow-action--cancel">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM9 9l6 6m0-6l-6 6" /></svg>
                                 Cancelar Solicita&ccedil;&atilde;o
@@ -582,6 +582,11 @@
                     $solicitacao
                 ): array {
                     if ($tipo === 'Cancelado') {
+                        $motivo = trim((string) ($historico->motivo ?? ''));
+                        if ($motivo === '') {
+                            $motivo = trim((string) ($solicitacao->justificativa_cancelamento ?? ''));
+                        }
+
                         $etapaOrigem = $mapearEtapaFluxo($historico->status_anterior ?? null)
                             ?: $mapearEtapaFluxo($historico->status_novo ?? null)
                             ?: 'Fluxo atual';
@@ -593,6 +598,7 @@
                             $historico,
                             array_merge($detalhesBase, [
                                 ['label' => 'Etapa', 'value' => $etapaOrigem],
+                                ['label' => 'Motivo', 'value' => $motivo !== '' ? $motivo : 'Motivo não informado.'],
                             ]),
                             null,
                             null,

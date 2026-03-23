@@ -1892,7 +1892,7 @@ HTML;
             return $this->denyAccess($request, 'Você não tem permissão para cancelar a Solicitação.');
         }
 
-        if (in_array($solicitacao->status, [SolicitacaoBem::STATUS_CANCELADO, SolicitacaoBem::STATUS_RECEBIDO], true)) {
+        if (in_array($solicitacao->status, [SolicitacaoBem::STATUS_CANCELADO, SolicitacaoBem::STATUS_NAO_ENVIADO, SolicitacaoBem::STATUS_RECEBIDO], true)) {
             return $this->denyAccess($request, 'Esta solicitação não pode mais ser cancelada.');
         }
 
