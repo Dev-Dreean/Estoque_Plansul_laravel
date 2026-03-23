@@ -97,28 +97,24 @@
                         @endif
                     </div>
 
-                    <div class="sol-index__status-bar" aria-label="Filtros por status">
-                        <div class="sol-index__status-bar-scroll">
-                            <div class="sol-index__status-track">
-                                <button
-                                    type="button"
-                                    @click="clearStatusTags()"
-                                    class="sol-index__status-chip"
-                                    :class="{ 'sol-index__status-chip--active': !selectedStatusTag }">
-                                    <span class="sol-index__status-chip-label">Todos</span>
-                                </button>
-                                @foreach($statusTagOptions as $statusTag)
-                                    <button
-                                        type="button"
-                                        @click="toggleStatusTag('{{ $statusTag['key'] }}')"
-                                        class="sol-index__status-chip"
-                                        data-status-chip="{{ $statusTag['key'] }}"
-                                        :class="{ 'sol-index__status-chip--active': hasStatusTag('{{ $statusTag['key'] }}') }">
-                                        <span class="sol-index__status-chip-label">{{ $statusTag['label'] }}</span>
-                                    </button>
-                                @endforeach
-                            </div>
-                        </div>
+                    <div class="sol-index__status-bar">
+                        <button
+                            type="button"
+                            @click="clearStatusTags()"
+                            class="sol-index__status-chip"
+                            :class="{ 'sol-index__status-chip--active': statusTags.length === 0 }">
+                            Todos
+                        </button>
+                        @foreach($statusTagOptions as $statusTag)
+                            <button
+                                type="button"
+                                @click="toggleStatusTag('{{ $statusTag['key'] }}')"
+                                class="sol-index__status-chip"
+                                data-status-chip="{{ $statusTag['key'] }}"
+                                :class="{ 'sol-index__status-chip--active': hasStatusTag('{{ $statusTag['key'] }}') }">
+                                {{ $statusTag['label'] }}
+                            </button>
+                        @endforeach
                     </div>
 
                     <div class="sol-index__grid-shell">
@@ -1058,7 +1054,7 @@
                     sendUrlBase: '',
                     cancelUrlBase: '',
                     tags: [],
-                    selectedStatusTag: null,
+                    statusTags: [],
                     inputValue: '',
                     gridLoading: false,
                     gridAbortController: null,
@@ -1136,22 +1132,25 @@
                             .replace(/[-\s]+/g, '_');
                     },
 
-                    extractStatusTagFromParams(params) {
+                    extractStatusTagsFromParams(params) {
                         const multiStatus = params.getAll('status_visual[]');
                         const singleStatus = params.getAll('status_visual');
-                        return [...multiStatus, ...singleStatus]
-                            .map((status) => this.normalizeStatusTag(status))
-                            .find(Boolean) ?? null;
+
+                        return [...new Set(
+                            [...multiStatus, ...singleStatus]
+                                .map((status) => this.normalizeStatusTag(status))
+                                .filter(Boolean)
+                        )];
                     },
 
                     syncFiltersFromUrl(url) {
                         const nextUrl = new URL(url, window.location.origin);
                         this.tags = this.extractTagsFromParams(nextUrl.searchParams);
-                        this.selectedStatusTag = this.extractStatusTagFromParams(nextUrl.searchParams);
+                        this.statusTags = this.extractStatusTagsFromParams(nextUrl.searchParams);
                     },
 
                     hasStatusTag(status) {
-                        return this.selectedStatusTag === this.normalizeStatusTag(status);
+                        return this.statusTags.includes(this.normalizeStatusTag(status));
                     },
 
                     toggleStatusTag(status) {
@@ -1160,17 +1159,21 @@
                             return;
                         }
 
-                        this.selectedStatusTag = this.selectedStatusTag === normalizedStatus ? null : normalizedStatus;
+                        if (this.statusTags.includes(normalizedStatus)) {
+                            this.statusTags = this.statusTags.filter((item) => item !== normalizedStatus);
+                        } else {
+                            this.statusTags = [...this.statusTags, normalizedStatus];
+                        }
 
                         this.applyFilters();
                     },
 
                     clearStatusTags() {
-                        if (!this.selectedStatusTag) {
+                        if (this.statusTags.length === 0) {
                             return;
                         }
 
-                        this.selectedStatusTag = null;
+                        this.statusTags = [];
                         this.applyFilters();
                     },
 
@@ -1209,9 +1212,7 @@
                         params.delete('status_visual[]');
 
                         this.tags.forEach((tag) => params.append('search[]', tag));
-                        if (this.selectedStatusTag) {
-                            params.set('status_visual', this.selectedStatusTag);
-                        }
+                        this.statusTags.forEach((status) => params.append('status_visual[]', status));
 
                         if (resetPage) {
                             params.set('page', '1');

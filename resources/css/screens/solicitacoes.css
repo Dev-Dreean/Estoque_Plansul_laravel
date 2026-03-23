@@ -168,180 +168,201 @@
     }
 
     .sol-index__status-bar {
-        margin-bottom: -1px;
-        position: relative;
-        z-index: 2;
-    }
-
-    .sol-index__status-bar-scroll {
-        overflow-x: auto;
-        overflow-y: visible;
-        padding: 0.45rem 0.4rem 0;
-        scrollbar-width: thin;
-    }
-
-    .sol-index__status-track {
-        display: inline-flex;
-        align-items: flex-end;
-        gap: 0.35rem;
-        min-width: max-content;
-        padding-right: 0.5rem;
+        @apply mb-5 flex flex-wrap items-center gap-2;
     }
 
     .sol-index__status-chip {
-        @apply inline-flex items-center border px-3 py-2 text-xs font-semibold transition;
-        position: relative;
-        min-height: 2.8rem;
+        @apply inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition;
         border-width: 1px;
-        border-radius: 1rem 1rem 0 0;
-        border-color: #d6dde6;
-        border-bottom-color: #cfd8e3;
-        background: linear-gradient(180deg, #ffffff 0%, #eef2f8 100%);
-        color: #516072;
-        box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.85) inset;
-        transform: translateY(0.35rem);
-        z-index: 1;
-    }
-
-    .sol-index__status-chip::before {
-        content: '';
-        position: absolute;
-        left: 0.85rem;
-        right: 0.85rem;
-        top: 0.42rem;
-        height: 0.2rem;
-        border-radius: 9999px;
-        background-color: currentColor;
-        opacity: 0.28;
-    }
-
-    .sol-index__status-chip::after {
-        content: '';
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: -1px;
-        height: 1px;
-        background-color: #cfd8e3;
-    }
-
-    .sol-index__status-chip-label {
-        display: inline-flex;
-        align-items: center;
-        white-space: nowrap;
-        padding-top: 0.45rem;
+        border-color: #ddd6fe;
+        background-color: #ffffff;
+        color: #5b21b6;
+        box-shadow: 0 8px 18px -16px rgba(91, 33, 182, 0.75);
+        position: relative;
     }
 
     .sol-index__status-chip:hover {
-        transform: translateY(0.18rem);
-        color: #314155;
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px -18px rgba(30, 41, 59, 0.55);
     }
 
     .sol-index__status-chip--active {
-        transform: translateY(0);
-        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
-        border-bottom-color: #ffffff;
-        color: #172033;
+        border-width: 2px;
+        transform: translateY(-2px) scale(1.03);
         font-weight: 800;
-        box-shadow: 0 18px 30px -26px rgba(15, 23, 42, 0.35);
-        z-index: 3;
+        box-shadow: 0 18px 36px -18px rgba(15, 23, 42, 0.42);
+    }
+
+    .sol-index__status-chip--active::before {
+        content: '';
+        width: 0.55rem;
+        height: 0.55rem;
+        margin-right: 0.45rem;
+        border-radius: 9999px;
+        flex-shrink: 0;
+        background-color: currentColor;
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
     }
 
     .sol-index__status-chip--active::after {
-        height: 0.32rem;
-        bottom: -0.3rem;
-        background-color: #ffffff;
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 9999px;
+        pointer-events: none;
     }
 
     .sol-index__status-chip:not([data-status-chip]) {
+        background-color: #ffffff;
         color: #5b21b6;
+        border-color: #d8c8ff;
     }
 
     .sol-index__status-chip[data-status-chip='PENDENTE'] {
-        color: #9a6700;
+        background-color: #fef3c7;
+        border-color: #facc15;
+        color: #854d0e;
     }
 
     .sol-index__status-chip[data-status-chip='AGUARDANDO_CONFIRMACAO'] {
+        background-color: #dbeafe;
+        border-color: #60a5fa;
         color: #1d4ed8;
     }
 
     .sol-index__status-chip[data-status-chip='LIBERACAO'] {
+        background-color: #ede9fe;
+        border-color: #a78bfa;
         color: #6d28d9;
     }
 
     .sol-index__status-chip[data-status-chip='CONFIRMADO'] {
-        color: #0f5f8f;
+        background-color: #e0f2fe;
+        border-color: #7dd3fc;
+        color: #0c4a6e;
     }
 
     .sol-index__status-chip[data-status-chip='ENVIADO'] {
-        color: #0f766e;
+        background-color: #cffafe;
+        border-color: #67e8f9;
+        color: #155e75;
     }
 
     .sol-index__status-chip[data-status-chip='RECEBIDO'] {
-        color: #15803d;
+        background-color: #dcfce7;
+        border-color: #4ade80;
+        color: #166534;
     }
 
     .sol-index__status-chip[data-status-chip='NAO_RECEBIDO'] {
+        background-color: #ffe4e6;
+        border-color: #fb7185;
         color: #be123c;
     }
 
     .sol-index__status-chip[data-status-chip='CANCELADO'] {
+        background-color: #fee2e2;
+        border-color: #f87171;
         color: #b91c1c;
     }
 
     .sol-index__status-chip--active:not([data-status-chip]) {
-        border-top-color: #7c3aed;
-        border-left-color: #c4b5fd;
-        border-right-color: #c4b5fd;
-        color: #5b21b6;
+        background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%);
+        color: #ffffff;
+        border-color: #4c1d95;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18), 0 16px 32px -20px rgba(76, 29, 149, 0.7);
+    }
+
+    .sol-index__status-chip--active:not([data-status-chip])::after {
+        box-shadow: 0 0 0 3px rgba(91, 33, 182, 0.32);
     }
 
     .sol-index__status-chip--active[data-status-chip='PENDENTE'] {
-        border-top-color: #facc15;
-        border-left-color: #fde68a;
-        border-right-color: #fde68a;
+        background-color: #facc15;
+        border-color: #eab308;
+        color: #111827;
+        box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2), 0 16px 32px -20px rgba(161, 98, 7, 0.55);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='PENDENTE']::after {
+        box-shadow: 0 0 0 3px rgba(202, 138, 4, 0.35);
     }
 
     .sol-index__status-chip--active[data-status-chip='AGUARDANDO_CONFIRMACAO'] {
-        border-top-color: #60a5fa;
-        border-left-color: #bfdbfe;
-        border-right-color: #bfdbfe;
+        background-color: #60a5fa;
+        border-color: #3b82f6;
+        color: #111827;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18), 0 16px 32px -20px rgba(29, 78, 216, 0.45);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='AGUARDANDO_CONFIRMACAO']::after {
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.32);
     }
 
     .sol-index__status-chip--active[data-status-chip='LIBERACAO'] {
-        border-top-color: #a78bfa;
-        border-left-color: #ddd6fe;
-        border-right-color: #ddd6fe;
+        background-color: #c4b5fd;
+        border-color: #8b5cf6;
+        color: #111827;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18), 0 16px 32px -20px rgba(91, 33, 182, 0.45);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='LIBERACAO']::after {
+        box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.32);
     }
 
     .sol-index__status-chip--active[data-status-chip='CONFIRMADO'] {
-        border-top-color: #7dd3fc;
-        border-left-color: #dbeafe;
-        border-right-color: #dbeafe;
+        background-color: #dbeafe;
+        border-color: #60a5fa;
+        color: #1e3a8a;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18), 0 16px 32px -20px rgba(30, 64, 175, 0.4);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='CONFIRMADO']::after {
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.28);
     }
 
     .sol-index__status-chip--active[data-status-chip='ENVIADO'] {
-        border-top-color: #67e8f9;
-        border-left-color: #cffafe;
-        border-right-color: #cffafe;
+        background-color: #cffafe;
+        border-color: #22d3ee;
+        color: #155e75;
+        box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18), 0 16px 32px -20px rgba(21, 94, 117, 0.45);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='ENVIADO']::after {
+        box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.3);
     }
 
     .sol-index__status-chip--active[data-status-chip='RECEBIDO'] {
-        border-top-color: #4ade80;
-        border-left-color: #dcfce7;
-        border-right-color: #dcfce7;
+        background-color: #4ade80;
+        border-color: #22c55e;
+        color: #111827;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18), 0 16px 32px -20px rgba(22, 101, 52, 0.45);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='RECEBIDO']::after {
+        box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.3);
     }
 
     .sol-index__status-chip--active[data-status-chip='NAO_RECEBIDO'] {
-        border-top-color: #fb7185;
-        border-left-color: #ffe4e6;
-        border-right-color: #ffe4e6;
+        background-color: #fda4af;
+        border-color: #f43f5e;
+        color: #111827;
+        box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.16), 0 16px 32px -20px rgba(190, 24, 93, 0.4);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='NAO_RECEBIDO']::after {
+        box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.28);
     }
 
     .sol-index__status-chip--active[data-status-chip='CANCELADO'] {
-        border-top-color: #f87171;
-        border-left-color: #fee2e2;
-        border-right-color: #fee2e2;
+        background-color: #f87171;
+        border-color: #ef4444;
+        color: #111827;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16), 0 16px 32px -20px rgba(185, 28, 28, 0.45);
+    }
+
+    .sol-index__status-chip--active[data-status-chip='CANCELADO']::after {
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
     }
 
     .sol-index__grid-shell {
