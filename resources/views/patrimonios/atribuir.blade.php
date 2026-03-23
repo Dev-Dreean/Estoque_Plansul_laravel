@@ -461,7 +461,7 @@
                       {{ Str::limit($displayDesc, 50) }}
                     </td>
                     <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
-                      {{ $grupo_dados['primeiro']->MODELO  '-' }}
+                      {{ $grupo_dados['primeiro']->MODELO ?? '-' }}
                     </td>
                     <td class="px-4 py-3" colspan="2">
                       <div class="flex items-center justify-between gap-3">
