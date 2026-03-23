@@ -598,7 +598,13 @@
                             $historico,
                             array_merge($detalhesBase, [
                                 ['label' => 'Etapa', 'value' => $etapaOrigem],
-                                ['label' => 'Motivo', 'value' => $motivo !== '' ? $motivo : 'Motivo não informado.'],
+                                [
+                                    'label' => 'Motivo',
+                                    'value' => $motivo !== '' ? $motivo : 'Motivo não informado.',
+                                    'row_class' => 'rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-900/10',
+                                    'label_class' => 'font-semibold text-red-700 dark:text-red-300',
+                                    'class' => 'font-bold text-red-700 dark:text-red-300',
+                                ],
                             ]),
                             null,
                             null,
@@ -745,8 +751,8 @@
 
                                             <dl class="space-y-1.5 text-[12px] leading-snug">
                                                 @foreach($cardEtapa['detalhes'] as $detalhe)
-                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2">
-                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">{{ $detalhe['label'] }}</dt>
+                                                    <div class="grid grid-cols-[84px,1fr] gap-x-2 {{ $detalhe['row_class'] ?? '' }}">
+                                                        <dt class="uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400 {{ $detalhe['label_class'] ?? '' }}">{{ $detalhe['label'] }}</dt>
                                                         <dd class="font-semibold break-words {{ $detalhe['class'] ?? 'text-gray-900 dark:text-gray-100' }}">{{ $detalhe['value'] }}</dd>
                                                     </div>
                                                 @endforeach
