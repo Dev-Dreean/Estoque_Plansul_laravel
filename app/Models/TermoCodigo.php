@@ -20,23 +20,30 @@ class TermoCodigo extends Model
         'created_by',
     ];
 
+    /** @var bool|null Cache do resultado de hasTituloColumn para evitar SHOW queries repetidas */
+    private static ?bool $cachedHasTituloColumn = null;
+
     public static function hasTituloColumn(): bool
     {
+        if (self::$cachedHasTituloColumn !== null) {
+            return self::$cachedHasTituloColumn;
+        }
+
         try {
             $tabelaExiste = DB::select("SHOW TABLES LIKE 'termo_codigos'");
             if (empty($tabelaExiste)) {
-                return false;
+                return self::$cachedHasTituloColumn = false;
             }
 
             $colunaExiste = DB::select("SHOW COLUMNS FROM termo_codigos LIKE 'titulo'");
 
-            return !empty($colunaExiste);
+            return self::$cachedHasTituloColumn = !empty($colunaExiste);
         } catch (\Throwable $e) {
             Log::warning('Nao foi possivel verificar a coluna titulo em termo_codigos.', [
                 'erro' => $e->getMessage(),
             ]);
 
-            return false;
+            return self::$cachedHasTituloColumn = false;
         }
     }
 }

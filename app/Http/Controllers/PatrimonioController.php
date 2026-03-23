@@ -340,9 +340,18 @@ class PatrimonioController extends Controller
 
      */
 
+    /** @var string|null Cache da PK da tabela objetopatr para evitar queries repetidas no INFORMATION_SCHEMA */
+    private static ?string $cachedPKObjetoPatr = null;
+
     private function detectarPKObjetoPatr(): string
 
     {
+
+        if (self::$cachedPKObjetoPatr !== null) {
+
+            return self::$cachedPKObjetoPatr;
+
+        }
 
         try {
 
@@ -358,13 +367,15 @@ class PatrimonioController extends Controller
 
                 [DB::getDatabaseName(), $tableName]);
 
-            return $result ? $result->COLUMN_NAME : 'NUSEQOBJETO';
+            self::$cachedPKObjetoPatr = $result ? $result->COLUMN_NAME : 'NUSEQOBJETO';
 
         } catch (\Exception $e) {
 
-            return 'NUSEQOBJETO';
+            self::$cachedPKObjetoPatr = 'NUSEQOBJETO';
 
         }
+
+        return self::$cachedPKObjetoPatr;
 
     }
 
