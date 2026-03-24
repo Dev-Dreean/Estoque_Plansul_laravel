@@ -154,6 +154,7 @@
                                 && !($currentUser?->temAcessoTela('1014') ?? false);
                             $canCancel = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1015') ?? false))
                                 && !in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true)
+                                && !$isBrunoFlow
                                 && (!$isLiberacaoOnlyOperator || $solicitacao->status === 'LIBERACAO');
                         @endphp
                         <div class="flex items-center gap-2" @click.stop>

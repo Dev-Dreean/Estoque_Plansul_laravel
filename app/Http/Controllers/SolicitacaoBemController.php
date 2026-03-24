@@ -1045,6 +1045,10 @@ HTML;
             return false;
         }
 
+        if ($this->isBrunoFlowOperator($user)) {
+            return false;
+        }
+
         if ($this->isLiberacaoOnlyOperator($user)) {
             return $solicitacao?->status === SolicitacaoBem::STATUS_LIBERACAO;
         }
@@ -1062,7 +1066,6 @@ HTML;
         }
         return $this->canForwardToLiberacao($user)
             || $this->canRegisterQuote($user)
-            || $this->canAuthorizeRelease($user)
             || $this->canSendSolicitacao($user);
     }
 
