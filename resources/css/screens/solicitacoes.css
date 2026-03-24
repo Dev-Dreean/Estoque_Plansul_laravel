@@ -417,6 +417,10 @@
         border-color: var(--border);
     }
 
+    .sol-index__row--attention {
+        box-shadow: inset 4px 0 0 #7c3aed;
+    }
+
     .sol-index__row--odd {
         background: var(--surface);
     }
@@ -439,6 +443,66 @@
 
     .dark .sol-index__row--even:hover {
         background: var(--surface-3);
+    }
+
+    .sol-index__pending-flag {
+        display: inline-flex;
+        align-items: center;
+        margin-top: 0.45rem;
+        padding: 0.18rem 0.5rem;
+        border-radius: 9999px;
+        border: 1px solid #c4b5fd;
+        background: #f5f3ff;
+        color: #6d28d9;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .sol-index__pending-task {
+        display: block;
+        margin-top: 0.35rem;
+        max-width: 180px;
+        color: #5b21b6;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.25;
+    }
+
+    .sol-index__pending-flag[data-flow-stage='PENDENTE'] {
+        border-color: #facc15;
+        background: #fef3c7;
+        color: #854d0e;
+    }
+
+    .sol-index__pending-flag[data-flow-stage='AGUARDANDO_CONFIRMACAO'] {
+        border-color: #60a5fa;
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .sol-index__pending-flag[data-flow-stage='LIBERACAO'] {
+        border-color: #a78bfa;
+        background: #ede9fe;
+        color: #6d28d9;
+    }
+
+    .sol-index__pending-flag[data-flow-stage='CONFIRMADO'] {
+        border-color: #7dd3fc;
+        background: #e0f2fe;
+        color: #0c4a6e;
+    }
+
+    .dark .sol-index__pending-flag {
+        border-color: rgba(196, 181, 253, 0.45);
+        background: rgba(91, 33, 182, 0.2);
+        color: #ddd6fe;
+    }
+
+    .dark .sol-index__pending-task {
+        color: #ddd6fe;
     }
 
     /* ----- FLOW ACTIONS ----- */
