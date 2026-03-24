@@ -38,10 +38,10 @@
                         $isAdmin = $userForCreate?->isAdmin() ?? false;
                         $canCreateSolicitacao = $isAdmin || ($userForCreate?->temAcessoTela('1013') ?? false);
                         $statusTagOptions = [
-                            ['key' => 'PENDENTE', 'label' => 'Pendente'],
-                            ['key' => 'AGUARDANDO_CONFIRMACAO', 'label' => 'Aguardando confirmação'],
-                            ['key' => 'LIBERACAO', 'label' => 'Liberação'],
-                            ['key' => 'CONFIRMADO', 'label' => 'Envio'],
+                            ['key' => 'PENDENTE', 'label' => 'Solicitado'],
+                            ['key' => 'AGUARDANDO_CONFIRMACAO', 'label' => 'Bruno / Tiago'],
+                            ['key' => 'LIBERACAO', 'label' => 'Cotação'],
+                            ['key' => 'CONFIRMADO', 'label' => 'Solicitante / Envio'],
                             ['key' => 'ENVIADO', 'label' => 'Enviado'],
                             ['key' => 'RECEBIDO', 'label' => 'Recebido'],
                             ['key' => 'NAO_RECEBIDO', 'label' => 'Não recebido'],
@@ -147,7 +147,7 @@
                                 @method('POST')
 
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    Confirme para mover esta solicitação para a etapa de análise.
+                                    Confirme a aprovação inicial do Bruno para liberar a conferência de estoque.
                                 </p>
 <div class="flex gap-2 pt-4">
                                     <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
@@ -161,11 +161,11 @@
                         </div>
                     </div>
 
-                    <!-- Modal: Encaminhar para Liberação (Quick) -->
+                    <!-- Modal: Registrar Medidas e Peso (Quick) -->
                     <div x-show="showQuickForwardModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-lg w-full mx-4 overflow-hidden">
                             <div class="bg-violet-600 text-white px-6 py-4 flex items-center justify-between">
-                                <h3 class="text-sm font-bold">Encaminhar para Liberação</h3>
+                                <h3 class="text-sm font-bold">Registrar Medidas e Peso</h3>
                                 <button @click="fecharModais()" class="text-white/70 hover:text-white">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -177,26 +177,56 @@
                                 @method('POST')
 
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    Confirme para encaminhar esta solicitação para a etapa de liberação final.
+                                    Preencha as medidas do volume e o peso para liberar a etapa de cotação.
                                 </p>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label for="quick_logistics_height_cm" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Altura (cm) *</label>
+                                        <input type="number" step="0.01" min="0.01" id="quick_logistics_height_cm" name="logistics_height_cm" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3">
+                                    </div>
+                                    <div>
+                                        <label for="quick_logistics_width_cm" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Largura (cm) *</label>
+                                        <input type="number" step="0.01" min="0.01" id="quick_logistics_width_cm" name="logistics_width_cm" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3">
+                                    </div>
+                                    <div>
+                                        <label for="quick_logistics_length_cm" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Comprimento (cm) *</label>
+                                        <input type="number" step="0.01" min="0.01" id="quick_logistics_length_cm" name="logistics_length_cm" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3">
+                                    </div>
+                                    <div>
+                                        <label for="quick_logistics_weight_kg" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Peso (kg) *</label>
+                                        <input type="number" step="0.001" min="0.001" id="quick_logistics_weight_kg" name="logistics_weight_kg" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="quick_logistics_notes" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações da logística</label>
+                                    <textarea id="quick_logistics_notes" name="logistics_notes" rows="3"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        placeholder="Observações adicionais..."></textarea>
+                                </div>
 
                                 <div class="flex gap-2 pt-4">
                                     <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
                                     </button>
                                     <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition">
-                                        Encaminhar
+                                        Salvar Medidas
                                     </button>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-                    <!-- Modal: Liberar Pedido (Quick) -->
+                    <!-- Modal: Registrar Cotação (Quick) -->
                     <div x-show="showQuickApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-lg w-full mx-4 overflow-hidden">
                             <div class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
-                                <h3 class="text-sm font-bold">Liberar Pedido</h3>
+                                <h3 class="text-sm font-bold">Registrar Cotação</h3>
                                 <button @click="fecharModais()" class="text-white/70 hover:text-white">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -208,15 +238,42 @@
                                 @method('POST')
 
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    Confirme para concluir a etapa de <strong>Liberação</strong> e mover a solicitação para <strong>Envio</strong>.
+                                    Registre a transportadora, valor e prazo para liberar a decisão do solicitante.
                                 </p>
+
+                                <div>
+                                    <label for="quick_quote_transporter" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Transportadora *</label>
+                                    <input type="text" id="quick_quote_transporter" name="quote_transporter" required
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3">
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label for="quick_quote_amount" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Valor da cotação *</label>
+                                        <input type="number" step="0.01" min="0" id="quick_quote_amount" name="quote_amount" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3">
+                                    </div>
+                                    <div>
+                                        <label for="quick_quote_deadline" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Prazo estimado *</label>
+                                        <input type="text" id="quick_quote_deadline" name="quote_deadline" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                            placeholder="Ex: 5 dias úteis">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="quick_quote_notes" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações da cotação</label>
+                                    <textarea id="quick_quote_notes" name="quote_notes" rows="3"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        placeholder="Informações adicionais da cotação..."></textarea>
+                                </div>
 
                                 <div class="flex gap-2 pt-4">
                                     <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
                                     </button>
                                     <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">
-                                        Liberar Pedido
+                                        Salvar Cotação
                                     </button>
                                 </div>
                             </form>
@@ -239,7 +296,7 @@
                                 @method('POST')
 
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    Informe o código de rastreio para registrar o envio do pedido.
+                                    Informe o código de rastreio e o número da nota fiscal para registrar o envio.
                                 </p>
 
                                 <div>
@@ -248,13 +305,19 @@
                                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
                                         placeholder="Ex: RAS-2026-001" />
                                 </div>
+                                <div>
+                                    <label for="quick_invoice_number_enviado" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número da Nota Fiscal *</label>
+                                    <input type="text" id="quick_invoice_number_enviado" name="invoice_number" required
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
+                                        placeholder="Ex: NF-2026-001" />
+                                </div>
 
                                 <div class="flex gap-2 pt-4">
                                     <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
                                     </button>
                                     <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition">
-                                        Enviar Pedido
+                                        Registrar Envio
                                     </button>
                                 </div>
                             </form>
@@ -1918,8 +1981,6 @@
         </script>
     @endpush
 </x-app-layout>
-
-
 
 
 

@@ -43,15 +43,21 @@
     $canForwardAction = (bool) ($canForwardAction ?? false);
     $canReleaseAction = (bool) ($canReleaseAction ?? false);
     $canSendAction = (bool) ($canSendAction ?? false);
+    $canDecideQuoteAction = (bool) ($canDecideQuoteAction ?? false);
     $canCancelAction = (bool) ($canCancelAction ?? false);
     $canReturnAction = (bool) ($canReturnAction ?? false);
     $canRecriarCancelada = (bool) ($canRecriarCancelada ?? false);
+    $hasQuoteData = method_exists($solicitacao, 'hasQuoteData') ? $solicitacao->hasQuoteData() : false;
+    $hasShipmentData = method_exists($solicitacao, 'hasShipmentData') ? $solicitacao->hasShipmentData() : (trim((string) ($solicitacao->tracking_code ?? '')) !== '' || trim((string) ($solicitacao->invoice_number ?? '')) !== '');
+    $awaitingRequesterDecision = method_exists($solicitacao, 'isAwaitingRequesterDecision') ? $solicitacao->isAwaitingRequesterDecision() : false;
+    $readyToShip = method_exists($solicitacao, 'isReadyToShip') ? $solicitacao->isReadyToShip() : false;
     $canManagePanel = $canManage
         || $canMarkReceived
         || $canMarkNotReceived
         || $canContestNotReceived
+        || $canDecideQuoteAction
         || $canRecriarCancelada;
-    $statusBadgeAtual = $solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== ''
+    $statusBadgeAtual = $solicitacao->status === 'CONFIRMADO' && $hasShipmentData
         ? 'ENVIADO'
         : $solicitacao->status;
     $returnButtonLabel = match ($solicitacao->status) {
@@ -74,6 +80,8 @@
                 showForwardModal: false,
                 showApproveModal: false,
                 showSendModal: false,
+                showQuoteApproveModal: false,
+                showQuoteRejectModal: false,
                 showNotSentModal: false,
                 showReceiveModal: false,
                 showNotReceivedModal: false,
@@ -88,6 +96,8 @@
                     this.showForwardModal = false;
                     this.showApproveModal = false;
                     this.showSendModal = false;
+                    this.showQuoteApproveModal = false;
+                    this.showQuoteRejectModal = false;
                     this.showNotSentModal = false;
                     this.showReceiveModal = false;
                     this.showNotReceivedModal = false;
@@ -130,13 +140,13 @@
                         @if($solicitacao->status === 'PENDENTE' && $canConfirmAction)
                             <button type="button" @click="showConfirmModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                Confirmar Solicitação
+                                Bruno Aprovar Solicitação
                             </button>
                         @endif
                         @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $canForwardAction)
                             <button type="button" @click="showForwardModal = true" class="sol-flow-action sol-flow-action--forward">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                                Encaminhar para Liberação
+                                Registrar Medidas e Peso
                             </button>
                         @endif
                         @if(!in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true) && $canCancelAction)
@@ -148,7 +158,17 @@
                         @if($solicitacao->status === 'LIBERACAO' && $canReleaseAction)
                             <button type="button" @click="showApproveModal = true" class="sol-flow-action sol-flow-action--release">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                                Liberar Pedido
+                                Registrar Cotação
+                            </button>
+                        @endif
+                        @if($awaitingRequesterDecision && $canDecideQuoteAction)
+                            <button type="button" @click="showQuoteApproveModal = true" class="sol-flow-action sol-flow-action--send">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                Aprovar Cotação
+                            </button>
+                            <button type="button" @click="showQuoteRejectModal = true" class="sol-flow-action sol-flow-action--cancel">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM9 9l6 6m0-6l-6 6" /></svg>
+                                Recusar Cotação
                             </button>
                         @endif
                         @php
@@ -170,19 +190,19 @@
                                 Arquivar Solicitação
                             </button>
                         @endif
-                        @if($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) === '' && $canSendAction)
+                        @if($solicitacao->status === 'CONFIRMADO' && !$hasShipmentData && (!$hasQuoteData || $readyToShip) && $canSendAction)
                             <button type="button" @click="showSendModal = true" class="sol-flow-action sol-flow-action--send">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                                Enviar Pedido
+                                Registrar Envio
                             </button>
                         @endif
-                        @if($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== '' && $canMarkReceived)
+                        @if($solicitacao->status === 'CONFIRMADO' && $hasShipmentData && $canMarkReceived)
                             <button type="button" @click="showReceiveModal = true" class="sol-flow-action sol-flow-action--receive">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                 Confirmar Recebimento
                             </button>
                         @endif
-                        @if($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== '' && $canMarkNotReceived)
+                        @if($solicitacao->status === 'CONFIRMADO' && $hasShipmentData && $canMarkNotReceived)
                             <button type="button" @click="showNotReceivedModal = true" class="sol-flow-action sol-flow-action--not-received">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM9 9l6 6m0-6l-6 6" /></svg>
                                 Pedido Não Recebido
@@ -237,6 +257,8 @@
                     return trim((string) ($hist->motivo ?? '')) !== '';
                 });
                 $motivoDetalhesCompleto = trim((string) data_get($ultimoHistoricoComMotivo, 'motivo', $solicitacao->justificativa_cancelamento ?? ''));
+                $mostrarMotivoDetalhes = $motivoDetalhesCompleto !== ''
+                    && in_array($statusAtualTopo, ['CANCELADO', 'NAO_ENVIADO', 'NAO_RECEBIDO'], true);
                 $rotuloMotivoDetalhes = match ($statusAtualTopo) {
                     'CANCELADO', 'NAO_ENVIADO' => 'Motivo do cancelamento',
                     'NAO_RECEBIDO' => 'Motivo do não recebimento',
@@ -297,10 +319,10 @@
                     || $statusHistorico->contains('RECEBIDO')
                     || $statusHistorico->contains('NAO_RECEBIDO');
                 $stepsTopo = [
-                    ['n' => 1, 'label' => 'Solicitado'],
-                    ['n' => 2, 'label' => 'Em Análise'],
-                    ['n' => 3, 'label' => 'Liberação'],
-                    ['n' => 4, 'label' => 'Envio'],
+                    ['n' => 1, 'label' => 'Solicitação'],
+                    ['n' => 2, 'label' => 'Bruno / Tiago'],
+                    ['n' => 3, 'label' => 'Cotação'],
+                    ['n' => 4, 'label' => 'Solicitante / Envio'],
                     ['n' => 5, 'label' => 'Recebido'],
                 ];
                 $historicoEtapas = $historicoStatusTopo
@@ -409,6 +431,9 @@
                 $histLiberacaoFinal = $buscarUltimoHistorico(
                     fn ($hist) => strtolower((string) ($hist->acao ?? '')) === 'liberar_pedido'
                 );
+                $histCotacaoAprovada = $buscarUltimoHistorico(
+                    fn ($hist) => strtolower((string) ($hist->acao ?? '')) === 'aprovar_cotacao'
+                );
                 $histEnvio = $buscarUltimoHistorico(function ($hist) use ($solicitacao) {
                     $status = strtoupper((string) ($hist->status_novo ?? ''));
                     $acao = strtolower((string) ($hist->acao ?? ''));
@@ -440,7 +465,11 @@
                 $etapaLiberacaoConcluida = in_array($statusFluxo, ['LIBERACAO', 'CONFIRMADO', 'RECEBIDO', 'NAO_RECEBIDO'], true)
                     || $histLiberacaoEncaminhada !== null
                     || $histLiberacaoFinal !== null;
-                $etapaEnvioConcluida = in_array($statusFluxo, ['CONFIRMADO', 'RECEBIDO', 'NAO_RECEBIDO'], true)
+                $etapaCotacaoConcluida = $solicitacao->hasQuoteData()
+                    || $histLiberacaoFinal !== null;
+                $etapaEnvioConcluida = ($readyToShip || $hasShipmentData)
+                    || in_array($statusFluxo, ['RECEBIDO', 'NAO_RECEBIDO'], true)
+                    || $histCotacaoAprovada !== null
                     || $histEnvio !== null;
                 $etapaRecebimentoConcluida = in_array($statusFluxo, ['RECEBIDO', 'NAO_RECEBIDO'], true)
                     || $histRecebimento !== null;
@@ -472,10 +501,11 @@
                 $cardAnalise = $etapaAnaliseConcluida
                     ? $montarCardEtapa(
                         'Em Análise',
-                        $histAnalise ? 'Solicitação em análise' : 'Aguardando análise',
-                        $histAnalise ? 'Aguardando confirmação' : 'Pendente',
+                        $histAnalise ? 'Bruno aprovou a solicitação' : 'Aguardando aprovação inicial',
+                        $histAnalise ? 'Fluxo liberado' : 'Pendente',
                         $histAnalise,
                         array_merge($detalhesBase, $detalhesPessoa, [
+                            ['label' => 'Próxima', 'value' => 'Tiago confere estoque e registra medidas e peso.'],
                             ['label' => 'Matrícula', 'value' => $recebedorMatriculaCard !== '' ? $recebedorMatriculaCard : '-'],
                         ]),
                         null,
@@ -484,33 +514,80 @@
                     )
                     : null;
                 $cardLiberacao = null;
-                if ($etapaLiberacaoConcluida) {
-                    $cardLiberacao = $histLiberacaoFinal
-                        ? $montarCardEtapa(
-                            'Liberação',
-                            'Pedido liberado',
-                            'Liberado',
-                            $histLiberacaoFinal,
-                            $detalhesBase
-                        )
-                        : $montarCardEtapa(
-                            'Liberação',
-                            'Encaminhado para liberação',
-                            'Aguardando liberação',
-                            $histLiberacaoEncaminhada,
-                            $detalhesBase
-                        );
+                if ($etapaLiberacaoConcluida || $solicitacao->hasLogisticsData()) {
+                    $cardLiberacao = $montarCardEtapa(
+                        'Logística',
+                        $solicitacao->hasLogisticsData() ? 'Tiago registrou medidas e peso' : 'Aguardando logística',
+                        $solicitacao->hasLogisticsData() ? 'Logística pronta' : 'Pendente',
+                        $histLiberacaoEncaminhada,
+                        array_merge($detalhesBase, [
+                            [
+                                'label' => 'Medidas',
+                                'value' => $solicitacao->hasLogisticsData()
+                                    ? sprintf(
+                                        '%s x %s x %s cm',
+                                        $solicitacao->logistics_height_cm ? number_format((float) $solicitacao->logistics_height_cm, 2, ',', '.') : '-',
+                                        $solicitacao->logistics_width_cm ? number_format((float) $solicitacao->logistics_width_cm, 2, ',', '.') : '-',
+                                        $solicitacao->logistics_length_cm ? number_format((float) $solicitacao->logistics_length_cm, 2, ',', '.') : '-'
+                                    )
+                                    : 'Aguardando medidas',
+                            ],
+                            [
+                                'label' => 'Peso',
+                                'value' => $solicitacao->logistics_weight_kg !== null
+                                    ? number_format((float) $solicitacao->logistics_weight_kg, 3, ',', '.') . ' kg'
+                                    : 'Aguardando peso',
+                            ],
+                            [
+                                'label' => 'Próxima',
+                                'value' => $solicitacao->hasLogisticsData()
+                                    ? 'Beatriz registra a cotação da transportadora.'
+                                    : 'Tiago precisa concluir a conferência do volume.',
+                            ],
+                        ]),
+                        null,
+                        null,
+                        null,
+                        $solicitacao->logistics_registered_at ?: $solicitacao->updated_at
+                    );
+                }
+                $cardCotacao = null;
+                if ($etapaCotacaoConcluida) {
+                    $cardCotacao = $montarCardEtapa(
+                        'Cotação',
+                        'Beatriz registrou a cotação',
+                        $awaitingRequesterDecision ? 'Aguardando solicitante' : ($readyToShip ? 'Cotação aprovada' : 'Cotação registrada'),
+                        $histLiberacaoFinal,
+                        array_merge($detalhesBase, [
+                            ['label' => 'Transport.', 'value' => $solicitacao->quote_transporter ?: '-'],
+                            ['label' => 'Valor', 'value' => $solicitacao->quote_amount !== null ? 'R$ ' . number_format((float) $solicitacao->quote_amount, 2, ',', '.') : '-'],
+                            ['label' => 'Prazo', 'value' => $solicitacao->quote_deadline ?: '-'],
+                            [
+                                'label' => 'Próxima',
+                                'value' => $awaitingRequesterDecision
+                                    ? 'Solicitante precisa aprovar ou recusar a cotação.'
+                                    : ($readyToShip ? 'Pedido liberado para registro do envio.' : 'Cotação registrada.'),
+                            ],
+                        ]),
+                        null,
+                        null,
+                        null,
+                        $solicitacao->quote_registered_at ?: $solicitacao->updated_at,
+                        'Liberação'
+                    );
                 }
                 $cardEnvio = null;
                 if ($etapaEnvioConcluida) {
-                    $cardEnvio = $histEnvio
+                    $cardEnvio = $hasShipmentData || $histEnvio
                         ? $montarCardEtapa(
                             'Envio',
                             'Pedido enviado',
                             'Enviado',
                             $histEnvio,
                             array_merge($detalhesBase, [
+                                ['label' => 'Aprovado', 'value' => optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Sem data registrada'],
                                 ['label' => 'Rastreio', 'value' => $rastreioAtual !== '' ? $rastreioAtual : 'Sem rastreio informado'],
+                                ['label' => 'Nota fiscal', 'value' => trim((string) ($solicitacao->invoice_number ?? '')) !== '' ? $solicitacao->invoice_number : 'Sem NF informada'],
                                 ['label' => 'Recebimento', 'value' => 'Aguardando confirmação do recebimento.'],
                             ]),
                             null,
@@ -520,17 +597,19 @@
                             'Envio Concluido'
                         )
                         : $montarCardEtapa(
-                            'Envio',
-                            'Aguardando envio do pedido',
-                            'Aguardando envio',
-                            null,
+                            'Solicitante',
+                            'Solicitante aprovou a cotação',
+                            'Liberado para envio',
+                            $histCotacaoAprovada,
                             array_merge($detalhesBase, [
-                                ['label' => 'Rastreio', 'value' => 'Aguardando informação de rastreio.'],
+                                ['label' => 'Aprovado', 'value' => optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Sem data registrada'],
+                                ['label' => 'Próxima', 'value' => 'Beatriz registra o rastreio e o número da nota fiscal.'],
                             ]),
-                            '-',
                             null,
                             null,
-                            $solicitacao->updated_at
+                            null,
+                            $solicitacao->quote_approved_at ?: $solicitacao->updated_at,
+                            'Envio'
                         );
                 }
                 $cardRecebimento = null;
@@ -652,14 +731,18 @@
 
                     if (
                         $statusNovoHistorico === 'LIBERACAO'
-                        || in_array($acaoHistorico, ['encaminhar_liberacao', 'liberar_pedido'], true)
+                        || $acaoHistorico === 'encaminhar_liberacao'
                     ) {
                         $adicionarEtapa('liberacao', $cardLiberacao);
                     }
 
+                    if ($acaoHistorico === 'liberar_pedido') {
+                        $adicionarEtapa('cotacao', $cardCotacao);
+                    }
+
                     if (
                         $statusNovoHistorico === 'CONFIRMADO'
-                        || in_array($acaoHistorico, ['enviar_pedido', 'liberar_enviar'], true)
+                        || in_array($acaoHistorico, ['aprovar_cotacao', 'enviar_pedido', 'liberar_enviar'], true)
                     ) {
                         $adicionarEtapa('envio', $cardEnvio);
                     }
@@ -686,6 +769,9 @@
                 }
                 if ($etapaLiberacaoConcluida) {
                     $adicionarEtapa('liberacao', $cardLiberacao);
+                }
+                if ($etapaCotacaoConcluida) {
+                    $adicionarEtapa('cotacao', $cardCotacao);
                 }
                 if ($etapaEnvioConcluida) {
                     $adicionarEtapa('envio', $cardEnvio);
@@ -857,14 +943,56 @@
                                     @if($solicitacao->tracking_code)
                                         <div class="mt-3 text-xs text-slate-500 dark:text-slate-400">Rastreio: <span class="font-mono font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->tracking_code }}</span></div>
                                     @endif
-                                    @if($motivoDetalhesCompleto !== '')
-                                        <div class="mt-3 rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-white/70 dark:bg-slate-900/50 p-3">
-                                            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">{{ $rotuloMotivoDetalhes }}</div>
-                                            <div class="text-sm leading-6 text-gray-900 dark:text-gray-100 whitespace-pre-line break-words">{{ $motivoDetalhesCompleto }}</div>
+                                    @if($solicitacao->invoice_number)
+                                        <div class="mt-2 text-xs text-slate-500 dark:text-slate-400">Nota fiscal: <span class="font-mono font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->invoice_number }}</span></div>
+                                    @endif
+                                    @if($mostrarMotivoDetalhes)
+                                        <div class="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/15">
+                                            <div class="text-[10px] font-semibold uppercase tracking-wider text-red-700 dark:text-red-300 mb-1">{{ $rotuloMotivoDetalhes }}</div>
+                                            <div class="text-sm leading-6 text-red-700 dark:text-red-200 whitespace-pre-line break-words font-semibold">{{ $motivoDetalhesCompleto }}</div>
                                         </div>
                                     @endif
                                 </div>
                             </div>
+
+                            @if($solicitacao->hasLogisticsData() || $solicitacao->hasQuoteData() || $solicitacao->hasShipmentData())
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                                    <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
+                                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Tiago · Logística</div>
+                                        <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300">
+                                            <div>A x L x C: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->logistics_height_cm ? number_format((float) $solicitacao->logistics_height_cm, 2, ',', '.') : '-' }} x {{ $solicitacao->logistics_width_cm ? number_format((float) $solicitacao->logistics_width_cm, 2, ',', '.') : '-' }} x {{ $solicitacao->logistics_length_cm ? number_format((float) $solicitacao->logistics_length_cm, 2, ',', '.') : '-' }} cm</span></div>
+                                            <div>Peso: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->logistics_weight_kg ? number_format((float) $solicitacao->logistics_weight_kg, 3, ',', '.') . ' kg' : '-' }}</span></div>
+                                            <div>Registrado em: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ optional($solicitacao->logistics_registered_at)->format('d/m/Y H:i') ?: '-' }}</span></div>
+                                            @if($solicitacao->logistics_notes)
+                                                <div class="pt-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 whitespace-pre-line">{{ $solicitacao->logistics_notes }}</div>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
+                                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Beatriz · Cotação</div>
+                                        <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300">
+                                            <div>Transportadora: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->quote_transporter ?: '-' }}</span></div>
+                                            <div>Valor: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->quote_amount !== null ? 'R$ ' . number_format((float) $solicitacao->quote_amount, 2, ',', '.') : '-' }}</span></div>
+                                            <div>Prazo: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->quote_deadline ?: '-' }}</span></div>
+                                            <div>Status: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $awaitingRequesterDecision ? 'Aguardando decisão do solicitante' : ($readyToShip ? 'Aprovada para envio' : ($solicitacao->quote_registered_at ? 'Registrada' : '-')) }}</span></div>
+                                            @if($solicitacao->quote_notes)
+                                                <div class="pt-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 whitespace-pre-line">{{ $solicitacao->quote_notes }}</div>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
+                                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Solicitante / Envio</div>
+                                        <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300">
+                                            <div>Aprovação do solicitante: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Pendente' }}</span></div>
+                                            <div>Rastreio: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->tracking_code ?: '-' }}</span></div>
+                                            <div>Nota fiscal: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->invoice_number ?: '-' }}</span></div>
+                                            <div>Enviado em: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ optional($solicitacao->shipped_at)->format('d/m/Y H:i') ?: '-' }}</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
 
                             <!-- Observação -->
                             @if($solicitacao->observacao)
@@ -947,11 +1075,11 @@
                         </div>
                     </div>
 
-                    <!-- MODAL: Encaminhar para Liberação -->
+                    <!-- MODAL: Registrar Medidas e Peso -->
                     <div x-show="showForwardModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-lg w-full mx-4 overflow-hidden">
                             <div class="bg-violet-600 text-white px-6 py-4 flex items-center justify-between">
-                                <h3 class="text-sm font-bold">Encaminhar para Liberação</h3>
+                                <h3 class="text-sm font-bold">Registrar Medidas e Peso</h3>
                                 <button @click="showForwardModal = false" class="text-white/70 hover:text-white">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -962,25 +1090,59 @@
                                 @csrf
                                 @method('POST')
 
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Confirme para encaminhar a solicitação para a etapa final de liberação.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Preencha as medidas finais do volume e o peso para liberar a cotação da transportadora.</p>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label for="logistics_height_cm" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Altura (cm) *</label>
+                                        <input type="number" step="0.01" min="0.01" id="logistics_height_cm" name="logistics_height_cm" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                            placeholder="Ex: 20,5" />
+                                    </div>
+                                    <div>
+                                        <label for="logistics_width_cm" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Largura (cm) *</label>
+                                        <input type="number" step="0.01" min="0.01" id="logistics_width_cm" name="logistics_width_cm" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                            placeholder="Ex: 35,0" />
+                                    </div>
+                                    <div>
+                                        <label for="logistics_length_cm" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Comprimento (cm) *</label>
+                                        <input type="number" step="0.01" min="0.01" id="logistics_length_cm" name="logistics_length_cm" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                            placeholder="Ex: 40,0" />
+                                    </div>
+                                    <div>
+                                        <label for="logistics_weight_kg" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Peso (kg) *</label>
+                                        <input type="number" step="0.001" min="0.001" id="logistics_weight_kg" name="logistics_weight_kg" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                            placeholder="Ex: 12,350" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="logistics_notes" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações da logística</label>
+                                    <textarea id="logistics_notes" name="logistics_notes" rows="3"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        placeholder="Observações adicionais sobre embalagem, volume ou disponibilidade..."></textarea>
+                                </div>
 
                                 <div class="flex gap-2 pt-4">
                                     <button type="button" @click="showForwardModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
                                     </button>
                                     <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition">
-                                        Encaminhar
+                                        Salvar Medidas
                                     </button>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-                    <!-- MODAL: Liberar Pedido -->
+                    <!-- MODAL: Registrar Cotação -->
                     <div x-show="showApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-lg w-full mx-4 overflow-hidden">
                             <div class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
-                                <h3 class="text-sm font-bold">Liberar Pedido</h3>
+                                <h3 class="text-sm font-bold">Registrar Cotação</h3>
                                 <button @click="showApproveModal = false" class="text-white/70 hover:text-white">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -991,14 +1153,43 @@
                                 @csrf
                                 @method('POST')
 
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Confirme para concluir a etapa de <strong>Liberação</strong> e mover a solicitação para <strong>Envio</strong>.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Preencha os dados da transportadora para liberar a decisão do solicitante.</p>
+
+                                <div>
+                                    <label for="quote_transporter" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Transportadora *</label>
+                                    <input type="text" id="quote_transporter" name="quote_transporter" required
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                        placeholder="Ex: Jadlog / Braspress / Correios" />
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label for="quote_amount" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Valor da cotação *</label>
+                                        <input type="number" step="0.01" min="0" id="quote_amount" name="quote_amount" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                            placeholder="Ex: 189,90" />
+                                    </div>
+                                    <div>
+                                        <label for="quote_deadline" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Prazo estimado *</label>
+                                        <input type="text" id="quote_deadline" name="quote_deadline" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                            placeholder="Ex: 5 dias úteis" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="quote_notes" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações da cotação</label>
+                                    <textarea id="quote_notes" name="quote_notes" rows="3"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        placeholder="Informações adicionais da cotação, restrições ou observações..."></textarea>
+                                </div>
 
                                 <div class="flex gap-2 pt-4">
                                     <button type="button" @click="showApproveModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
                                     </button>
                                     <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">
-                                        Liberar Pedido
+                                        Salvar Cotação
                                     </button>
                                 </div>
                             </form>
@@ -1020,12 +1211,18 @@
                                 @csrf
                                 @method('POST')
 
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Informe o código de rastreio para registrar o envio do pedido.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Informe o código de rastreio e o número da nota fiscal para registrar o envio do pedido.</p>
                                 <div>
                                     <label for="tracking_code_enviado" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Rastreio *</label>
                                     <input type="text" id="tracking_code_enviado" name="tracking_code" required
                                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
                                         placeholder="Ex: RAS-2026-001" />
+                                </div>
+                                <div>
+                                    <label for="invoice_number_enviado" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número da Nota Fiscal *</label>
+                                    <input type="text" id="invoice_number_enviado" name="invoice_number" required
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
+                                        placeholder="Ex: NF-2026-001" />
                                 </div>
 
                                 <div class="flex gap-2 pt-4">
@@ -1033,7 +1230,76 @@
                                         Cancelar
                                     </button>
                                     <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition">
-                                        Enviar Pedido
+                                        Registrar Envio
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- MODAL: Aprovar Cotação -->
+                    <div x-show="showQuoteApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-emerald-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Aprovar Cotação</h3>
+                                <button @click="showQuoteApproveModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.quote-approve', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
+                                @csrf
+                                @method('POST')
+
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Confirme para aprovar a cotação e liberar o pedido para envio.</p>
+                                <div>
+                                    <label for="quote_approval_notes" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observação da aprovação</label>
+                                    <textarea id="quote_approval_notes" name="quote_approval_notes" rows="3"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        placeholder="Opcional: observações do solicitante sobre a aprovação..."></textarea>
+                                </div>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showQuoteApproveModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Voltar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition">
+                                        Aprovar Cotação
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- MODAL: Recusar Cotação -->
+                    <div x-show="showQuoteRejectModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-rose-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Recusar Cotação</h3>
+                                <button @click="showQuoteRejectModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.quote-reject', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
+                                @csrf
+                                @method('POST')
+
+                                <div>
+                                    <label for="quote_rejection_reason" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo da recusa *</label>
+                                    <textarea id="quote_rejection_reason" name="quote_rejection_reason" required rows="3"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        placeholder="Explique por que a cotação não foi aprovada..."></textarea>
+                                </div>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showQuoteRejectModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Voltar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition">
+                                        Recusar Cotação
                                     </button>
                                 </div>
                             </form>

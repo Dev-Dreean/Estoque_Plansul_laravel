@@ -279,13 +279,15 @@ class SolicitacaoBemController extends Controller
         $canForwardAction = $this->canForwardToLiberacao($user);
         $canReleaseAction = $this->canReleaseAndSend($user);
         $canSendAction = $this->canSendSolicitacao($user);
-        $canCancelAction = $this->canCancelSolicitacao($user);
+        $canDecideQuoteAction = $this->canDecideQuote($user, $solicitacao);
+        $canCancelAction = $this->canCancelSolicitacao($user, $solicitacao);
         $canReturnAction = $this->canReturnSolicitacao($user);
         $canManage = $this->canUpdateSolicitacao($user)
             || $canConfirmAction
             || $canForwardAction
             || $canReleaseAction
             || $canSendAction
+            || $canDecideQuoteAction
             || $canCancelAction
             || $canReturnAction;
         $canContestNotReceived = $this->canContestNotReceived($user);
@@ -300,6 +302,7 @@ class SolicitacaoBemController extends Controller
                 'canForwardAction',
                 'canReleaseAction',
                 'canSendAction',
+                'canDecideQuoteAction',
                 'canCancelAction',
                 'canReturnAction',
                 'canContestNotReceived',
@@ -321,6 +324,7 @@ class SolicitacaoBemController extends Controller
             'canForwardAction',
             'canReleaseAction',
             'canSendAction',
+            'canDecideQuoteAction',
             'canCancelAction',
             'canReturnAction',
             'canContestNotReceived',
@@ -444,13 +448,15 @@ class SolicitacaoBemController extends Controller
             $canForwardAction = $this->canForwardToLiberacao($user);
             $canReleaseAction = $this->canReleaseAndSend($user);
             $canSendAction = $this->canSendSolicitacao($user);
-            $canCancelAction = $this->canCancelSolicitacao($user);
+            $canDecideQuoteAction = $this->canDecideQuote($user, $solicitacao);
+            $canCancelAction = $this->canCancelSolicitacao($user, $solicitacao);
             $canReturnAction = $this->canReturnSolicitacao($user);
             $canManage = $this->canUpdateSolicitacao($user)
                 || $canConfirmAction
                 || $canForwardAction
                 || $canReleaseAction
                 || $canSendAction
+                || $canDecideQuoteAction
                 || $canCancelAction
                 || $canReturnAction;
             $canContestNotReceived = $this->canContestNotReceived($user);
@@ -466,6 +472,7 @@ class SolicitacaoBemController extends Controller
                 'canForwardAction',
                 'canReleaseAction',
                 'canSendAction',
+                'canDecideQuoteAction',
                 'canCancelAction',
                 'canReturnAction',
                 'canContestNotReceived',
@@ -959,7 +966,20 @@ HTML;
         return $user->temAcessoTela((string) User::TELA_SOLICITACOES_APROVAR);
     }
 
-    private function canCancelSolicitacao(?User $user): bool
+    private function canDecideQuote(?User $user, SolicitacaoBem $solicitacao): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $this->isOwner($user, $solicitacao);
+    }
+
+    private function canCancelSolicitacao(?User $user, ?SolicitacaoBem $solicitacao = null): bool
     {
         if (!$user) {
             return false;
@@ -968,7 +988,15 @@ HTML;
         if ($user->isAdmin()) {
             return true;
         }
-        return $user->temAcessoTela((string) User::TELA_SOLICITACOES_CANCELAR);
+        if (!$user->temAcessoTela((string) User::TELA_SOLICITACOES_CANCELAR)) {
+            return false;
+        }
+
+        if ($this->isLiberacaoOnlyOperator($user)) {
+            return $solicitacao?->status === SolicitacaoBem::STATUS_LIBERACAO;
+        }
+
+        return true;
     }
 
     private function canReturnSolicitacao(?User $user): bool
@@ -979,8 +1007,7 @@ HTML;
         if ($user->isAdmin()) {
             return true;
         }
-        return $this->canForwardToLiberacao($user)
-            || $this->canReleaseAndSend($user);
+        return $this->canForwardToLiberacao($user);
     }
 
     private function applyOwnerScope($query, ?User $user): void
@@ -1099,6 +1126,21 @@ HTML;
         }
 
         return $user->temAcessoTela((string) self::TELA_SOLICITACOES_TRIAGEM_INICIAL);
+    }
+
+    private function isLiberacaoOnlyOperator(?User $user): bool
+    {
+        if (!$user || $user->isAdmin()) {
+            return false;
+        }
+
+        if (!$user->temAcessoTela((string) self::TELA_SOLICITACOES_LIBERACAO_ENVIO)) {
+            return false;
+        }
+
+        return !$this->canTriagemInicial($user)
+            && !$user->temAcessoTela((string) self::TELA_SOLICITACOES_ATUALIZAR)
+            && !$user->temAcessoTela((string) self::TELA_SOLICITACOES_APROVAR);
     }
 
     private function temPermissaoVisualizacao(?User $user, SolicitacaoBem $solicitacao): bool
@@ -1301,11 +1343,17 @@ HTML;
                         $builder->orWhere(function ($confirmadoQuery) {
                             $confirmadoQuery
                                 ->where('status', SolicitacaoBem::STATUS_CONFIRMADO)
-                                ->where(function ($trackingQuery) {
-                                    $trackingQuery
+                                ->where(function ($shipmentQuery) {
+                                    $shipmentQuery
                                         ->whereNull('tracking_code')
                                         ->orWhere('tracking_code', '');
-                                });
+                                })
+                                ->where(function ($invoiceQuery) {
+                                    $invoiceQuery
+                                        ->whereNull('invoice_number')
+                                        ->orWhere('invoice_number', '');
+                                })
+                                ->whereNull('shipped_at');
                         });
                         break;
 
@@ -1313,8 +1361,17 @@ HTML;
                         $builder->orWhere(function ($enviadoQuery) {
                             $enviadoQuery
                                 ->where('status', SolicitacaoBem::STATUS_CONFIRMADO)
-                                ->whereNotNull('tracking_code')
-                                ->where('tracking_code', '!=', '');
+                                ->where(function ($shipmentQuery) {
+                                    $shipmentQuery
+                                        ->whereNotNull('tracking_code')
+                                        ->where('tracking_code', '!=', '')
+                                        ->orWhere(function ($invoiceQuery) {
+                                            $invoiceQuery
+                                                ->whereNotNull('invoice_number')
+                                                ->where('invoice_number', '!=', '');
+                                        })
+                                        ->orWhereNotNull('shipped_at');
+                                });
                         });
                         break;
 
@@ -1454,11 +1511,11 @@ HTML;
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Solicitação confirmada. Aguardando decisão de envio.',
+                'message' => 'Solicitação aprovada. Aguardando conferência de estoque e medidas.',
             ]);
         }
 
-        return redirect()->back()->with('success', 'Solicitação confirmada. Aguardando decisão de envio.');
+        return redirect()->back()->with('success', 'Solicitação aprovada. Aguardando conferência de estoque e medidas.');
     }
 
     /**
@@ -1477,12 +1534,38 @@ HTML;
             return $this->denyAccess($request, 'Apenas solicitações em análise podem ser encaminhadas para liberação.');
         }
 
+        $validated = $request->validate([
+            'logistics_height_cm' => ['required', 'numeric', 'min:0.01'],
+            'logistics_width_cm' => ['required', 'numeric', 'min:0.01'],
+            'logistics_length_cm' => ['required', 'numeric', 'min:0.01'],
+            'logistics_weight_kg' => ['required', 'numeric', 'min:0.001'],
+            'logistics_notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
         $statusAnterior = $solicitacao->status;
         $solicitacao->update([
             'status' => SolicitacaoBem::STATUS_LIBERACAO,
             'tracking_code' => null,
+            'invoice_number' => null,
             'confirmado_por_id' => null,
             'confirmado_em' => null,
+            'logistics_height_cm' => $validated['logistics_height_cm'],
+            'logistics_width_cm' => $validated['logistics_width_cm'],
+            'logistics_length_cm' => $validated['logistics_length_cm'],
+            'logistics_weight_kg' => $validated['logistics_weight_kg'],
+            'logistics_notes' => trim((string) ($validated['logistics_notes'] ?? '')) ?: null,
+            'logistics_registered_by_id' => $user?->getAuthIdentifier(),
+            'logistics_registered_at' => now(),
+            'quote_transporter' => null,
+            'quote_amount' => null,
+            'quote_deadline' => null,
+            'quote_notes' => null,
+            'quote_registered_by_id' => null,
+            'quote_registered_at' => null,
+            'quote_approved_by_id' => null,
+            'quote_approved_at' => null,
+            'shipped_by_id' => null,
+            'shipped_at' => null,
         ]);
 
         $this->registrarHistoricoStatus(
@@ -1490,7 +1573,13 @@ HTML;
             $statusAnterior,
             SolicitacaoBem::STATUS_LIBERACAO,
             'encaminhar_liberacao',
-            'Solicitação encaminhada para liberação final.'
+            sprintf(
+                'Medidas registradas: A %.2f x L %.2f x C %.2f cm | Peso %.3f kg',
+                (float) $validated['logistics_height_cm'],
+                (float) $validated['logistics_width_cm'],
+                (float) $validated['logistics_length_cm'],
+                (float) $validated['logistics_weight_kg']
+            )
         );
 
         Log::info('[SOLICITACOES] Solicitação encaminhada para liberação', [
@@ -1501,11 +1590,11 @@ HTML;
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Solicitação encaminhada para liberação com sucesso.',
+                'message' => 'Medidas e peso registrados. Solicitação encaminhada para cotação.',
             ]);
         }
 
-        return redirect()->back()->with('success', 'Solicitação encaminhada para liberação com sucesso.');
+        return redirect()->back()->with('success', 'Medidas e peso registrados. Solicitação encaminhada para cotação.');
     }
 
     public function release(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
@@ -1531,12 +1620,30 @@ HTML;
             return $this->denyAccess($request, 'Informe o recebedor antes de liberar o pedido.');
         }
 
+        $validated = $request->validate([
+            'quote_transporter' => ['required', 'string', 'max:120'],
+            'quote_amount' => ['required', 'numeric', 'min:0'],
+            'quote_deadline' => ['required', 'string', 'max:80'],
+            'quote_notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
         $statusAnterior = $solicitacao->status;
         $solicitacao->update([
             'status' => SolicitacaoBem::STATUS_CONFIRMADO,
             'tracking_code' => null,
+            'invoice_number' => null,
             'confirmado_por_id' => null,
             'confirmado_em' => null,
+            'quote_transporter' => trim((string) $validated['quote_transporter']),
+            'quote_amount' => $validated['quote_amount'],
+            'quote_deadline' => trim((string) $validated['quote_deadline']),
+            'quote_notes' => trim((string) ($validated['quote_notes'] ?? '')) ?: null,
+            'quote_registered_by_id' => $user?->getAuthIdentifier(),
+            'quote_registered_at' => now(),
+            'quote_approved_by_id' => null,
+            'quote_approved_at' => null,
+            'shipped_by_id' => null,
+            'shipped_at' => null,
         ]);
 
         $this->registrarHistoricoStatus(
@@ -1544,7 +1651,7 @@ HTML;
             $statusAnterior,
             SolicitacaoBem::STATUS_CONFIRMADO,
             'liberar_pedido',
-            'Pedido liberado para envio.'
+            'Cotação registrada e aguardando decisão do solicitante.'
         );
 
         Log::info('[SOLICITACOES] Pedido liberado', [
@@ -1555,11 +1662,11 @@ HTML;
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Pedido liberado com sucesso.',
+                'message' => 'Cotação registrada. Aguardando decisão do solicitante.',
             ]);
         }
 
-        return redirect()->back()->with('success', 'Pedido liberado com sucesso.');
+        return redirect()->back()->with('success', 'Cotação registrada. Aguardando decisão do solicitante.');
     }
 
     public function approve(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
@@ -1636,20 +1743,27 @@ HTML;
             return $this->denyAccess($request, 'Apenas solicitações na etapa de envio podem ser enviadas.');
         }
 
-        if (trim((string) ($solicitacao->tracking_code ?? '')) !== '') {
+        if ($solicitacao->hasShipmentData()) {
             return $this->denyAccess($request, 'Este pedido já possui envio registrado.');
+        }
+
+        if ($solicitacao->hasQuoteData() && $solicitacao->quote_approved_at === null) {
+            return $this->denyAccess($request, 'A cotação precisa ser aprovada pelo solicitante antes do envio.');
         }
 
         $validated = $request->validate([
             'tracking_code' => ['required', 'string', 'max:100'],
+            'invoice_number' => ['required', 'string', 'max:100'],
         ]);
 
         $trackingCode = trim((string) $validated['tracking_code']);
+        $invoiceNumber = trim((string) $validated['invoice_number']);
         $statusAnterior = $solicitacao->status;
         $solicitacao->update([
             'tracking_code' => $trackingCode,
-            'confirmado_por_id' => $user?->getAuthIdentifier(),
-            'confirmado_em' => now(),
+            'invoice_number' => $invoiceNumber,
+            'shipped_by_id' => $user?->getAuthIdentifier(),
+            'shipped_at' => now(),
         ]);
 
         $this->registrarHistoricoStatus(
@@ -1657,13 +1771,14 @@ HTML;
             $statusAnterior,
             SolicitacaoBem::STATUS_CONFIRMADO,
             'enviar_pedido',
-            'Rastreio: ' . $trackingCode
+            'Rastreio: ' . $trackingCode . ' | NF: ' . $invoiceNumber
         );
 
         Log::info('[SOLICITACOES] Pedido enviado', [
             'solicitacao_id' => $solicitacao->id,
             'enviado_por' => $user?->NMLOGIN,
             'tracking_code' => $trackingCode,
+            'invoice_number' => $invoiceNumber,
         ]);
 
         if ($request->expectsJson()) {
@@ -1674,6 +1789,94 @@ HTML;
         }
 
         return redirect()->back()->with('success', 'Pedido enviado com sucesso.');
+    }
+
+    public function approveQuote(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canDecideQuote($user, $solicitacao)) {
+            return $this->denyAccess($request, 'Você não tem permissão para aprovar esta cotação.');
+        }
+
+        if (!$solicitacao->isAwaitingRequesterDecision()) {
+            return $this->denyAccess($request, 'Esta solicitação não está aguardando decisão do solicitante.');
+        }
+
+        $validated = $request->validate([
+            'quote_approval_notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $motivo = trim((string) ($validated['quote_approval_notes'] ?? ''));
+        $statusAnterior = $solicitacao->status;
+        $solicitacao->update([
+            'quote_approved_by_id' => $user?->getAuthIdentifier(),
+            'quote_approved_at' => now(),
+        ]);
+
+        $this->registrarHistoricoStatus(
+            $solicitacao,
+            $statusAnterior,
+            SolicitacaoBem::STATUS_CONFIRMADO,
+            'aprovar_cotacao',
+            $motivo !== '' ? $motivo : 'Cotação aprovada pelo solicitante.'
+        );
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cotação aprovada. Pedido liberado para envio.',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Cotação aprovada. Pedido liberado para envio.');
+    }
+
+    public function rejectQuote(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canDecideQuote($user, $solicitacao)) {
+            return $this->denyAccess($request, 'Você não tem permissão para recusar esta cotação.');
+        }
+
+        if (!$solicitacao->isAwaitingRequesterDecision()) {
+            return $this->denyAccess($request, 'Esta solicitação não está aguardando decisão do solicitante.');
+        }
+
+        $validated = $request->validate([
+            'quote_rejection_reason' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $motivo = trim((string) $validated['quote_rejection_reason']);
+        $statusAnterior = $solicitacao->status;
+        $solicitacao->update([
+            'status' => SolicitacaoBem::STATUS_NAO_ENVIADO,
+            'justificativa_cancelamento' => $motivo,
+            'cancelado_por_id' => $user?->getAuthIdentifier(),
+            'cancelado_em' => now(),
+            'tracking_code' => null,
+            'invoice_number' => null,
+            'shipped_by_id' => null,
+            'shipped_at' => null,
+        ]);
+
+        $this->registrarHistoricoStatus(
+            $solicitacao,
+            $statusAnterior,
+            SolicitacaoBem::STATUS_NAO_ENVIADO,
+            'recusar_cotacao',
+            $motivo
+        );
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cotação recusada. Solicitação encerrada como não enviada.',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Cotação recusada. Solicitação encerrada como não enviada.');
     }
 
     public function notSent(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
@@ -1701,6 +1904,9 @@ HTML;
             'cancelado_por_id' => $user?->getAuthIdentifier(),
             'cancelado_em' => now(),
             'tracking_code' => null,
+            'invoice_number' => null,
+            'shipped_by_id' => null,
+            'shipped_at' => null,
         ]);
 
         $this->registrarHistoricoStatus(
@@ -1888,7 +2094,7 @@ HTML;
     {
         /** @var User|null $user */
         $user = Auth::user();
-        if (!$this->canCancelSolicitacao($user)) {
+        if (!$this->canCancelSolicitacao($user, $solicitacao)) {
             return $this->denyAccess($request, 'Você não tem permissão para cancelar a Solicitação.');
         }
 

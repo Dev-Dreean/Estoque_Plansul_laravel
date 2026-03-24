@@ -46,12 +46,39 @@ class SolicitacaoBem extends Model
         'confirmado_por_id',
         'cancelado_por_id',
         'email_confirmacao_enviado_em',
+        'logistics_height_cm',
+        'logistics_width_cm',
+        'logistics_length_cm',
+        'logistics_weight_kg',
+        'logistics_notes',
+        'logistics_registered_by_id',
+        'logistics_registered_at',
+        'quote_transporter',
+        'quote_amount',
+        'quote_deadline',
+        'quote_notes',
+        'quote_registered_by_id',
+        'quote_registered_at',
+        'quote_approved_by_id',
+        'quote_approved_at',
+        'invoice_number',
+        'shipped_by_id',
+        'shipped_at',
     ];
 
     protected $casts = [
         'confirmado_em' => 'datetime',
         'cancelado_em' => 'datetime',
         'email_confirmacao_enviado_em' => 'datetime',
+        'logistics_height_cm' => 'decimal:2',
+        'logistics_width_cm' => 'decimal:2',
+        'logistics_length_cm' => 'decimal:2',
+        'logistics_weight_kg' => 'decimal:3',
+        'quote_amount' => 'decimal:2',
+        'logistics_registered_at' => 'datetime',
+        'quote_registered_at' => 'datetime',
+        'quote_approved_at' => 'datetime',
+        'shipped_at' => 'datetime',
     ];
 
     public static function statusOptions(): array
@@ -106,5 +133,47 @@ class SolicitacaoBem extends Model
             'id',
             'NUSEQUSUARIO'
         )->withPivot(['liberado_por_id'])->withTimestamps();
+    }
+
+    public function hasLogisticsData(): bool
+    {
+        return $this->logistics_height_cm !== null
+            || $this->logistics_width_cm !== null
+            || $this->logistics_length_cm !== null
+            || $this->logistics_weight_kg !== null
+            || trim((string) ($this->logistics_notes ?? '')) !== ''
+            || $this->logistics_registered_at !== null;
+    }
+
+    public function hasQuoteData(): bool
+    {
+        return trim((string) ($this->quote_transporter ?? '')) !== ''
+            || $this->quote_amount !== null
+            || trim((string) ($this->quote_deadline ?? '')) !== ''
+            || trim((string) ($this->quote_notes ?? '')) !== ''
+            || $this->quote_registered_at !== null;
+    }
+
+    public function hasShipmentData(): bool
+    {
+        return trim((string) ($this->tracking_code ?? '')) !== ''
+            || trim((string) ($this->invoice_number ?? '')) !== ''
+            || $this->shipped_at !== null;
+    }
+
+    public function isAwaitingRequesterDecision(): bool
+    {
+        return $this->status === self::STATUS_CONFIRMADO
+            && $this->hasQuoteData()
+            && $this->quote_approved_at === null
+            && !$this->hasShipmentData();
+    }
+
+    public function isReadyToShip(): bool
+    {
+        return $this->status === self::STATUS_CONFIRMADO
+            && $this->hasQuoteData()
+            && $this->quote_approved_at !== null
+            && !$this->hasShipmentData();
     }
 }

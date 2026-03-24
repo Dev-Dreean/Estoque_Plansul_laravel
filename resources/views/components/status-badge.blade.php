@@ -40,12 +40,15 @@
 
     $statusLabelMap = [
         'CRIADO' => 'SOLICITADO',
-        'AGUARDANDO_CONFIRMACAO' => 'AGUARDANDO CONFIRMACAO',
-        'LIBERACAO' => 'LIBERACAO',
-        'CONFIRMADO' => 'ENVIO',
+        'PENDENTE' => 'SOLICITADO',
+        'AGUARDANDO_CONFIRMACAO' => 'AGUARD. MEDIDAS',
+        'LIBERACAO' => 'COTACAO',
+        'CONFIRMADO' => 'EM FLUXO',
         'ENVIADO' => 'ENVIADO',
-        'NAO_ENVIADO' => 'SEM ESTOQUE',
+        'NAO_ENVIADO' => 'NAO ENVIADO',
         'NAO_RECEBIDO' => 'NAO RECEBIDO',
+        'RECEBIDO' => 'RECEBIDO',
+        'CANCELADO' => 'CANCELADO',
         'ARQUIVADO' => 'ARQUIVADO',
     ];
     $statusDisplay = $statusLabelMap[$statusKey] ?? $statusRaw;

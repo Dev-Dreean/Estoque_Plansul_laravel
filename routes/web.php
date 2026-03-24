@@ -257,6 +257,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         [SolicitacaoBemController::class, 'approve'])->name('solicitacoes-bens.approve');
     Route::post('/solicitacoes-bens/{solicitacao}/send',
         [SolicitacaoBemController::class, 'send'])->name('solicitacoes-bens.send');
+    Route::post('/solicitacoes-bens/{solicitacao}/quote-approve',
+        [SolicitacaoBemController::class, 'approveQuote'])->name('solicitacoes-bens.quote-approve');
+    Route::post('/solicitacoes-bens/{solicitacao}/quote-reject',
+        [SolicitacaoBemController::class, 'rejectQuote'])->name('solicitacoes-bens.quote-reject');
     Route::post('/solicitacoes-bens/{solicitacao}/not-sent',
         [SolicitacaoBemController::class, 'notSent'])->name('solicitacoes-bens.not-sent');
     Route::post('/solicitacoes-bens/{solicitacao}/receive',

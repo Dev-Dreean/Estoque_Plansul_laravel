@@ -80,18 +80,30 @@
                     <td class="px-4 py-2">{{ $solicitacao->uf ?? '-' }}</td>
                     <td class="px-4 py-2">
                         @php
+                            $hasQuoteData = method_exists($solicitacao, 'hasQuoteData') ? $solicitacao->hasQuoteData() : false;
+                            $hasShipmentData = method_exists($solicitacao, 'hasShipmentData') ? $solicitacao->hasShipmentData() : (trim((string) ($solicitacao->tracking_code ?? '')) !== '' || trim((string) ($solicitacao->invoice_number ?? '')) !== '');
+                            $awaitingRequesterDecision = method_exists($solicitacao, 'isAwaitingRequesterDecision') ? $solicitacao->isAwaitingRequesterDecision() : false;
+                            $readyToShip = method_exists($solicitacao, 'isReadyToShip') ? $solicitacao->isReadyToShip() : false;
                             $statusVisual = $solicitacao->status === 'NAO_ENVIADO'
                                 ? 'CANCELADO'
-                                : ($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== '' ? 'ENVIADO' : $solicitacao->status);
+                                : ($solicitacao->status === 'CONFIRMADO' && $hasShipmentData ? 'ENVIADO' : $solicitacao->status);
                             $motivoStatus = trim((string) ($solicitacao->justificativa_cancelamento ?? ''));
+                            $statusAuxiliar = match (true) {
+                                $solicitacao->status === 'AGUARDANDO_CONFIRMACAO' => 'Aguardando medidas e peso',
+                                $solicitacao->status === 'LIBERACAO' => 'Aguardando cotação',
+                                $awaitingRequesterDecision => 'Aguardando aprovação do solicitante',
+                                $readyToShip => 'Cotação aprovada, aguardando envio',
+                                $solicitacao->status === 'CONFIRMADO' && $hasShipmentData => 'Rastreio e NF registrados',
+                                default => '',
+                            };
                             if (mb_strtolower($motivoStatus, 'UTF-8') === 'sem estoque no momento') {
                                 $motivoStatus = 'Sem estoque';
                             }
                         @endphp
                         <x-status-badge :status="$statusVisual" :color-map="$statusColors" />
-                        @if($solicitacao->status === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) === '')
-                            <div class="mt-0.5 max-w-[140px] truncate text-[11px] leading-3 text-gray-400" title="{{ trim((string) ($solicitacao->tracking_code ?? '')) !== '' ? 'Enviado' : 'Aguardando envio' }}">
-                                {{ trim((string) ($solicitacao->tracking_code ?? '')) !== '' ? 'Enviado' : 'Aguardando envio' }}
+                        @if($statusAuxiliar !== '')
+                            <div class="mt-0.5 max-w-[180px] truncate text-[11px] leading-3 text-gray-400" title="{{ $statusAuxiliar }}">
+                                {{ $statusAuxiliar }}
                             </div>
                         @endif
                         @if(in_array($solicitacao->status, ['NAO_ENVIADO', 'CANCELADO'], true) && $motivoStatus !== '')
@@ -124,9 +136,16 @@
                                 && $solicitacao->status === 'LIBERACAO';
                             $canSend = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1014') ?? false))
                                 && $solicitacao->status === 'CONFIRMADO'
-                                && trim((string) ($solicitacao->tracking_code ?? '')) === '';
+                                && !$hasShipmentData
+                                && (!$hasQuoteData || !empty($solicitacao->quote_approved_at));
+                            $isLiberacaoOnlyOperator = !($currentUser?->isAdmin() ?? false)
+                                && ($currentUser?->temAcessoTela('1020') ?? false)
+                                && !($currentUser?->temAcessoTela('1019') ?? false)
+                                && !($currentUser?->temAcessoTela('1012') ?? false)
+                                && !($currentUser?->temAcessoTela('1014') ?? false);
                             $canCancel = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1015') ?? false))
-                                && !in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true);
+                                && !in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true)
+                                && (!$isLiberacaoOnlyOperator || $solicitacao->status === 'LIBERACAO');
                         @endphp
                         <div class="flex items-center gap-2" @click.stop>
                             @if($canConfirm && $solicitacao->status === 'PENDENTE')
@@ -139,7 +158,7 @@
                             @endif
 
                             @if($canForward)
-                                <button type="button" title="Encaminhar para liberação" @click="mostrarModalEncaminharLiberacao({{ $solicitacao->id }})"
+                                <button type="button" title="Registrar medidas e peso" @click="mostrarModalEncaminharLiberacao({{ $solicitacao->id }})"
                                     class="inline-flex items-center justify-center p-1.5 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/30 rounded-lg transition">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -148,7 +167,7 @@
                             @endif
 
                             @if($canRelease)
-                                <button type="button" title="Liberar pedido" @click="mostrarModalAprovar({{ $solicitacao->id }})"
+                                <button type="button" title="Registrar cotação" @click="mostrarModalAprovar({{ $solicitacao->id }})"
                                     class="inline-flex items-center justify-center p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -157,7 +176,7 @@
                             @endif
 
                             @if($canSend)
-                                <button type="button" title="Enviar pedido" @click="mostrarModalEnviar({{ $solicitacao->id }})"
+                                <button type="button" title="Registrar envio" @click="mostrarModalEnviar({{ $solicitacao->id }})"
                                     class="inline-flex items-center justify-center p-1.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
