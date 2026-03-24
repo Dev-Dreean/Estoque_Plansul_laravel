@@ -290,7 +290,7 @@ class SolicitacaoBemController extends Controller
         $canReleaseAction = $this->canAuthorizeRelease($user);
         $canSendAction = $this->canSendSolicitacao($user);
         $canCancelAction = $this->canCancelSolicitacao($user, $solicitacao);
-        $canReturnAction = $this->canReturnSolicitacao($user);
+        $canReturnAction = $this->canReturnSolicitacao($user, $solicitacao);
         $canManage = $this->canUpdateSolicitacao($user)
             || $canConfirmAction
             || $canForwardAction
@@ -459,7 +459,7 @@ class SolicitacaoBemController extends Controller
             $canReleaseAction = $this->canAuthorizeRelease($user);
             $canSendAction = $this->canSendSolicitacao($user);
             $canCancelAction = $this->canCancelSolicitacao($user, $solicitacao);
-            $canReturnAction = $this->canReturnSolicitacao($user);
+            $canReturnAction = $this->canReturnSolicitacao($user, $solicitacao);
             $canManage = $this->canUpdateSolicitacao($user)
                 || $canConfirmAction
                 || $canForwardAction
@@ -1032,6 +1032,51 @@ HTML;
         return $this->canAuthorizeRelease($user);
     }
 
+    private function canManageCurrentFlowStage(?User $user, SolicitacaoBem $solicitacao): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        if ($solicitacao->status === SolicitacaoBem::STATUS_PENDENTE) {
+            return $this->canConfirmSolicitacao($user);
+        }
+
+        if ($solicitacao->status === SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO) {
+            return $this->canForwardToLiberacao($user);
+        }
+
+        if ($solicitacao->status === SolicitacaoBem::STATUS_LIBERACAO) {
+            return $this->canRegisterQuote($user);
+        }
+
+        if ($solicitacao->status === SolicitacaoBem::STATUS_CONFIRMADO) {
+            if ($solicitacao->hasShipmentData()) {
+                return $this->canReceiveSolicitacao($user, $solicitacao);
+            }
+
+            if ($solicitacao->isAwaitingRequesterDecision()) {
+                return $this->canAuthorizeRelease($user);
+            }
+
+            return $this->canSendSolicitacao($user);
+        }
+
+        if ($solicitacao->status === SolicitacaoBem::STATUS_NAO_RECEBIDO) {
+            return $this->canContestNotReceived($user);
+        }
+
+        if ($solicitacao->status === SolicitacaoBem::STATUS_NAO_ENVIADO) {
+            return $this->canConfirmSolicitacao($user);
+        }
+
+        return false;
+    }
+
     private function canCancelSolicitacao(?User $user, ?SolicitacaoBem $solicitacao = null): bool
     {
         if (!$user) {
@@ -1049,14 +1094,18 @@ HTML;
             return false;
         }
 
-        if ($this->isLiberacaoOnlyOperator($user)) {
-            return $solicitacao?->status === SolicitacaoBem::STATUS_LIBERACAO;
+        if (!$solicitacao) {
+            return false;
         }
 
-        return true;
+        if ($this->isLiberacaoOnlyOperator($user) && $solicitacao->status !== SolicitacaoBem::STATUS_LIBERACAO) {
+            return false;
+        }
+
+        return $this->canManageCurrentFlowStage($user, $solicitacao);
     }
 
-    private function canReturnSolicitacao(?User $user): bool
+    private function canReturnSolicitacao(?User $user, ?SolicitacaoBem $solicitacao = null): bool
     {
         if (!$user) {
             return false;
@@ -1064,9 +1113,12 @@ HTML;
         if ($user->isAdmin()) {
             return true;
         }
-        return $this->canForwardToLiberacao($user)
-            || $this->canRegisterQuote($user)
-            || $this->canSendSolicitacao($user);
+
+        if ($this->isBrunoFlowOperator($user) || !$solicitacao) {
+            return false;
+        }
+
+        return $this->canManageCurrentFlowStage($user, $solicitacao);
     }
 
     private function applyOwnerScope($query, ?User $user): void
@@ -2205,7 +2257,7 @@ HTML;
     {
         /** @var User|null $user */
         $user = Auth::user();
-        if (!$this->canReturnSolicitacao($user)) {
+        if (!$this->canReturnSolicitacao($user, $solicitacao)) {
             return $this->denyAccess($request, 'Você não tem permissão para retornar a Solicitação para análise.');
         }
 

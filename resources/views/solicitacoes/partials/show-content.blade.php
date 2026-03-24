@@ -51,23 +51,41 @@
     $hasShipmentData = method_exists($solicitacao, 'hasShipmentData') ? $solicitacao->hasShipmentData() : (trim((string) ($solicitacao->tracking_code ?? '')) !== '' || trim((string) ($solicitacao->invoice_number ?? '')) !== '');
     $awaitingRequesterDecision = method_exists($solicitacao, 'isAwaitingRequesterDecision') ? $solicitacao->isAwaitingRequesterDecision() : false;
     $readyToShip = method_exists($solicitacao, 'isReadyToShip') ? $solicitacao->isReadyToShip() : false;
-    $canManagePanel = $canManage
-        || $canMarkReceived
-        || $canMarkNotReceived
-        || $canContestNotReceived
-        || $canQuoteAction
-        || $canReleaseAction
-        || $canRecriarCancelada;
     $statusBadgeAtual = $solicitacao->status === 'CONFIRMADO' && $hasShipmentData
         ? 'ENVIADO'
         : $solicitacao->status;
     $returnButtonLabel = match ($solicitacao->status) {
         'AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO' => 'Voltar para Solicitado',
         'LIBERACAO' => 'Voltar para Em Análise',
-        'CONFIRMADO' => 'Voltar para Liberação',
+        'CONFIRMADO' => $awaitingRequesterDecision ? 'Voltar para Cotação' : 'Voltar para Liberação',
         'NAO_RECEBIDO' => 'Voltar para Envio',
         default => 'Voltar um status',
     };
+    $canGoBackOneStep = in_array($solicitacao->status, ['AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO', 'LIBERACAO', 'CONFIRMADO', 'NAO_RECEBIDO'], true);
+    $showConfirmActionButton = $solicitacao->status === 'PENDENTE' && $canConfirmAction;
+    $showForwardActionButton = $solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $canForwardAction;
+    $showQuoteActionButton = $solicitacao->status === 'LIBERACAO' && $canQuoteAction;
+    $showReleaseActionButton = $awaitingRequesterDecision && $canReleaseAction;
+    $showSendActionButton = $solicitacao->status === 'CONFIRMADO' && !$hasShipmentData && (!$hasQuoteData || $readyToShip) && $canSendAction;
+    $showReceiveActionButton = $solicitacao->status === 'CONFIRMADO' && $hasShipmentData && $canMarkReceived;
+    $showNotReceivedActionButton = $solicitacao->status === 'CONFIRMADO' && $hasShipmentData && $canMarkNotReceived;
+    $showContestActionButton = $solicitacao->status === 'NAO_RECEBIDO' && $canContestNotReceived;
+    $showReturnActionButton = $canGoBackOneStep && $canReturnAction;
+    $showCancelActionButton = !in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true) && $canCancelAction;
+    $showRecreateCancelledActionButton = $solicitacao->status === 'CANCELADO' && $canRecriarCancelada;
+    $showArchiveCancelledActionButton = $showRecreateCancelledActionButton;
+    $canManagePanel = $showConfirmActionButton
+        || $showForwardActionButton
+        || $showQuoteActionButton
+        || $showReleaseActionButton
+        || $showSendActionButton
+        || $showReceiveActionButton
+        || $showNotReceivedActionButton
+        || $showContestActionButton
+        || $showReturnActionButton
+        || $showCancelActionButton
+        || $showRecreateCancelledActionButton
+        || $showArchiveCancelledActionButton;
 
     $gridClass = 'grid-cols-1';
     $leftColClass = '';
@@ -138,34 +156,31 @@
             @if($canManagePanel)
                 <div class="mb-3 bg-[color:var(--solicitacao-modal-bg,#fcfdff)] dark:bg-slate-900/90 shadow-sm rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 overflow-hidden">
                     <div class="flex flex-wrap md:flex-nowrap items-stretch justify-center gap-2 p-2">
-                        @if($solicitacao->status === 'PENDENTE' && $canConfirmAction)
+                        @if($showConfirmActionButton)
                             <button type="button" @click="showConfirmModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 Aprovar Solicitação
                             </button>
                         @endif
-                        @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $canForwardAction)
+                        @if($showForwardActionButton)
                             <button type="button" @click="showForwardModal = true" class="sol-flow-action sol-flow-action--forward">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                                 Registrar Medidas e Peso
                             </button>
                         @endif
-                        @if($solicitacao->status === 'LIBERACAO' && $canQuoteAction)
+                        @if($showQuoteActionButton)
                             <button type="button" @click="showApproveModal = true" class="sol-flow-action sol-flow-action--release">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                 Registrar Cotação
                             </button>
                         @endif
-                        @if($awaitingRequesterDecision && $canReleaseAction)
+                        @if($showReleaseActionButton)
                             <button type="button" @click="showQuoteApproveModal = true" class="sol-flow-action sol-flow-action--send">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 Liberar Envio
                             </button>
                         @endif
-                        @php
-                            $canGoBackOneStep = in_array($solicitacao->status, ['AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO', 'LIBERACAO', 'CONFIRMADO', 'NAO_RECEBIDO'], true);
-                        @endphp
-                        @if($solicitacao->status === 'CANCELADO' && $canRecriarCancelada)
+                        @if($showRecreateCancelledActionButton)
                             <button type="button" @click="showRecreateCancelledModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition shadow-sm">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8 8 0 106.582 9m0 0H9m-4 0V4" /></svg>
                                 Solicitar Novamente
@@ -175,37 +190,37 @@
                                 Arquivar Solicitação
                             </button>
                         @endif
-                        @if($solicitacao->status === 'CONFIRMADO' && !$hasShipmentData && (!$hasQuoteData || $readyToShip) && $canSendAction)
+                        @if($showSendActionButton)
                             <button type="button" @click="showSendModal = true" class="sol-flow-action sol-flow-action--send">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                                 Registrar Envio
                             </button>
                         @endif
-                        @if($solicitacao->status === 'CONFIRMADO' && $hasShipmentData && $canMarkReceived)
+                        @if($showReceiveActionButton)
                             <button type="button" @click="showReceiveModal = true" class="sol-flow-action sol-flow-action--receive">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                 Confirmar Recebimento
                             </button>
                         @endif
-                        @if($solicitacao->status === 'CONFIRMADO' && $hasShipmentData && $canMarkNotReceived)
+                        @if($showNotReceivedActionButton)
                             <button type="button" @click="showNotReceivedModal = true" class="sol-flow-action sol-flow-action--not-received">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM9 9l6 6m0-6l-6 6" /></svg>
                                 Pedido Não Recebido
                             </button>
                         @endif
-                        @if($solicitacao->status === 'NAO_RECEBIDO' && $canContestNotReceived)
+                        @if($showContestActionButton)
                             <button type="button" @click="showContestNotReceivedModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 transition shadow-sm">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h6m-9 8h16a1 1 0 001-1V7a1 1 0 00-1-1h-3l-2-2H9L7 6H4a1 1 0 00-1 1v12a1 1 0 001 1z" /></svg>
                                 Contestar Não Recebido
                             </button>
                         @endif
-                        @if($canGoBackOneStep && $canReturnAction)
+                        @if($showReturnActionButton)
                             <button type="button" @click="showReturnModal = true" class="sol-flow-action sol-flow-action--return">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12a9 9 0 1015.364-6.364M3 12H9m-6 0l3-3m-3 3l3 3" /></svg>
                                 {{ $returnButtonLabel }}
                             </button>
                         @endif
-                        @if(!in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true) && $canCancelAction)
+                        @if($showCancelActionButton)
                             <button type="button" @click="showCancelModal = true" class="sol-flow-action sol-flow-action--cancel">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM9 9l6 6m0-6l-6 6" /></svg>
                                 Cancelar Solicita&ccedil;&atilde;o

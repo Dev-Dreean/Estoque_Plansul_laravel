@@ -152,8 +152,20 @@
                                 && !($currentUser?->temAcessoTela('1019') ?? false)
                                 && !($currentUser?->temAcessoTela('1012') ?? false)
                                 && !($currentUser?->temAcessoTela('1014') ?? false);
+                            $canManageCurrentStage = match (true) {
+                                $solicitacao->status === 'PENDENTE' => $canConfirm,
+                                $solicitacao->status === 'AGUARDANDO_CONFIRMACAO' => $canForward,
+                                $solicitacao->status === 'LIBERACAO' => $canQuote,
+                                $solicitacao->status === 'CONFIRMADO' && $hasShipmentData => (($currentUser?->isAdmin() ?? false) || $isOwner),
+                                $awaitingRequesterDecision => $canRelease,
+                                $solicitacao->status === 'CONFIRMADO' => $canSend,
+                                $solicitacao->status === 'NAO_RECEBIDO' => (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1019') ?? false)),
+                                $solicitacao->status === 'NAO_ENVIADO' => $canConfirm,
+                                default => false,
+                            };
                             $canCancel = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1015') ?? false))
                                 && !in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true)
+                                && $canManageCurrentStage
                                 && !$isBrunoFlow
                                 && (!$isLiberacaoOnlyOperator || $solicitacao->status === 'LIBERACAO');
                         @endphp
