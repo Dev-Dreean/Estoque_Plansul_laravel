@@ -39,7 +39,7 @@
                         $canCreateSolicitacao = $isAdmin || ($userForCreate?->temAcessoTela('1013') ?? false);
                         $statusTagOptions = [
                             ['key' => 'PENDENTE', 'label' => 'Solicitado'],
-                            ['key' => 'AGUARDANDO_CONFIRMACAO', 'label' => 'Bruno / Tiago'],
+                            ['key' => 'AGUARDANDO_CONFIRMACAO', 'label' => 'Análise / Logística'],
                             ['key' => 'LIBERACAO', 'label' => 'Cotação'],
                             ['key' => 'CONFIRMADO', 'label' => 'Solicitante / Envio'],
                             ['key' => 'ENVIADO', 'label' => 'Enviado'],
@@ -147,7 +147,7 @@
                                 @method('POST')
 
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    Confirme a aprovação inicial do Bruno para liberar a conferência de estoque.
+                                    Confirme a aprovação inicial para liberar a conferência de estoque.
                                 </p>
 <div class="flex gap-2 pt-4">
                                     <button type="button" @click="fecharModais()" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
@@ -1981,7 +1981,6 @@
         </script>
     @endpush
 </x-app-layout>
-
 
 
 

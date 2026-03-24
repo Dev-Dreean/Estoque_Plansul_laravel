@@ -140,7 +140,7 @@
                         @if($solicitacao->status === 'PENDENTE' && $canConfirmAction)
                             <button type="button" @click="showConfirmModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                Bruno Aprovar Solicitação
+                                Aprovar Solicitação
                             </button>
                         @endif
                         @if($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $canForwardAction)
@@ -320,7 +320,7 @@
                     || $statusHistorico->contains('NAO_RECEBIDO');
                 $stepsTopo = [
                     ['n' => 1, 'label' => 'Solicitação'],
-                    ['n' => 2, 'label' => 'Bruno / Tiago'],
+                    ['n' => 2, 'label' => 'Análise / Logística'],
                     ['n' => 3, 'label' => 'Cotação'],
                     ['n' => 4, 'label' => 'Solicitante / Envio'],
                     ['n' => 5, 'label' => 'Recebido'],
@@ -501,11 +501,11 @@
                 $cardAnalise = $etapaAnaliseConcluida
                     ? $montarCardEtapa(
                         'Em Análise',
-                        $histAnalise ? 'Bruno aprovou a solicitação' : 'Aguardando aprovação inicial',
+                        $histAnalise ? 'Aprovação inicial registrada' : 'Aguardando aprovação inicial',
                         $histAnalise ? 'Fluxo liberado' : 'Pendente',
                         $histAnalise,
                         array_merge($detalhesBase, $detalhesPessoa, [
-                            ['label' => 'Próxima', 'value' => 'Tiago confere estoque e registra medidas e peso.'],
+                            ['label' => 'Próxima', 'value' => 'Conferir estoque e registrar medidas e peso.'],
                             ['label' => 'Matrícula', 'value' => $recebedorMatriculaCard !== '' ? $recebedorMatriculaCard : '-'],
                         ]),
                         null,
