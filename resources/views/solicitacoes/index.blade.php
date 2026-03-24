@@ -39,10 +39,9 @@
                         $canCreateSolicitacao = $isAdmin || ($userForCreate?->temAcessoTela('1013') ?? false);
                         $statusTagOptions = [
                             ['key' => 'PENDENTE', 'label' => 'Solicitado'],
-                            ['key' => 'AGUARDANDO_CONFIRMACAO', 'label' => 'Análise / Logística'],
-                            ['key' => 'LIBERACAO', 'label' => 'Cotação'],
-                            ['key' => 'CONFIRMADO', 'label' => 'Liberação / Envio'],
-                            ['key' => 'ENVIADO', 'label' => 'Enviado'],
+                            ['key' => 'AGUARDANDO_CONFIRMACAO', 'label' => 'Separando'],
+                            ['key' => 'LIBERACAO', 'label' => 'Em liberação'],
+                            ['key' => 'CONFIRMADO', 'label' => 'Envio'],
                             ['key' => 'RECEBIDO', 'label' => 'Recebido'],
                             ['key' => 'NAO_RECEBIDO', 'label' => 'Não recebido'],
                             ['key' => 'CANCELADO', 'label' => 'Cancelado'],
@@ -1981,6 +1980,5 @@
         </script>
     @endpush
 </x-app-layout>
-
 
 

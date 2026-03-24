@@ -154,10 +154,10 @@
                 $statusLabel = function (string $status) use ($normalizeStatus): string {
                     return match ($normalizeStatus($status)) {
                         'CRIADO' => 'SOLICITADO',
-                        'AGUARDANDO_CONFIRMACAO' => 'AGUARDANDO CONFIRMACAO',
-                        'LIBERACAO' => 'LIBERACAO',
+                        'AGUARDANDO_CONFIRMACAO' => 'SEPARANDO',
+                        'LIBERACAO' => 'EM LIBERACAO',
                         'CONFIRMADO' => 'ENVIO',
-                        'ENVIADO' => 'ENVIADO',
+                        'ENVIADO' => 'ENVIO',
                         'NAO_ENVIADO' => 'CANCELADO',
                         'NAO_RECEBIDO' => 'NAO RECEBIDO',
                         default => $normalizeStatus($status) !== '' ? $normalizeStatus($status) : '-',
@@ -171,9 +171,6 @@
                         $historicos = $solicitacao->historicoStatus;
                         $ultimo = $historicos->first();
                         $statusAtualRaw = (string) ($ultimo?->status_novo ?? $solicitacao->status ?? 'PENDENTE');
-                        if ($normalizeStatus($statusAtualRaw) === 'CONFIRMADO' && trim((string) ($solicitacao->tracking_code ?? '')) !== '') {
-                            $statusAtualRaw = 'ENVIADO';
-                        }
                         $statusAtual = $normalizeStatus($statusAtualRaw);
                         $badge = $statusBadge($statusAtualRaw);
                         $projetoCodigo = (string) ($solicitacao->projeto->CDPROJETO ?? '-');
@@ -233,9 +230,6 @@
                                                 }
                                                 $badgeAnterior = $statusAnterior !== '' ? $statusBadge($statusAnteriorRaw) : '';
                                                 $statusNovoExibicao = $statusNovoRaw;
-                                                if ($statusNovo === 'CONFIRMADO' && trim((string) ($registro->motivo ?? '')) !== '' && str_starts_with(trim((string) $registro->motivo), 'Rastreio:')) {
-                                                    $statusNovoExibicao = 'ENVIADO';
-                                                }
                                                 $badgeLinha = $statusBadge($statusNovo !== '' ? $statusNovoExibicao : 'PENDENTE');
                                                 $usuarioNome = trim((string) ($registro->usuario->NOMEUSER ?? $registro->usuario->NMLOGIN ?? '-'));
                                             @endphp

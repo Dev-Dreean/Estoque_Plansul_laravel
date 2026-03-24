@@ -1047,11 +1047,13 @@ HTML;
         }
 
         if ($solicitacao->status === SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO) {
-            return $this->canForwardToLiberacao($user);
+            return $solicitacao->hasLogisticsData()
+                ? $this->canRegisterQuote($user)
+                : $this->canForwardToLiberacao($user);
         }
 
         if ($solicitacao->status === SolicitacaoBem::STATUS_LIBERACAO) {
-            return $this->canRegisterQuote($user);
+            return $this->canAuthorizeRelease($user);
         }
 
         if ($solicitacao->status === SolicitacaoBem::STATUS_CONFIRMADO) {
@@ -1059,15 +1061,11 @@ HTML;
                 return $this->canReceiveSolicitacao($user, $solicitacao);
             }
 
-            if ($solicitacao->isAwaitingRequesterDecision()) {
-                return $this->canAuthorizeRelease($user);
-            }
-
             return $this->canSendSolicitacao($user);
         }
 
         if ($solicitacao->status === SolicitacaoBem::STATUS_NAO_RECEBIDO) {
-            return $this->canContestNotReceived($user);
+            return $this->canReceiveSolicitacao($user, $solicitacao);
         }
 
         if ($solicitacao->status === SolicitacaoBem::STATUS_NAO_ENVIADO) {
@@ -1077,28 +1075,54 @@ HTML;
         return false;
     }
 
+    private function normalizeQuoteOptions(array $quotes): array
+    {
+        return array_values(array_filter(array_map(function ($item) {
+            if (!is_array($item)) {
+                return null;
+            }
+
+            $transporter = trim((string) ($item['transporter'] ?? ''));
+            $deadline = trim((string) ($item['deadline'] ?? ''));
+            $trackingType = trim((string) ($item['tracking_type'] ?? ''));
+            $notes = trim((string) ($item['notes'] ?? ''));
+            $amountRaw = $item['amount'] ?? null;
+            $amount = $amountRaw !== null && $amountRaw !== '' ? (float) $amountRaw : null;
+
+            if ($transporter === '' && $deadline === '' && $trackingType === '' && $notes === '' && $amount === null) {
+                return null;
+            }
+
+            if ($transporter === '' || $deadline === '' || $trackingType === '' || $amount === null) {
+                return [
+                    '_invalid' => true,
+                ];
+            }
+
+            return [
+                'transporter' => $transporter,
+                'amount' => $amount,
+                'deadline' => $deadline,
+                'tracking_type' => $trackingType,
+                'notes' => $notes !== '' ? $notes : null,
+            ];
+        }, $quotes)));
+    }
+
     private function canCancelSolicitacao(?User $user, ?SolicitacaoBem $solicitacao = null): bool
     {
         if (!$user) {
             return false;
         }
-        // ADM sempre tem acesso (nunca precisa de permissão explícita)
         if ($user->isAdmin()) {
             return true;
-        }
-        if (!$user->temAcessoTela((string) User::TELA_SOLICITACOES_CANCELAR)) {
-            return false;
-        }
-
-        if ($this->isBrunoFlowOperator($user)) {
-            return false;
         }
 
         if (!$solicitacao) {
             return false;
         }
 
-        if ($this->isLiberacaoOnlyOperator($user) && $solicitacao->status !== SolicitacaoBem::STATUS_LIBERACAO) {
+        if ($solicitacao->hasShipmentData()) {
             return false;
         }
 
@@ -1114,7 +1138,11 @@ HTML;
             return true;
         }
 
-        if ($this->isBrunoFlowOperator($user) || !$solicitacao) {
+        if (!$solicitacao) {
+            return false;
+        }
+
+        if ($solicitacao->hasShipmentData()) {
             return false;
         }
 
@@ -1451,21 +1479,7 @@ HTML;
                         break;
 
                     case SolicitacaoBem::STATUS_CONFIRMADO:
-                        $builder->orWhere(function ($confirmadoQuery) {
-                            $confirmadoQuery
-                                ->where('status', SolicitacaoBem::STATUS_CONFIRMADO)
-                                ->where(function ($shipmentQuery) {
-                                    $shipmentQuery
-                                        ->whereNull('tracking_code')
-                                        ->orWhere('tracking_code', '');
-                                })
-                                ->where(function ($invoiceQuery) {
-                                    $invoiceQuery
-                                        ->whereNull('invoice_number')
-                                        ->orWhere('invoice_number', '');
-                                })
-                                ->whereNull('shipped_at');
-                        });
+                        $builder->orWhere('status', SolicitacaoBem::STATUS_CONFIRMADO);
                         break;
 
                     case 'ENVIADO':
@@ -1622,11 +1636,11 @@ HTML;
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Solicitação aprovada. Aguardando conferência de estoque e medidas.',
+                'message' => 'Solicitação aprovada. Etapa de separação iniciada.',
             ]);
         }
 
-        return redirect()->back()->with('success', 'Solicitação aprovada. Aguardando conferência de estoque e medidas.');
+        return redirect()->back()->with('success', 'Solicitação aprovada. Etapa de separação iniciada.');
     }
 
     /**
@@ -1655,7 +1669,7 @@ HTML;
 
         $statusAnterior = $solicitacao->status;
         $solicitacao->update([
-            'status' => SolicitacaoBem::STATUS_LIBERACAO,
+            'status' => SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO,
             'tracking_code' => null,
             'invoice_number' => null,
             'confirmado_por_id' => null,
@@ -1667,6 +1681,9 @@ HTML;
             'logistics_notes' => trim((string) ($validated['logistics_notes'] ?? '')) ?: null,
             'logistics_registered_by_id' => $user?->getAuthIdentifier(),
             'logistics_registered_at' => now(),
+            'quote_options_payload' => null,
+            'quote_selected_index' => null,
+            'quote_tracking_type' => null,
             'quote_transporter' => null,
             'quote_amount' => null,
             'quote_deadline' => null,
@@ -1682,8 +1699,8 @@ HTML;
         $this->registrarHistoricoStatus(
             $solicitacao,
             $statusAnterior,
-            SolicitacaoBem::STATUS_LIBERACAO,
-            'encaminhar_liberacao',
+            SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO,
+            'registrar_medidas',
             sprintf(
                 'Medidas registradas: A %.2f x L %.2f x C %.2f cm | Peso %.3f kg',
                 (float) $validated['logistics_height_cm'],
@@ -1693,7 +1710,7 @@ HTML;
             )
         );
 
-        Log::info('[SOLICITACOES] Solicitação encaminhada para liberação', [
+        Log::info('[SOLICITACOES] Medidas e peso registrados', [
             'solicitacao_id' => $solicitacao->id,
             'encaminhado_por' => $user?->NMLOGIN,
         ]);
@@ -1701,11 +1718,11 @@ HTML;
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Medidas e peso registrados. Solicitação encaminhada para cotação.',
+                'message' => 'Medidas e peso registrados. Separação concluída para a etapa da Beatriz.',
             ]);
         }
 
-        return redirect()->back()->with('success', 'Medidas e peso registrados. Solicitação encaminhada para cotação.');
+        return redirect()->back()->with('success', 'Medidas e peso registrados. Separação concluída para a etapa da Beatriz.');
     }
 
     public function release(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
@@ -1713,11 +1730,15 @@ HTML;
         /** @var User|null $user */
         $user = Auth::user();
         if (!$this->canRegisterQuote($user)) {
-            return $this->denyAccess($request, 'Você não tem permissão para liberar o pedido.');
+            return $this->denyAccess($request, 'Você não tem permissão para registrar cotações.');
         }
 
-        if ($solicitacao->status !== SolicitacaoBem::STATUS_LIBERACAO) {
-            return $this->denyAccess($request, 'Apenas solicitações em liberação podem ser liberadas.');
+        if ($solicitacao->status !== SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO) {
+            return $this->denyAccess($request, 'Apenas solicitações em separação podem receber cotações.');
+        }
+
+        if (!$solicitacao->hasLogisticsData()) {
+            return $this->denyAccess($request, 'Registre as medidas e o peso antes de informar as cotações.');
         }
 
         if (empty($solicitacao->matricula_recebedor) && !empty($solicitacao->solicitante_matricula)) {
@@ -1728,27 +1749,64 @@ HTML;
         }
 
         if (empty($solicitacao->matricula_recebedor)) {
-            return $this->denyAccess($request, 'Informe o recebedor antes de liberar o pedido.');
+            return $this->denyAccess($request, 'Informe o recebedor antes de registrar as cotações.');
         }
 
-        $validated = $request->validate([
-            'quote_transporter' => ['required', 'string', 'max:120'],
-            'quote_amount' => ['required', 'numeric', 'min:0'],
-            'quote_deadline' => ['required', 'string', 'max:80'],
-            'quote_notes' => ['nullable', 'string', 'max:2000'],
+        $validator = Validator::make($request->all(), [
+            'quote_slots' => ['nullable', 'integer', 'min:1', 'max:3'],
+            'quotes' => ['required', 'array', 'min:1'],
+            'quotes.*.transporter' => ['nullable', 'string', 'max:120'],
+            'quotes.*.amount' => ['nullable', 'numeric', 'min:0'],
+            'quotes.*.deadline' => ['nullable', 'string', 'max:80'],
+            'quotes.*.tracking_type' => ['nullable', Rule::in(array_keys(SolicitacaoBem::trackingTypeOptions()))],
+            'quotes.*.notes' => ['nullable', 'string', 'max:1000'],
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            $quotes = $this->normalizeQuoteOptions((array) $request->input('quotes', []));
+
+            if ($quotes === []) {
+                $validator->errors()->add('quotes', 'Informe ao menos uma cotação completa.');
+                return;
+            }
+
+            foreach ($quotes as $index => $quote) {
+                if (($quote['_invalid'] ?? false) === true) {
+                    $validator->errors()->add("quotes.{$index}", 'Preencha todos os campos obrigatórios de cada cotação informada.');
+                }
+            }
+        });
+
+        if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first(),
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $validated = $validator->validated();
+        $quoteOptions = $this->normalizeQuoteOptions((array) ($validated['quotes'] ?? []));
+        $quoteOptions = array_values(array_filter($quoteOptions, static fn ($quote) => ($quote['_invalid'] ?? false) !== true));
 
         $statusAnterior = $solicitacao->status;
         $solicitacao->update([
-            'status' => SolicitacaoBem::STATUS_CONFIRMADO,
+            'status' => SolicitacaoBem::STATUS_LIBERACAO,
             'tracking_code' => null,
             'invoice_number' => null,
             'confirmado_por_id' => null,
             'confirmado_em' => null,
-            'quote_transporter' => trim((string) $validated['quote_transporter']),
-            'quote_amount' => $validated['quote_amount'],
-            'quote_deadline' => trim((string) $validated['quote_deadline']),
-            'quote_notes' => trim((string) ($validated['quote_notes'] ?? '')) ?: null,
+            'quote_options_payload' => $quoteOptions,
+            'quote_selected_index' => null,
+            'quote_tracking_type' => null,
+            'quote_transporter' => null,
+            'quote_amount' => null,
+            'quote_deadline' => null,
+            'quote_notes' => null,
             'quote_registered_by_id' => $user?->getAuthIdentifier(),
             'quote_registered_at' => now(),
             'quote_approved_by_id' => null,
@@ -1760,24 +1818,25 @@ HTML;
         $this->registrarHistoricoStatus(
             $solicitacao,
             $statusAnterior,
-            SolicitacaoBem::STATUS_CONFIRMADO,
-            'liberar_pedido',
-            'Cotação registrada e aguardando liberação do Bruno.'
+            SolicitacaoBem::STATUS_LIBERACAO,
+            'registrar_cotacoes',
+            count($quoteOptions) . ' cotação(ões) registradas. Aguardando liberação do Bruno.'
         );
 
-        Log::info('[SOLICITACOES] Pedido liberado', [
+        Log::info('[SOLICITACOES] Cotações registradas', [
             'solicitacao_id' => $solicitacao->id,
-            'liberado_por' => $user?->NMLOGIN,
+            'registrado_por' => $user?->NMLOGIN,
+            'quantidade_cotacoes' => count($quoteOptions),
         ]);
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Cotação registrada. Aguardando liberação do Bruno.',
+                'message' => 'Cotações registradas. Solicitação em liberação do Bruno.',
             ]);
         }
 
-        return redirect()->back()->with('success', 'Cotação registrada. Aguardando liberação do Bruno.');
+        return redirect()->back()->with('success', 'Cotações registradas. Solicitação em liberação do Bruno.');
     }
 
     public function approve(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
@@ -1862,13 +1921,30 @@ HTML;
             return $this->denyAccess($request, 'A cotação precisa ser liberada pelo Bruno antes do envio.');
         }
 
-        $validated = $request->validate([
-            'tracking_code' => ['required', 'string', 'max:100'],
-            'invoice_number' => ['required', 'string', 'max:100'],
+        $requiresTrackingCode = $solicitacao->requiresTrackingCode();
+        $requiresInvoiceNumber = $solicitacao->requiresInvoiceNumber();
+
+        $validator = Validator::make($request->all(), [
+            'tracking_code' => [$requiresTrackingCode ? 'required' : 'nullable', 'string', 'max:100'],
+            'invoice_number' => [$requiresInvoiceNumber ? 'required' : 'nullable', 'string', 'max:100'],
         ]);
 
-        $trackingCode = trim((string) $validated['tracking_code']);
-        $invoiceNumber = trim((string) $validated['invoice_number']);
+        if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first(),
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $validated = $validator->validated();
+
+        $trackingCode = trim((string) ($validated['tracking_code'] ?? ''));
+        $invoiceNumber = trim((string) ($validated['invoice_number'] ?? ''));
         $statusAnterior = $solicitacao->status;
         $solicitacao->update([
             'tracking_code' => $trackingCode,
@@ -1882,7 +1958,10 @@ HTML;
             $statusAnterior,
             SolicitacaoBem::STATUS_CONFIRMADO,
             'enviar_pedido',
-            'Rastreio: ' . $trackingCode . ' | NF: ' . $invoiceNumber
+            collect([
+                $trackingCode !== '' ? 'Rastreio: ' . $trackingCode : null,
+                $invoiceNumber !== '' ? 'NF: ' . $invoiceNumber : null,
+            ])->filter()->implode(' | ')
         );
 
         Log::info('[SOLICITACOES] Pedido enviado', [
@@ -1910,19 +1989,39 @@ HTML;
             return $this->denyAccess($request, 'Você não tem permissão para liberar este envio.');
         }
 
-        if (!$solicitacao->isAwaitingRequesterDecision()) {
+        if ($solicitacao->status !== SolicitacaoBem::STATUS_LIBERACAO || !$solicitacao->hasQuoteOptions()) {
             return $this->denyAccess($request, 'Esta solicitação não está aguardando liberação do Bruno.');
         }
 
         $validated = $request->validate([
+            'selected_quote_index' => ['required', 'integer', 'min:0', 'max:2'],
             'quote_approval_notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        $quoteOptions = $solicitacao->quoteOptions();
+        $selectedIndex = (int) $validated['selected_quote_index'];
+
+        if (!array_key_exists($selectedIndex, $quoteOptions)) {
+            return $this->denyAccess($request, 'Selecione uma cotação válida para a liberação.');
+        }
+
+        $selectedQuote = $quoteOptions[$selectedIndex];
         $motivo = trim((string) ($validated['quote_approval_notes'] ?? ''));
         $statusAnterior = $solicitacao->status;
         $solicitacao->update([
+            'status' => SolicitacaoBem::STATUS_CONFIRMADO,
+            'quote_selected_index' => $selectedIndex,
+            'quote_tracking_type' => $selectedQuote['tracking_type'] ?? null,
+            'quote_transporter' => $selectedQuote['transporter'] ?? null,
+            'quote_amount' => $selectedQuote['amount'] ?? null,
+            'quote_deadline' => $selectedQuote['deadline'] ?? null,
+            'quote_notes' => $selectedQuote['notes'] ?? null,
             'quote_approved_by_id' => $user?->getAuthIdentifier(),
             'quote_approved_at' => now(),
+            'tracking_code' => null,
+            'invoice_number' => null,
+            'shipped_by_id' => null,
+            'shipped_at' => null,
         ]);
 
         $this->registrarHistoricoStatus(
@@ -1930,7 +2029,9 @@ HTML;
             $statusAnterior,
             SolicitacaoBem::STATUS_CONFIRMADO,
             'liberar_envio',
-            $motivo !== '' ? $motivo : 'Liberação do envio registrada pelo Bruno.'
+            $motivo !== ''
+                ? $motivo
+                : 'Bruno liberou a cotação da transportadora ' . ($selectedQuote['transporter'] ?? '-')
         );
 
         if ($request->expectsJson()) {
@@ -2298,10 +2399,77 @@ HTML;
             'destination_type' => $destinationType,
         ];
 
-        if ($statusDestino !== SolicitacaoBem::STATUS_CONFIRMADO) {
+        if ($statusDestino === SolicitacaoBem::STATUS_PENDENTE) {
+            $payload = array_merge($payload, [
+                'tracking_code' => null,
+                'invoice_number' => null,
+                'confirmado_por_id' => null,
+                'confirmado_em' => null,
+                'logistics_height_cm' => null,
+                'logistics_width_cm' => null,
+                'logistics_length_cm' => null,
+                'logistics_weight_kg' => null,
+                'logistics_notes' => null,
+                'logistics_registered_by_id' => null,
+                'logistics_registered_at' => null,
+                'quote_options_payload' => null,
+                'quote_selected_index' => null,
+                'quote_tracking_type' => null,
+                'quote_transporter' => null,
+                'quote_amount' => null,
+                'quote_deadline' => null,
+                'quote_notes' => null,
+                'quote_registered_by_id' => null,
+                'quote_registered_at' => null,
+                'quote_approved_by_id' => null,
+                'quote_approved_at' => null,
+                'shipped_by_id' => null,
+                'shipped_at' => null,
+            ]);
+        } elseif ($statusDestino === SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO) {
+            $payload = array_merge($payload, [
+                'tracking_code' => null,
+                'invoice_number' => null,
+                'confirmado_por_id' => null,
+                'confirmado_em' => null,
+                'quote_selected_index' => null,
+                'quote_tracking_type' => null,
+                'quote_transporter' => null,
+                'quote_amount' => null,
+                'quote_deadline' => null,
+                'quote_notes' => null,
+                'quote_registered_by_id' => null,
+                'quote_registered_at' => null,
+                'quote_approved_by_id' => null,
+                'quote_approved_at' => null,
+                'quote_options_payload' => null,
+                'shipped_by_id' => null,
+                'shipped_at' => null,
+            ]);
+        } elseif ($statusDestino === SolicitacaoBem::STATUS_LIBERACAO) {
+            $payload = array_merge($payload, [
+                'tracking_code' => null,
+                'invoice_number' => null,
+                'confirmado_por_id' => null,
+                'confirmado_em' => null,
+                'quote_selected_index' => null,
+                'quote_tracking_type' => null,
+                'quote_transporter' => null,
+                'quote_amount' => null,
+                'quote_deadline' => null,
+                'quote_notes' => null,
+                'quote_approved_by_id' => null,
+                'quote_approved_at' => null,
+                'shipped_by_id' => null,
+                'shipped_at' => null,
+            ]);
+        } elseif ($statusDestino !== SolicitacaoBem::STATUS_CONFIRMADO) {
             $payload['tracking_code'] = null;
+            $payload['invoice_number'] = null;
             $payload['confirmado_por_id'] = null;
             $payload['confirmado_em'] = null;
+            $payload['shipped_by_id'] = null;
+            $payload['shipped_at'] = null;
         }
 
         $solicitacao->update($payload);

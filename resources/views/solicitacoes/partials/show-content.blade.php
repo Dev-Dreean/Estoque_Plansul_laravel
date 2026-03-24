@@ -51,27 +51,49 @@
     $hasShipmentData = method_exists($solicitacao, 'hasShipmentData') ? $solicitacao->hasShipmentData() : (trim((string) ($solicitacao->tracking_code ?? '')) !== '' || trim((string) ($solicitacao->invoice_number ?? '')) !== '');
     $awaitingRequesterDecision = method_exists($solicitacao, 'isAwaitingRequesterDecision') ? $solicitacao->isAwaitingRequesterDecision() : false;
     $readyToShip = method_exists($solicitacao, 'isReadyToShip') ? $solicitacao->isReadyToShip() : false;
-    $statusBadgeAtual = $solicitacao->status === 'CONFIRMADO' && $hasShipmentData
-        ? 'ENVIADO'
-        : $solicitacao->status;
+    $statusBadgeAtual = $solicitacao->status;
+    $quoteOptions = method_exists($solicitacao, 'quoteOptions') ? $solicitacao->quoteOptions() : [];
+    $trackingTypeOptions = \App\Models\SolicitacaoBem::trackingTypeOptions();
+    $selectedQuote = method_exists($solicitacao, 'selectedQuote') ? $solicitacao->selectedQuote() : null;
+    if ($quoteOptions === [] && $hasQuoteData && trim((string) ($solicitacao->quote_transporter ?? '')) !== '') {
+        $quoteOptions = [[
+            'transporter' => trim((string) ($solicitacao->quote_transporter ?? '')),
+            'amount' => $solicitacao->quote_amount !== null ? (float) $solicitacao->quote_amount : null,
+            'deadline' => trim((string) ($solicitacao->quote_deadline ?? '')),
+            'tracking_type' => trim((string) ($solicitacao->quote_tracking_type ?? '')),
+            'notes' => trim((string) ($solicitacao->quote_notes ?? '')) ?: null,
+        ]];
+    }
+    if ($selectedQuote === null && isset($quoteOptions[0])) {
+        $selectedQuote = $quoteOptions[0];
+    }
+    $quoteOptionsCount = count($quoteOptions);
+    $selectedTrackingType = trim((string) ($selectedQuote['tracking_type'] ?? $solicitacao->quote_tracking_type ?? ''));
+    $selectedTrackingTypeLabel = $selectedTrackingType !== '' ? ($trackingTypeOptions[$selectedTrackingType] ?? $selectedTrackingType) : '-';
+    $requiresTrackingCode = method_exists($solicitacao, 'requiresTrackingCode') ? $solicitacao->requiresTrackingCode() : true;
+    $requiresInvoiceNumber = method_exists($solicitacao, 'requiresInvoiceNumber') ? $solicitacao->requiresInvoiceNumber() : true;
+    if ($selectedTrackingType === '') {
+        $requiresTrackingCode = true;
+        $requiresInvoiceNumber = true;
+    }
     $returnButtonLabel = match ($solicitacao->status) {
         'AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO' => 'Voltar para Solicitado',
-        'LIBERACAO' => 'Voltar para Em Análise',
-        'CONFIRMADO' => $awaitingRequesterDecision ? 'Voltar para Cotação' : 'Voltar para Liberação',
+        'LIBERACAO' => 'Voltar para Separando',
+        'CONFIRMADO' => 'Voltar para Em liberação',
         'NAO_RECEBIDO' => 'Voltar para Envio',
         default => 'Voltar um status',
     };
     $canGoBackOneStep = in_array($solicitacao->status, ['AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO', 'LIBERACAO', 'CONFIRMADO', 'NAO_RECEBIDO'], true);
     $showConfirmActionButton = $solicitacao->status === 'PENDENTE' && $canConfirmAction;
-    $showForwardActionButton = $solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $canForwardAction;
-    $showQuoteActionButton = $solicitacao->status === 'LIBERACAO' && $canQuoteAction;
-    $showReleaseActionButton = $awaitingRequesterDecision && $canReleaseAction;
+    $showForwardActionButton = $solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && !$solicitacao->hasLogisticsData() && $canForwardAction;
+    $showQuoteActionButton = $solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $solicitacao->hasLogisticsData() && $canQuoteAction;
+    $showReleaseActionButton = $solicitacao->status === 'LIBERACAO' && $awaitingRequesterDecision && $canReleaseAction;
     $showSendActionButton = $solicitacao->status === 'CONFIRMADO' && !$hasShipmentData && (!$hasQuoteData || $readyToShip) && $canSendAction;
     $showReceiveActionButton = $solicitacao->status === 'CONFIRMADO' && $hasShipmentData && $canMarkReceived;
     $showNotReceivedActionButton = $solicitacao->status === 'CONFIRMADO' && $hasShipmentData && $canMarkNotReceived;
     $showContestActionButton = $solicitacao->status === 'NAO_RECEBIDO' && $canContestNotReceived;
-    $showReturnActionButton = $canGoBackOneStep && $canReturnAction;
-    $showCancelActionButton = !in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true) && $canCancelAction;
+    $showReturnActionButton = $canGoBackOneStep && $canReturnAction && !$hasShipmentData;
+    $showCancelActionButton = !in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true) && $canCancelAction && !$hasShipmentData;
     $showRecreateCancelledActionButton = $solicitacao->status === 'CANCELADO' && $canRecriarCancelada;
     $showArchiveCancelledActionButton = $showRecreateCancelledActionButton;
     $canManagePanel = $showConfirmActionButton
@@ -331,10 +353,10 @@
                     || $statusHistorico->contains('RECEBIDO')
                     || $statusHistorico->contains('NAO_RECEBIDO');
                 $stepsTopo = [
-                    ['n' => 1, 'label' => 'Solicitação'],
-                    ['n' => 2, 'label' => 'Análise / Logística'],
-                    ['n' => 3, 'label' => 'Cotação'],
-                    ['n' => 4, 'label' => 'Liberação / Envio'],
+                    ['n' => 1, 'label' => 'Solicitado'],
+                    ['n' => 2, 'label' => 'Separando'],
+                    ['n' => 3, 'label' => 'Em liberação'],
+                    ['n' => 4, 'label' => 'Envio'],
                     ['n' => 5, 'label' => 'Recebido'],
                 ];
                 $historicoEtapas = $historicoStatusTopo
@@ -385,8 +407,8 @@
                 };
                 $paletasEtapa = [
                     'Solicitado' => ['border_class' => 'border-yellow-400 dark:border-yellow-400', 'border_style' => 'border-color:#facc15;', 'bar_style' => 'background-color:#facc15;', 'tag_style' => 'background-color:#facc15;border-color:#eab308;color:#000;'],
-                    'Em Análise' => ['border_class' => 'border-blue-400 dark:border-blue-400', 'border_style' => 'border-color:#60a5fa;', 'bar_style' => 'background-color:#60a5fa;', 'tag_style' => 'background-color:#60a5fa;border-color:#3b82f6;color:#000;'],
-                    'Liberação' => ['border_class' => 'border-violet-500 dark:border-violet-400', 'border_style' => 'border-color:#8b5cf6;', 'bar_style' => 'background-color:#8b5cf6;', 'tag_style' => 'background-color:#c4b5fd;border-color:#8b5cf6;color:#000;'],
+                    'Separando' => ['border_class' => 'border-blue-400 dark:border-blue-400', 'border_style' => 'border-color:#60a5fa;', 'bar_style' => 'background-color:#60a5fa;', 'tag_style' => 'background-color:#60a5fa;border-color:#3b82f6;color:#000;'],
+                    'Em Liberação' => ['border_class' => 'border-violet-500 dark:border-violet-400', 'border_style' => 'border-color:#8b5cf6;', 'bar_style' => 'background-color:#8b5cf6;', 'tag_style' => 'background-color:#c4b5fd;border-color:#8b5cf6;color:#000;'],
                     'Envio' => ['border_class' => 'border-sky-500 dark:border-sky-400', 'border_style' => 'border-color:#0ea5e9;', 'bar_style' => 'background-color:#0ea5e9;', 'tag_style' => 'background-color:#dbeafe;border-color:#60a5fa;color:#1e3a8a;'],
                     'Envio Concluido' => ['border_class' => 'border-cyan-500 dark:border-cyan-400', 'border_style' => 'border-color:#06b6d4;', 'bar_style' => 'background-color:#06b6d4;', 'tag_style' => 'background-color:#cffafe;border-color:#22d3ee;color:#155e75;'],
                     'Recebido' => ['border_class' => 'border-green-400 dark:border-green-400', 'border_style' => 'border-color:#22c55e;', 'bar_style' => 'background-color:#22c55e;', 'tag_style' => 'background-color:#4ade80;border-color:#22c55e;color:#000;'],
@@ -438,10 +460,10 @@
                 $histLiberacaoEncaminhada = $buscarUltimoHistorico(function ($hist) {
                     $status = strtoupper((string) ($hist->status_novo ?? ''));
                     $acao = strtolower((string) ($hist->acao ?? ''));
-                    return $acao === 'encaminhar_liberacao' || $status === 'LIBERACAO';
+                    return $acao === 'registrar_medidas';
                 });
                 $histLiberacaoFinal = $buscarUltimoHistorico(
-                    fn ($hist) => strtolower((string) ($hist->acao ?? '')) === 'liberar_pedido'
+                    fn ($hist) => in_array(strtolower((string) ($hist->acao ?? '')), ['registrar_cotacoes', 'liberar_pedido'], true)
                 );
                 $histCotacaoAprovada = $buscarUltimoHistorico(
                     fn ($hist) => strtolower((string) ($hist->acao ?? '')) === 'liberar_envio'
@@ -491,8 +513,8 @@
 
                     return match ($status) {
                         'PENDENTE' => 'Solicitado',
-                        'AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO' => 'Em Análise',
-                        'LIBERACAO' => 'Liberação',
+                        'AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO' => 'Separando',
+                        'LIBERACAO' => 'Em Liberação',
                         'CONFIRMADO', 'NAO_RECEBIDO' => 'Envio',
                         'RECEBIDO' => 'Recebido',
                         default => null,
@@ -512,12 +534,12 @@
                 );
                 $cardAnalise = $etapaAnaliseConcluida
                     ? $montarCardEtapa(
-                        'Em Análise',
-                        $histAnalise ? 'Aprovação inicial registrada' : 'Aguardando aprovação inicial',
-                        $histAnalise ? 'Fluxo liberado' : 'Pendente',
+                        'Separando',
+                        $histAnalise ? 'Separação iniciada' : 'Aguardando aprovação inicial',
+                        $histAnalise ? 'Separando' : 'Pendente',
                         $histAnalise,
                         array_merge($detalhesBase, $detalhesPessoa, [
-                            ['label' => 'Próxima', 'value' => 'Conferir estoque e registrar medidas e peso.'],
+                            ['label' => 'Próxima', 'value' => 'Tiago registra as medidas e o peso.'],
                             ['label' => 'Matrícula', 'value' => $recebedorMatriculaCard !== '' ? $recebedorMatriculaCard : '-'],
                         ]),
                         null,
@@ -528,7 +550,7 @@
                 $cardLiberacao = null;
                 if ($etapaLiberacaoConcluida || $solicitacao->hasLogisticsData()) {
                     $cardLiberacao = $montarCardEtapa(
-                        'Logística',
+                        'Separando',
                         $solicitacao->hasLogisticsData() ? 'Tiago registrou medidas e peso' : 'Aguardando logística',
                         $solicitacao->hasLogisticsData() ? 'Logística pronta' : 'Pendente',
                         $histLiberacaoEncaminhada,
@@ -553,7 +575,7 @@
                             [
                                 'label' => 'Próxima',
                                 'value' => $solicitacao->hasLogisticsData()
-                                    ? 'Beatriz registra a cotação da transportadora.'
+                                    ? 'Beatriz registra as cotações da transportadora.'
                                     : 'Tiago precisa concluir a conferência do volume.',
                             ],
                         ]),
@@ -566,26 +588,26 @@
                 $cardCotacao = null;
                 if ($etapaCotacaoConcluida) {
                     $cardCotacao = $montarCardEtapa(
-                        'Cotação',
-                        'Beatriz registrou a cotação',
-                        $awaitingRequesterDecision ? 'Aguardando Bruno' : ($readyToShip ? 'Liberada para envio' : 'Cotação registrada'),
+                        'Em Liberação',
+                        'Beatriz registrou as cotações',
+                        $awaitingRequesterDecision ? 'Aguardando liberação' : ($readyToShip ? 'Liberado' : 'Cotações registradas'),
                         $histLiberacaoFinal,
                         array_merge($detalhesBase, [
-                            ['label' => 'Transport.', 'value' => $solicitacao->quote_transporter ?: '-'],
-                            ['label' => 'Valor', 'value' => $solicitacao->quote_amount !== null ? 'R$ ' . number_format((float) $solicitacao->quote_amount, 2, ',', '.') : '-'],
-                            ['label' => 'Prazo', 'value' => $solicitacao->quote_deadline ?: '-'],
+                            ['label' => 'Cotações', 'value' => $quoteOptionsCount > 0 ? $quoteOptionsCount . ' opção(ões)' : '-'],
+                            ['label' => 'Selecionada', 'value' => $selectedQuote['transporter'] ?? '-'],
+                            ['label' => 'Rastreio', 'value' => $selectedTrackingTypeLabel],
                             [
                                 'label' => 'Próxima',
                                 'value' => $awaitingRequesterDecision
-                                    ? 'Solicitante precisa aprovar ou recusar a cotação.'
-                                    : ($readyToShip ? 'Pedido liberado para registro do envio.' : 'Cotação registrada.'),
+                                    ? 'Bruno precisa liberar ou cancelar a solicitação.'
+                                    : ($readyToShip ? 'Tiago ou Beatriz podem registrar o envio.' : 'Cotações registradas.'),
                             ],
                         ]),
                         null,
                         null,
                         null,
                         $solicitacao->quote_registered_at ?: $solicitacao->updated_at,
-                        'Liberação'
+                        'Em Liberação'
                     );
                 }
                 $cardEnvio = null;
@@ -594,7 +616,7 @@
                         ? $montarCardEtapa(
                             'Envio',
                             'Pedido enviado',
-                            'Enviado',
+                            'Envio',
                             $histEnvio,
                             array_merge($detalhesBase, [
                                 ['label' => 'Liberado', 'value' => optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Sem data registrada'],
@@ -609,13 +631,14 @@
                             'Envio Concluido'
                         )
                         : $montarCardEtapa(
-                            'Liberação',
+                            'Envio',
                             'Bruno liberou o envio',
-                            'Liberado para envio',
+                            'Aguardando envio',
                             $histCotacaoAprovada,
                             array_merge($detalhesBase, [
                                 ['label' => 'Liberado', 'value' => optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Sem data registrada'],
-                                ['label' => 'Próxima', 'value' => 'Tiago ou Beatriz registram o rastreio e a nota fiscal.'],
+                                ['label' => 'Transport.', 'value' => $selectedQuote['transporter'] ?? ($solicitacao->quote_transporter ?: '-')],
+                                ['label' => 'Próxima', 'value' => 'Tiago ou Beatriz registram o envio conforme o tipo de rastreio aprovado.'],
                             ]),
                             null,
                             null,
@@ -743,18 +766,18 @@
 
                     if (
                         $statusNovoHistorico === 'LIBERACAO'
-                        || $acaoHistorico === 'encaminhar_liberacao'
+                        || $acaoHistorico === 'registrar_medidas'
                     ) {
                         $adicionarEtapa('liberacao', $cardLiberacao);
                     }
 
-                    if ($acaoHistorico === 'liberar_pedido') {
+                    if (in_array($acaoHistorico, ['registrar_cotacoes', 'liberar_pedido'], true) || $statusNovoHistorico === 'LIBERACAO') {
                         $adicionarEtapa('cotacao', $cardCotacao);
                     }
 
                     if (
                         $statusNovoHistorico === 'CONFIRMADO'
-                        || in_array($acaoHistorico, ['liberar_envio', 'enviar_pedido', 'liberar_enviar'], true)
+                        || in_array($acaoHistorico, ['liberar_envio', 'enviar_pedido'], true)
                     ) {
                         $adicionarEtapa('envio', $cardEnvio);
                     }
@@ -984,20 +1007,37 @@
                                     <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
                                         <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Beatriz · Cotação</div>
                                         <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300">
-                                            <div>Transportadora: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->quote_transporter ?: '-' }}</span></div>
-                                            <div>Valor: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->quote_amount !== null ? 'R$ ' . number_format((float) $solicitacao->quote_amount, 2, ',', '.') : '-' }}</span></div>
-                                            <div>Prazo: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->quote_deadline ?: '-' }}</span></div>
-                                            <div>Status: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $awaitingRequesterDecision ? 'Aguardando liberação do Bruno' : ($readyToShip ? 'Liberada para envio' : ($solicitacao->quote_registered_at ? 'Registrada' : '-')) }}</span></div>
-                                            @if($solicitacao->quote_notes)
-                                                <div class="pt-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 whitespace-pre-line">{{ $solicitacao->quote_notes }}</div>
+                                            <div>Cotações registradas: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $quoteOptionsCount > 0 ? $quoteOptionsCount : '-' }}</span></div>
+                                            <div>Status: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $awaitingRequesterDecision ? 'Aguardando liberação do Bruno' : (($readyToShip || $hasShipmentData) ? 'Liberadas pelo Bruno' : ($solicitacao->quote_registered_at ? 'Registradas' : '-')) }}</span></div>
+                                            @if($quoteOptionsCount > 0)
+                                                <div class="pt-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 space-y-2">
+                                                    @foreach($quoteOptions as $quoteIndex => $quoteOption)
+                                                        <div class="rounded-lg border border-slate-200 bg-white/80 px-3 py-2 dark:border-slate-700 dark:bg-slate-950/50">
+                                                            <div class="flex items-center justify-between gap-2">
+                                                                <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $quoteOption['transporter'] ?? '-' }}</span>
+                                                                @if(($solicitacao->quote_selected_index ?? null) === $quoteIndex)
+                                                                    <span class="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">Selecionada</span>
+                                                                @endif
+                                                            </div>
+                                                            <div class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                                                                R$ {{ isset($quoteOption['amount']) ? number_format((float) $quoteOption['amount'], 2, ',', '.') : '0,00' }} · {{ $quoteOption['deadline'] ?? '-' }} · {{ $trackingTypeOptions[$quoteOption['tracking_type'] ?? ''] ?? '-' }}
+                                                            </div>
+                                                            @if(!empty($quoteOption['notes']))
+                                                                <div class="mt-1 whitespace-pre-line text-[11px] text-slate-500 dark:text-slate-300">{{ $quoteOption['notes'] }}</div>
+                                                            @endif
+                                                        </div>
+                                                    @endforeach
+                                                </div>
                                             @endif
                                         </div>
                                     </div>
 
                                     <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
-                                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Liberação / Envio</div>
+                                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Em liberação / Envio</div>
                                         <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300">
                                             <div>Liberação do Bruno: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Pendente' }}</span></div>
+                                            <div>Cotação aprovada: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $selectedQuote['transporter'] ?? ($solicitacao->quote_transporter ?: '-') }}</span></div>
+                                            <div>Tipo de rastreio: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $selectedTrackingTypeLabel }}</span></div>
                                             <div>Rastreio: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->tracking_code ?: '-' }}</span></div>
                                             <div>Nota fiscal: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->invoice_number ?: '-' }}</span></div>
                                             <div>Enviado em: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ optional($solicitacao->shipped_at)->format('d/m/Y H:i') ?: '-' }}</span></div>
@@ -1074,7 +1114,7 @@
                             <form method="POST" action="{{ route('solicitacoes-bens.confirm', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
                                 @csrf
                                 @method('POST')
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Confirme para mover a solicitação para <strong>Em Análise</strong>.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Confirme para mover a solicitação para <strong>Separando</strong>.</p>
                                 <div class="flex gap-2 pt-4">
                                     <button type="button" @click="showConfirmModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
@@ -1152,7 +1192,7 @@
 
                     <!-- MODAL: Registrar Cotação -->
                     <div x-show="showApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-lg w-full mx-4 overflow-hidden">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-6xl w-full mx-4 overflow-hidden" x-data="{ quoteSlotCount: Number(@js((int) old('quote_slots', 3))) || 3 }">
                             <div class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
                                 <h3 class="text-sm font-bold">Registrar Cotação</h3>
                                 <button @click="showApproveModal = false" class="text-white/70 hover:text-white">
@@ -1165,43 +1205,95 @@
                                 @csrf
                                 @method('POST')
 
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Preencha os dados da transportadora para enviar a solicitação para a liberação do Bruno.</p>
-
-                                <div>
-                                    <label for="quote_transporter" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Transportadora *</label>
-                                    <input type="text" id="quote_transporter" name="quote_transporter" required
-                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
-                                        placeholder="Ex: Jadlog / Braspress / Correios" />
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label for="quote_amount" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Valor da cotação *</label>
-                                        <input type="number" step="0.01" min="0" id="quote_amount" name="quote_amount" required
-                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
-                                            placeholder="Ex: 189,90" />
+                                <div class="grid gap-3 md:grid-cols-4">
+                                    <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+                                        <div class="text-[10px] uppercase tracking-wider text-slate-400">Medidas</div>
+                                        <div class="mt-1 font-semibold text-slate-900 dark:text-slate-100">
+                                            {{ $solicitacao->logistics_height_cm ? number_format((float) $solicitacao->logistics_height_cm, 2, ',', '.') : '-' }}
+                                            x
+                                            {{ $solicitacao->logistics_width_cm ? number_format((float) $solicitacao->logistics_width_cm, 2, ',', '.') : '-' }}
+                                            x
+                                            {{ $solicitacao->logistics_length_cm ? number_format((float) $solicitacao->logistics_length_cm, 2, ',', '.') : '-' }} cm
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label for="quote_deadline" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Prazo estimado *</label>
-                                        <input type="text" id="quote_deadline" name="quote_deadline" required
-                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
-                                            placeholder="Ex: 5 dias úteis" />
+                                    <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+                                        <div class="text-[10px] uppercase tracking-wider text-slate-400">Peso</div>
+                                        <div class="mt-1 font-semibold text-slate-900 dark:text-slate-100">{{ $solicitacao->logistics_weight_kg ? number_format((float) $solicitacao->logistics_weight_kg, 3, ',', '.') . ' kg' : '-' }}</div>
+                                    </div>
+                                    <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300 md:col-span-2">
+                                        <div class="flex items-center justify-between gap-3">
+                                            <div>
+                                                <div class="text-[10px] uppercase tracking-wider text-slate-400">Quantidade de cotações</div>
+                                                <div class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Padrão de 3 opções para a Beatriz.</div>
+                                            </div>
+                                            <select name="quote_slots" x-model.number="quoteSlotCount" class="h-9 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs px-3">
+                                                <option value="1">1 cotação</option>
+                                                <option value="2">2 cotações</option>
+                                                <option value="3">3 cotações</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label for="quote_notes" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações da cotação</label>
-                                    <textarea id="quote_notes" name="quote_notes" rows="3"
-                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
-                                        placeholder="Informações adicionais da cotação, restrições ou observações..."></textarea>
+                                <div class="grid gap-3 xl:grid-cols-3">
+                                    @for($quoteIndex = 0; $quoteIndex < 3; $quoteIndex++)
+                                        <div x-show="quoteSlotCount >= {{ $quoteIndex + 1 }}" x-cloak class="rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-900/60">
+                                            <div class="mb-3 flex items-center justify-between gap-2">
+                                                <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Cotação {{ $quoteIndex + 1 }}</h4>
+                                                <span class="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300">Beatriz</span>
+                                            </div>
+
+                                            <div class="space-y-3">
+                                                <div>
+                                                    <label for="quotes_{{ $quoteIndex }}_transporter" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Transportadora *</label>
+                                                    <input type="text" id="quotes_{{ $quoteIndex }}_transporter" name="quotes[{{ $quoteIndex }}][transporter]" value="{{ old('quotes.' . $quoteIndex . '.transporter') }}"
+                                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                                        placeholder="Ex: Jadlog / Braspress / Correios" />
+                                                </div>
+
+                                                <div class="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label for="quotes_{{ $quoteIndex }}_amount" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Valor *</label>
+                                                        <input type="number" step="0.01" min="0" id="quotes_{{ $quoteIndex }}_amount" name="quotes[{{ $quoteIndex }}][amount]" value="{{ old('quotes.' . $quoteIndex . '.amount') }}"
+                                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                                            placeholder="Ex: 189,90" />
+                                                    </div>
+                                                    <div>
+                                                        <label for="quotes_{{ $quoteIndex }}_deadline" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Prazo *</label>
+                                                        <input type="text" id="quotes_{{ $quoteIndex }}_deadline" name="quotes[{{ $quoteIndex }}][deadline]" value="{{ old('quotes.' . $quoteIndex . '.deadline') }}"
+                                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                                            placeholder="Ex: 5 dias úteis" />
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label for="quotes_{{ $quoteIndex }}_tracking_type" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de rastreio *</label>
+                                                    <select id="quotes_{{ $quoteIndex }}_tracking_type" name="quotes[{{ $quoteIndex }}][tracking_type]"
+                                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3">
+                                                        <option value="">Selecione...</option>
+                                                        @foreach($trackingTypeOptions as $trackingKey => $trackingLabel)
+                                                            <option value="{{ $trackingKey }}" @selected(old('quotes.' . $quoteIndex . '.tracking_type') === $trackingKey)>{{ $trackingLabel }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                <div>
+                                                    <label for="quotes_{{ $quoteIndex }}_notes" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
+                                                    <textarea id="quotes_{{ $quoteIndex }}_notes" name="quotes[{{ $quoteIndex }}][notes]" rows="3"
+                                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                                        placeholder="Opcional: detalhes da transportadora, restrições, coleta...">{{ old('quotes.' . $quoteIndex . '.notes') }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endfor
                                 </div>
 
-                                <div class="flex gap-2 pt-4">
+                                <div class="flex gap-2 pt-2">
                                     <button type="button" @click="showApproveModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
                                         Cancelar
                                     </button>
                                     <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">
-                                        Salvar Cotação
+                                        Salvar Cotações
                                     </button>
                                 </div>
                             </form>
@@ -1223,19 +1315,28 @@
                                 @csrf
                                 @method('POST')
 
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Informe o código de rastreio e o número da nota fiscal para registrar o envio do pedido.</p>
-                                <div>
-                                    <label for="tracking_code_enviado" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Rastreio *</label>
-                                    <input type="text" id="tracking_code_enviado" name="tracking_code" required
-                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
-                                        placeholder="Ex: RAS-2026-001" />
+                                <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+                                    <div>Transportadora aprovada: <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $selectedQuote['transporter'] ?? ($solicitacao->quote_transporter ?: '-') }}</span></div>
+                                    <div class="mt-1">Tipo de rastreio: <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $selectedTrackingTypeLabel }}</span></div>
                                 </div>
-                                <div>
-                                    <label for="invoice_number_enviado" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número da Nota Fiscal *</label>
-                                    <input type="text" id="invoice_number_enviado" name="invoice_number" required
-                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
-                                        placeholder="Ex: NF-2026-001" />
-                                </div>
+
+                                @if($requiresTrackingCode)
+                                    <div>
+                                        <label for="tracking_code_enviado" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Rastreio *</label>
+                                        <input type="text" id="tracking_code_enviado" name="tracking_code" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
+                                            placeholder="Ex: RAS-2026-001" />
+                                    </div>
+                                @endif
+
+                                @if($requiresInvoiceNumber)
+                                    <div>
+                                        <label for="invoice_number_enviado" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número da Nota Fiscal *</label>
+                                        <input type="text" id="invoice_number_enviado" name="invoice_number" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-8 px-3"
+                                            placeholder="Ex: NF-2026-001" />
+                                    </div>
+                                @endif
 
                                 <div class="flex gap-2 pt-4">
                                     <button type="button" @click="showSendModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
@@ -1251,7 +1352,7 @@
 
                     <!-- MODAL: Liberar Envio -->
                     <div x-show="showQuoteApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-5xl w-full mx-4 overflow-hidden">
                             <div class="bg-emerald-600 text-white px-6 py-4 flex items-center justify-between">
                                 <h3 class="text-sm font-bold">Liberar Envio</h3>
                                 <button @click="showQuoteApproveModal = false" class="text-white/70 hover:text-white">
@@ -1264,7 +1365,30 @@
                                 @csrf
                                 @method('POST')
 
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Confirme para registrar a liberação do Bruno e deixar o pedido pronto para envio.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Selecione a cotação aprovada pelo Bruno para liberar a etapa de envio.</p>
+                                <div class="grid gap-3 lg:grid-cols-3">
+                                    @foreach($quoteOptions as $quoteIndex => $quoteOption)
+                                        <label class="block cursor-pointer">
+                                            <input type="radio" name="selected_quote_index" value="{{ $quoteIndex }}" class="peer sr-only" @checked((int) old('selected_quote_index', $solicitacao->quote_selected_index ?? 0) === $quoteIndex)>
+                                            <div class="h-full rounded-xl border border-slate-200 bg-slate-50 p-4 transition peer-checked:border-emerald-500 peer-checked:bg-emerald-50 dark:border-slate-700 dark:bg-slate-900/60 dark:peer-checked:border-emerald-400 dark:peer-checked:bg-emerald-900/20">
+                                                <div class="flex items-start justify-between gap-2">
+                                                    <div>
+                                                        <div class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $quoteOption['transporter'] ?? '-' }}</div>
+                                                        <div class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{{ $trackingTypeOptions[$quoteOption['tracking_type'] ?? ''] ?? '-' }}</div>
+                                                    </div>
+                                                    <span class="rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-500 dark:border-slate-600 dark:text-slate-300">Opção {{ $quoteIndex + 1 }}</span>
+                                                </div>
+                                                <div class="mt-3 space-y-1 text-xs text-slate-600 dark:text-slate-300">
+                                                    <div>Valor: <span class="font-semibold text-slate-900 dark:text-slate-100">R$ {{ isset($quoteOption['amount']) ? number_format((float) $quoteOption['amount'], 2, ',', '.') : '0,00' }}</span></div>
+                                                    <div>Prazo: <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $quoteOption['deadline'] ?? '-' }}</span></div>
+                                                    @if(!empty($quoteOption['notes']))
+                                                        <div class="pt-2 text-[11px] whitespace-pre-line text-slate-500 dark:text-slate-400">{{ $quoteOption['notes'] }}</div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </label>
+                                    @endforeach
+                                </div>
                                 <div>
                                     <label for="quote_approval_notes" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observação da liberação</label>
                                     <textarea id="quote_approval_notes" name="quote_approval_notes" rows="3"
@@ -1458,8 +1582,9 @@
                                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3">
                                         <option value="">Selecione...</option>
                                         <option value="PENDENTE">Solicitado</option>
-                                        <option value="AGUARDANDO_CONFIRMACAO">Em análise</option>
-                                        <option value="CONFIRMADO">Enviado</option>
+                                        <option value="AGUARDANDO_CONFIRMACAO">Separando</option>
+                                        <option value="LIBERACAO">Em liberação</option>
+                                        <option value="CONFIRMADO">Envio</option>
                                     </select>
                                 </div>
 
@@ -1681,14 +1806,14 @@
                             ],
                             [
                                 'id' => 'AGUARDANDO_CONFIRMACAO',
-                                'label' => 'Em Análise',
-                                'desc' => 'Aguardando Aprovação',
+                                'label' => 'Separando',
+                                'desc' => 'Medidas e cotações',
                                 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'
                             ],
                             [
                                 'id' => 'CONFIRMADO',
-                                'label' => 'Concluído',
-                                'desc' => 'Finalizado',
+                                'label' => 'Envio',
+                                'desc' => 'Pronto para expedição',
                                 'icon' => 'M5 13l4 4L19 7'
                             ]
                         ];

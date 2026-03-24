@@ -19,6 +19,10 @@ class SolicitacaoBem extends Model
     public const STATUS_RECEBIDO = 'RECEBIDO';
     public const STATUS_CANCELADO = 'CANCELADO';
     public const STATUS_ARQUIVADO = 'ARQUIVADO';
+
+    public const TRACKING_TYPE_RASTREIO = 'RASTREIO';
+    public const TRACKING_TYPE_NOTA_FISCAL = 'NOTA_FISCAL';
+    public const TRACKING_TYPE_RASTREIO_E_NOTA = 'RASTREIO_E_NOTA';
     
     public const DESTINATION_FILIAL = 'FILIAL';
     public const DESTINATION_PROJETO = 'PROJETO';
@@ -57,6 +61,9 @@ class SolicitacaoBem extends Model
         'quote_amount',
         'quote_deadline',
         'quote_notes',
+        'quote_options_payload',
+        'quote_selected_index',
+        'quote_tracking_type',
         'quote_registered_by_id',
         'quote_registered_at',
         'quote_approved_by_id',
@@ -75,6 +82,8 @@ class SolicitacaoBem extends Model
         'logistics_length_cm' => 'decimal:2',
         'logistics_weight_kg' => 'decimal:3',
         'quote_amount' => 'decimal:2',
+        'quote_options_payload' => 'array',
+        'quote_selected_index' => 'integer',
         'logistics_registered_at' => 'datetime',
         'quote_registered_at' => 'datetime',
         'quote_approved_at' => 'datetime',
@@ -100,6 +109,15 @@ class SolicitacaoBem extends Model
         return [
             self::DESTINATION_FILIAL => 'Filial',
             self::DESTINATION_PROJETO => 'Projeto',
+        ];
+    }
+
+    public static function trackingTypeOptions(): array
+    {
+        return [
+            self::TRACKING_TYPE_RASTREIO => 'Código de rastreio',
+            self::TRACKING_TYPE_NOTA_FISCAL => 'Número da nota fiscal',
+            self::TRACKING_TYPE_RASTREIO_E_NOTA => 'Rastreio e nota fiscal',
         ];
     }
 
@@ -147,11 +165,80 @@ class SolicitacaoBem extends Model
 
     public function hasQuoteData(): bool
     {
+        if ($this->hasQuoteOptions()) {
+            return true;
+        }
+
         return trim((string) ($this->quote_transporter ?? '')) !== ''
             || $this->quote_amount !== null
             || trim((string) ($this->quote_deadline ?? '')) !== ''
             || trim((string) ($this->quote_notes ?? '')) !== ''
             || $this->quote_registered_at !== null;
+    }
+
+    public function quoteOptions(): array
+    {
+        $items = $this->quote_options_payload;
+        if (!is_array($items)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(static function ($item) {
+            if (!is_array($item)) {
+                return null;
+            }
+
+            $transporter = trim((string) ($item['transporter'] ?? ''));
+            $deadline = trim((string) ($item['deadline'] ?? ''));
+            $trackingType = trim((string) ($item['tracking_type'] ?? ''));
+            $notes = trim((string) ($item['notes'] ?? ''));
+            $amount = $item['amount'] ?? null;
+
+            if ($transporter === '' && $deadline === '' && $trackingType === '' && $notes === '' && $amount === null) {
+                return null;
+            }
+
+            return [
+                'transporter' => $transporter,
+                'amount' => $amount !== null && $amount !== '' ? (float) $amount : null,
+                'deadline' => $deadline,
+                'tracking_type' => $trackingType,
+                'notes' => $notes !== '' ? $notes : null,
+            ];
+        }, $items)));
+    }
+
+    public function hasQuoteOptions(): bool
+    {
+        return count($this->quoteOptions()) > 0;
+    }
+
+    public function selectedQuote(): ?array
+    {
+        $options = $this->quoteOptions();
+        $index = $this->quote_selected_index;
+
+        if ($index === null || !array_key_exists($index, $options)) {
+            return null;
+        }
+
+        return $options[$index];
+    }
+
+    public function requiresTrackingCode(): bool
+    {
+        return in_array($this->quote_tracking_type, [
+            self::TRACKING_TYPE_RASTREIO,
+            self::TRACKING_TYPE_RASTREIO_E_NOTA,
+        ], true);
+    }
+
+    public function requiresInvoiceNumber(): bool
+    {
+        return in_array($this->quote_tracking_type, [
+            self::TRACKING_TYPE_NOTA_FISCAL,
+            self::TRACKING_TYPE_RASTREIO_E_NOTA,
+        ], true);
     }
 
     public function hasShipmentData(): bool
@@ -163,8 +250,8 @@ class SolicitacaoBem extends Model
 
     public function isAwaitingRequesterDecision(): bool
     {
-        return $this->status === self::STATUS_CONFIRMADO
-            && $this->hasQuoteData()
+        return $this->status === self::STATUS_LIBERACAO
+            && $this->hasQuoteOptions()
             && $this->quote_approved_at === null
             && !$this->hasShipmentData();
     }
