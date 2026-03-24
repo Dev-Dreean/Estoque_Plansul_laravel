@@ -41,9 +41,9 @@
     $canMarkNotReceived = $canMarkReceived;
     $canConfirmAction = (bool) ($canConfirmAction ?? false);
     $canForwardAction = (bool) ($canForwardAction ?? false);
+    $canQuoteAction = (bool) ($canQuoteAction ?? false);
     $canReleaseAction = (bool) ($canReleaseAction ?? false);
     $canSendAction = (bool) ($canSendAction ?? false);
-    $canDecideQuoteAction = (bool) ($canDecideQuoteAction ?? false);
     $canCancelAction = (bool) ($canCancelAction ?? false);
     $canReturnAction = (bool) ($canReturnAction ?? false);
     $canRecriarCancelada = (bool) ($canRecriarCancelada ?? false);
@@ -55,7 +55,8 @@
         || $canMarkReceived
         || $canMarkNotReceived
         || $canContestNotReceived
-        || $canDecideQuoteAction
+        || $canQuoteAction
+        || $canReleaseAction
         || $canRecriarCancelada;
     $statusBadgeAtual = $solicitacao->status === 'CONFIRMADO' && $hasShipmentData
         ? 'ENVIADO'
@@ -155,20 +156,16 @@
                                 Cancelar Solicita&ccedil;&atilde;o
                             </button>
                         @endif
-                        @if($solicitacao->status === 'LIBERACAO' && $canReleaseAction)
+                        @if($solicitacao->status === 'LIBERACAO' && $canQuoteAction)
                             <button type="button" @click="showApproveModal = true" class="sol-flow-action sol-flow-action--release">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                 Registrar Cotação
                             </button>
                         @endif
-                        @if($awaitingRequesterDecision && $canDecideQuoteAction)
+                        @if($awaitingRequesterDecision && $canReleaseAction)
                             <button type="button" @click="showQuoteApproveModal = true" class="sol-flow-action sol-flow-action--send">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                Aprovar Cotação
-                            </button>
-                            <button type="button" @click="showQuoteRejectModal = true" class="sol-flow-action sol-flow-action--cancel">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM9 9l6 6m0-6l-6 6" /></svg>
-                                Recusar Cotação
+                                Liberar Envio
                             </button>
                         @endif
                         @php
@@ -322,7 +319,7 @@
                     ['n' => 1, 'label' => 'Solicitação'],
                     ['n' => 2, 'label' => 'Análise / Logística'],
                     ['n' => 3, 'label' => 'Cotação'],
-                    ['n' => 4, 'label' => 'Solicitante / Envio'],
+                    ['n' => 4, 'label' => 'Liberação / Envio'],
                     ['n' => 5, 'label' => 'Recebido'],
                 ];
                 $historicoEtapas = $historicoStatusTopo
@@ -432,7 +429,7 @@
                     fn ($hist) => strtolower((string) ($hist->acao ?? '')) === 'liberar_pedido'
                 );
                 $histCotacaoAprovada = $buscarUltimoHistorico(
-                    fn ($hist) => strtolower((string) ($hist->acao ?? '')) === 'aprovar_cotacao'
+                    fn ($hist) => strtolower((string) ($hist->acao ?? '')) === 'liberar_envio'
                 );
                 $histEnvio = $buscarUltimoHistorico(function ($hist) use ($solicitacao) {
                     $status = strtoupper((string) ($hist->status_novo ?? ''));
@@ -556,7 +553,7 @@
                     $cardCotacao = $montarCardEtapa(
                         'Cotação',
                         'Beatriz registrou a cotação',
-                        $awaitingRequesterDecision ? 'Aguardando solicitante' : ($readyToShip ? 'Cotação aprovada' : 'Cotação registrada'),
+                        $awaitingRequesterDecision ? 'Aguardando Bruno' : ($readyToShip ? 'Liberada para envio' : 'Cotação registrada'),
                         $histLiberacaoFinal,
                         array_merge($detalhesBase, [
                             ['label' => 'Transport.', 'value' => $solicitacao->quote_transporter ?: '-'],
@@ -585,7 +582,7 @@
                             'Enviado',
                             $histEnvio,
                             array_merge($detalhesBase, [
-                                ['label' => 'Aprovado', 'value' => optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Sem data registrada'],
+                                ['label' => 'Liberado', 'value' => optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Sem data registrada'],
                                 ['label' => 'Rastreio', 'value' => $rastreioAtual !== '' ? $rastreioAtual : 'Sem rastreio informado'],
                                 ['label' => 'Nota fiscal', 'value' => trim((string) ($solicitacao->invoice_number ?? '')) !== '' ? $solicitacao->invoice_number : 'Sem NF informada'],
                                 ['label' => 'Recebimento', 'value' => 'Aguardando confirmação do recebimento.'],
@@ -597,13 +594,13 @@
                             'Envio Concluido'
                         )
                         : $montarCardEtapa(
-                            'Solicitante',
-                            'Solicitante aprovou a cotação',
+                            'Liberação',
+                            'Bruno liberou o envio',
                             'Liberado para envio',
                             $histCotacaoAprovada,
                             array_merge($detalhesBase, [
-                                ['label' => 'Aprovado', 'value' => optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Sem data registrada'],
-                                ['label' => 'Próxima', 'value' => 'Beatriz registra o rastreio e o número da nota fiscal.'],
+                                ['label' => 'Liberado', 'value' => optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Sem data registrada'],
+                                ['label' => 'Próxima', 'value' => 'Tiago ou Beatriz registram o rastreio e a nota fiscal.'],
                             ]),
                             null,
                             null,
@@ -742,7 +739,7 @@
 
                     if (
                         $statusNovoHistorico === 'CONFIRMADO'
-                        || in_array($acaoHistorico, ['aprovar_cotacao', 'enviar_pedido', 'liberar_enviar'], true)
+                        || in_array($acaoHistorico, ['liberar_envio', 'enviar_pedido', 'liberar_enviar'], true)
                     ) {
                         $adicionarEtapa('envio', $cardEnvio);
                     }
@@ -975,7 +972,7 @@
                                             <div>Transportadora: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->quote_transporter ?: '-' }}</span></div>
                                             <div>Valor: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->quote_amount !== null ? 'R$ ' . number_format((float) $solicitacao->quote_amount, 2, ',', '.') : '-' }}</span></div>
                                             <div>Prazo: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->quote_deadline ?: '-' }}</span></div>
-                                            <div>Status: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $awaitingRequesterDecision ? 'Aguardando decisão do solicitante' : ($readyToShip ? 'Aprovada para envio' : ($solicitacao->quote_registered_at ? 'Registrada' : '-')) }}</span></div>
+                                            <div>Status: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $awaitingRequesterDecision ? 'Aguardando liberação do Bruno' : ($readyToShip ? 'Liberada para envio' : ($solicitacao->quote_registered_at ? 'Registrada' : '-')) }}</span></div>
                                             @if($solicitacao->quote_notes)
                                                 <div class="pt-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 whitespace-pre-line">{{ $solicitacao->quote_notes }}</div>
                                             @endif
@@ -983,9 +980,9 @@
                                     </div>
 
                                     <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
-                                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Solicitante / Envio</div>
+                                        <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Liberação / Envio</div>
                                         <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300">
-                                            <div>Aprovação do solicitante: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Pendente' }}</span></div>
+                                            <div>Liberação do Bruno: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Pendente' }}</span></div>
                                             <div>Rastreio: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->tracking_code ?: '-' }}</span></div>
                                             <div>Nota fiscal: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->invoice_number ?: '-' }}</span></div>
                                             <div>Enviado em: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ optional($solicitacao->shipped_at)->format('d/m/Y H:i') ?: '-' }}</span></div>
@@ -1153,7 +1150,7 @@
                                 @csrf
                                 @method('POST')
 
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Preencha os dados da transportadora para liberar a decisão do solicitante.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Preencha os dados da transportadora para enviar a solicitação para a liberação do Bruno.</p>
 
                                 <div>
                                     <label for="quote_transporter" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Transportadora *</label>
@@ -1237,11 +1234,11 @@
                         </div>
                     </div>
 
-                    <!-- MODAL: Aprovar Cotação -->
+                    <!-- MODAL: Liberar Envio -->
                     <div x-show="showQuoteApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
                             <div class="bg-emerald-600 text-white px-6 py-4 flex items-center justify-between">
-                                <h3 class="text-sm font-bold">Aprovar Cotação</h3>
+                                <h3 class="text-sm font-bold">Liberar Envio</h3>
                                 <button @click="showQuoteApproveModal = false" class="text-white/70 hover:text-white">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -1252,12 +1249,12 @@
                                 @csrf
                                 @method('POST')
 
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Confirme para aprovar a cotação e liberar o pedido para envio.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Confirme para registrar a liberação do Bruno e deixar o pedido pronto para envio.</p>
                                 <div>
-                                    <label for="quote_approval_notes" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observação da aprovação</label>
+                                    <label for="quote_approval_notes" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observação da liberação</label>
                                     <textarea id="quote_approval_notes" name="quote_approval_notes" rows="3"
                                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
-                                        placeholder="Opcional: observações do solicitante sobre a aprovação..."></textarea>
+                                        placeholder="Opcional: observações da liberação do envio..."></textarea>
                                 </div>
 
                                 <div class="flex gap-2 pt-4">
@@ -1265,7 +1262,7 @@
                                         Voltar
                                     </button>
                                     <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition">
-                                        Aprovar Cotação
+                                        Liberar Envio
                                     </button>
                                 </div>
                             </form>

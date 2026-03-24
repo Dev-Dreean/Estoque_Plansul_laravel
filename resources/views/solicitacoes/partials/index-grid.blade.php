@@ -91,8 +91,8 @@
                             $statusAuxiliar = match (true) {
                                 $solicitacao->status === 'AGUARDANDO_CONFIRMACAO' => 'Aguardando medidas e peso',
                                 $solicitacao->status === 'LIBERACAO' => 'Aguardando cotação',
-                                $awaitingRequesterDecision => 'Aguardando aprovação do solicitante',
-                                $readyToShip => 'Cotação aprovada, aguardando envio',
+                                $awaitingRequesterDecision => 'Aguardando liberação do Bruno',
+                                $readyToShip => 'Liberado para envio',
                                 $solicitacao->status === 'CONFIRMADO' && $hasShipmentData => 'Rastreio e NF registrados',
                                 default => '',
                             };
@@ -129,12 +129,21 @@
                             if (!$isOwner && $currentUserMatricula !== '') {
                                 $isOwner = trim((string) ($solicitacao->solicitante_matricula ?? '')) === $currentUserMatricula;
                             }
-                            $canConfirm = ($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1019') ?? false);
-                            $canForward = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1012') ?? false))
+                            $currentUserLogin = mb_strtoupper(trim((string) ($currentUser?->NMLOGIN ?? '')), 'UTF-8');
+                            $isTiagoFlow = in_array($currentUserMatricula, ['185895'], true) || in_array($currentUserLogin, ['TIAGOP'], true);
+                            $isBeatrizFlow = in_array($currentUserMatricula, ['182687'], true) || in_array($currentUserLogin, ['BEA.SC'], true);
+                            $isBrunoFlow = in_array($currentUserMatricula, ['11829'], true) || in_array($currentUserLogin, ['BRUNO'], true);
+                            $canConfirm = ($currentUser?->isAdmin() ?? false) || (($currentUser?->temAcessoTela('1019') ?? false) && ($isTiagoFlow || $isBeatrizFlow));
+                            $canForward = (($currentUser?->isAdmin() ?? false) || (($currentUser?->temAcessoTela('1012') ?? false) && $isTiagoFlow))
                                 && $solicitacao->status === 'AGUARDANDO_CONFIRMACAO';
-                            $canRelease = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1020') ?? false))
+                            $canQuote = (($currentUser?->isAdmin() ?? false) || (($currentUser?->temAcessoTela('1012') ?? false) && $isBeatrizFlow))
                                 && $solicitacao->status === 'LIBERACAO';
-                            $canSend = (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1014') ?? false))
+                            $canRelease = (($currentUser?->isAdmin() ?? false) || (($currentUser?->temAcessoTela('1020') ?? false) && $isBrunoFlow))
+                                && $solicitacao->status === 'CONFIRMADO'
+                                && $hasQuoteData
+                                && empty($solicitacao->quote_approved_at)
+                                && !$hasShipmentData;
+                            $canSend = (($currentUser?->isAdmin() ?? false) || (($currentUser?->temAcessoTela('1014') ?? false) && ($isTiagoFlow || $isBeatrizFlow)))
                                 && $solicitacao->status === 'CONFIRMADO'
                                 && !$hasShipmentData
                                 && (!$hasQuoteData || !empty($solicitacao->quote_approved_at));
@@ -166,9 +175,18 @@
                                 </button>
                             @endif
 
-                            @if($canRelease)
+                            @if($canQuote)
                                 <button type="button" title="Registrar cotação" @click="mostrarModalAprovar({{ $solicitacao->id }})"
                                     class="inline-flex items-center justify-center p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </button>
+                            @endif
+
+                            @if($canRelease)
+                                <button type="button" title="Abrir para liberar envio" @click="openShowModal({{ $solicitacao->id }})"
+                                    class="inline-flex items-center justify-center p-1.5 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg transition">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                     </svg>

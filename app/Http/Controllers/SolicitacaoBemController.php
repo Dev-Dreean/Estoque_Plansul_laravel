@@ -30,6 +30,15 @@ class SolicitacaoBemController extends Controller
     private const TELA_SOLICITACOES_VISUALIZACAO_RESTRITA = 1018;
     private const TELA_SOLICITACOES_TRIAGEM_INICIAL = 1019;
     private const TELA_SOLICITACOES_LIBERACAO_ENVIO = 1020;
+    private const FLOW_BRUNO_MATRICULAS = ['11829'];
+    private const FLOW_BRUNO_LOGINS = ['BRUNO'];
+    private const FLOW_BRUNO_NAMES = ['BRUNO DE AZEVEDO FELICIANO'];
+    private const FLOW_TIAGO_MATRICULAS = ['185895'];
+    private const FLOW_TIAGO_LOGINS = ['TIAGOP'];
+    private const FLOW_TIAGO_NAMES = ['TIAGO PACHECO'];
+    private const FLOW_BEATRIZ_MATRICULAS = ['182687'];
+    private const FLOW_BEATRIZ_LOGINS = ['BEA.SC'];
+    private const FLOW_BEATRIZ_NAMES = ['BEATRIZ PATRICIA VIRISSIMO DOS SANTOS'];
 
     public function index(Request $request): View
     {
@@ -277,17 +286,17 @@ class SolicitacaoBemController extends Controller
 
         $canConfirmAction = $this->canConfirmSolicitacao($user);
         $canForwardAction = $this->canForwardToLiberacao($user);
-        $canReleaseAction = $this->canReleaseAndSend($user);
+        $canQuoteAction = $this->canRegisterQuote($user);
+        $canReleaseAction = $this->canAuthorizeRelease($user);
         $canSendAction = $this->canSendSolicitacao($user);
-        $canDecideQuoteAction = $this->canDecideQuote($user, $solicitacao);
         $canCancelAction = $this->canCancelSolicitacao($user, $solicitacao);
         $canReturnAction = $this->canReturnSolicitacao($user);
         $canManage = $this->canUpdateSolicitacao($user)
             || $canConfirmAction
             || $canForwardAction
+            || $canQuoteAction
             || $canReleaseAction
             || $canSendAction
-            || $canDecideQuoteAction
             || $canCancelAction
             || $canReturnAction;
         $canContestNotReceived = $this->canContestNotReceived($user);
@@ -300,9 +309,9 @@ class SolicitacaoBemController extends Controller
                 'canManage',
                 'canConfirmAction',
                 'canForwardAction',
+                'canQuoteAction',
                 'canReleaseAction',
                 'canSendAction',
-                'canDecideQuoteAction',
                 'canCancelAction',
                 'canReturnAction',
                 'canContestNotReceived',
@@ -322,9 +331,9 @@ class SolicitacaoBemController extends Controller
             'canManage',
             'canConfirmAction',
             'canForwardAction',
+            'canQuoteAction',
             'canReleaseAction',
             'canSendAction',
-            'canDecideQuoteAction',
             'canCancelAction',
             'canReturnAction',
             'canContestNotReceived',
@@ -446,17 +455,17 @@ class SolicitacaoBemController extends Controller
             $canRecriarCancelada = $this->canRecreateCancelled($user, $solicitacao);
             $canConfirmAction = $this->canConfirmSolicitacao($user);
             $canForwardAction = $this->canForwardToLiberacao($user);
-            $canReleaseAction = $this->canReleaseAndSend($user);
+            $canQuoteAction = $this->canRegisterQuote($user);
+            $canReleaseAction = $this->canAuthorizeRelease($user);
             $canSendAction = $this->canSendSolicitacao($user);
-            $canDecideQuoteAction = $this->canDecideQuote($user, $solicitacao);
             $canCancelAction = $this->canCancelSolicitacao($user, $solicitacao);
             $canReturnAction = $this->canReturnSolicitacao($user);
             $canManage = $this->canUpdateSolicitacao($user)
                 || $canConfirmAction
                 || $canForwardAction
+                || $canQuoteAction
                 || $canReleaseAction
                 || $canSendAction
-                || $canDecideQuoteAction
                 || $canCancelAction
                 || $canReturnAction;
             $canContestNotReceived = $this->canContestNotReceived($user);
@@ -470,9 +479,9 @@ class SolicitacaoBemController extends Controller
                 'canManage',
                 'canConfirmAction',
                 'canForwardAction',
+                'canQuoteAction',
                 'canReleaseAction',
                 'canSendAction',
-                'canDecideQuoteAction',
                 'canCancelAction',
                 'canReturnAction',
                 'canContestNotReceived',
@@ -918,6 +927,41 @@ HTML;
             && $this->canCreateSolicitacao($user);
     }
 
+    private function isFlowOperator(?User $user, array $matriculas, array $logins, array $names): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        $matricula = trim((string) ($user->CDMATRFUNCIONARIO ?? ''));
+        if ($matricula !== '' && in_array($matricula, $matriculas, true)) {
+            return true;
+        }
+
+        $login = mb_strtoupper(trim((string) ($user->NMLOGIN ?? '')), 'UTF-8');
+        if ($login !== '' && in_array($login, $logins, true)) {
+            return true;
+        }
+
+        $nome = $this->normalizarNome((string) ($user->NOMEUSER ?? ''));
+        return $nome !== '' && in_array($nome, $names, true);
+    }
+
+    private function isBrunoFlowOperator(?User $user): bool
+    {
+        return $this->isFlowOperator($user, self::FLOW_BRUNO_MATRICULAS, self::FLOW_BRUNO_LOGINS, self::FLOW_BRUNO_NAMES);
+    }
+
+    private function isTiagoFlowOperator(?User $user): bool
+    {
+        return $this->isFlowOperator($user, self::FLOW_TIAGO_MATRICULAS, self::FLOW_TIAGO_LOGINS, self::FLOW_TIAGO_NAMES);
+    }
+
+    private function isBeatrizFlowOperator(?User $user): bool
+    {
+        return $this->isFlowOperator($user, self::FLOW_BEATRIZ_MATRICULAS, self::FLOW_BEATRIZ_LOGINS, self::FLOW_BEATRIZ_NAMES);
+    }
+
     private function canConfirmSolicitacao(?User $user): bool
     {
         if (!$user) {
@@ -927,7 +971,8 @@ HTML;
         if ($user->isAdmin()) {
             return true;
         }
-        return $this->canTriagemInicial($user);
+        return $this->canTriagemInicial($user)
+            && ($this->isTiagoFlowOperator($user) || $this->isBeatrizFlowOperator($user));
     }
 
     private function canForwardToLiberacao(?User $user): bool
@@ -939,10 +984,11 @@ HTML;
         if ($user->isAdmin()) {
             return true;
         }
-        return $user->temAcessoTela((string) User::TELA_SOLICITACOES_ATUALIZAR);
+        return $user->temAcessoTela((string) User::TELA_SOLICITACOES_ATUALIZAR)
+            && $this->isTiagoFlowOperator($user);
     }
 
-    private function canReleaseAndSend(?User $user): bool
+    private function canRegisterQuote(?User $user): bool
     {
         if (!$user) {
             return false;
@@ -951,7 +997,21 @@ HTML;
             return true;
         }
 
-        return $user->temAcessoTela((string) self::TELA_SOLICITACOES_LIBERACAO_ENVIO);
+        return $user->temAcessoTela((string) User::TELA_SOLICITACOES_ATUALIZAR)
+            && $this->isBeatrizFlowOperator($user);
+    }
+
+    private function canAuthorizeRelease(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $user->temAcessoTela((string) self::TELA_SOLICITACOES_LIBERACAO_ENVIO)
+            && $this->isBrunoFlowOperator($user);
     }
 
     private function canSendSolicitacao(?User $user): bool
@@ -963,20 +1023,13 @@ HTML;
             return true;
         }
 
-        return $user->temAcessoTela((string) User::TELA_SOLICITACOES_APROVAR);
+        return $user->temAcessoTela((string) User::TELA_SOLICITACOES_APROVAR)
+            && ($this->isTiagoFlowOperator($user) || $this->isBeatrizFlowOperator($user));
     }
 
     private function canDecideQuote(?User $user, SolicitacaoBem $solicitacao): bool
     {
-        if (!$user) {
-            return false;
-        }
-
-        if ($user->isAdmin()) {
-            return true;
-        }
-
-        return $this->isOwner($user, $solicitacao);
+        return $this->canAuthorizeRelease($user);
     }
 
     private function canCancelSolicitacao(?User $user, ?SolicitacaoBem $solicitacao = null): bool
@@ -1007,7 +1060,10 @@ HTML;
         if ($user->isAdmin()) {
             return true;
         }
-        return $this->canForwardToLiberacao($user);
+        return $this->canForwardToLiberacao($user)
+            || $this->canRegisterQuote($user)
+            || $this->canAuthorizeRelease($user)
+            || $this->canSendSolicitacao($user);
     }
 
     private function applyOwnerScope($query, ?User $user): void
@@ -1140,7 +1196,7 @@ HTML;
 
         return !$this->canTriagemInicial($user)
             && !$user->temAcessoTela((string) self::TELA_SOLICITACOES_ATUALIZAR)
-            && !$user->temAcessoTela((string) self::TELA_SOLICITACOES_APROVAR);
+            && !$user->temAcessoTela((string) User::TELA_SOLICITACOES_APROVAR);
     }
 
     private function temPermissaoVisualizacao(?User $user, SolicitacaoBem $solicitacao): bool
@@ -1601,7 +1657,7 @@ HTML;
     {
         /** @var User|null $user */
         $user = Auth::user();
-        if (!$this->canReleaseAndSend($user)) {
+        if (!$this->canRegisterQuote($user)) {
             return $this->denyAccess($request, 'Você não tem permissão para liberar o pedido.');
         }
 
@@ -1651,7 +1707,7 @@ HTML;
             $statusAnterior,
             SolicitacaoBem::STATUS_CONFIRMADO,
             'liberar_pedido',
-            'Cotação registrada e aguardando decisão do solicitante.'
+            'Cotação registrada e aguardando liberação do Bruno.'
         );
 
         Log::info('[SOLICITACOES] Pedido liberado', [
@@ -1662,18 +1718,18 @@ HTML;
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Cotação registrada. Aguardando decisão do solicitante.',
+                'message' => 'Cotação registrada. Aguardando liberação do Bruno.',
             ]);
         }
 
-        return redirect()->back()->with('success', 'Cotação registrada. Aguardando decisão do solicitante.');
+        return redirect()->back()->with('success', 'Cotação registrada. Aguardando liberação do Bruno.');
     }
 
     public function approve(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
     {
         /** @var User|null $user */
         $user = Auth::user();
-        if (!$this->canReleaseAndSend($user)) {
+        if (!$this->canAuthorizeRelease($user)) {
             return $this->denyAccess($request, 'Você não tem permissão para registrar pedido enviado.');
         }
 
@@ -1748,7 +1804,7 @@ HTML;
         }
 
         if ($solicitacao->hasQuoteData() && $solicitacao->quote_approved_at === null) {
-            return $this->denyAccess($request, 'A cotação precisa ser aprovada pelo solicitante antes do envio.');
+            return $this->denyAccess($request, 'A cotação precisa ser liberada pelo Bruno antes do envio.');
         }
 
         $validated = $request->validate([
@@ -1795,12 +1851,12 @@ HTML;
     {
         /** @var User|null $user */
         $user = Auth::user();
-        if (!$this->canDecideQuote($user, $solicitacao)) {
-            return $this->denyAccess($request, 'Você não tem permissão para aprovar esta cotação.');
+        if (!$this->canAuthorizeRelease($user)) {
+            return $this->denyAccess($request, 'Você não tem permissão para liberar este envio.');
         }
 
         if (!$solicitacao->isAwaitingRequesterDecision()) {
-            return $this->denyAccess($request, 'Esta solicitação não está aguardando decisão do solicitante.');
+            return $this->denyAccess($request, 'Esta solicitação não está aguardando liberação do Bruno.');
         }
 
         $validated = $request->validate([
@@ -1818,18 +1874,18 @@ HTML;
             $solicitacao,
             $statusAnterior,
             SolicitacaoBem::STATUS_CONFIRMADO,
-            'aprovar_cotacao',
-            $motivo !== '' ? $motivo : 'Cotação aprovada pelo solicitante.'
+            'liberar_envio',
+            $motivo !== '' ? $motivo : 'Liberação do envio registrada pelo Bruno.'
         );
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Cotação aprovada. Pedido liberado para envio.',
+                'message' => 'Liberação registrada. Pedido pronto para envio.',
             ]);
         }
 
-        return redirect()->back()->with('success', 'Cotação aprovada. Pedido liberado para envio.');
+        return redirect()->back()->with('success', 'Liberação registrada. Pedido pronto para envio.');
     }
 
     public function rejectQuote(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
@@ -1841,7 +1897,7 @@ HTML;
         }
 
         if (!$solicitacao->isAwaitingRequesterDecision()) {
-            return $this->denyAccess($request, 'Esta solicitação não está aguardando decisão do solicitante.');
+            return $this->denyAccess($request, 'Esta solicitação não está aguardando liberação do Bruno.');
         }
 
         $validated = $request->validate([

@@ -41,7 +41,7 @@
                             ['key' => 'PENDENTE', 'label' => 'Solicitado'],
                             ['key' => 'AGUARDANDO_CONFIRMACAO', 'label' => 'Análise / Logística'],
                             ['key' => 'LIBERACAO', 'label' => 'Cotação'],
-                            ['key' => 'CONFIRMADO', 'label' => 'Solicitante / Envio'],
+                            ['key' => 'CONFIRMADO', 'label' => 'Liberação / Envio'],
                             ['key' => 'ENVIADO', 'label' => 'Enviado'],
                             ['key' => 'RECEBIDO', 'label' => 'Recebido'],
                             ['key' => 'NAO_RECEBIDO', 'label' => 'Não recebido'],
@@ -1981,7 +1981,6 @@
         </script>
     @endpush
 </x-app-layout>
-
 
 
 
