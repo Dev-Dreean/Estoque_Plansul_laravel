@@ -10,10 +10,6 @@
         'NAO_RECEBIDO' => 'bg-rose-300 text-black border border-rose-500',
         'CANCELADO' => 'bg-red-400 text-black border border-red-600',
     ];
-    $currentUser = auth()->user();
-    $currentUserId = $currentUser?->getAuthIdentifier();
-    $currentUserMatricula = trim((string) ($currentUser?->CDMATRFUNCIONARIO ?? ''));
-    $isAdminUser = $currentUser?->isAdmin() ?? false;
     $shortPersonName = function (?string $nome): string {
         $nome = trim((string) $nome);
         if ($nome === '') {
@@ -61,7 +57,6 @@
                 <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'status', 'direction' => $nextDirection('status'), 'page' => 1]) }}" class="sol-index__sort-link">Status <span class="text-[10px] text-violet-200">{{ $sortMark('status') }}</span></a></th>
                 <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'created_at', 'direction' => $nextDirection('created_at'), 'page' => 1]) }}" class="sol-index__sort-link">Criado <span class="text-[10px] text-violet-200">{{ $sortMark('created_at') }}</span></a></th>
                 <th class="px-4 py-2"><a href="{{ request()->fullUrlWithQuery(['sort' => 'updated_at', 'direction' => $nextDirection('updated_at'), 'page' => 1]) }}" class="sol-index__sort-link">Atualizado <span class="text-[10px] text-violet-200">{{ $sortMark('updated_at') }}</span></a></th>
-                <th class="px-4 py-2 text-white">Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -122,122 +117,10 @@
                             <div class="text-xs text-gray-500">por {{ $shortPersonName($usuarioUltimaMovimentacao) }}</div>
                         @endif
                     </td>
-                    <td class="px-4 py-2">
-                        @php
-                            $isOwner = $currentUserId
-                                && (string) $solicitacao->solicitante_id === (string) $currentUserId;
-                            if (!$isOwner && $currentUserMatricula !== '') {
-                                $isOwner = trim((string) ($solicitacao->solicitante_matricula ?? '')) === $currentUserMatricula;
-                            }
-                            $currentUserLogin = mb_strtoupper(trim((string) ($currentUser?->NMLOGIN ?? '')), 'UTF-8');
-                            $isTiagoFlow = in_array($currentUserMatricula, ['185895'], true) || in_array($currentUserLogin, ['TIAGOP'], true);
-                            $isBeatrizFlow = in_array($currentUserMatricula, ['182687'], true) || in_array($currentUserLogin, ['BEA.SC'], true);
-                            $isBrunoFlow = in_array($currentUserMatricula, ['11829'], true) || in_array($currentUserLogin, ['BRUNO'], true);
-                            $canConfirm = ($currentUser?->isAdmin() ?? false) || (($currentUser?->temAcessoTela('1019') ?? false) && ($isTiagoFlow || $isBeatrizFlow));
-                            $canForward = (($currentUser?->isAdmin() ?? false) || (($currentUser?->temAcessoTela('1012') ?? false) && $isTiagoFlow))
-                                && $solicitacao->status === 'AGUARDANDO_CONFIRMACAO'
-                                && !$solicitacao->hasLogisticsData();
-                            $canQuote = (($currentUser?->isAdmin() ?? false) || (($currentUser?->temAcessoTela('1012') ?? false) && $isBeatrizFlow))
-                                && $solicitacao->status === 'AGUARDANDO_CONFIRMACAO'
-                                && $solicitacao->hasLogisticsData();
-                            $canRelease = (($currentUser?->isAdmin() ?? false) || (($currentUser?->temAcessoTela('1020') ?? false) && $isBrunoFlow))
-                                && $solicitacao->status === 'LIBERACAO'
-                                && $hasQuoteData
-                                && $awaitingRequesterDecision;
-                            $canSend = (($currentUser?->isAdmin() ?? false) || (($currentUser?->temAcessoTela('1014') ?? false) && ($isTiagoFlow || $isBeatrizFlow)))
-                                && $solicitacao->status === 'CONFIRMADO'
-                                && !$hasShipmentData
-                                && (!$hasQuoteData || !empty($solicitacao->quote_approved_at));
-                            $isLiberacaoOnlyOperator = !($currentUser?->isAdmin() ?? false)
-                                && ($currentUser?->temAcessoTela('1020') ?? false)
-                                && !($currentUser?->temAcessoTela('1019') ?? false)
-                                && !($currentUser?->temAcessoTela('1012') ?? false)
-                                && !($currentUser?->temAcessoTela('1014') ?? false);
-                            $canManageCurrentStage = match (true) {
-                                $solicitacao->status === 'PENDENTE' => $canConfirm,
-                                $solicitacao->status === 'AGUARDANDO_CONFIRMACAO' => $solicitacao->hasLogisticsData() ? $canQuote : $canForward,
-                                $solicitacao->status === 'LIBERACAO' => $canRelease,
-                                $solicitacao->status === 'CONFIRMADO' && $hasShipmentData => (($currentUser?->isAdmin() ?? false) || $isOwner),
-                                $solicitacao->status === 'CONFIRMADO' => $canSend,
-                                $solicitacao->status === 'NAO_RECEBIDO' => (($currentUser?->isAdmin() ?? false) || ($currentUser?->temAcessoTela('1019') ?? false)),
-                                $solicitacao->status === 'NAO_ENVIADO' => $canConfirm,
-                                default => false,
-                            };
-                            $canCancel = (($currentUser?->isAdmin() ?? false) || $canManageCurrentStage)
-                                && !in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true)
-                                && $canManageCurrentStage
-                                && !$hasShipmentData;
-                        @endphp
-                        <div class="flex items-center gap-2" @click.stop>
-                            @if($canConfirm && $solicitacao->status === 'PENDENTE')
-                                <button type="button" title="Confirmar" @click="mostrarModalConfirmar({{ $solicitacao->id }})"
-                                    class="inline-flex items-center justify-center p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg transition">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </button>
-                            @endif
-
-                            @if($canForward)
-                                <button type="button" title="Abrir fluxo de separação" @click="openShowModal({{ $solicitacao->id }})"
-                                    class="inline-flex items-center justify-center p-1.5 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/30 rounded-lg transition">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                    </svg>
-                                </button>
-                            @endif
-
-                            @if($canQuote)
-                                <button type="button" title="Abrir fluxo de cotação" @click="openShowModal({{ $solicitacao->id }})"
-                                    class="inline-flex items-center justify-center p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </button>
-                            @endif
-
-                            @if($canRelease)
-                                <button type="button" title="Abrir para liberar envio" @click="openShowModal({{ $solicitacao->id }})"
-                                    class="inline-flex items-center justify-center p-1.5 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg transition">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </button>
-                            @endif
-
-                            @if($canSend)
-                                <button type="button" title="Abrir fluxo de envio" @click="openShowModal({{ $solicitacao->id }})"
-                                    class="inline-flex items-center justify-center p-1.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                    </svg>
-                                </button>
-                            @endif
-
-                            @if($canCancel)
-                                <button type="button" title="Cancelar" @click="mostrarModalCancelar({{ $solicitacao->id }})"
-                                    class="inline-flex items-center justify-center p-1.5 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            @endif
-
-                            @if($isAdminUser || $isOwner)
-                                <form method="POST" action="{{ route('solicitacoes-bens.destroy', $solicitacao) }}" onsubmit="return confirm('Remover a solicitação #{{ $solicitacao->id }}?');" class="inline" @click.stop>
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center justify-center p-1.5 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition" title="Remover">
-                                        <x-heroicon-o-trash class="h-4 w-4" />
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
-                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" class="px-4 py-3 text-center text-gray-500">Nenhuma solicitação encontrada.</td>
+                    <td colspan="8" class="px-4 py-3 text-center text-gray-500">Nenhuma solicitação encontrada.</td>
                 </tr>
             @endforelse
         </tbody>

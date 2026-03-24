@@ -73,36 +73,172 @@
 
         if ($canSeeSolicitacoes && \Illuminate\Support\Facades\Schema::hasTable('solicitacoes_bens')) {
             $user = auth()->user();
-            $solicitacoesQuery = \App\Models\SolicitacaoBem::query()
-                ->where('status', \App\Models\SolicitacaoBem::STATUS_PENDENTE);
-
-            $canViewAllSolicitacoes = $user
-                && ($user->isAdmin()
-                    || $user->temAcessoTela(1011)
-                    || $user->temAcessoTela(1012)
-                    || $user->temAcessoTela(1014)
-                    || $user->temAcessoTela(1015)
-                    || $user->temAcessoTela(1020));
-
-            if (!$canViewAllSolicitacoes && $user) {
+            if ($user) {
                 $userId = $user->getAuthIdentifier();
                 $matricula = trim((string) ($user->CDMATRFUNCIONARIO ?? ''));
+                $login = mb_strtoupper(trim((string) ($user->NMLOGIN ?? '')), 'UTF-8');
+                $isAdmin = $user->isAdmin();
 
-                $solicitacoesQuery->where(function ($builder) use ($userId, $matricula) {
-                    if ($userId) {
-                        $builder->where('solicitante_id', $userId);
+                $isTiagoFlow = in_array($matricula, ['185895'], true) || in_array($login, ['TIAGOP'], true);
+                $isBeatrizFlow = in_array($matricula, ['182687'], true) || in_array($login, ['BEA.SC'], true);
+                $isBrunoFlow = in_array($matricula, ['11829'], true) || in_array($login, ['BRUNO'], true);
+
+                $canConfirmSolicitacao = $isAdmin || (
+                    ($user->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_TRIAGEM_INICIAL) ?? false)
+                    && ($isTiagoFlow || $isBeatrizFlow)
+                );
+                $canRegisterMeasures = $isAdmin || (
+                    ($user->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_ATUALIZAR) ?? false)
+                    && $isTiagoFlow
+                );
+                $canRegisterQuote = $isAdmin || (
+                    ($user->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_ATUALIZAR) ?? false)
+                    && $isBeatrizFlow
+                );
+                $canReleaseFlow = $isAdmin || (
+                    ($user->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_LIBERACAO_ENVIO) ?? false)
+                    && $isBrunoFlow
+                );
+                $canSendFlow = $isAdmin || (
+                    ($user->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_APROVAR) ?? false)
+                    && ($isTiagoFlow || $isBeatrizFlow)
+                );
+                $canAcknowledgeReceipt = $isAdmin || $userId || $matricula !== '';
+
+                $applyHasLogistics = static function ($builder): void {
+                    $builder->where(function ($logistics) {
+                        $logistics->whereNotNull('logistics_height_cm')
+                            ->orWhereNotNull('logistics_width_cm')
+                            ->orWhereNotNull('logistics_length_cm')
+                            ->orWhereNotNull('logistics_weight_kg')
+                            ->orWhereNotNull('logistics_registered_at')
+                            ->orWhere(function ($notes) {
+                                $notes->whereNotNull('logistics_notes')
+                                    ->where('logistics_notes', '!=', '');
+                            });
+                    });
+                };
+
+                $applyNoLogistics = static function ($builder): void {
+                    $builder->whereNull('logistics_height_cm')
+                        ->whereNull('logistics_width_cm')
+                        ->whereNull('logistics_length_cm')
+                        ->whereNull('logistics_weight_kg')
+                        ->whereNull('logistics_registered_at')
+                        ->where(function ($notes) {
+                            $notes->whereNull('logistics_notes')
+                                ->orWhere('logistics_notes', '');
+                        });
+                };
+
+                $applyHasShipment = static function ($builder): void {
+                    $builder->where(function ($shipment) {
+                        $shipment->whereNotNull('tracking_code')
+                            ->where('tracking_code', '!=', '')
+                            ->orWhere(function ($invoice) {
+                                $invoice->whereNotNull('invoice_number')
+                                    ->where('invoice_number', '!=', '');
+                            })
+                            ->orWhereNotNull('shipped_at');
+                    });
+                };
+
+                $applyNoShipment = static function ($builder): void {
+                    $builder->where(function ($shipment) {
+                        $shipment->whereNull('tracking_code')
+                            ->orWhere('tracking_code', '');
+                    })->where(function ($invoice) {
+                        $invoice->whereNull('invoice_number')
+                            ->orWhere('invoice_number', '');
+                    })->whereNull('shipped_at');
+                };
+
+                $applyOwnerFilter = static function ($builder) use ($isAdmin, $userId, $matricula): void {
+                    if ($isAdmin) {
+                        return;
                     }
-                    if ($matricula !== '') {
+
+                    $builder->where(function ($owner) use ($userId, $matricula) {
                         if ($userId) {
-                            $builder->orWhere('solicitante_matricula', $matricula);
-                        } else {
-                            $builder->where('solicitante_matricula', $matricula);
+                            $owner->where('solicitante_id', $userId);
                         }
+
+                        if ($matricula !== '') {
+                            if ($userId) {
+                                $owner->orWhere('solicitante_matricula', $matricula);
+                            } else {
+                                $owner->where('solicitante_matricula', $matricula);
+                            }
+                        }
+                    });
+                };
+
+                $hasPendenciasNoFluxo = false;
+                $solicitacoesQuery = \App\Models\SolicitacaoBem::query();
+
+                $solicitacoesQuery->where(function ($builder) use (
+                    &$hasPendenciasNoFluxo,
+                    $canConfirmSolicitacao,
+                    $canRegisterMeasures,
+                    $canRegisterQuote,
+                    $canReleaseFlow,
+                    $canSendFlow,
+                    $canAcknowledgeReceipt,
+                    $applyNoLogistics,
+                    $applyHasLogistics,
+                    $applyNoShipment,
+                    $applyHasShipment,
+                    $applyOwnerFilter
+                ) {
+                    if ($canConfirmSolicitacao) {
+                        $hasPendenciasNoFluxo = true;
+                        $builder->orWhere('status', \App\Models\SolicitacaoBem::STATUS_PENDENTE);
+                    }
+
+                    if ($canRegisterMeasures) {
+                        $hasPendenciasNoFluxo = true;
+                        $builder->orWhere(function ($stage) use ($applyNoLogistics) {
+                            $stage->where('status', \App\Models\SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO);
+                            $applyNoLogistics($stage);
+                        });
+                    }
+
+                    if ($canRegisterQuote) {
+                        $hasPendenciasNoFluxo = true;
+                        $builder->orWhere(function ($stage) use ($applyHasLogistics) {
+                            $stage->where('status', \App\Models\SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO);
+                            $applyHasLogistics($stage);
+                        });
+                    }
+
+                    if ($canReleaseFlow) {
+                        $hasPendenciasNoFluxo = true;
+                        $builder->orWhere('status', \App\Models\SolicitacaoBem::STATUS_LIBERACAO);
+                    }
+
+                    if ($canSendFlow) {
+                        $hasPendenciasNoFluxo = true;
+                        $builder->orWhere(function ($stage) use ($applyNoShipment) {
+                            $stage->where('status', \App\Models\SolicitacaoBem::STATUS_CONFIRMADO)
+                                ->whereNotNull('quote_approved_at');
+                            $applyNoShipment($stage);
+                        });
+                    }
+
+                    if ($canAcknowledgeReceipt) {
+                        $hasPendenciasNoFluxo = true;
+                        $builder->orWhere(function ($stage) use ($applyHasShipment, $applyOwnerFilter) {
+                            $stage->where('status', \App\Models\SolicitacaoBem::STATUS_CONFIRMADO);
+                            $applyHasShipment($stage);
+                            $applyOwnerFilter($stage);
+                        });
                     }
                 });
-            }
 
-            $solicitacoesBadgeCount = $solicitacoesQuery->count();
+                if ($hasPendenciasNoFluxo) {
+                    $solicitacoesBadgeCount = $solicitacoesQuery->count();
+                }
+            }
         }
 
         $nomeCompleto = Auth::user()->NOMEUSER ?? Auth::user()->name;
@@ -127,7 +263,7 @@
                                 <x-notification-badge :count="$removidosBadgeCount" class="ml-2" title="Novos removidos" />
                             @endif
                             @if($tela['route'] === 'solicitacoes-bens.index')
-                                <x-notification-badge :count="$solicitacoesBadgeCount" class="ml-2 bg-yellow-400 text-yellow-900" title="Solicitacoes pendentes" />
+                                <x-notification-badge :count="$solicitacoesBadgeCount" class="ml-2 bg-yellow-400 text-yellow-900" title="Solicitações pendentes para você" />
                             @endif
                         </x-nav-link>
                     @endforeach
@@ -233,7 +369,7 @@
                         <x-notification-badge :count="$removidosBadgeCount" class="ml-2 align-middle" title="Novos removidos" />
                     @endif
                     @if($tela['route'] === 'solicitacoes-bens.index')
-                        <x-notification-badge :count="$solicitacoesBadgeCount" class="ml-2 align-middle bg-yellow-400 text-yellow-900" title="Solicitacoes pendentes" />
+                        <x-notification-badge :count="$solicitacoesBadgeCount" class="ml-2 align-middle bg-yellow-400 text-yellow-900" title="Solicitações pendentes para você" />
                     @endif
                 </x-responsive-nav-link>
             @endforeach
