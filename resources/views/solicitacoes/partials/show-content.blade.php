@@ -150,12 +150,6 @@
                                 Registrar Medidas e Peso
                             </button>
                         @endif
-                        @if(!in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true) && $canCancelAction)
-                            <button type="button" @click="showCancelModal = true" class="sol-flow-action sol-flow-action--cancel">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM9 9l6 6m0-6l-6 6" /></svg>
-                                Cancelar Solicita&ccedil;&atilde;o
-                            </button>
-                        @endif
                         @if($solicitacao->status === 'LIBERACAO' && $canQuoteAction)
                             <button type="button" @click="showApproveModal = true" class="sol-flow-action sol-flow-action--release">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
@@ -171,12 +165,6 @@
                         @php
                             $canGoBackOneStep = in_array($solicitacao->status, ['AGUARDANDO_CONFIRMACAO', 'NAO_ENVIADO', 'LIBERACAO', 'CONFIRMADO', 'NAO_RECEBIDO'], true);
                         @endphp
-                        @if($canGoBackOneStep && $canReturnAction)
-                            <button type="button" @click="showReturnModal = true" class="sol-flow-action sol-flow-action--return">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12a9 9 0 1015.364-6.364M3 12H9m-6 0l3-3m-3 3l3 3" /></svg>
-                                {{ $returnButtonLabel }}
-                            </button>
-                        @endif
                         @if($solicitacao->status === 'CANCELADO' && $canRecriarCancelada)
                             <button type="button" @click="showRecreateCancelledModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition shadow-sm">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8 8 0 106.582 9m0 0H9m-4 0V4" /></svg>
@@ -209,6 +197,18 @@
                             <button type="button" @click="showContestNotReceivedModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 transition shadow-sm">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h6m-9 8h16a1 1 0 001-1V7a1 1 0 00-1-1h-3l-2-2H9L7 6H4a1 1 0 00-1 1v12a1 1 0 001 1z" /></svg>
                                 Contestar Não Recebido
+                            </button>
+                        @endif
+                        @if($canGoBackOneStep && $canReturnAction)
+                            <button type="button" @click="showReturnModal = true" class="sol-flow-action sol-flow-action--return">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12a9 9 0 1015.364-6.364M3 12H9m-6 0l3-3m-3 3l3 3" /></svg>
+                                {{ $returnButtonLabel }}
+                            </button>
+                        @endif
+                        @if(!in_array($solicitacao->status, ['CANCELADO', 'NAO_ENVIADO', 'RECEBIDO'], true) && $canCancelAction)
+                            <button type="button" @click="showCancelModal = true" class="sol-flow-action sol-flow-action--cancel">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0zM9 9l6 6m0-6l-6 6" /></svg>
+                                Cancelar Solicita&ccedil;&atilde;o
                             </button>
                         @endif
                     </div>
