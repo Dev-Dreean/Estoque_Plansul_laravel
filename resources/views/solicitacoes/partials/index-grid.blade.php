@@ -10,6 +10,7 @@
         'NAO_RECEBIDO' => 'bg-rose-300 text-black border border-rose-500',
         'CANCELADO' => 'bg-red-400 text-black border border-red-600',
     ];
+
     $currentUser = auth()->user();
     $currentUserId = $currentUser?->getAuthIdentifier();
     $currentUserMatricula = trim((string) ($currentUser?->CDMATRFUNCIONARIO ?? ''));
@@ -23,6 +24,7 @@
     $canRegisterQuote = $isAdminUser || (($currentUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_ATUALIZAR) ?? false) && $isBeatrizFlow);
     $canReleaseFlow = $isAdminUser || (($currentUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_LIBERACAO_ENVIO) ?? false) && $isBrunoFlow);
     $canSendFlow = $isAdminUser || (($currentUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_APROVAR) ?? false) && ($isTiagoFlow || $isBeatrizFlow));
+
     $shortPersonName = function (?string $nome): string {
         $nome = trim((string) $nome);
         if ($nome === '') {
@@ -44,6 +46,7 @@
         $resumo = $partes[0] . ' ' . $partes[$qtd - 1];
         return mb_convert_case(mb_strtolower($resumo, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
     };
+
     $formatDisplay = function (?string $valor): string {
         $valor = trim((string) $valor);
         if ($valor === '') {
@@ -52,6 +55,7 @@
 
         return mb_convert_case(mb_strtolower($valor, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
     };
+
     $currentSort = $sort ?? request('sort', 'updated_at');
     $currentDirection = $direction ?? request('direction', 'desc');
     $nextDirection = fn ($col) => ($currentSort === $col && $currentDirection === 'asc') ? 'desc' : 'asc';
@@ -92,6 +96,7 @@
                         $solicitacao->status === 'CONFIRMADO' && $hasShipmentData => 'Enviado, aguardando recebimento',
                         default => '',
                     };
+
                     if (mb_strtolower($motivoStatus, 'UTF-8') === 'sem estoque no momento') {
                         $motivoStatus = 'Sem estoque';
                     }
@@ -132,11 +137,9 @@
                     <td class="px-4 py-2">
                         <x-status-badge :status="$statusVisual" :color-map="$statusColors" />
                         @if($currentUserPendingLabel)
-                            <div class="sol-index__pending-flag" data-flow-stage="{{ $solicitacao->status }}">
-                                Pendente para você
-                            </div>
-                            <div class="sol-index__pending-task" title="{{ $currentUserPendingLabel }}">
-                                {{ $currentUserPendingLabel }}
+                            <div class="sol-index__pending-flag" data-flow-stage="{{ $solicitacao->status }}" title="{{ $currentUserPendingLabel }}">
+                                <span class="sol-index__pending-dot" aria-hidden="true"></span>
+                                <span>Sua vez</span>
                             </div>
                         @endif
                         @if($statusAuxiliar !== '')

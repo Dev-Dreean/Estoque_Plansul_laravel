@@ -114,6 +114,8 @@ class SolicitacaoBemController extends Controller
             $query->with(['ultimoHistoricoStatus.usuario']);
         }
 
+        $this->applyCurrentUserPendingPriority($query, $user);
+
         $solicitacoes = $query
             ->orderBy($sortableColumns[$sort], $direction)
             ->orderByDesc('id')
@@ -129,6 +131,116 @@ class SolicitacaoBemController extends Controller
 
         return view('solicitacoes.index', compact('solicitacoes', 'statusOptions', 'projetos', 'sort', 'direction'));
     }
+
+    private function applyCurrentUserPendingPriority($query, ?User $user): void
+    {
+        if (!$user) {
+            return;
+        }
+
+        $isAdmin = $user->isAdmin();
+        $matricula = trim((string) ($user->CDMATRFUNCIONARIO ?? ''));
+        $userId = $user->getAuthIdentifier();
+
+        $canConfirmAction = $this->canConfirmSolicitacao($user);
+        $canForwardAction = $this->canForwardToLiberacao($user);
+        $canQuoteAction = $this->canRegisterQuote($user);
+        $canReleaseAction = $this->canAuthorizeRelease($user);
+        $canSendAction = $this->canSendSolicitacao($user);
+        $canReceiveAny = $isAdmin || $userId || $matricula !== '';
+
+        $hasLogisticsSql = '('
+            . 'logistics_height_cm is not null'
+            . ' or logistics_width_cm is not null'
+            . ' or logistics_length_cm is not null'
+            . ' or logistics_weight_kg is not null'
+            . ' or logistics_registered_at is not null'
+            . ' or (logistics_notes is not null and logistics_notes != \'\')'
+            . ')';
+
+        $noLogisticsSql = '('
+            . 'logistics_height_cm is null'
+            . ' and logistics_width_cm is null'
+            . ' and logistics_length_cm is null'
+            . ' and logistics_weight_kg is null'
+            . ' and logistics_registered_at is null'
+            . ' and (logistics_notes is null or logistics_notes = \'\')'
+            . ')';
+
+        $hasShipmentSql = '('
+            . '(tracking_code is not null and tracking_code != \'\')'
+            . ' or (invoice_number is not null and invoice_number != \'\')'
+            . ' or shipped_at is not null'
+            . ')';
+
+        $noShipmentSql = '('
+            . '(tracking_code is null or tracking_code = \'\')'
+            . ' and (invoice_number is null or invoice_number = \'\')'
+            . ' and shipped_at is null'
+            . ')';
+
+        $cases = [];
+        $bindings = [];
+
+        if ($canConfirmAction) {
+            $cases[] = 'when status = ? then 0';
+            $bindings[] = SolicitacaoBem::STATUS_PENDENTE;
+        }
+
+        if ($canForwardAction) {
+            $cases[] = 'when status = ? and ' . $noLogisticsSql . ' then 0';
+            $bindings[] = SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO;
+        }
+
+        if ($canQuoteAction) {
+            $cases[] = 'when status = ? and ' . $hasLogisticsSql . ' then 0';
+            $bindings[] = SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO;
+        }
+
+        if ($canReleaseAction) {
+            $cases[] = 'when status = ? and quote_approved_at is null and ' . $noShipmentSql . ' then 0';
+            $bindings[] = SolicitacaoBem::STATUS_LIBERACAO;
+        }
+
+        if ($canSendAction) {
+            $cases[] = 'when status = ? and quote_approved_at is not null and ' . $noShipmentSql . ' then 0';
+            $bindings[] = SolicitacaoBem::STATUS_CONFIRMADO;
+        }
+
+        if ($canReceiveAny) {
+            $ownerSql = '';
+            $ownerBindings = [];
+
+            if ($isAdmin) {
+                $ownerSql = '1 = 1';
+            } elseif ($userId && $matricula !== '') {
+                $ownerSql = '(solicitante_id = ? or solicitante_matricula = ?)';
+                $ownerBindings = [$userId, $matricula];
+            } elseif ($userId) {
+                $ownerSql = 'solicitante_id = ?';
+                $ownerBindings = [$userId];
+            } elseif ($matricula !== '') {
+                $ownerSql = 'solicitante_matricula = ?';
+                $ownerBindings = [$matricula];
+            }
+
+            if ($ownerSql !== '') {
+                $cases[] = 'when status = ? and ' . $hasShipmentSql . ' and ' . $ownerSql . ' then 0';
+                $bindings[] = SolicitacaoBem::STATUS_CONFIRMADO;
+                array_push($bindings, ...$ownerBindings);
+            }
+        }
+
+        if (empty($cases)) {
+            return;
+        }
+
+        $query->orderByRaw(
+            'case ' . implode(' ', $cases) . ' else 1 end asc',
+            $bindings
+        );
+    }
+
     public function create(Request $request): View|JsonResponse|RedirectResponse
     {
         /** @var User|null $user */
