@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
+use Illuminate\Support\Carbon;
 
 class RemovidosController extends Controller
 {
@@ -147,7 +148,23 @@ class RemovidosController extends Controller
             ]);
         }
 
+        $userCacheKey = 'removidos_last_seen_' . ($user->getAuthIdentifier() ?? 'guest');
+        $lastSeen = null;
+        $lastSeenRaw = Cache::get($userCacheKey);
+        if ($lastSeenRaw) {
+            try {
+                $lastSeen = Carbon::parse($lastSeenRaw);
+            } catch (\Throwable) {
+                $lastSeen = null;
+            }
+        }
+
         $query = RegistroRemovido::query();
+
+        $showOnlyNew = $request->boolean('novos');
+        if ($showOnlyNew && $lastSeen) {
+            $query->where('deleted_at', '>', $lastSeen);
+        }
 
         if ($request->filled('entity')) {
             $query->where('entity', $request->input('entity'));
@@ -188,15 +205,17 @@ class RemovidosController extends Controller
             ->pluck('entity')
             ->toArray();
 
-        Cache::put(
-            'removidos_last_seen_' . $user->id,
-            now()->toDateTimeString(),
-            now()->addDays(30)
-        );
+        $highlightRecordIds = $showOnlyNew
+            ? $registros->getCollection()->pluck('id')->map(fn ($id) => (int) $id)->all()
+            : [];
+
+        Cache::put($userCacheKey, now()->toDateTimeString(), now()->addDays(30));
 
         return view('removidos.index', [
             'registros' => $registros,
             'entities' => $entities,
+            'showOnlyNew' => $showOnlyNew,
+            'highlightRecordIds' => $highlightRecordIds,
         ]);
     }
 
@@ -211,13 +230,13 @@ class RemovidosController extends Controller
         if (!Schema::hasTable('registros_removidos')) {
             if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
                 return response()->json([
-                    'message' => 'A tabela de auditoria (registros_removidos) ainda nao existe.',
+                    'message' => 'A tabela de auditoria (registros_removidos) ainda não existe.',
                 ], 409);
             }
 
             return redirect()
                 ->route('removidos.index')
-                ->with('error', 'A tabela de auditoria (registros_removidos) ainda nao existe. Rode: php artisan migrate --path=database/migrations/2025_12_15_000000_create_registros_removidos_table.php');
+                ->with('error', 'A tabela de auditoria (registros_removidos) ainda não existe. Rode: php artisan migrate --path=database/migrations/2025_12_15_000000_create_registros_removidos_table.php');
         }
 
         $registro = RegistroRemovido::findOrFail($removido);
@@ -251,7 +270,7 @@ class RemovidosController extends Controller
         if (!Schema::hasTable('registros_removidos')) {
             return redirect()
                 ->route('removidos.index')
-                ->with('error', 'A tabela de auditoria (registros_removidos) ainda nao existe. Rode: php artisan migrate --path=database/migrations/2025_12_15_000000_create_registros_removidos_table.php');
+                ->with('error', 'A tabela de auditoria (registros_removidos) ainda não existe. Rode: php artisan migrate --path=database/migrations/2025_12_15_000000_create_registros_removidos_table.php');
         }
 
         $registro = RegistroRemovido::findOrFail($removido);
@@ -350,7 +369,7 @@ class RemovidosController extends Controller
         if (!Schema::hasTable('registros_removidos')) {
             return redirect()
                 ->route('removidos.index')
-                ->with('error', 'A tabela de auditoria (registros_removidos) ainda nao existe. Rode: php artisan migrate --path=database/migrations/2025_12_15_000000_create_registros_removidos_table.php');
+                ->with('error', 'A tabela de auditoria (registros_removidos) ainda não existe. Rode: php artisan migrate --path=database/migrations/2025_12_15_000000_create_registros_removidos_table.php');
         }
 
         $registro = RegistroRemovido::findOrFail($removido);

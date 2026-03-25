@@ -18,3 +18,10 @@ Schedule::command('sync:kinghost-data')
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/sync-kinghost.log'))
     ->name('sync-kinghost-funcionarios-projetos');
+
+Schedule::command('notificacoes:resumo-diario')
+    ->dailyAt((string) config('notificacoes.daily_summary.time', '08:00'))
+    ->timezone((string) config('notificacoes.daily_summary.timezone', 'America/Sao_Paulo'))
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/notificacoes-resumo-diario.log'))
+    ->name('notificacoes-resumo-diario');

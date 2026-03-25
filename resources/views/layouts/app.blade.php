@@ -40,7 +40,20 @@
     })();
   </script>
 
+  @php
+    $productionCssPath = public_path('vendor/app/app.css');
+    $productionJsPath = public_path('vendor/app/app.js');
+    $canUsePublishedAssets = !app()->environment('local')
+      && file_exists($productionCssPath)
+      && file_exists($productionJsPath);
+  @endphp
+
+  @if($canUsePublishedAssets)
+  <link rel="stylesheet" href="{{ asset('vendor/app/app.css') }}?v={{ filemtime($productionCssPath) }}">
+  <script type="module" src="{{ asset('vendor/app/app.js') }}?v={{ filemtime($productionJsPath) }}"></script>
+  @else
   @vite(['resources/css/app.css', 'resources/js/app.js'])
+  @endif
 
   <!-- Transição de login: injetada no <head> para cobrir ANTES do primeiro paint -->
   <script>
@@ -81,7 +94,21 @@
   @endif
 </head>
 
-<body class="font-sans antialiased bg-base text-base-color" x-data="{persistTheme(){try{localStorage.setItem('theme', document.documentElement.getAttribute('data-theme'));}catch(e){}}}" x-init="persistTheme()" @theme-changed.window="persistTheme()">
+<body
+  class="font-sans antialiased bg-base text-base-color"
+  x-data="{
+    persistTheme(){try{localStorage.setItem('theme', document.documentElement.getAttribute('data-theme'));}catch(e){}},
+    ...createSystemNewsState({
+      endpoint: '{{ route('api.novidades-sistema.visualizar') }}',
+      items: @js($systemNewsPayload['items'] ?? []),
+      unseenKeys: @js($systemNewsPayload['unseen_keys'] ?? []),
+      shouldAutoOpen: @js($systemNewsPayload['should_auto_open'] ?? false),
+    })
+  }"
+  x-init="persistTheme(); initSystemNews()"
+  @theme-changed.window="persistTheme()"
+  @keydown.escape.window="closeSystemNews()"
+>
 
   <!-- Overlay de entrada após login — replica visual da tela de login -->
   <div id="appEntryOverlay" style="display:none;position:fixed;inset:0;z-index:99999;pointer-events:none;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif;">
@@ -204,18 +231,120 @@
   </style>
 
   <div class="min-h-screen bg-base with-fixed-footer">
+    @unless($hideNavigation ?? false)
     @include('layouts.navigation')
+    @endunless
+
+    <div
+      x-cloak
+      x-show="systemNewsOpen"
+      x-transition.opacity
+      class="system-news-overlay"
+      @click="closeSystemNews()"
+    ></div>
+
+    <section
+      x-cloak
+      x-show="systemNewsOpen"
+      x-transition
+      class="system-news-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="system-news-title"
+    >
+      <div class="system-news-header">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <span class="system-news-header-chip">Novidades do sistema</span>
+            <h2 id="system-news-title" class="system-news-title">Tem novidade importante para você</h2>
+            <p class="system-news-subtitle">
+              Sempre que uma entrega relevante entrar no sistema, ela aparecerá aqui com explicação completa para facilitar a adoção por todos os usuários.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-500 transition hover:text-slate-900"
+            @click="closeSystemNews()"
+            aria-label="Fechar novidades"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="system-news-body">
+        <template x-if="systemNewsItems.length === 0">
+          <div class="system-news-card">
+            <p class="system-news-card-summary">Nenhuma novidade do sistema está disponível no momento.</p>
+          </div>
+        </template>
+
+        <template x-for="item in systemNewsItems" :key="item.key">
+          <article class="system-news-card" :class="{ 'system-news-card--new': hasUnseenSystemNews(item.key) }">
+            <div class="system-news-card-top">
+              <span class="system-news-badge" :class="{ 'system-news-badge--new': hasUnseenSystemNews(item.key) }" x-text="hasUnseenSystemNews(item.key) ? 'Novo' : 'Já visualizado'"></span>
+              <span class="system-news-date" x-text="item.released_at_label"></span>
+            </div>
+
+            <h3 class="system-news-card-title" x-text="item.title"></h3>
+            <p class="system-news-card-summary" x-text="item.summary"></p>
+
+            <template x-if="item.highlight">
+              <div class="system-news-highlight" x-text="item.highlight"></div>
+            </template>
+
+            <template x-if="Array.isArray(item.details) && item.details.length > 0">
+              <ul class="system-news-list">
+                <template x-for="detail in item.details" :key="detail">
+                  <li class="system-news-list-item">
+                    <span class="system-news-list-bullet" aria-hidden="true"></span>
+                    <span x-text="detail"></span>
+                  </li>
+                </template>
+              </ul>
+            </template>
+
+            <template x-if="item.cta_label && item.cta_url">
+              <a class="system-news-cta" :href="item.cta_url" x-text="item.cta_label"></a>
+            </template>
+          </article>
+        </template>
+      </div>
+
+      <div class="system-news-footer">
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
+          @click="closeSystemNews()"
+        >
+          Lembrar depois
+        </button>
+
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          @click="markSystemNewsAsSeen()"
+          :disabled="systemNewsSubmitting"
+        >
+          <span x-text="systemNewsSubmitting ? 'Registrando novidades...' : 'Marcar novidades como visualizadas'"></span>
+        </button>
+      </div>
+    </section>
+
     @php
       $showAdminTabs =
         request()->routeIs('projetos.*') ||
         request()->routeIs('usuarios.*') ||
         request()->routeIs('cadastro-tela.*');
     @endphp
-    @if($showAdminTabs)
+    @if($showAdminTabs && !($hideAdminTabs ?? false) && !($hideNavigation ?? false))
       <x-admin-nav-tabs />
     @endif
 
-  @if(session('impersonator_id'))
+  @if(session('impersonator_id') && !($hideNavigation ?? false))
   <div class="bg-yellow-600 border-b border-yellow-700 text-white p-3 text-sm flex items-center justify-between">
     <div class="flex items-center gap-3">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -247,6 +376,7 @@
       {{ $slot }}
     </main>
 
+    @unless($hideFooter ?? false)
     <footer class="site-footer">
       <div class="site-footer-inner">
         <div class="site-footer-bar grid grid-cols-2 items-center">
@@ -259,6 +389,7 @@
         </div>
       </div>
     </footer>
+    @endunless
   </div>
   <!-- Chart.js servido localmente para evitar bloqueio de Tracking Prevention -->
   <script src="{{ asset('vendor/chart.js/chart.umd.min.js') }}"></script>

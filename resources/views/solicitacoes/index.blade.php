@@ -1141,6 +1141,7 @@
                     showModalAccessRevokeUrl: '',
                     showModalAccessFeedback: { success: false, message: '' },
                     currentSolicitacaoId: null,
+                    currentNotificationAction: null,
                     get showModalAccessAddedIds() {
                         const initial = new Set(this.showModalAccessInitiallyGranted);
                         return this.showModalAccessSelected.filter((id) => !initial.has(id));
@@ -1171,6 +1172,30 @@
                             this.loadGrid(window.location.href, { pushHistory: false, syncState: false });
                         };
                         window.addEventListener('popstate', this.popstateHandler);
+
+                        const currentUrl = new URL(window.location.href);
+                        const openModalId = currentUrl.searchParams.get('open_modal');
+                        const notificationAction = currentUrl.searchParams.get('notification_action');
+                        if (openModalId) {
+                            setTimeout(() => this.openShowModal(openModalId, notificationAction), 120);
+                        }
+                    },
+
+                    syncOpenModalInUrl(id = null, action = null) {
+                        const nextUrl = new URL(window.location.href);
+                        if (id) {
+                            nextUrl.searchParams.set('open_modal', String(id));
+                        } else {
+                            nextUrl.searchParams.delete('open_modal');
+                        }
+
+                        if (action) {
+                            nextUrl.searchParams.set('notification_action', String(action));
+                        } else {
+                            nextUrl.searchParams.delete('notification_action');
+                        }
+
+                        window.history.replaceState(window.history.state || {}, '', nextUrl.toString());
                     },
 
                     extractTagsFromParams(params) {
@@ -1497,7 +1522,7 @@
                     openCreateModal() {
                         this.openFormModal('create');
                     },
-                    openShowModal(id) {
+                    openShowModal(id, notificationAction = null) {
                         if (!id) return;
                         const modalBody = document.getElementById('solicitacao-show-modal-body');
                         if (!modalBody) {
@@ -1507,6 +1532,8 @@
                         
                         console.log('[SOLICITACAO] Opening show modal for ID:', id);
                         this.currentSolicitacaoId = id;
+                        this.currentNotificationAction = notificationAction || null;
+                        this.syncOpenModalInUrl(id, this.currentNotificationAction);
                         this.showModalTitle = `Solicita\u00e7\u00e3o #${id}`;
                         this.showModalOpen = false;
                         this.showModalLoading = true;
@@ -1562,6 +1589,7 @@
                                 this.hydrateShowModalAccessData(modalBody);
                                 console.log('[SOLICITACAO] Handlers bound');
                                 this.showModalContentReady = true;
+                                this.highlightNotificationActionTarget();
                             })
                             .catch((err) => {
                                 console.error('[SOLICITACAO] Show modal fetch error', err);
@@ -1657,6 +1685,8 @@
                         this.showModalAccessRevokeUrl = '';
                         this.setShowModalAccessFeedback(false, '', 0);
                         this.currentSolicitacaoId = null;
+                        this.currentNotificationAction = null;
+                        this.syncOpenModalInUrl();
                         const modalBody = document.getElementById('solicitacao-show-modal-body');
                         if (modalBody) {
                             modalBody.innerHTML = '';
@@ -1769,6 +1799,35 @@
                         this.hydrateShowModalAccessData(modalBody);
                         this.showModalContentReady = true;
                         this.showModalOpen = true;
+                        this.highlightNotificationActionTarget();
+                    },
+
+                    highlightNotificationActionTarget() {
+                        if (!this.currentNotificationAction) {
+                            return;
+                        }
+
+                        const modalBody = document.getElementById('solicitacao-show-modal-body');
+                        if (!modalBody) {
+                            return;
+                        }
+
+                        const target = modalBody.querySelector(`[data-notification-action-target="${this.currentNotificationAction}"]`);
+                        if (!target) {
+                            return;
+                        }
+
+                        target.classList.remove('notification-action-highlight');
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+                        target.classList.add('notification-action-highlight');
+
+                        if (typeof target.focus === 'function') {
+                            target.focus({ preventScroll: true });
+                        }
+
+                        window.setTimeout(() => {
+                            target.classList.remove('notification-action-highlight');
+                        }, 3200);
                     },
 
                     async submitModalForm(form, targetId) {
@@ -1817,6 +1876,7 @@
                                 }
                                 if (data.success) {
                                     await this.refreshGrid();
+                                    window.dispatchEvent(new CustomEvent('important-notifications:refresh'));
 
                                     if (isFormModal) {
                                         this.closeFormModal();
@@ -1941,6 +2001,7 @@
 
                             this.fecharModais();
                             await this.refreshGrid();
+                            window.dispatchEvent(new CustomEvent('important-notifications:refresh'));
 
                             if (this.showModalOpen && this.currentSolicitacaoId === this.selectedSolicitacaoId) {
                                 this.showModalLoading = true;
@@ -1980,5 +2041,4 @@
         </script>
     @endpush
 </x-app-layout>
-
 

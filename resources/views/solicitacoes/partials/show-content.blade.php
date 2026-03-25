@@ -179,25 +179,25 @@
                 <div class="mb-3 bg-[color:var(--solicitacao-modal-bg,#fcfdff)] dark:bg-slate-900/90 shadow-sm rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 overflow-hidden">
                     <div class="flex flex-wrap md:flex-nowrap items-stretch justify-center gap-2 p-2">
                         @if($showConfirmActionButton)
-                            <button type="button" @click="showConfirmModal = true" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
+                            <button type="button" @click="showConfirmModal = true" data-notification-action-target="confirmar_solicitacao" class="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 h-11 px-3 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 Aprovar Solicitação
                             </button>
                         @endif
                         @if($showForwardActionButton)
-                            <button type="button" @click="showForwardModal = true" class="sol-flow-action sol-flow-action--forward">
+                            <button type="button" @click="showForwardModal = true" data-notification-action-target="registrar_medidas" class="sol-flow-action sol-flow-action--forward">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                                 Registrar Medidas e Peso
                             </button>
                         @endif
                         @if($showQuoteActionButton)
-                            <button type="button" @click="showApproveModal = true" class="sol-flow-action sol-flow-action--release">
+                            <button type="button" @click="showApproveModal = true" data-notification-action-target="registrar_cotacoes" class="sol-flow-action sol-flow-action--release">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                 Registrar Cotação
                             </button>
                         @endif
                         @if($showReleaseActionButton)
-                            <button type="button" @click="showQuoteApproveModal = true" class="sol-flow-action sol-flow-action--send">
+                            <button type="button" @click="showQuoteApproveModal = true" data-notification-action-target="liberar_envio" class="sol-flow-action sol-flow-action--send">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 Liberar Envio
                             </button>
@@ -213,13 +213,13 @@
                             </button>
                         @endif
                         @if($showSendActionButton)
-                            <button type="button" @click="showSendModal = true" class="sol-flow-action sol-flow-action--send">
+                            <button type="button" @click="showSendModal = true" data-notification-action-target="registrar_envio" class="sol-flow-action sol-flow-action--send">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                                 Registrar Envio
                             </button>
                         @endif
                         @if($showReceiveActionButton)
-                            <button type="button" @click="showReceiveModal = true" class="sol-flow-action sol-flow-action--receive">
+                            <button type="button" @click="showReceiveModal = true" data-notification-action-target="confirmar_recebimento" class="sol-flow-action sol-flow-action--receive">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                 Confirmar Recebimento
                             </button>
@@ -571,6 +571,12 @@
                                 'value' => $solicitacao->logistics_weight_kg !== null
                                     ? number_format((float) $solicitacao->logistics_weight_kg, 3, ',', '.') . ' kg'
                                     : 'Aguardando peso',
+                            ],
+                            [
+                                'label' => 'Volumes',
+                                'value' => $solicitacao->logistics_volume_count !== null
+                                    ? $solicitacao->logistics_volume_count . ' volume(s)'
+                                    : 'Aguardando quantidade',
                             ],
                             [
                                 'label' => 'Próxima',
@@ -997,6 +1003,7 @@
                                         <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300">
                                             <div>A x L x C: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->logistics_height_cm ? number_format((float) $solicitacao->logistics_height_cm, 2, ',', '.') : '-' }} x {{ $solicitacao->logistics_width_cm ? number_format((float) $solicitacao->logistics_width_cm, 2, ',', '.') : '-' }} x {{ $solicitacao->logistics_length_cm ? number_format((float) $solicitacao->logistics_length_cm, 2, ',', '.') : '-' }} cm</span></div>
                                             <div>Peso: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->logistics_weight_kg ? number_format((float) $solicitacao->logistics_weight_kg, 3, ',', '.') . ' kg' : '-' }}</span></div>
+                                            <div>Volumes: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->logistics_volume_count ?: '-' }}</span></div>
                                             <div>Registrado em: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ optional($solicitacao->logistics_registered_at)->format('d/m/Y H:i') ?: '-' }}</span></div>
                                             @if($solicitacao->logistics_notes)
                                                 <div class="pt-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 whitespace-pre-line">{{ $solicitacao->logistics_notes }}</div>
@@ -1169,6 +1176,12 @@
                                             class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
                                             placeholder="Ex: 12,350" />
                                     </div>
+                                    <div class="col-span-2">
+                                        <label for="logistics_volume_count" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Quantidade de volumes *</label>
+                                        <input type="number" min="1" step="1" id="logistics_volume_count" name="logistics_volume_count" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                            placeholder="Ex: 3 volumes" />
+                                    </div>
                                 </div>
 
                                 <div>
@@ -1192,7 +1205,11 @@
 
                     <!-- MODAL: Registrar Cotação -->
                     <div x-show="showApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
-                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-6xl w-full mx-4 overflow-hidden" x-data="{ quoteSlotCount: Number(@js((int) old('quote_slots', 3))) || 3 }">
+                        <div
+                            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full mx-4 overflow-hidden"
+                            x-data="{ quoteSlotCount: Number(@js((int) old('quote_slots', 3))) || 3 }"
+                            :style="quoteSlotCount === 1 ? 'max-width: 760px;' : (quoteSlotCount === 2 ? 'max-width: 1040px;' : 'max-width: 1280px;')"
+                        >
                             <div class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
                                 <h3 class="text-sm font-bold">Registrar Cotação</h3>
                                 <button @click="showApproveModal = false" class="text-white/70 hover:text-white">
@@ -1220,11 +1237,16 @@
                                         <div class="text-[10px] uppercase tracking-wider text-slate-400">Peso</div>
                                         <div class="mt-1 font-semibold text-slate-900 dark:text-slate-100">{{ $solicitacao->logistics_weight_kg ? number_format((float) $solicitacao->logistics_weight_kg, 3, ',', '.') . ' kg' : '-' }}</div>
                                     </div>
-                                    <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300 md:col-span-2">
+                                    <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+                                        <div class="text-[10px] uppercase tracking-wider text-slate-400">Volumes</div>
+                                        <div class="mt-1 font-semibold text-slate-900 dark:text-slate-100">{{ $solicitacao->logistics_volume_count ?: '-' }}</div>
+                                    </div>
+                                    <div class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-900 dark:border-blue-800/70 dark:bg-blue-950/30 dark:text-blue-100 md:col-span-2">
                                         <div class="flex items-center justify-between gap-3">
                                             <div>
-                                                <div class="text-[10px] uppercase tracking-wider text-slate-400">Quantidade de cotações</div>
-                                                <div class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Padrão de 3 opções para a Beatriz.</div>
+                                                <div class="text-[10px] uppercase tracking-wider text-blue-700/70 dark:text-blue-300/70">Quantidade de cotações</div>
+                                                <div class="mt-1 font-semibold">Quantas cotações você deseja inserir?</div>
+                                                <div class="mt-1 text-[11px] text-blue-800/80 dark:text-blue-200/80">O formulário será ajustado automaticamente para mostrar apenas a quantidade escolhida.</div>
                                             </div>
                                             <select name="quote_slots" x-model.number="quoteSlotCount" class="h-9 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs px-3">
                                                 <option value="1">1 cotação</option>
@@ -1235,7 +1257,10 @@
                                     </div>
                                 </div>
 
-                                <div class="grid gap-3 xl:grid-cols-3">
+                                <div
+                                    class="grid gap-3"
+                                    :style="window.innerWidth >= 1280 ? 'grid-template-columns: repeat(' + quoteSlotCount + ', minmax(0, 1fr));' : ''"
+                                >
                                     @for($quoteIndex = 0; $quoteIndex < 3; $quoteIndex++)
                                         <div x-show="quoteSlotCount >= {{ $quoteIndex + 1 }}" x-cloak class="rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-900/60">
                                             <div class="mb-3 flex items-center justify-between gap-2">

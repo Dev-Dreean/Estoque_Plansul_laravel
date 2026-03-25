@@ -1,4 +1,8 @@
-<nav x-data="{ open: false, ...themeToggle() }" class="bg-surface border-b border-base">
+<nav
+    x-data="{ open: false, ...themeToggle(), ...createImportantNotificationsState({ endpoint: '{{ route('api.notificacoes.importantes') }}', items: @js($importantNotificationsPayload['items'] ?? []), totalCount: @js($importantNotificationsPayload['total_count'] ?? 0) }) }"
+    x-init="initImportantNotifications()"
+    class="bg-surface border-b border-base"
+>
     @php
         use App\Helpers\MenuHelper;
 
@@ -46,221 +50,6 @@
 
         $showPainelAdm = (auth()->user()?->PERFIL === 'ADM') && !empty($painelAdmChildren);
 
-        $removidosBadgeCount = 0;
-        $canSeeRemovidos = auth()->user()?->temAcessoTela(1009) ?? false;
-        $solicitacoesBadgeCount = 0;
-        $canSeeSolicitacoes = auth()->user()?->temAcessoTela(1010) ?? false;
-
-        if ($canSeeRemovidos && \Illuminate\Support\Facades\Schema::hasTable('registros_removidos')) {
-            $lastSeenKey = 'removidos_last_seen_' . (auth()->id() ?? 'guest');
-            $lastSeenRaw = \Illuminate\Support\Facades\Cache::get($lastSeenKey);
-            $lastSeen = null;
-
-            if ($lastSeenRaw) {
-                try {
-                    $lastSeen = \Carbon\Carbon::parse($lastSeenRaw);
-                } catch (\Throwable $e) {
-                    $lastSeen = null;
-                }
-            }
-
-            $removidosQuery = \App\Models\RegistroRemovido::query();
-            if ($lastSeen) {
-                $removidosQuery->where('deleted_at', '>', $lastSeen);
-            }
-            $removidosBadgeCount = $removidosQuery->count();
-        }
-
-        if ($canSeeSolicitacoes && \Illuminate\Support\Facades\Schema::hasTable('solicitacoes_bens')) {
-            $user = auth()->user();
-            if ($user) {
-                $userId = $user->getAuthIdentifier();
-                $matricula = trim((string) ($user->CDMATRFUNCIONARIO ?? ''));
-                $login = mb_strtoupper(trim((string) ($user->NMLOGIN ?? '')), 'UTF-8');
-                $isAdmin = $user->isAdmin();
-
-                $isTiagoFlow = in_array($matricula, ['185895'], true) || in_array($login, ['TIAGOP'], true);
-                $isBeatrizFlow = in_array($matricula, ['182687'], true) || in_array($login, ['BEA.SC'], true);
-                $isBrunoFlow = in_array($matricula, ['11829'], true) || in_array($login, ['BRUNO'], true);
-
-                $canConfirmSolicitacao = $isAdmin || (
-                    ($user->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_TRIAGEM_INICIAL) ?? false)
-                    && ($isTiagoFlow || $isBeatrizFlow)
-                );
-                $canRegisterMeasures = $isAdmin || (
-                    ($user->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_ATUALIZAR) ?? false)
-                    && $isTiagoFlow
-                );
-                $canRegisterQuote = $isAdmin || (
-                    ($user->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_ATUALIZAR) ?? false)
-                    && $isBeatrizFlow
-                );
-                $canReleaseFlow = $isAdmin || (
-                    ($user->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_LIBERACAO_ENVIO) ?? false)
-                    && $isBrunoFlow
-                );
-                $canSendFlow = $isAdmin || (
-                    ($user->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_APROVAR) ?? false)
-                    && ($isTiagoFlow || $isBeatrizFlow)
-                );
-                $canAcknowledgeReceipt = $isAdmin || $userId || $matricula !== '';
-
-                $applyHasLogistics = static function ($builder): void {
-                    $builder->where(function ($logistics) {
-                        $logistics->whereNotNull('logistics_height_cm')
-                            ->orWhereNotNull('logistics_width_cm')
-                            ->orWhereNotNull('logistics_length_cm')
-                            ->orWhereNotNull('logistics_weight_kg')
-                            ->orWhereNotNull('logistics_registered_at')
-                            ->orWhere(function ($notes) {
-                                $notes->whereNotNull('logistics_notes')
-                                    ->where('logistics_notes', '!=', '');
-                            });
-                    });
-                };
-
-                $applyNoLogistics = static function ($builder): void {
-                    $builder->whereNull('logistics_height_cm')
-                        ->whereNull('logistics_width_cm')
-                        ->whereNull('logistics_length_cm')
-                        ->whereNull('logistics_weight_kg')
-                        ->whereNull('logistics_registered_at')
-                        ->where(function ($notes) {
-                            $notes->whereNull('logistics_notes')
-                                ->orWhere('logistics_notes', '');
-                        });
-                };
-
-                $applyHasShipment = static function ($builder): void {
-                    $builder->where(function ($shipment) {
-                        $shipment->whereNotNull('tracking_code')
-                            ->where('tracking_code', '!=', '')
-                            ->orWhere(function ($invoice) {
-                                $invoice->whereNotNull('invoice_number')
-                                    ->where('invoice_number', '!=', '');
-                            })
-                            ->orWhereNotNull('shipped_at');
-                    });
-                };
-
-                $applyNoShipment = static function ($builder): void {
-                    $builder->where(function ($shipment) {
-                        $shipment->whereNull('tracking_code')
-                            ->orWhere('tracking_code', '');
-                    })->where(function ($invoice) {
-                        $invoice->whereNull('invoice_number')
-                            ->orWhere('invoice_number', '');
-                    })->whereNull('shipped_at');
-                };
-
-                $applyOwnerFilter = static function ($builder) use ($isAdmin, $userId, $matricula): void {
-                    if ($isAdmin) {
-                        return;
-                    }
-
-                    $builder->where(function ($owner) use ($userId, $matricula) {
-                        if ($userId) {
-                            $owner->where('solicitante_id', $userId);
-                        }
-
-                        if ($matricula !== '') {
-                            if ($userId) {
-                                $owner->orWhere('solicitante_matricula', $matricula);
-                            } else {
-                                $owner->where('solicitante_matricula', $matricula);
-                            }
-                        }
-                    });
-                };
-
-                $hasPendenciasNoFluxo = false;
-                $solicitacoesQuery = \App\Models\SolicitacaoBem::query();
-
-                $solicitacoesQuery->where(function ($builder) use (
-                    &$hasPendenciasNoFluxo,
-                    $canConfirmSolicitacao,
-                    $canRegisterMeasures,
-                    $canRegisterQuote,
-                    $canReleaseFlow,
-                    $canSendFlow,
-                    $canAcknowledgeReceipt,
-                    $applyNoLogistics,
-                    $applyHasLogistics,
-                    $applyNoShipment,
-                    $applyHasShipment,
-                    $applyOwnerFilter
-                ) {
-                    if ($canConfirmSolicitacao) {
-                        $hasPendenciasNoFluxo = true;
-                        $builder->orWhere('status', \App\Models\SolicitacaoBem::STATUS_PENDENTE);
-                    }
-
-                    if ($canRegisterMeasures) {
-                        $hasPendenciasNoFluxo = true;
-                        $builder->orWhere(function ($stage) use ($applyNoLogistics) {
-                            $stage->where('status', \App\Models\SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO);
-                            $applyNoLogistics($stage);
-                        });
-                    }
-
-                    if ($canRegisterQuote) {
-                        $hasPendenciasNoFluxo = true;
-                        $builder->orWhere(function ($stage) use ($applyHasLogistics) {
-                            $stage->where('status', \App\Models\SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO);
-                            $applyHasLogistics($stage);
-                        });
-                    }
-
-                    if ($canReleaseFlow) {
-                        $hasPendenciasNoFluxo = true;
-                        $builder->orWhere('status', \App\Models\SolicitacaoBem::STATUS_LIBERACAO);
-                    }
-
-                    if ($canSendFlow) {
-                        $hasPendenciasNoFluxo = true;
-                        $builder->orWhere(function ($stage) use ($applyNoShipment) {
-                            $stage->where('status', \App\Models\SolicitacaoBem::STATUS_CONFIRMADO)
-                                ->where(function ($sendable) {
-                                    $sendable->whereNull('quote_registered_at')
-                                        ->where(function ($legacyQuote) {
-                                            $legacyQuote->whereNull('quote_transporter')
-                                                ->orWhere('quote_transporter', '');
-                                        })
-                                        ->whereNull('quote_amount')
-                                        ->where(function ($legacyDeadline) {
-                                            $legacyDeadline->whereNull('quote_deadline')
-                                                ->orWhere('quote_deadline', '');
-                                        })
-                                        ->where(function ($legacyNotes) {
-                                            $legacyNotes->whereNull('quote_notes')
-                                                ->orWhere('quote_notes', '');
-                                        })
-                                        ->where(function ($quoteOptions) {
-                                            $quoteOptions->whereNull('quote_options_payload')
-                                                ->orWhere('quote_options_payload', '[]');
-                                        })
-                                        ->orWhereNotNull('quote_approved_at');
-                                });
-                            $applyNoShipment($stage);
-                        });
-                    }
-
-                    if ($canAcknowledgeReceipt) {
-                        $hasPendenciasNoFluxo = true;
-                        $builder->orWhere(function ($stage) use ($applyHasShipment, $applyOwnerFilter) {
-                            $stage->where('status', \App\Models\SolicitacaoBem::STATUS_CONFIRMADO);
-                            $applyHasShipment($stage);
-                            $applyOwnerFilter($stage);
-                        });
-                    }
-                });
-
-                if ($hasPendenciasNoFluxo) {
-                    $solicitacoesBadgeCount = $solicitacoesQuery->count();
-                }
-            }
-        }
-
         $nomeCompleto = Auth::user()->NOMEUSER ?? Auth::user()->name;
         $partes = explode(' ', trim($nomeCompleto));
         $nomeExibicao = $partes[0] . (count($partes) > 1 ? ' ' . end($partes) : '');
@@ -279,12 +68,6 @@
                     @foreach($telasNav as $tela)
                         <x-nav-link :href="route($tela['route'])" :active="request()->routeIs($tela['activePattern'])">
                             <span>{{ $tela['nome'] }}</span>
-                            @if($tela['route'] === 'removidos.index')
-                                <x-notification-badge :count="$removidosBadgeCount" class="ml-2" title="Novos removidos" />
-                            @endif
-                            @if($tela['route'] === 'solicitacoes-bens.index')
-                                <x-notification-badge :count="$solicitacoesBadgeCount" class="ml-2 bg-yellow-400 text-yellow-900" title="Solicitações pendentes para você" />
-                            @endif
                         </x-nav-link>
                     @endforeach
                 </div>
@@ -308,6 +91,63 @@
                         </div>
                     </div>
                     @endif
+
+                    <div class="relative inline-flex" @click.outside="notificationsOpen = false">
+                        <button
+                            type="button"
+                            @click="toggleImportantNotifications()"
+                            class="important-bell-button"
+                            :aria-expanded="notificationsOpen.toString()"
+                            title="Pendências importantes"
+                        >
+                            <span class="sr-only">Abrir pendências importantes</span>
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.857 17H9.143m9.714 0H20l-1.286-1.286A2 2 0 0118.143 14.3V11a6.143 6.143 0 10-12.286 0v3.3a2 2 0 01-.571 1.414L4 17h1.143m13.714 0a2.857 2.857 0 11-5.714 0m5.714 0H8.857m0 0a2.857 2.857 0 005.714 0" />
+                            </svg>
+                            <span
+                                x-show="importantNotificationsCount > 0"
+                                x-cloak
+                                class="important-bell-count"
+                                x-text="formatImportantNotificationsCount()"
+                            ></span>
+                        </button>
+
+                        <div x-show="notificationsOpen" x-cloak x-transition.opacity class="important-notifications-dropdown">
+                            <div class="important-notifications-panel">
+                                <div class="important-notifications-panel__header">
+                                    <div>
+                                        <div class="important-notifications-panel__title">Pendências importantes</div>
+                                        <div class="important-notifications-panel__subtitle" x-text="importantNotificationsCount > 0 ? `Total: ${importantNotificationsCount}` : 'Nenhuma pendência no momento'"></div>
+                                    </div>
+                                    <button type="button" @click="refreshImportantNotifications()" class="important-notifications-refresh" :disabled="notificationsLoading">
+                                        Atualizar
+                                    </button>
+                                </div>
+
+                                <div class="important-notifications-panel__body">
+                                    <template x-if="notificationsLoading && importantNotifications.length === 0">
+                                        <div class="important-notifications-empty">Atualizando pendências...</div>
+                                    </template>
+
+                                    <template x-if="!notificationsLoading && importantNotifications.length === 0">
+                                        <div class="important-notifications-empty">Nenhuma pendência importante para você agora.</div>
+                                    </template>
+
+                                    <template x-for="item in importantNotifications" :key="item.item_key">
+                                        <button type="button" class="important-notification-item" @click="handleImportantNotificationSelect(item.url)">
+                                            <div class="important-notification-item__module" x-text="item.modulo"></div>
+                                            <div class="important-notification-item__title" x-text="item.titulo"></div>
+                                            <div class="important-notification-item__description" x-text="item.descricao"></div>
+                                            <div class="important-notification-item__meta">
+                                                <span class="important-notification-item__action" x-text="item.acao_label"></span>
+                                                <span x-text="item.occurred_at_label || ''"></span>
+                                            </div>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
@@ -369,6 +209,24 @@
                 </div>
 
                 <div class="-me-2 flex items-center sm:hidden ml-auto gap-2">
+                    <button
+                        type="button"
+                        @click="toggleImportantNotifications()"
+                        class="relative inline-flex items-center justify-center p-2 rounded-md text-soft hover:text-base-color hover:bg-surface-alt focus:outline-none focus:bg-surface-alt transition duration-150 ease-in-out"
+                        :aria-expanded="mobileNotificationsOpen.toString()"
+                    >
+                        <span class="sr-only">Abrir pendências importantes</span>
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.857 17H9.143m9.714 0H20l-1.286-1.286A2 2 0 0118.143 14.3V11a6.143 6.143 0 10-12.286 0v3.3a2 2 0 01-.571 1.414L4 17h1.143m13.714 0a2.857 2.857 0 11-5.714 0m5.714 0H8.857m0 0a2.857 2.857 0 005.714 0" />
+                        </svg>
+                        <span
+                            x-show="importantNotificationsCount > 0"
+                            x-cloak
+                            class="important-bell-count important-bell-count--mobile"
+                            x-text="formatImportantNotificationsCount()"
+                        ></span>
+                    </button>
+
                     <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-soft hover:text-base-color hover:bg-surface-alt focus:outline-none focus:bg-surface-alt transition duration-150 ease-in-out">
                         <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                             <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -385,12 +243,6 @@
             @foreach($telasNav as $tela)
                 <x-responsive-nav-link :href="route($tela['route'])" :active="request()->routeIs($tela['activePattern'])">
                     <span>{{ $tela['nome'] }}</span>
-                    @if($tela['route'] === 'removidos.index')
-                        <x-notification-badge :count="$removidosBadgeCount" class="ml-2 align-middle" title="Novos removidos" />
-                    @endif
-                    @if($tela['route'] === 'solicitacoes-bens.index')
-                        <x-notification-badge :count="$solicitacoesBadgeCount" class="ml-2 align-middle bg-yellow-400 text-yellow-900" title="Solicitações pendentes para você" />
-                    @endif
                 </x-responsive-nav-link>
             @endforeach
         </div>
@@ -453,6 +305,51 @@
                         {{ __('Sair') }}
                     </x-responsive-nav-link>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <div
+        x-show="mobileNotificationsOpen"
+        x-cloak
+        x-transition.opacity
+        class="fixed inset-0 z-[70] flex items-end bg-slate-950/55 sm:hidden"
+        @click.self="closeImportantNotifications()"
+        style="display: none;"
+    >
+        <div class="important-notifications-mobile">
+            <div class="important-notifications-mobile__header">
+                <div>
+                    <div class="important-notifications-panel__title">Pendências importantes</div>
+                    <div class="important-notifications-panel__subtitle" x-text="importantNotificationsCount > 0 ? `Total: ${importantNotificationsCount}` : 'Nenhuma pendência no momento'"></div>
+                </div>
+                <button type="button" @click="closeImportantNotifications()" class="important-notifications-mobile__close" aria-label="Fechar">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="important-notifications-mobile__body">
+                <template x-if="notificationsLoading && importantNotifications.length === 0">
+                    <div class="important-notifications-empty">Atualizando pendências...</div>
+                </template>
+
+                <template x-if="!notificationsLoading && importantNotifications.length === 0">
+                    <div class="important-notifications-empty">Nenhuma pendência importante para você agora.</div>
+                </template>
+
+                <template x-for="item in importantNotifications" :key="'mobile-' + item.item_key">
+                    <button type="button" class="important-notification-item" @click="handleImportantNotificationSelect(item.url)">
+                        <div class="important-notification-item__module" x-text="item.modulo"></div>
+                        <div class="important-notification-item__title" x-text="item.titulo"></div>
+                        <div class="important-notification-item__description" x-text="item.descricao"></div>
+                        <div class="important-notification-item__meta">
+                            <span class="important-notification-item__action" x-text="item.acao_label"></span>
+                            <span x-text="item.occurred_at_label || ''"></span>
+                        </div>
+                    </button>
+                </template>
             </div>
         </div>
     </div>

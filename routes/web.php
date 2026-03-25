@@ -9,6 +9,7 @@
  */
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ImportantNotificationController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PatrimonioController;
 use App\Http\Controllers\PatrimonioBulkController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\SolicitacaoBemController;
 use App\Http\Controllers\SolicitacaoBemPatrimonioController;
 use App\Http\Controllers\SolicitacaoEmailController;
 use App\Http\Controllers\SyncRemoteController;
+use App\Http\Controllers\SystemNewsController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -41,7 +43,10 @@ Route::get('/', function () {
 require __DIR__ . '/auth.php';
 
 // Menu Principal - PÚBLICA (acessível para autenticados e não autenticados)
-Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
+// Menu Principal - com verificação de perfil para usuários autenticados
+Route::get('/menu', [MenuController::class, 'index'])
+    ->middleware(\App\Http\Middleware\EnsureProfileIsComplete::class)
+    ->name('menu.index');
 
 // API para obter clima - PÚBLICA (para usuários não autenticados)
 Route::get('/api/weather', [MenuController::class, 'getWeather'])->name('api.weather');
@@ -128,9 +133,16 @@ Route::get('/debug-acessos', function () {
 // GRUPO 1: Apenas para o formulário de completar o perfil.
 // Protegido apenas por 'auth', para garantir que o usuário esteja logado.
 Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/completar-perfil',  [ProfileController::class, 'showCompletionForm'])->name('profile.completion.create');
     Route::post('/completar-perfil', [ProfileController::class, 'storeCompletionForm'])->name('profile.completion.store');
     Route::get('/api/usuarios/por-matricula', [UserController::class, 'porMatricula'])->name('api.usuarios.porMatricula');
+    Route::get('/api/notificacoes/importantes', [ImportantNotificationController::class, 'index'])
+        ->name('api.notificacoes.importantes');
+    Route::post('/api/novidades-sistema/visualizar', [SystemNewsController::class, 'markAsSeen'])
+        ->name('api.novidades-sistema.visualizar');
 
     // Relatório / lista
     Route::get('/relatorios/bens',  [RelatorioBensController::class, 'index'])->name('relatorios.bens.index');
@@ -225,8 +237,11 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::get('/api/patrimonios/proximo-numero', [PatrimonioController::class, 'proximoNumeroPatrimonio'])->name('api.patrimonios.proximo-numero');
 
     // Rotas de Usuários (T:1003)
-    Route::resource('usuarios', UserController::class)->middleware(['tela.access:1003', 'can.delete']);
+    Route::get('usuarios/notificacoes/solicitacoes', [UserController::class, 'notificacoesSolicitacoes'])
+        ->name('usuarios.notificacoes.solicitacoes')
+        ->middleware('tela.access:1003');
     Route::get('usuarios/confirmacao', [UserController::class, 'confirmacao'])->name('usuarios.confirmacao')->middleware('tela.access:1003');
+    Route::resource('usuarios', UserController::class)->middleware(['tela.access:1003', 'can.delete']);
     // Impersonation / developer helpers (restritos a admin ou ambiente local dentro do controller)
     Route::post('/usuarios/{usuario}/impersonate', [UserController::class, 'impersonate'])->name('usuarios.impersonate');
     Route::post('/impersonate/stop', [UserController::class, 'stopImpersonate'])->name('impersonate.stop');

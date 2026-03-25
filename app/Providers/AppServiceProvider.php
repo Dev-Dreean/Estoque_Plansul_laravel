@@ -2,16 +2,20 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\URL;
 use App\Models\LocalProjeto;
 use App\Models\ObjetoPatr;
 use App\Models\Patrimonio;
 use App\Models\User;
 use App\Observers\PatrimonioObserver;
 use App\Observers\RegistroRemovidoObserver;
+use App\Services\ImportantNotificationsService;
+use App\Services\SystemNewsService;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -21,7 +25,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(ImportantNotificationsService::class);
+        $this->app->singleton(SystemNewsService::class);
     }
 
     /**
@@ -44,6 +49,38 @@ class AppServiceProvider extends ServiceProvider
         LocalProjeto::observe(RegistroRemovidoObserver::class);
         ObjetoPatr::observe(RegistroRemovidoObserver::class);
         User::observe(RegistroRemovidoObserver::class);
+
+        View::composer('layouts.navigation', function ($view) {
+            $user = Auth::user();
+            $payload = [
+                'items' => [],
+                'grouped' => [],
+                'total_count' => 0,
+                'generated_at' => now()->toIso8601String(),
+            ];
+
+            if ($user) {
+                $payload = app(ImportantNotificationsService::class)->payloadForUser($user);
+            }
+
+            $view->with('importantNotificationsPayload', $payload);
+        });
+
+        View::composer('layouts.app', function ($view) {
+            $user = Auth::user();
+            $payload = [
+                'items' => [],
+                'unseen_keys' => [],
+                'unseen_count' => 0,
+                'should_auto_open' => false,
+                'generated_at' => now()->toIso8601String(),
+            ];
+
+            if ($user) {
+                $payload = app(SystemNewsService::class)->payloadForUser($user);
+            }
+
+            $view->with('systemNewsPayload', $payload);
+        });
     }
 }
-

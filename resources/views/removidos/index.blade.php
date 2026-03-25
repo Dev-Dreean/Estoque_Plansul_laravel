@@ -10,6 +10,15 @@
             </p>
           </div>
 
+          @if(($showOnlyNew ?? false) === true)
+          <div class="mb-6 p-4 rounded-lg bg-surface border border-app border-l-4 text-app" style="border-left-color: var(--info);">
+            <div class="font-semibold">Mostrando apenas novos removidos</div>
+            <div class="text-sm mt-1">
+              Estes registros foram removidos desde a sua última visualização.
+            </div>
+          </div>
+          @endif
+
           @if(session('success'))
           <div class="mb-6 p-4 rounded-lg bg-surface border border-app border-l-4 text-app" style="border-left-color: var(--ok);">
             {{ session('success') }}
@@ -44,6 +53,9 @@
 
             <div x-cloak x-show="open" x-transition class="mt-4">
               <form method="GET" action="{{ route('removidos.index') }}" @submit="open=false">
+                @if(($showOnlyNew ?? false) === true)
+                <input type="hidden" name="novos" value="1">
+                @endif
                 <div class="flex flex-wrap gap-3 lg:gap-4 overflow-visible pb-2 w-full mt-3 pt-3 border-t border-app">
                   <div class="flex-1 min-w-[200px] basis-[260px]">
                     <label for="q" class="sr-only">Buscar</label>
@@ -116,7 +128,7 @@
               </thead>
               <tbody>
                 @forelse($registros as $r)
-                <tr class="border-t border-app hover:bg-[var(--surface-2)]">
+                <tr class="border-t border-app hover:bg-[var(--surface-2)] {{ in_array((int) $r->id, $highlightRecordIds ?? [], true) ? 'bg-sky-50 dark:bg-sky-950/20' : '' }}">
                   <td class="px-3 py-2">
                     <span class="badge text-app font-semibold">
                       {{ $entityLabels[$r->entity] ?? mb_strtoupper($r->entity) }}

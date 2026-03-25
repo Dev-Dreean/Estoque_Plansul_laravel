@@ -2,6 +2,8 @@
 @import './foundation/base.css';
 @import './components/buttons.css';
 @import './components/forms.css';
+@import './components/notifications.css';
+@import './components/system-news.css';
 @import './components/tables.css';
 @import './components/panels.css';
 @import './components/modals.css';
