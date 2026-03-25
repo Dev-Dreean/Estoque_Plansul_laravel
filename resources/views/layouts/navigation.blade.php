@@ -220,7 +220,27 @@
                         $hasPendenciasNoFluxo = true;
                         $builder->orWhere(function ($stage) use ($applyNoShipment) {
                             $stage->where('status', \App\Models\SolicitacaoBem::STATUS_CONFIRMADO)
-                                ->whereNotNull('quote_approved_at');
+                                ->where(function ($sendable) {
+                                    $sendable->whereNull('quote_registered_at')
+                                        ->where(function ($legacyQuote) {
+                                            $legacyQuote->whereNull('quote_transporter')
+                                                ->orWhere('quote_transporter', '');
+                                        })
+                                        ->whereNull('quote_amount')
+                                        ->where(function ($legacyDeadline) {
+                                            $legacyDeadline->whereNull('quote_deadline')
+                                                ->orWhere('quote_deadline', '');
+                                        })
+                                        ->where(function ($legacyNotes) {
+                                            $legacyNotes->whereNull('quote_notes')
+                                                ->orWhere('quote_notes', '');
+                                        })
+                                        ->where(function ($quoteOptions) {
+                                            $quoteOptions->whereNull('quote_options_payload')
+                                                ->orWhere('quote_options_payload', '[]');
+                                        })
+                                        ->orWhereNotNull('quote_approved_at');
+                                });
                             $applyNoShipment($stage);
                         });
                     }
