@@ -126,7 +126,17 @@
                     class="sol-index__row {{ $loop->odd ? 'sol-index__row--odd' : 'sol-index__row--even' }} {{ $currentUserPendingLabel ? 'sol-index__row--attention' : '' }}"
                     @click="openShowModal({{ $solicitacao->id }})"
                 >
-                    <td class="px-4 py-2 font-semibold text-gray-900 dark:text-white">#{{ $solicitacao->id }}</td>
+                    <td class="px-4 py-2 font-semibold text-gray-900 dark:text-white">
+                        <div class="sol-index__code-cell">
+                            <span>#{{ $solicitacao->id }}</span>
+                            @if($currentUserPendingLabel)
+                                <div class="sol-index__pending-flag" data-flow-stage="{{ $solicitacao->status }}" title="{{ $currentUserPendingLabel }}">
+                                    <span class="sol-index__pending-dot" aria-hidden="true"></span>
+                                    <span>Sua ação</span>
+                                </div>
+                            @endif
+                        </div>
+                    </td>
                     <td class="px-4 py-2">{{ $solicitacao->itens_count ?? 0 }}</td>
                     <td class="px-4 py-2">
                         <div class="text-gray-900 dark:text-gray-100">{{ $shortPersonName($solicitacao->solicitante_nome ?? '-') }}</div>
@@ -136,12 +146,6 @@
                     <td class="px-4 py-2">{{ $solicitacao->uf ?? '-' }}</td>
                     <td class="px-4 py-2">
                         <x-status-badge :status="$statusVisual" :color-map="$statusColors" />
-                        @if($currentUserPendingLabel)
-                            <div class="sol-index__pending-flag" data-flow-stage="{{ $solicitacao->status }}" title="{{ $currentUserPendingLabel }}">
-                                <span class="sol-index__pending-dot" aria-hidden="true"></span>
-                                <span>Sua vez</span>
-                            </div>
-                        @endif
                         @if($statusAuxiliar !== '')
                             <div class="mt-0.5 max-w-[180px] truncate text-[11px] leading-3 text-gray-400" title="{{ $statusAuxiliar }}">
                                 {{ $statusAuxiliar }}
