@@ -423,9 +423,8 @@
 
     .sol-index__code-cell {
         display: inline-flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.45rem;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .sol-index__row--odd {
@@ -452,58 +451,53 @@
         background: var(--surface-3);
     }
 
-    .sol-index__pending-flag {
+    .sol-index__pending-inline {
         display: inline-flex;
         align-items: center;
-        gap: 0.35rem;
-        padding: 0.18rem 0.5rem;
+        justify-content: center;
+        width: 1.4rem;
+        height: 1.4rem;
         border-radius: 9999px;
-        border: 1px solid #c4b5fd;
-        background: #f5f3ff;
-        color: #6d28d9;
-        font-size: 10px;
-        font-weight: 600;
-        line-height: 1;
-        letter-spacing: 0.01em;
-        box-shadow: 0 6px 16px -14px rgba(91, 33, 182, 0.65);
-    }
-
-    .sol-index__pending-dot {
-        width: 0.42rem;
-        height: 0.42rem;
-        border-radius: 9999px;
-        background: currentColor;
+        border: 1px solid #f59e0b;
+        background: #fff7ed;
+        color: #b45309;
+        box-shadow: 0 10px 24px -18px rgba(180, 83, 9, 0.7);
         flex-shrink: 0;
     }
 
-    .sol-index__pending-flag[data-flow-stage='PENDENTE'] {
-        border-color: #facc15;
-        background: #fef3c7;
-        color: #854d0e;
+    .sol-index__pending-inline-icon {
+        width: 0.78rem;
+        height: 0.78rem;
     }
 
-    .sol-index__pending-flag[data-flow-stage='AGUARDANDO_CONFIRMACAO'] {
-        border-color: #60a5fa;
-        background: #dbeafe;
+    .sol-index__pending-inline[data-flow-stage='PENDENTE'] {
+        border-color: #f59e0b;
+        background: #fff7ed;
+        color: #b45309;
+    }
+
+    .sol-index__pending-inline[data-flow-stage='AGUARDANDO_CONFIRMACAO'] {
+        border-color: #2563eb;
+        background: #eff6ff;
         color: #1d4ed8;
     }
 
-    .sol-index__pending-flag[data-flow-stage='LIBERACAO'] {
+    .sol-index__pending-inline[data-flow-stage='LIBERACAO'] {
         border-color: #a78bfa;
         background: #ede9fe;
         color: #6d28d9;
     }
 
-    .sol-index__pending-flag[data-flow-stage='CONFIRMADO'] {
-        border-color: #7dd3fc;
-        background: #e0f2fe;
-        color: #0c4a6e;
+    .sol-index__pending-inline[data-flow-stage='CONFIRMADO'] {
+        border-color: #0891b2;
+        background: #ecfeff;
+        color: #0f766e;
     }
 
-    .dark .sol-index__pending-flag {
-        border-color: rgba(196, 181, 253, 0.45);
-        background: rgba(91, 33, 182, 0.2);
-        color: #ddd6fe;
+    .dark .sol-index__pending-inline {
+        border-color: rgba(251, 191, 36, 0.55);
+        background: rgba(120, 53, 15, 0.28);
+        color: #fde68a;
     }
 
     /* ----- FLOW ACTIONS ----- */
