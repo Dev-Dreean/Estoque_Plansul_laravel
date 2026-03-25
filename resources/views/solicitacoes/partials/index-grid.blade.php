@@ -128,7 +128,6 @@
                 >
                     <td class="px-4 py-2 font-semibold text-gray-900 dark:text-white">
                         <div class="sol-index__code-cell">
-                            <span>#{{ $solicitacao->id }}</span>
                             @if($currentUserPendingLabel)
                                 <span class="sol-index__pending-inline" data-flow-stage="{{ $solicitacao->status }}" title="{{ $currentUserPendingLabel }}" aria-label="{{ $currentUserPendingLabel }}">
                                     <svg class="sol-index__pending-inline-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -136,6 +135,7 @@
                                     </svg>
                                 </span>
                             @endif
+                            <span>#{{ $solicitacao->id }}</span>
                         </div>
                     </td>
                     <td class="px-4 py-2">{{ $solicitacao->itens_count ?? 0 }}</td>

@@ -7,13 +7,13 @@ use App\Models\Funcionario;
 use App\Models\SolicitacaoBem;
 use App\Models\SolicitacaoBemStatusHistorico;
 use App\Models\User;
+use App\Services\SolicitacaoBemEmailService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -39,6 +39,10 @@ class SolicitacaoBemController extends Controller
     private const FLOW_BEATRIZ_MATRICULAS = ['182687'];
     private const FLOW_BEATRIZ_LOGINS = ['BEA.SC'];
     private const FLOW_BEATRIZ_NAMES = ['BEATRIZ PATRICIA VIRISSIMO DOS SANTOS'];
+
+    public function __construct(private readonly SolicitacaoBemEmailService $solicitacaoBemEmailService)
+    {
+    }
 
     public function index(Request $request): View
     {
@@ -203,7 +207,13 @@ class SolicitacaoBemController extends Controller
         }
 
         if ($canSendAction) {
-            $cases[] = 'when status = ? and quote_approved_at is not null and ' . $noShipmentSql . ' then 0';
+            $cases[] = 'when status = ? and ((quote_registered_at is null'
+                . ' and (quote_transporter is null or quote_transporter = \'\')'
+                . ' and quote_amount is null'
+                . ' and (quote_deadline is null or quote_deadline = \'\')'
+                . ' and (quote_notes is null or quote_notes = \'\')'
+                . ' and (quote_options_payload is null or quote_options_payload = \'[]\'))'
+                . ' or quote_approved_at is not null) and ' . $noShipmentSql . ' then 0';
             $bindings[] = SolicitacaoBem::STATUS_CONFIRMADO;
         }
 
@@ -357,7 +367,7 @@ class SolicitacaoBemController extends Controller
                 'criado',
                 null
             );
-            $this->sendConfirmacaoEmail($solicitacao);
+            $this->solicitacaoBemEmailService->agendarConfirmacaoCriacao($solicitacao);
         }
 
         // Se foi aberto como modal, retornar JSON
@@ -1501,40 +1511,6 @@ HTML;
         abort(403, $message);
     }
 
-    private function sendConfirmacaoEmail(SolicitacaoBem $solicitacao): void
-    {
-        $to = trim((string) config('solicitacoes_bens.email_to'));
-        if ($to === '') {
-            return;
-        }
-
-        $subject = 'Solicitação de bens recebida #' . $solicitacao->id;
-        $body = implode("\n", [
-            'Uma nova Solicitação de bens foi registrada.',
-            'Número: ' . $solicitacao->id,
-            'Solicitante: ' . ($solicitacao->solicitante_nome ?? '-'),
-            'Matrícula: ' . ($solicitacao->solicitante_matricula ?? '-'),
-            'Setor: ' . ($solicitacao->setor ?? '-'),
-            'UF: ' . ($solicitacao->uf ?? '-'),
-            'Local destino: ' . ($solicitacao->local_destino ?? '-'),
-            'Status: ' . ($solicitacao->status ?? '-'),
-        ]);
-
-        try {
-            Mail::raw($body, function ($message) use ($to, $subject) {
-                $message->to($to)->subject($subject);
-            });
-
-            $solicitacao->email_confirmacao_enviado_em = now();
-            $solicitacao->save();
-        } catch (\Throwable $e) {
-            Log::warning('Falha ao enviar e-mail de Solicitação de bens', [
-                'solicitacao_id' => $solicitacao->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
     /**
      * Evita projetos duplicados no dropdown (mesmo código/nome com IDs diferentes).
      */
@@ -1745,6 +1721,8 @@ HTML;
             'confirmado_por' => $user->NMLOGIN,
         ]);
 
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'triagem_concluida');
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
@@ -1826,6 +1804,8 @@ HTML;
             'solicitacao_id' => $solicitacao->id,
             'encaminhado_por' => $user?->NMLOGIN,
         ]);
+
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'medidas_registradas');
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -1941,6 +1921,8 @@ HTML;
             'quantidade_cotacoes' => count($quoteOptions),
         ]);
 
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'cotacoes_registradas');
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
@@ -1999,6 +1981,8 @@ HTML;
             'solicitacao_id' => $solicitacao->id,
             'enviado_por' => $user->NMLOGIN,
         ]);
+
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'envio_registrado');
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -2083,6 +2067,8 @@ HTML;
             'invoice_number' => $invoiceNumber,
         ]);
 
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'pedido_enviado');
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
@@ -2146,6 +2132,8 @@ HTML;
                 : 'Bruno liberou a cotação da transportadora ' . ($selectedQuote['transporter'] ?? '-')
         );
 
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'liberacao_aprovada');
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
@@ -2192,6 +2180,8 @@ HTML;
             'recusar_cotacao',
             $motivo
         );
+
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'cotacao_recusada');
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -2247,6 +2237,8 @@ HTML;
             'motivo' => $motivo,
         ]);
 
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'pedido_nao_enviado');
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
@@ -2289,6 +2281,8 @@ HTML;
             'solicitacao_id' => $solicitacao->id,
             'recebido_por' => $user?->NMLOGIN,
         ]);
+
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'pedido_recebido');
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -2334,6 +2328,8 @@ HTML;
             'nao_recebido',
             $motivo
         );
+
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'pedido_nao_recebido');
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -2390,6 +2386,8 @@ HTML;
             'contestar_nao_recebido',
             $motivo
         );
+
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'contestacao_nao_recebido');
 
         Log::info('[SOLICITACOES] Não recebimento contestado', [
             'solicitacao_id' => $solicitacao->id,
@@ -2453,6 +2451,8 @@ HTML;
             'cancelado_por' => $user->NMLOGIN,
             'justificativa' => $validated['justificativa_cancelamento'],
         ]);
+
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'solicitacao_cancelada');
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -2599,6 +2599,8 @@ HTML;
             'motivo' => $motivo,
         ]);
 
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'retorno_analise');
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
@@ -2676,6 +2678,7 @@ HTML;
                 'criado',
                 'Reenvio da solicitação cancelada #' . $solicitacao->id . '. Motivo da correção: ' . $motivoReenvio
             );
+            $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($novaSolicitacao, 'criada');
         }
 
         $mensagem = 'Solicitação reenviada com sucesso a partir da cancelada #' . $solicitacao->id . '.';
@@ -2763,7 +2766,6 @@ HTML;
         return redirect()->route('profile.completion.create')->with('error', $message);
     }
 }
-
 
 
 
