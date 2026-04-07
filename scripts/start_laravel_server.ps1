@@ -70,5 +70,19 @@ else {
 # 2. Executar artisan serve
 Write-Host "🎯 Iniciando Laravel serve..." -ForegroundColor Cyan
 Write-Host "Local: http://localhost:8000" -ForegroundColor Yellow
+Write-Host "Padrão configurado via .env: SERVER_HOST=0.0.0.0 / SERVER_PORT=8000" -ForegroundColor Cyan
+
+$ipv4 = (Get-NetIPAddress -AddressFamily IPv4 |
+    Where-Object {
+        $_.IPAddress -notlike '127.*' -and
+        $_.IPAddress -notlike '169.254.*' -and
+        $_.PrefixOrigin -ne 'WellKnown'
+    } |
+    Sort-Object InterfaceMetric |
+    Select-Object -First 1 -ExpandProperty IPAddress)
+
+if ($ipv4) {
+    Write-Host "Rede: http://$ipv4`:8000" -ForegroundColor Green
+}
 
 php artisan serve
