@@ -1,6 +1,6 @@
 ﻿@php
   use Carbon\Carbon;
-  $filterKeys = ['nupatrimonio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','conferido','matr_responsavel','matr_gerente','cadastrado_por','numof','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate','uf'];
+  $filterKeys = ['nupatrimonio','cdprojeto','cdlocal','modelo','marca','descricao','situacao','conferido','matr_responsavel','matr_gerente','cadastrado_por','numof','num_mesa','dtaquisicao_de','dtaquisicao_ate','dtcadastro_de','dtcadastro_ate','uf'];
   $badgeColors = [
     'nupatrimonio' => 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700',
     'cdprojeto' => 'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-blue-200 border-gray-400 dark:border-blue-700',
@@ -14,6 +14,7 @@
     'matr_gerente' => 'bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700',
     'cadastrado_por' => 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700',
     'numof' => 'bg-violet-100 dark:bg-violet-900 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-700',
+    'num_mesa' => 'bg-fuchsia-100 dark:bg-fuchsia-900 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-200 dark:border-fuchsia-700',
     'dtaquisicao_de' => 'bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-200 border-rose-200 dark:border-rose-700',
     'dtaquisicao_ate' => 'bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-200 border-rose-200 dark:border-rose-700',
     'dtcadastro_de' => 'bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-200 border-sky-200 dark:border-sky-700',
@@ -125,6 +126,7 @@
               'matr_gerente' => 'Gerente',
               'cadastrado_por' => 'Cadastrado Por',
               'numof' => 'O.C',
+              'num_mesa' => 'Mesa',
               'dtaquisicao_de' => 'Aquisição De',
               'dtaquisicao_ate' => 'Aquisição Até',
               'dtcadastro_de' => 'Cadastro De',
@@ -552,6 +554,9 @@
         </div>
         <div class="flex-1 min-w-[100px] max-w-[140px] basis-[110px]">
           <input type="text" name="numof" placeholder="O.C" value="{{ request('numof') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
+        </div>
+        <div class="flex-1 min-w-[120px] max-w-[160px] basis-[130px]">
+          <input type="text" name="num_mesa" placeholder="Nº da mesa" value="{{ request('num_mesa') }}" class="h-10 px-2 sm:px-3 w-full text-sm border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded-md" />
         </div>
         <div class="flex-1 min-w-[140px] max-w-[170px] basis-[150px]">
           <div

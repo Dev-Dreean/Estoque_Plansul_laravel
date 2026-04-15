@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Schema;
 
 class SolicitacaoBem extends Model
 {
+    private static array $cachedColumnSupport = [];
+
     public const STATUS_PENDENTE = 'PENDENTE';
     public const STATUS_AGUARDANDO_CONFIRMACAO = 'AGUARDANDO_CONFIRMACAO';
     public const STATUS_LIBERACAO = 'LIBERACAO';
@@ -36,9 +39,11 @@ class SolicitacaoBem extends Model
         'email_origem',
         'email_assunto',
         'projeto_id',
+        'local_projeto_id',
         'uf',
         'setor',
         'local_destino',
+        'fluxo_responsavel',
         'status',
         'observacao',
         'observacao_controle',
@@ -54,6 +59,8 @@ class SolicitacaoBem extends Model
         'logistics_width_cm',
         'logistics_length_cm',
         'logistics_weight_kg',
+        'logistics_volume_count',
+        'logistics_asset_number',
         'logistics_notes',
         'logistics_registered_by_id',
         'logistics_registered_at',
@@ -66,6 +73,8 @@ class SolicitacaoBem extends Model
         'quote_tracking_type',
         'quote_registered_by_id',
         'quote_registered_at',
+        'release_authorized_by_id',
+        'release_authorized_at',
         'quote_approved_by_id',
         'quote_approved_at',
         'invoice_number',
@@ -81,11 +90,13 @@ class SolicitacaoBem extends Model
         'logistics_width_cm' => 'decimal:2',
         'logistics_length_cm' => 'decimal:2',
         'logistics_weight_kg' => 'decimal:3',
+        'logistics_volume_count' => 'integer',
         'quote_amount' => 'decimal:2',
         'quote_options_payload' => 'array',
         'quote_selected_index' => 'integer',
         'logistics_registered_at' => 'datetime',
         'quote_registered_at' => 'datetime',
+        'release_authorized_at' => 'datetime',
         'quote_approved_at' => 'datetime',
         'shipped_at' => 'datetime',
     ];
@@ -141,6 +152,11 @@ class SolicitacaoBem extends Model
         return $this->belongsTo(Tabfant::class, 'projeto_id', 'id');
     }
 
+    public function destinoLocalProjeto(): BelongsTo
+    {
+        return $this->belongsTo(LocalProjeto::class, 'local_projeto_id');
+    }
+
     public function usuariosComPermissao(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -159,6 +175,7 @@ class SolicitacaoBem extends Model
             || $this->logistics_width_cm !== null
             || $this->logistics_length_cm !== null
             || $this->logistics_weight_kg !== null
+            || $this->logistics_volume_count !== null
             || trim((string) ($this->logistics_notes ?? '')) !== ''
             || $this->logistics_registered_at !== null;
     }
@@ -250,8 +267,28 @@ class SolicitacaoBem extends Model
 
     public function isAwaitingRequesterDecision(): bool
     {
+        return $this->isAwaitingBrunoRelease();
+    }
+
+    public function isAwaitingTheoAuthorization(): bool
+    {
+        if (!self::supportsTheoReleaseAuthorization()) {
+            return false;
+        }
+
         return $this->status === self::STATUS_LIBERACAO
             && $this->hasQuoteOptions()
+            && $this->release_authorized_at === null
+            && !$this->hasShipmentData();
+    }
+
+    public function isAwaitingBrunoRelease(): bool
+    {
+        $isTheoFlowEnabled = self::supportsTheoReleaseAuthorization();
+
+        return $this->status === self::STATUS_LIBERACAO
+            && $this->hasQuoteOptions()
+            && ($isTheoFlowEnabled ? $this->release_authorized_at !== null : true)
             && $this->quote_approved_at === null
             && !$this->hasShipmentData();
     }
@@ -262,5 +299,53 @@ class SolicitacaoBem extends Model
             && $this->hasQuoteData()
             && $this->quote_approved_at !== null
             && !$this->hasShipmentData();
+    }
+
+    public function getFluxoResponsavelNormalizadoAttribute(): string
+    {
+        $fluxo = mb_strtoupper(trim((string) ($this->attributes['fluxo_responsavel'] ?? '')), 'UTF-8');
+        if ($fluxo !== '' && array_key_exists($fluxo, LocalProjeto::fluxoResponsavelOptions())) {
+            return $fluxo;
+        }
+
+        if ($this->relationLoaded('destinoLocalProjeto') && $this->destinoLocalProjeto) {
+            return $this->destinoLocalProjeto->fluxo_responsavel_normalizado;
+        }
+
+        return LocalProjeto::FLUXO_RESPONSAVEL_PADRAO;
+    }
+
+    public function getFluxoResponsavelLabelAttribute(): string
+    {
+        return LocalProjeto::fluxoResponsavelOptions()[$this->fluxo_responsavel_normalizado]
+            ?? LocalProjeto::fluxoResponsavelOptions()[LocalProjeto::FLUXO_RESPONSAVEL_PADRAO];
+    }
+
+    public function isFluxoTi(): bool
+    {
+        return $this->fluxo_responsavel_normalizado === LocalProjeto::FLUXO_RESPONSAVEL_TI;
+    }
+
+    public static function supportsTheoReleaseAuthorization(): bool
+    {
+        return self::hasDatabaseColumn('release_authorized_at');
+    }
+
+    public static function forgetCachedColumnSupport(): void
+    {
+        self::$cachedColumnSupport = [];
+    }
+
+    private static function hasDatabaseColumn(string $column): bool
+    {
+        $instance = new static();
+        $connection = $instance->getConnectionName() ?: config('database.default');
+        $key = $connection . '|' . $instance->getTable() . '|' . $column;
+
+        if (!array_key_exists($key, self::$cachedColumnSupport)) {
+            self::$cachedColumnSupport[$key] = Schema::connection($connection)->hasColumn($instance->getTable(), $column);
+        }
+
+        return self::$cachedColumnSupport[$key];
     }
 }

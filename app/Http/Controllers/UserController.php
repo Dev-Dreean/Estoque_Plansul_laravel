@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Funcionario;
 use App\Models\AcessoUsuario;
+use App\Models\SolicitacaoBemNotificacaoUsuario;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
@@ -13,12 +14,36 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class UserController extends Controller
 {
     private const TELA_PATRIMONIO = 1000;
     private const TELA_GERENCIAR_ACESSOS = 1005;
     private const TELA_RELATORIOS = 1006;
+    private const EMAIL_CORPORATIVO_REGEX = '/@plansul(?:[.-][a-z0-9-]+)+$/i';
+    private const PAPEIS_NOTIFICACAO_SOLICITACOES = [
+        'triagem' => [
+            'titulo' => 'Triagem inicial',
+            'descricao' => 'Recebe o aviso de abertura e a etapa de triagem inicial.',
+        ],
+        'medicao' => [
+            'titulo' => 'Medição e separação',
+            'descricao' => 'Recebe quando o pedido precisa de medidas, peso e separação.',
+        ],
+        'cotacao' => [
+            'titulo' => 'Cotação',
+            'descricao' => 'Recebe quando o pedido precisa de cotação.',
+        ],
+        'liberacao' => [
+            'titulo' => 'Autorização e liberação',
+            'descricao' => 'Recebe quando o pedido entra na etapa de autorização do Theo ou na liberação final do Bruno.',
+        ],
+        'envio' => [
+            'titulo' => 'Envio',
+            'descricao' => 'Recebe quando o pedido está liberado e pronto para envio.',
+        ],
+    ];
 
     public function index(Request $request)
     {
@@ -187,8 +212,15 @@ class UserController extends Controller
     {
         $telasDisponiveis = $this->carregarTelasDisponiveis();
         $acessosAtuais = [];
+        $papeisNotificacaoDisponiveis = $this->papelNotificacaoOptions();
+        $papeisNotificacaoSelecionados = [];
 
-        return view('usuarios.create', compact('telasDisponiveis', 'acessosAtuais'));
+        return view('usuarios.create', compact(
+            'telasDisponiveis',
+            'acessosAtuais',
+            'papeisNotificacaoDisponiveis',
+            'papeisNotificacaoSelecionados',
+        ));
     }
 
     public function store(Request $request): View|\Illuminate\Http\RedirectResponse
@@ -199,9 +231,12 @@ class UserController extends Controller
             'NOMEUSER' => ['nullable', 'string', 'max:80'],
             'NMLOGIN' => ['required', 'string', 'max:30', 'unique:usuario,NMLOGIN'],
             'PERFIL' => ['required', \Illuminate\Validation\Rule::in(['ADM', 'USR', 'C'])],
+            'email' => ['nullable', 'string', 'email', 'max:200', 'regex:' . self::EMAIL_CORPORATIVO_REGEX, 'unique:usuario,email'],
             'needs_identity_update' => ['nullable', 'boolean'],
             'telas' => ['nullable', 'array'],
             'telas.*' => ['integer', 'exists:acessotela,NUSEQTELA'],
+            'notificacao_papeis' => ['nullable', 'array'],
+            'notificacao_papeis.*' => ['string', Rule::in(array_keys(self::PAPEIS_NOTIFICACAO_SOLICITACOES))],
         ];
 
         $matriculaRules = ['nullable', 'string', 'max:8'];
@@ -210,7 +245,9 @@ class UserController extends Controller
         }
         $rules['CDMATRFUNCIONARIO'] = $matriculaRules;
 
-        $request->validate($rules);
+        $request->validate($rules, [
+            'email.regex' => $this->mensagemDominiosEmailCorporativo(),
+        ]);
 
         // Senha provisória forte: prefixo 'Plansul@' + 6 números aleatórios
         $randomNumbers = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -226,6 +263,7 @@ class UserController extends Controller
             'NMLOGIN' => $request->NMLOGIN,
             'CDMATRFUNCIONARIO' => $matricula,
             'PERFIL' => $request->PERFIL,
+            'email' => $request->filled('email') ? strtolower(trim((string) $request->input('email'))) : null,
             'SENHA' => $senhaProvisoria,
             'LGATIVO' => 'S',
             'must_change_password' => true,
@@ -237,6 +275,7 @@ class UserController extends Controller
         if ($me?->isAdmin()) {
             $telasSelecionadas = $this->normalizarTelas($request->input('telas', []));
             $this->syncTelas($user->CDMATRFUNCIONARIO, $telasSelecionadas);
+            $this->syncNotificacaoPapeis($user, $request->input('notificacao_papeis', []));
         }
 
         // Retornar tela de confirmação com credenciais para copiar/repasse
@@ -250,8 +289,16 @@ class UserController extends Controller
     {
         $telasDisponiveis = $this->carregarTelasDisponiveis();
         $acessosAtuais = $this->carregarAcessosAtuais($usuario->CDMATRFUNCIONARIO);
+        $papeisNotificacaoDisponiveis = $this->papelNotificacaoOptions();
+        $papeisNotificacaoSelecionados = $this->carregarPapeisNotificacaoAtuais($usuario);
 
-        return view('usuarios.edit', compact('usuario', 'telasDisponiveis', 'acessosAtuais'));
+        return view('usuarios.edit', compact(
+            'usuario',
+            'telasDisponiveis',
+            'acessosAtuais',
+            'papeisNotificacaoDisponiveis',
+            'papeisNotificacaoSelecionados',
+        ));
     }
 
     public function update(Request $request, User $usuario): RedirectResponse
@@ -262,10 +309,13 @@ class UserController extends Controller
             'NOMEUSER' => ['nullable', 'string', 'max:80'],
             'NMLOGIN' => ['required', 'string', 'max:30', Rule::unique('usuario', 'NMLOGIN')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
             'PERFIL' => ['required', Rule::in(['ADM', 'USR', 'C'])],
+            'email' => ['nullable', 'string', 'email', 'max:200', 'regex:' . self::EMAIL_CORPORATIVO_REGEX, Rule::unique('usuario', 'email')->ignore($usuario->NUSEQUSUARIO, 'NUSEQUSUARIO')],
             'needs_identity_update' => ['nullable', 'boolean'],
             'SENHA' => ['nullable', 'string', 'min:8'],
             'telas' => ['nullable', 'array'],
             'telas.*' => ['integer', 'exists:acessotela,NUSEQTELA'],
+            'notificacao_papeis' => ['nullable', 'array'],
+            'notificacao_papeis.*' => ['string', Rule::in(array_keys(self::PAPEIS_NOTIFICACAO_SOLICITACOES))],
         ];
 
         $matriculaRules = ['nullable', 'string', 'max:8'];
@@ -274,7 +324,9 @@ class UserController extends Controller
         }
         $rules['CDMATRFUNCIONARIO'] = $matriculaRules;
 
-        $request->validate($rules);
+        $request->validate($rules, [
+            'email.regex' => $this->mensagemDominiosEmailCorporativo(),
+        ]);
 
         $oldMatricula = $usuario->CDMATRFUNCIONARIO;
         $matricula = $matriculaInput !== '' ? $matriculaInput : User::generateTemporaryMatricula();
@@ -287,6 +339,10 @@ class UserController extends Controller
         $usuario->CDMATRFUNCIONARIO = $matricula;
         $usuario->PERFIL = $request->PERFIL;
         $usuario->needs_identity_update = $forceIdentityUpdate;
+
+        $usuario->email = $request->filled('email')
+            ? strtolower(trim((string) $request->input('email')))
+            : null;
 
         if ($request->filled('SENHA')) {
             $usuario->SENHA = $request->SENHA;
@@ -305,9 +361,29 @@ class UserController extends Controller
 
             $telasSelecionadas = $this->normalizarTelas($request->input('telas', []));
             $this->syncTelas($usuario->CDMATRFUNCIONARIO, $telasSelecionadas);
+            $this->syncNotificacaoPapeis($usuario, $request->input('notificacao_papeis', []));
         }
 
         return redirect()->route('usuarios.index')->with('success', 'Usuário atualizado com sucesso!');
+    }
+
+    public function notificacoesSolicitacoes(): View
+    {
+        $usuarios = User::query()
+            ->orderByRaw("CASE WHEN email IS NULL OR email = '' THEN 1 ELSE 0 END")
+            ->orderBy('NOMEUSER')
+            ->get();
+
+        $matriz = $usuarios->map(function (User $usuario) {
+            return [
+                'usuario' => $usuario,
+                'papeis' => $this->carregarPapeisNotificacaoAtuais($usuario),
+            ];
+        });
+
+        $papeisNotificacaoDisponiveis = $this->papelNotificacaoOptions();
+
+        return view('usuarios.notificacoes-solicitacoes', compact('matriz', 'papeisNotificacaoDisponiveis'));
     }
 
     private function grantTela(?string $matricula, int $tela): void
@@ -431,6 +507,68 @@ class UserController extends Controller
         });
     }
 
+    private function papelNotificacaoOptions(): array
+    {
+        return self::PAPEIS_NOTIFICACAO_SOLICITACOES;
+    }
+
+    private function carregarPapeisNotificacaoAtuais(User $usuario): array
+    {
+        if (!$this->tabelaNotificacoesSolicitacoesExiste()) {
+            return [];
+        }
+
+        return $usuario->notificacoesSolicitacoes()
+            ->pluck('papel')
+            ->filter(fn ($papel) => is_string($papel) && isset(self::PAPEIS_NOTIFICACAO_SOLICITACOES[$papel]))
+            ->values()
+            ->all();
+    }
+
+    private function normalizarPapeisNotificacao(mixed $papeis): array
+    {
+        if (!is_array($papeis)) {
+            return [];
+        }
+
+        return array_values(array_unique(array_filter(array_map(function ($papel) {
+            $papel = trim((string) $papel);
+
+            return isset(self::PAPEIS_NOTIFICACAO_SOLICITACOES[$papel]) ? $papel : null;
+        }, $papeis))));
+    }
+
+    private function syncNotificacaoPapeis(User $usuario, mixed $papeis): void
+    {
+        if (!$this->tabelaNotificacoesSolicitacoesExiste()) {
+            return;
+        }
+
+        $papeisNormalizados = $this->normalizarPapeisNotificacao($papeis);
+
+        SolicitacaoBemNotificacaoUsuario::query()
+            ->where('usuario_id', $usuario->NUSEQUSUARIO)
+            ->delete();
+
+        foreach ($papeisNormalizados as $papel) {
+            SolicitacaoBemNotificacaoUsuario::query()->create([
+                'usuario_id' => $usuario->NUSEQUSUARIO,
+                'papel' => $papel,
+            ]);
+        }
+    }
+
+    private function tabelaNotificacoesSolicitacoesExiste(): bool
+    {
+        static $exists = null;
+
+        if ($exists === null) {
+            $exists = Schema::hasTable('solicitacoes_bens_notificacao_usuarios');
+        }
+
+        return $exists;
+    }
+
     private function migrateAcessosMatricula(string $from, string $to): void
     {
         $from = trim($from);
@@ -469,6 +607,10 @@ class UserController extends Controller
             }
             return redirect()->route('usuarios.index')->with('error', 'Você não pode deletar seu próprio usuário.');
         }
+
+        SolicitacaoBemNotificacaoUsuario::query()
+            ->where('usuario_id', $usuario->NUSEQUSUARIO)
+            ->delete();
 
         $usuario->delete();
         
@@ -583,6 +725,11 @@ class UserController extends Controller
         $nome = preg_replace('/[^\p{L}\s]/u', ' ', $nome ?? '');
         $nome = preg_replace('/\s+/u', ' ', $nome);
         return trim($nome);
+    }
+
+    private function mensagemDominiosEmailCorporativo(): string
+    {
+        return 'Informe um e-mail corporativo cujo dominio comece com @plansul. Depois disso, qualquer final valido e aceito, como .com, .com.br, .net ou .org.';
     }
 
     private function gerarLoginUnico(string $base): string

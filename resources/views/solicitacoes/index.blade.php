@@ -200,6 +200,18 @@
                                         <input type="number" step="0.001" min="0.001" id="quick_logistics_weight_kg" name="logistics_weight_kg" required
                                             class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3">
                                     </div>
+                                    <div class="col-span-2">
+                                        <label for="quick_logistics_volume_count" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Quantidade de volumes *</label>
+                                        <input type="number" min="1" step="1" id="quick_logistics_volume_count" name="logistics_volume_count" required
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                            placeholder="Ex: 3 volumes">
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label for="quick_logistics_asset_number" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número do patrimônio</label>
+                                        <input type="text" id="quick_logistics_asset_number" name="logistics_asset_number"
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                            placeholder="Informe o patrimônio definido para envio">
+                                    </div>
                                 </div>
 
                                 <div>
@@ -908,8 +920,9 @@
                     projetoIndex: -1,
                     allProjetos: todasProjetos,
                     
-                    localDestinoSearch: '',
-                    localSelecionado: '',
+                    localDestinoSearch: document.getElementById('localDestinoSearch')?.value || '',
+                    localSelecionado: document.getElementById('local_projeto_id')?.value || '',
+                    localNomeSelecionado: document.getElementById('local_destino')?.value || '',
                     showLocalDrop: false,
                     localIndex: -1,
                     locaisList: [],
@@ -964,6 +977,7 @@
                         // Limpar local selecionado
                         this.localDestinoSearch = '';
                         this.localSelecionado = '';
+                        this.localNomeSelecionado = '';
                         this.locaisList = [];
                         
                         // Buscar locais do projeto
@@ -976,6 +990,7 @@
                         this.projetoIndex = -1;
                         this.localDestinoSearch = '';
                         this.localSelecionado = '';
+                        this.localNomeSelecionado = '';
                         this.locaisList = [];
                     },
                     
@@ -1008,7 +1023,8 @@
                     
                     selecionarLocal(loc) {
                         if (!loc) return;
-                        this.localSelecionado = loc.delocal; // Armazena o nome do local
+                        this.localSelecionado = String(loc.id || '');
+                        this.localNomeSelecionado = String(loc.delocal || '').trim();
                         this.localDestinoSearch = `${loc.cdlocal} - ${loc.delocal}`;
                         this.showLocalDrop = false;
                         this.localIndex = -1;
@@ -1017,6 +1033,7 @@
                     limparLocal() {
                         this.localDestinoSearch = '';
                         this.localSelecionado = '';
+                        this.localNomeSelecionado = '';
                         this.localIndex = -1;
                     }
                 };
@@ -2041,4 +2058,3 @@
         </script>
     @endpush
 </x-app-layout>
-

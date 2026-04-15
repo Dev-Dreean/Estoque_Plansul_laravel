@@ -26,7 +26,7 @@
             </span>
         @endif
         @if($meta)
-            <span class="mt-2 block text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
+            <span class="mt-2 block text-[11px] tracking-wide text-gray-400 dark:text-gray-500">
                 {{ $meta }}
             </span>
         @endif

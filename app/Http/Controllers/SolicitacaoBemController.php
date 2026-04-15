@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Tabfant;
 use App\Models\Funcionario;
+use App\Models\LocalProjeto;
 use App\Models\SolicitacaoBem;
 use App\Models\SolicitacaoBemStatusHistorico;
 use App\Models\User;
 use App\Services\SolicitacaoBemEmailService;
+use App\Services\SolicitacaoBemFlowService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,6 +32,7 @@ class SolicitacaoBemController extends Controller
     private const TELA_SOLICITACOES_VISUALIZACAO_RESTRITA = 1018;
     private const TELA_SOLICITACOES_TRIAGEM_INICIAL = 1019;
     private const TELA_SOLICITACOES_LIBERACAO_ENVIO = 1020;
+    private const TELA_SOLICITACOES_AUTORIZACAO_LIBERACAO = 1021;
     private const FLOW_BRUNO_MATRICULAS = ['11829'];
     private const FLOW_BRUNO_LOGINS = ['BRUNO'];
     private const FLOW_BRUNO_NAMES = ['BRUNO DE AZEVEDO FELICIANO'];
@@ -39,8 +42,14 @@ class SolicitacaoBemController extends Controller
     private const FLOW_BEATRIZ_MATRICULAS = ['182687'];
     private const FLOW_BEATRIZ_LOGINS = ['BEA.SC'];
     private const FLOW_BEATRIZ_NAMES = ['BEATRIZ PATRICIA VIRISSIMO DOS SANTOS'];
+    private const FLOW_THEO_MATRICULAS = ['134616'];
+    private const FLOW_THEO_LOGINS = ['THEO'];
+    private const FLOW_THEO_NAMES = ['THEODORO BUZZI AVILA'];
 
-    public function __construct(private readonly SolicitacaoBemEmailService $solicitacaoBemEmailService)
+    public function __construct(
+        private readonly SolicitacaoBemEmailService $solicitacaoBemEmailService,
+        private readonly SolicitacaoBemFlowService $solicitacaoBemFlowService,
+    )
     {
     }
 
@@ -147,9 +156,12 @@ class SolicitacaoBemController extends Controller
         $userId = $user->getAuthIdentifier();
 
         $canConfirmAction = $this->canConfirmSolicitacao($user);
+        $canConfirmTiAction = $this->solicitacaoBemFlowService->canConfirmSolicitacaoForFlow($user, LocalProjeto::FLUXO_RESPONSAVEL_TI);
+        $canConfirmPadraoAction = $this->solicitacaoBemFlowService->canConfirmSolicitacaoForFlow($user, LocalProjeto::FLUXO_RESPONSAVEL_PADRAO);
         $canForwardAction = $this->canForwardToLiberacao($user);
         $canQuoteAction = $this->canRegisterQuote($user);
-        $canReleaseAction = $this->canAuthorizeRelease($user);
+        $canTheoReleaseAction = $this->canAuthorizeTheoRelease($user);
+        $canBrunoReleaseAction = $this->canFinalizeRelease($user);
         $canSendAction = $this->canSendSolicitacao($user);
         $canReceiveAny = $isAdmin || $userId || $matricula !== '';
 
@@ -187,8 +199,20 @@ class SolicitacaoBemController extends Controller
         $bindings = [];
 
         if ($canConfirmAction) {
-            $cases[] = 'when status = ? then 0';
-            $bindings[] = SolicitacaoBem::STATUS_PENDENTE;
+            if ($isAdmin || ($canConfirmTiAction && $canConfirmPadraoAction)) {
+                $cases[] = 'when status = ? then 0';
+                $bindings[] = SolicitacaoBem::STATUS_PENDENTE;
+            } else {
+                if ($canConfirmTiAction) {
+                    $cases[] = 'when status = ? and ' . $this->solicitacaoBemFlowService->pendingFlowConditionSql(true) . ' then 0';
+                    $bindings[] = SolicitacaoBem::STATUS_PENDENTE;
+                }
+
+                if ($canConfirmPadraoAction) {
+                    $cases[] = 'when status = ? and ' . $this->solicitacaoBemFlowService->pendingFlowConditionSql(false) . ' then 0';
+                    $bindings[] = SolicitacaoBem::STATUS_PENDENTE;
+                }
+            }
         }
 
         if ($canForwardAction) {
@@ -201,8 +225,19 @@ class SolicitacaoBemController extends Controller
             $bindings[] = SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO;
         }
 
-        if ($canReleaseAction) {
-            $cases[] = 'when status = ? and quote_approved_at is null and ' . $noShipmentSql . ' then 0';
+        $supportsTheoReleaseAuthorization = SolicitacaoBem::supportsTheoReleaseAuthorization();
+
+        if ($canTheoReleaseAction && $supportsTheoReleaseAuthorization) {
+            $cases[] = 'when status = ? and release_authorized_at is null and ' . $noShipmentSql . ' then 0';
+            $bindings[] = SolicitacaoBem::STATUS_LIBERACAO;
+        }
+
+        if ($canBrunoReleaseAction) {
+            $releaseConditionSql = $supportsTheoReleaseAuthorization
+                ? 'release_authorized_at is not null and quote_approved_at is null'
+                : '(quote_options_payload is not null and quote_options_payload != \'[]\') and quote_approved_at is null';
+
+            $cases[] = 'when status = ? and ' . $releaseConditionSql . ' and ' . $noShipmentSql . ' then 0';
             $bindings[] = SolicitacaoBem::STATUS_LIBERACAO;
         }
 
@@ -286,6 +321,8 @@ class SolicitacaoBemController extends Controller
             'solicitante_matricula' => ['nullable', 'string', 'max:20'],
             'recebedor_matricula' => ['required', 'string', 'max:20', 'exists:funcionarios,CDMATRFUNCIONARIO'],
             'projeto_id' => ['required', 'integer', 'exists:tabfant,id'],
+            'local_projeto_id' => ['nullable', 'integer', 'exists:locais_projeto,id'],
+            'fluxo_responsavel' => ['nullable', 'string', Rule::in(array_keys(LocalProjeto::fluxoResponsavelOptions()))],
             'uf' => ['nullable', 'string', 'max:2'],
             'local_destino' => ['required', 'string', 'max:150'],
             'observacao' => ['nullable', 'string', 'max:2000'],
@@ -313,6 +350,29 @@ class SolicitacaoBemController extends Controller
         }
 
         $validated = $validator->validated();
+        $localProjeto = $this->resolverLocalProjetoSolicitacao(
+            (int) $validated['projeto_id'],
+            isset($validated['local_projeto_id']) ? (int) $validated['local_projeto_id'] : null,
+            (string) $validated['local_destino']
+        );
+
+        if (!$localProjeto) {
+            $mensagem = 'Selecione um local válido do projeto informado.';
+            if ($request->input('modal') === '1' || $request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $mensagem,
+                    'errors' => ['local_projeto_id' => [$mensagem]],
+                ], 422);
+            }
+
+            return redirect()
+                ->back()
+                ->withErrors(['local_projeto_id' => $mensagem])
+                ->withInput();
+        }
+
+        $fluxoResponsavel = $this->resolveSolicitacaoFlowFromLocal($localProjeto);
 
         $user = Auth::user();
         $uf = strtoupper(trim((string) ($validated['uf'] ?? '')));
@@ -329,7 +389,7 @@ class SolicitacaoBemController extends Controller
 
         $solicitacao = null;
 
-        DB::transaction(function () use ($validated, $user, $uf, $matricula, $recebedorMatricula, $recebedor, $observacao, &$solicitacao) {
+        DB::transaction(function () use ($validated, $localProjeto, $fluxoResponsavel, $user, $uf, $matricula, $recebedorMatricula, $recebedor, $observacao, &$solicitacao) {
             $solicitacao = SolicitacaoBem::create([
                 'solicitante_id' => $user?->getAuthIdentifier(),
                 'solicitante_nome' => trim((string) $validated['solicitante_nome']),
@@ -337,8 +397,10 @@ class SolicitacaoBemController extends Controller
                 'matricula_recebedor' => $recebedor?->CDMATRFUNCIONARIO ?? ($recebedorMatricula !== '' ? $recebedorMatricula : null),
                 'nome_recebedor' => $recebedor?->NMFUNCIONARIO ?? trim((string) $validated['solicitante_nome']),
                 'projeto_id' => $validated['projeto_id'],
+                'local_projeto_id' => $localProjeto->id,
                 'uf' => $uf !== '' ? $uf : null,
-                'local_destino' => trim((string) $validated['local_destino']),
+                'local_destino' => $localProjeto->delocal,
+                'fluxo_responsavel' => $fluxoResponsavel,
                 'observacao' => $observacao !== '' ? $observacao : null,
                 'status' => SolicitacaoBem::STATUS_PENDENTE,
             ]);
@@ -406,7 +468,7 @@ class SolicitacaoBemController extends Controller
         $canOwnerEditPending = $this->canEditAsOwnerPending($user, $solicitacao);
         $canRecriarCancelada = $this->canRecreateCancelled($user, $solicitacao);
 
-        $canConfirmAction = $this->canConfirmSolicitacao($user);
+        $canConfirmAction = $this->canConfirmSolicitacao($user, $solicitacao);
         $canForwardAction = $this->canForwardToLiberacao($user);
         $canQuoteAction = $this->canRegisterQuote($user);
         $canReleaseAction = $this->canAuthorizeRelease($user);
@@ -575,7 +637,7 @@ class SolicitacaoBemController extends Controller
             $usuariosComPermissao = $this->listarUsuariosComPermissao($solicitacao);
             $canOwnerEditPending = $this->canEditAsOwnerPending($user, $solicitacao);
             $canRecriarCancelada = $this->canRecreateCancelled($user, $solicitacao);
-            $canConfirmAction = $this->canConfirmSolicitacao($user);
+            $canConfirmAction = $this->canConfirmSolicitacao($user, $solicitacao);
             $canForwardAction = $this->canForwardToLiberacao($user);
             $canQuoteAction = $this->canRegisterQuote($user);
             $canReleaseAction = $this->canAuthorizeRelease($user);
@@ -661,6 +723,8 @@ HTML;
                 'solicitante_nome' => ['required', 'string', 'max:120'],
                 'recebedor_matricula' => ['required', 'string', 'max:20', 'exists:funcionarios,CDMATRFUNCIONARIO'],
                 'projeto_id' => ['required', 'integer', 'exists:tabfant,id'],
+                'local_projeto_id' => ['nullable', 'integer', 'exists:locais_projeto,id'],
+                'fluxo_responsavel' => ['nullable', 'string', Rule::in(array_keys(LocalProjeto::fluxoResponsavelOptions()))],
                 'local_destino' => ['required', 'string', 'max:150'],
                 'observacao' => ['nullable', 'string', 'max:2000'],
                 'itens' => ['required', 'array', 'min:1'],
@@ -675,14 +739,30 @@ HTML;
                 ->select(['CDMATRFUNCIONARIO', 'NMFUNCIONARIO'])
                 ->where('CDMATRFUNCIONARIO', $recebedorMatricula)
                 ->first();
+            $localProjeto = $this->resolverLocalProjetoSolicitacao(
+                (int) $validated['projeto_id'],
+                isset($validated['local_projeto_id']) ? (int) $validated['local_projeto_id'] : null,
+                (string) $validated['local_destino']
+            );
 
-            DB::transaction(function () use ($solicitacao, $validated, $recebedor, $recebedorMatricula) {
+            if (!$localProjeto) {
+                return redirect()
+                    ->back()
+                    ->withErrors(['local_projeto_id' => 'Selecione um local válido do projeto informado.'])
+                    ->withInput();
+            }
+
+            $fluxoResponsavel = $this->resolveSolicitacaoFlowFromLocal($localProjeto);
+
+            DB::transaction(function () use ($solicitacao, $validated, $localProjeto, $fluxoResponsavel, $recebedor, $recebedorMatricula) {
                 $solicitacao->fill([
                     'solicitante_nome' => trim((string) $validated['solicitante_nome']),
                     'matricula_recebedor' => $recebedor?->CDMATRFUNCIONARIO ?? $recebedorMatricula,
                     'nome_recebedor' => $recebedor?->NMFUNCIONARIO ?? trim((string) $validated['solicitante_nome']),
                     'projeto_id' => (int) $validated['projeto_id'],
-                    'local_destino' => trim((string) $validated['local_destino']),
+                    'local_projeto_id' => $localProjeto->id,
+                    'local_destino' => $localProjeto->delocal,
+                    'fluxo_responsavel' => $fluxoResponsavel,
                     'observacao' => trim((string) ($validated['observacao'] ?? '')) ?: null,
                 ]);
                 $solicitacao->save();
@@ -715,10 +795,28 @@ HTML;
         }
 
         $data = $request->validate([
+            'local_projeto_id' => ['nullable', 'integer', 'exists:locais_projeto,id'],
             'local_destino' => ['nullable', 'string', 'max:150'],
             'observacao_controle' => ['nullable', 'string', 'max:2000'],
             'recebedor_matricula' => ['nullable', 'string', 'max:20', 'exists:funcionarios,CDMATRFUNCIONARIO'],
         ]);
+
+        $localDestinoInformado = trim((string) ($data['local_destino'] ?? ''));
+        if (!empty($data['local_projeto_id']) || $localDestinoInformado !== '') {
+            $localProjeto = $this->resolverLocalProjetoSolicitacao(
+                (int) $solicitacao->projeto_id,
+                !empty($data['local_projeto_id']) ? (int) $data['local_projeto_id'] : null,
+                $localDestinoInformado
+            );
+
+            if (!$localProjeto) {
+                return $this->denyAccess($request, 'Selecione um local válido do projeto informado.');
+            }
+
+            $data['local_projeto_id'] = $localProjeto->id;
+            $data['local_destino'] = $localProjeto->delocal;
+            $data['fluxo_responsavel'] = $this->resolveSolicitacaoFlowFromLocal($localProjeto);
+        }
 
         $data['local_destino'] = trim((string) ($data['local_destino'] ?? ''));
         if ($data['local_destino'] === '') {
@@ -737,6 +835,9 @@ HTML;
             }
         }
         unset($data['recebedor_matricula']);
+        if (empty($data['local_projeto_id']) && array_key_exists('local_projeto_id', $data)) {
+            $data['local_projeto_id'] = null;
+        }
 
         $solicitacao->fill($data);
         $solicitacao->save();
@@ -914,7 +1015,8 @@ HTML;
             || $user->temAcessoTela((string) self::TELA_SOLICITACOES_ATUALIZAR)
             || $user->temAcessoTela((string) User::TELA_SOLICITACOES_APROVAR)
             || $user->temAcessoTela((string) User::TELA_SOLICITACOES_CANCELAR)
-            || $user->temAcessoTela((string) self::TELA_SOLICITACOES_LIBERACAO_ENVIO);
+            || $user->temAcessoTela((string) self::TELA_SOLICITACOES_LIBERACAO_ENVIO)
+            || $user->temAcessoTela((string) self::TELA_SOLICITACOES_AUTORIZACAO_LIBERACAO);
     }
 
     private function isVisualizacaoRestrita(?User $user): bool
@@ -1071,30 +1173,27 @@ HTML;
 
     private function isBrunoFlowOperator(?User $user): bool
     {
-        return $this->isFlowOperator($user, self::FLOW_BRUNO_MATRICULAS, self::FLOW_BRUNO_LOGINS, self::FLOW_BRUNO_NAMES);
+        return $this->solicitacaoBemFlowService->isBrunoFlowOperator($user);
     }
 
     private function isTiagoFlowOperator(?User $user): bool
     {
-        return $this->isFlowOperator($user, self::FLOW_TIAGO_MATRICULAS, self::FLOW_TIAGO_LOGINS, self::FLOW_TIAGO_NAMES);
+        return $this->solicitacaoBemFlowService->isTiagoFlowOperator($user);
     }
 
     private function isBeatrizFlowOperator(?User $user): bool
     {
-        return $this->isFlowOperator($user, self::FLOW_BEATRIZ_MATRICULAS, self::FLOW_BEATRIZ_LOGINS, self::FLOW_BEATRIZ_NAMES);
+        return $this->solicitacaoBemFlowService->isBeatrizFlowOperator($user);
     }
 
-    private function canConfirmSolicitacao(?User $user): bool
+    private function isTheoFlowOperator(?User $user): bool
     {
-        if (!$user) {
-            return false;
-        }
-        // ADM sempre tem acesso (nunca precisa de permissão explícita)
-        if ($user->isAdmin()) {
-            return true;
-        }
-        return $this->canTriagemInicial($user)
-            && ($this->isTiagoFlowOperator($user) || $this->isBeatrizFlowOperator($user));
+        return $this->solicitacaoBemFlowService->isTheoFlowOperator($user);
+    }
+
+    private function canConfirmSolicitacao(?User $user, ?SolicitacaoBem $solicitacao = null): bool
+    {
+        return $this->solicitacaoBemFlowService->canConfirmSolicitacao($user, $solicitacao);
     }
 
     private function canForwardToLiberacao(?User $user): bool
@@ -1125,6 +1224,24 @@ HTML;
 
     private function canAuthorizeRelease(?User $user): bool
     {
+        return $this->canAuthorizeTheoRelease($user) || $this->canFinalizeRelease($user);
+    }
+
+    private function canAuthorizeTheoRelease(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $user->temAcessoTela((string) self::TELA_SOLICITACOES_AUTORIZACAO_LIBERACAO)
+            && $this->isTheoFlowOperator($user);
+    }
+
+    private function canFinalizeRelease(?User $user): bool
+    {
         if (!$user) {
             return false;
         }
@@ -1151,7 +1268,7 @@ HTML;
 
     private function canDecideQuote(?User $user, SolicitacaoBem $solicitacao): bool
     {
-        return $this->canAuthorizeRelease($user);
+        return $this->canAuthorizeTheoRelease($user);
     }
 
     private function canManageCurrentFlowStage(?User $user, SolicitacaoBem $solicitacao): bool
@@ -1165,7 +1282,7 @@ HTML;
         }
 
         if ($solicitacao->status === SolicitacaoBem::STATUS_PENDENTE) {
-            return $this->canConfirmSolicitacao($user);
+            return $this->canConfirmSolicitacao($user, $solicitacao);
         }
 
         if ($solicitacao->status === SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO) {
@@ -1175,7 +1292,11 @@ HTML;
         }
 
         if ($solicitacao->status === SolicitacaoBem::STATUS_LIBERACAO) {
-            return $this->canAuthorizeRelease($user);
+            if ($solicitacao->isAwaitingTheoAuthorization()) {
+                return $this->canAuthorizeTheoRelease($user);
+            }
+
+            return $this->canFinalizeRelease($user);
         }
 
         if ($solicitacao->status === SolicitacaoBem::STATUS_CONFIRMADO) {
@@ -1191,7 +1312,7 @@ HTML;
         }
 
         if ($solicitacao->status === SolicitacaoBem::STATUS_NAO_ENVIADO) {
-            return $this->canConfirmSolicitacao($user);
+            return $this->canConfirmSolicitacao($user, $solicitacao);
         }
 
         return false;
@@ -1516,13 +1637,31 @@ HTML;
      */
     private function loadProjetosUnicos()
     {
-        return Tabfant::query()
-            ->selectRaw('MIN(id) as id, CDPROJETO, NOMEPROJETO')
-            ->whereNotNull('CDPROJETO')
-            ->whereNotNull('NOMEPROJETO')
-            ->groupBy('CDPROJETO', 'NOMEPROJETO')
-            ->orderBy('NOMEPROJETO')
-            ->get();
+        return collect(\App\Services\SearchCacheService::getProjetos())
+            ->map(fn (array $projeto) => (object) [
+                'id' => null,
+                'CDPROJETO' => $projeto['CDPROJETO'] ?? null,
+                'NOMEPROJETO' => $projeto['NOMEPROJETO'] ?? null,
+            ]);
+    }
+
+    private function resolverLocalProjetoSolicitacao(int $projetoId, ?int $localProjetoId, ?string $localDestino): ?LocalProjeto
+    {
+        return LocalProjeto::resolveForProjeto(
+            $projetoId,
+            $localProjetoId,
+            $localDestino
+        );
+    }
+
+    private function normalizeSolicitacaoFlow(?string $flow): string
+    {
+        return $this->solicitacaoBemFlowService->normalizeFlow($flow);
+    }
+
+    private function resolveSolicitacaoFlowFromLocal(LocalProjeto $localProjeto): string
+    {
+        return $this->normalizeSolicitacaoFlow($localProjeto->fluxo_responsavel_normalizado);
     }
 
     private function normalizarNome(string $nome): string
@@ -1663,7 +1802,7 @@ HTML;
     {
         /** @var User|null $user */
         $user = Auth::user();
-        if (!$this->canConfirmSolicitacao($user)) {
+        if (!$this->canConfirmSolicitacao($user, $solicitacao)) {
             return $this->denyAccess($request, 'Você não tem permissão para confirmar solicitações.');
         }
 
@@ -1754,6 +1893,8 @@ HTML;
             'logistics_width_cm' => ['required', 'numeric', 'min:0.01'],
             'logistics_length_cm' => ['required', 'numeric', 'min:0.01'],
             'logistics_weight_kg' => ['required', 'numeric', 'min:0.001'],
+            'logistics_volume_count' => ['required', 'integer', 'min:1', 'max:999'],
+            'logistics_asset_number' => ['nullable', 'string', 'max:50'],
             'logistics_notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
@@ -1768,6 +1909,8 @@ HTML;
             'logistics_width_cm' => $validated['logistics_width_cm'],
             'logistics_length_cm' => $validated['logistics_length_cm'],
             'logistics_weight_kg' => $validated['logistics_weight_kg'],
+            'logistics_volume_count' => $validated['logistics_volume_count'],
+            'logistics_asset_number' => trim((string) ($validated['logistics_asset_number'] ?? '')) ?: null,
             'logistics_notes' => trim((string) ($validated['logistics_notes'] ?? '')) ?: null,
             'logistics_registered_by_id' => $user?->getAuthIdentifier(),
             'logistics_registered_at' => now(),
@@ -1780,6 +1923,8 @@ HTML;
             'quote_notes' => null,
             'quote_registered_by_id' => null,
             'quote_registered_at' => null,
+            'release_authorized_by_id' => null,
+            'release_authorized_at' => null,
             'quote_approved_by_id' => null,
             'quote_approved_at' => null,
             'shipped_by_id' => null,
@@ -1792,11 +1937,16 @@ HTML;
             SolicitacaoBem::STATUS_AGUARDANDO_CONFIRMACAO,
             'registrar_medidas',
             sprintf(
-                'Medidas registradas: A %.2f x L %.2f x C %.2f cm | Peso %.3f kg',
+                'Medidas registradas: %d volume(s) | A %.2f x L %.2f x C %.2f cm | Peso %.3f kg',
+                (int) $validated['logistics_volume_count'],
                 (float) $validated['logistics_height_cm'],
                 (float) $validated['logistics_width_cm'],
                 (float) $validated['logistics_length_cm'],
                 (float) $validated['logistics_weight_kg']
+            ) . (
+                trim((string) ($validated['logistics_asset_number'] ?? '')) !== ''
+                    ? ' | Patrimônio ' . trim((string) $validated['logistics_asset_number'])
+                    : ''
             )
         );
 
@@ -1901,6 +2051,8 @@ HTML;
             'quote_notes' => null,
             'quote_registered_by_id' => $user?->getAuthIdentifier(),
             'quote_registered_at' => now(),
+            'release_authorized_by_id' => null,
+            'release_authorized_at' => null,
             'quote_approved_by_id' => null,
             'quote_approved_at' => null,
             'shipped_by_id' => null,
@@ -1912,7 +2064,7 @@ HTML;
             $statusAnterior,
             SolicitacaoBem::STATUS_LIBERACAO,
             'registrar_cotacoes',
-            count($quoteOptions) . ' cotação(ões) registradas. Aguardando liberação do Bruno.'
+            count($quoteOptions) . ' cotação(ões) registradas. Aguardando autorização do Theo.'
         );
 
         Log::info('[SOLICITACOES] Cotações registradas', [
@@ -1926,11 +2078,11 @@ HTML;
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Cotações registradas. Solicitação em liberação do Bruno.',
+                'message' => 'Cotações registradas. Solicitação aguardando autorização do Theo.',
             ]);
         }
 
-        return redirect()->back()->with('success', 'Cotações registradas. Solicitação em liberação do Bruno.');
+        return redirect()->back()->with('success', 'Cotações registradas. Solicitação aguardando autorização do Theo.');
     }
 
     public function approve(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
@@ -2014,7 +2166,7 @@ HTML;
         }
 
         if ($solicitacao->hasQuoteData() && $solicitacao->quote_approved_at === null) {
-            return $this->denyAccess($request, 'A cotação precisa ser liberada pelo Bruno antes do envio.');
+            return $this->denyAccess($request, 'A liberação final do Bruno precisa ser concluída antes do envio.');
         }
 
         $requiresTrackingCode = $solicitacao->requiresTrackingCode();
@@ -2079,16 +2231,67 @@ HTML;
         return redirect()->back()->with('success', 'Pedido enviado com sucesso.');
     }
 
+    public function authorizeRelease(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$this->canAuthorizeTheoRelease($user)) {
+            return $this->denyAccess($request, 'Você não tem permissão para autorizar esta solicitação.');
+        }
+
+        if ($solicitacao->status !== SolicitacaoBem::STATUS_LIBERACAO || !$solicitacao->hasQuoteOptions()) {
+            return $this->denyAccess($request, 'Esta solicitação não está aguardando autorização do Theo.');
+        }
+
+        if (!$solicitacao->isAwaitingTheoAuthorization()) {
+            return $this->denyAccess($request, 'Esta solicitação já foi autorizada pelo Theo e aguarda apenas a liberação final do Bruno.');
+        }
+
+        $validated = $request->validate([
+            'release_authorization_notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $motivo = trim((string) ($validated['release_authorization_notes'] ?? ''));
+        $statusAnterior = $solicitacao->status;
+        $solicitacao->update([
+            'release_authorized_by_id' => $user?->getAuthIdentifier(),
+            'release_authorized_at' => now(),
+        ]);
+
+        $this->registrarHistoricoStatus(
+            $solicitacao,
+            $statusAnterior,
+            SolicitacaoBem::STATUS_LIBERACAO,
+            'autorizar_liberacao',
+            $motivo !== '' ? $motivo : 'Theo autorizou a solicitação para a liberação final do Bruno.'
+        );
+
+        $this->solicitacaoBemEmailService->agendarNotificacaoFluxo($solicitacao, 'autorizacao_liberacao');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Autorização registrada. Solicitação liberada para a etapa final do Bruno.',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Autorização registrada. Solicitação liberada para a etapa final do Bruno.');
+    }
+
     public function approveQuote(Request $request, SolicitacaoBem $solicitacao): JsonResponse|RedirectResponse
     {
         /** @var User|null $user */
         $user = Auth::user();
-        if (!$this->canAuthorizeRelease($user)) {
+        if (!$this->canFinalizeRelease($user)) {
             return $this->denyAccess($request, 'Você não tem permissão para liberar este envio.');
         }
 
         if ($solicitacao->status !== SolicitacaoBem::STATUS_LIBERACAO || !$solicitacao->hasQuoteOptions()) {
-            return $this->denyAccess($request, 'Esta solicitação não está aguardando liberação do Bruno.');
+            return $this->denyAccess($request, 'Esta solicitação não está aguardando liberação final do Bruno.');
+        }
+
+        if (!$solicitacao->isAwaitingBrunoRelease()) {
+            return $this->denyAccess($request, 'Esta solicitação ainda precisa da autorização do Theo antes da liberação final do Bruno.');
         }
 
         $validated = $request->validate([
@@ -2152,8 +2355,8 @@ HTML;
             return $this->denyAccess($request, 'Você não tem permissão para recusar esta cotação.');
         }
 
-        if (!$solicitacao->isAwaitingRequesterDecision()) {
-            return $this->denyAccess($request, 'Esta solicitação não está aguardando liberação do Bruno.');
+        if (!$solicitacao->isAwaitingTheoAuthorization()) {
+            return $this->denyAccess($request, 'Esta solicitação não está aguardando autorização do Theo.');
         }
 
         $validated = $request->validate([
@@ -2521,6 +2724,8 @@ HTML;
                 'logistics_width_cm' => null,
                 'logistics_length_cm' => null,
                 'logistics_weight_kg' => null,
+                'logistics_volume_count' => null,
+                'logistics_asset_number' => null,
                 'logistics_notes' => null,
                 'logistics_registered_by_id' => null,
                 'logistics_registered_at' => null,
@@ -2533,6 +2738,8 @@ HTML;
                 'quote_notes' => null,
                 'quote_registered_by_id' => null,
                 'quote_registered_at' => null,
+                'release_authorized_by_id' => null,
+                'release_authorized_at' => null,
                 'quote_approved_by_id' => null,
                 'quote_approved_at' => null,
                 'shipped_by_id' => null,
@@ -2552,6 +2759,8 @@ HTML;
                 'quote_notes' => null,
                 'quote_registered_by_id' => null,
                 'quote_registered_at' => null,
+                'release_authorized_by_id' => null,
+                'release_authorized_at' => null,
                 'quote_approved_by_id' => null,
                 'quote_approved_at' => null,
                 'quote_options_payload' => null,
@@ -2644,9 +2853,11 @@ HTML;
                 'solicitante_nome' => $solicitacao->solicitante_nome,
                 'solicitante_matricula' => $solicitacao->solicitante_matricula,
                 'projeto_id' => $solicitacao->projeto_id,
+                'local_projeto_id' => $solicitacao->local_projeto_id,
                 'uf' => $solicitacao->uf,
                 'setor' => $solicitacao->setor,
                 'local_destino' => $solicitacao->local_destino,
+                'fluxo_responsavel' => $solicitacao->fluxo_responsavel_normalizado,
                 'status' => SolicitacaoBem::STATUS_PENDENTE,
                 'observacao' => $observacaoNova,
                 'matricula_recebedor' => $solicitacao->matricula_recebedor,
@@ -2699,11 +2910,11 @@ HTML;
         /** @var User|null $user */
         $user = Auth::user();
         if (!$this->canRecreateCancelled($user, $solicitacao)) {
-            return $this->denyAccess($request, 'Voce nao tem permissao para arquivar esta solicitacao.');
+            return $this->denyAccess($request, 'Você não tem permissão para arquivar esta solicitação.');
         }
 
         if ($solicitacao->status !== SolicitacaoBem::STATUS_CANCELADO) {
-            return $this->denyAccess($request, 'Apenas solicitacoes canceladas podem ser arquivadas.');
+            return $this->denyAccess($request, 'Apenas solicitações canceladas podem ser arquivadas.');
         }
 
         $statusAnterior = $solicitacao->status;
@@ -2716,7 +2927,7 @@ HTML;
             $statusAnterior,
             SolicitacaoBem::STATUS_ARQUIVADO,
             'arquivar',
-            'Solicitacao arquivada manualmente.'
+            'Solicitação arquivada manualmente.'
         );
 
         $mensagem = 'Solicitacao arquivada com sucesso.';
@@ -2766,8 +2977,3 @@ HTML;
         return redirect()->route('profile.completion.create')->with('error', $message);
     }
 }
-
-
-
-
-

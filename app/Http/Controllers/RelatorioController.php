@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
 class RelatorioController extends Controller
@@ -169,6 +170,7 @@ class RelatorioController extends Controller
             $this->applyExtraFilters($query, $request);
 
             $resultados = $query->get();
+            $this->anexarLocaisCorretos($resultados);
             return response()->json([
                 'resultados' => $resultados,
                 'filtros' => $request->only(array_keys($base))
@@ -545,13 +547,10 @@ class RelatorioController extends Controller
         $downloadName = $this->buildReportDownloadName($request, 'xlsx');
         $writer = SimpleExcelWriter::create($filePath);
         $lookups = $this->getExportLookups();
-        $localByCodigo = $lookups['locais'];
         $userByLogin = $lookups['usuarios'];
 
         foreach ($query->cursor() as $patrimonio) {
-            $localNome = $patrimonio->CDLOCAL
-                ? ($localByCodigo[$patrimonio->CDLOCAL] ?? 'N/A')
-                : 'SISTEMA';
+            $localNome = $this->resolverNomeLocalExport($patrimonio, $lookups);
             $cadastradorNome = $patrimonio->USUARIO
                 ? ($userByLogin[$patrimonio->USUARIO] ?? $patrimonio->USUARIO)
                 : 'SISTEMA';
@@ -592,13 +591,10 @@ class RelatorioController extends Controller
         $downloadName = $this->buildReportDownloadName($request, 'csv');
         $writer = SimpleExcelWriter::create($filePath);
         $lookups = $this->getExportLookups();
-        $localByCodigo = $lookups['locais'];
         $userByLogin = $lookups['usuarios'];
 
         foreach ($query->cursor() as $patrimonio) {
-            $localNome = $patrimonio->CDLOCAL
-                ? ($localByCodigo[$patrimonio->CDLOCAL] ?? 'N/A')
-                : 'SISTEMA';
+            $localNome = $this->resolverNomeLocalExport($patrimonio, $lookups);
             $cadastradorNome = $patrimonio->USUARIO
                 ? ($userByLogin[$patrimonio->USUARIO] ?? $patrimonio->USUARIO)
                 : 'SISTEMA';
@@ -639,13 +635,10 @@ class RelatorioController extends Controller
         $downloadName = $this->buildReportDownloadName($request, 'ods');
         $writer = SimpleExcelWriter::create($filePath);
         $lookups = $this->getExportLookups();
-        $localByCodigo = $lookups['locais'];
         $userByLogin = $lookups['usuarios'];
 
         foreach ($query->cursor() as $patrimonio) {
-            $localNome = $patrimonio->CDLOCAL
-                ? ($localByCodigo[$patrimonio->CDLOCAL] ?? 'N/A')
-                : 'SISTEMA';
+            $localNome = $this->resolverNomeLocalExport($patrimonio, $lookups);
             $cadastradorNome = $patrimonio->USUARIO
                 ? ($userByLogin[$patrimonio->USUARIO] ?? $patrimonio->USUARIO)
                 : 'SISTEMA';
@@ -686,13 +679,91 @@ class RelatorioController extends Controller
         DB::disableQueryLog();
     }
 
+    private function anexarLocaisCorretos(Collection $patrimonios): void
+    {
+        if ($patrimonios->isEmpty()) {
+            return;
+        }
+
+        $cache = [];
+
+        foreach ($patrimonios as $patrimonio) {
+            if (!$patrimonio instanceof Patrimonio) {
+                continue;
+            }
+
+            $cacheKey = (string) ($patrimonio->CDLOCAL ?? '') . '|' . (string) ($patrimonio->CDPROJETO ?? '');
+            if (!array_key_exists($cacheKey, $cache)) {
+                $cache[$cacheKey] = $this->resolverLocalCorreto($patrimonio);
+            }
+
+            if ($cache[$cacheKey]) {
+                $patrimonio->setRelation('local', $cache[$cacheKey]);
+            }
+        }
+    }
+
+    private function resolverLocalCorreto(Patrimonio $patrimonio): ?LocalProjeto
+    {
+        $cdlocal = $patrimonio->CDLOCAL;
+        if ($cdlocal === null || $cdlocal === '') {
+            return null;
+        }
+
+        $query = LocalProjeto::with('projeto')->where('cdlocal', $cdlocal);
+        if (!empty($patrimonio->CDPROJETO)) {
+            $query->whereHas('projeto', function ($q) use ($patrimonio) {
+                $q->where('CDPROJETO', $patrimonio->CDPROJETO);
+            });
+        }
+
+        $local = $query->orderBy('id')->first();
+        if (!$local) {
+            $local = LocalProjeto::with('projeto')
+                ->where('cdlocal', $cdlocal)
+                ->orderBy('id')
+                ->first();
+        }
+
+        return $local;
+    }
+
+    private function resolverNomeLocalExport(Patrimonio $patrimonio, array $lookups): string
+    {
+        if (!$patrimonio->CDLOCAL) {
+            return 'SISTEMA';
+        }
+
+        $chaveProjeto = (string) $patrimonio->CDLOCAL . '|' . (string) ($patrimonio->CDPROJETO ?? '');
+        if (isset($lookups['locais_por_projeto'][$chaveProjeto])) {
+            return $lookups['locais_por_projeto'][$chaveProjeto];
+        }
+
+        return $lookups['locais_por_codigo'][$patrimonio->CDLOCAL] ?? 'N/A';
+    }
+
     private function getExportLookups(): array
     {
         $locais = LocalProjeto::query()
-            ->select(['cdlocal', 'delocal'])
-            ->get()
-            ->pluck('delocal', 'cdlocal')
-            ->all();
+            ->with('projeto')
+            ->select(['id', 'tabfant_id', 'cdlocal', 'delocal'])
+            ->get();
+
+        $locaisPorProjeto = [];
+        $locaisPorCodigo = [];
+
+        foreach ($locais as $local) {
+            $projetoCodigo = (string) ($local->projeto?->CDPROJETO ?? '');
+            $chaveProjeto = (string) $local->cdlocal . '|' . $projetoCodigo;
+
+            if (!isset($locaisPorProjeto[$chaveProjeto])) {
+                $locaisPorProjeto[$chaveProjeto] = $local->delocal;
+            }
+
+            if (!isset($locaisPorCodigo[$local->cdlocal])) {
+                $locaisPorCodigo[$local->cdlocal] = $local->delocal;
+            }
+        }
 
         $usuarios = User::query()
             ->select(['NMLOGIN', 'NOMEUSER'])
@@ -701,7 +772,8 @@ class RelatorioController extends Controller
             ->all();
 
         return [
-            'locais' => $locais,
+            'locais_por_projeto' => $locaisPorProjeto,
+            'locais_por_codigo' => $locaisPorCodigo,
             'usuarios' => $usuarios,
         ];
     }
@@ -783,6 +855,7 @@ class RelatorioController extends Controller
             // Carrega relacionamentos: local, projeto e creator (usuário) para exibir nome completo
             $registros = $query->with('local', 'projeto', 'creator')
                               ->get($cols);
+            $this->anexarLocaisCorretos($registros);
 
             $data  = now()->format('d/m/Y H:i:s');
             $total = $registros->count();

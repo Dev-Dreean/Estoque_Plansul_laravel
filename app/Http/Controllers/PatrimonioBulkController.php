@@ -63,7 +63,7 @@ class PatrimonioBulkController extends Controller
         if (empty($numeros)) {
             return response()->json([
                 'ok' => false,
-                'message' => 'Informe ao menos um numero de patrimonio.',
+                'message' => 'Informe ao menos um número de patrimônio.',
             ], 422);
         }
 
@@ -74,7 +74,7 @@ class PatrimonioBulkController extends Controller
         if (!empty($faltando)) {
             return response()->json([
                 'ok' => false,
-                'message' => 'Patrimonios nao encontrados: ' . implode(', ', $faltando),
+                'message' => 'Patrimônios não encontrados: ' . implode(', ', $faltando),
             ], 422);
         }
 
@@ -136,12 +136,12 @@ class PatrimonioBulkController extends Controller
 
         $fileName = self::TEMPLATE_MAP[$tipo] ?? null;
         if (!$fileName) {
-            return $this->templateErrorResponse($request, 'Tipo de template invalido.', 404);
+            return $this->templateErrorResponse($request, 'Tipo de template inválido.', 404);
         }
 
         $path = public_path('templates/' . $fileName);
         if (!file_exists($path)) {
-            return $this->templateErrorResponse($request, 'Template nao encontrado.', 404);
+            return $this->templateErrorResponse($request, 'Template não encontrado.', 404);
         }
 
         $downloadName = 'modelo_Patrimonio_' . now()->format('d_m_y') . '.xlsx';
@@ -211,5 +211,4 @@ class PatrimonioBulkController extends Controller
         abort($status, $message);
     }
 }
-
 

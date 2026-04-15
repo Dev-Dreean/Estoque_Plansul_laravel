@@ -23,7 +23,7 @@
               <ul class="list-disc ml-5 mt-1 space-y-0.5" x-html="Object.values(relatorioErrors).flat().filter(Boolean).map(e => `<li>${e}</li>`).join('')"></ul>
             </div>
           </template>
-          <form @submit.prevent="gerarRelatorio">
+          <form @submit.prevent="gerarRelatorio($event)">
             @csrf
             <div class="space-y-4">
               <div class="grid grid-cols-2 gap-x-6 gap-y-4">

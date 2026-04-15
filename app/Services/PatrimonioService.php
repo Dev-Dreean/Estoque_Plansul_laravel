@@ -200,7 +200,7 @@ class PatrimonioService
             $patrimonio = $this->buscarPorId($id);
             
             if (!$patrimonio) {
-                throw new \Exception("Patrimonio #{$id} nao encontrado");
+                throw new \Exception("Patrimônio #{$id} não encontrado");
             }
             
             $patrimonio->update(array_merge($dados, [
@@ -236,7 +236,7 @@ class PatrimonioService
             $patrimonio = $this->buscarPorId($id);
             
             if (!$patrimonio) {
-                throw new \Exception("Patrimonio #{$id} nao encontrado");
+                throw new \Exception("Patrimônio #{$id} não encontrado");
             }
             
             $deleted = $patrimonio->delete();
@@ -462,6 +462,13 @@ class PatrimonioService
             }
         }
 
+        if ($request->filled('num_mesa')) {
+            $val = trim((string) $request->input('num_mesa'));
+            if ($val !== '') {
+                $query->whereRaw('UPPER(TRIM(COALESCE(NUMMESA, \'\'))) = ?', [mb_strtoupper($val, 'UTF-8')]);
+            }
+        }
+
         if ($request->filled('matr_responsavel')) {
             $val = trim((string) $request->input('matr_responsavel'));
             if ($val !== '') {
@@ -547,6 +554,7 @@ class PatrimonioService
             'numof' => 'NUMOF',
             'codobjeto' => 'CODOBJETO',
             'nmplanta' => 'NMPLANTA',
+            'num_mesa' => 'NUMMESA',
             'nuserie' => 'NUSERIE',
             'projeto' => 'CDPROJETO',
             'local' => 'CDLOCAL',
@@ -606,7 +614,7 @@ class PatrimonioService
             'DTAQUISICAO' => fn($p) => !blank($p->DTAQUISICAO),
             'DTOPERACAO' => fn($p) => !blank($p->DTOPERACAO),
             'SITUACAO' => fn($p) => !blank($p->SITUACAO),
-            'CDMATRFUNCIONARIO' => fn($p) => !blank($p->CDMATRFUNCIONARIO),
+            'CDMATRFUNCIONARIO' => fn($p) => !blank($p->CDMATRFUNCIONARIO) || !blank($p->CDMATRGERENTE) || !blank($p->NUMMESA),
             'CDMATRGERENTE' => fn($p) => !blank($p->CDMATRGERENTE),
             'CADASTRADOR' => fn($p) => !blank($p->USUARIO) || !blank($p->creator?->NOMEUSER),
         ];

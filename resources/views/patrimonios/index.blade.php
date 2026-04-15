@@ -311,7 +311,7 @@
               </div>
               <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                 <input type="checkbox" name="dry_run" value="1" class="rounded border-gray-300 dark:border-gray-600 text-emerald-600 focus:ring-emerald-500">
-                Simular (nao grava no banco)
+                Simular (não grava no banco)
               </label>
               <div class="flex justify-end gap-3 pt-1">
                 <button type="button" @click="closeBulkImportModal()" class="px-4 py-2 rounded-md text-sm font-semibold border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Cancelar</button>
@@ -580,6 +580,7 @@
     <div
       x-show="formModalOpen && !formModalLoading"
       x-cloak
+      @patrimonio-verificacao.window="modalVerificacaoConferido = $event.detail.conferido"
       class="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-6 pointer-events-none"
     >
       <div 
@@ -590,10 +591,20 @@
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
         x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-        class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-[calc(100vw-1.5rem)] sm:max-w-[calc(100vw-3rem)] xl:max-w-[1400px] 2xl:max-w-[1600px] h-[calc(100vh-1.5rem)] sm:h-[calc(100vh-3rem)] max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col min-h-0 pointer-events-auto"
+        class="rounded-2xl shadow-2xl w-full max-w-[calc(100vw-1.5rem)] sm:max-w-[calc(100vw-3rem)] xl:max-w-[1400px] 2xl:max-w-[1600px] max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] overflow-hidden border flex flex-col min-h-0 pointer-events-auto"
+        :style="modalVerificacaoConferido === true
+          ? 'transition: background-color 0.5s ease, border-color 0.5s ease; background: color-mix(in srgb, var(--ok) 10%, var(--surface)); border-color: color-mix(in srgb, var(--ok) 45%, transparent);'
+          : (modalVerificacaoConferido === false
+            ? 'transition: background-color 0.5s ease, border-color 0.5s ease; background: color-mix(in srgb, var(--danger) 9%, var(--surface)); border-color: color-mix(in srgb, var(--danger) 40%, transparent);'
+            : 'transition: background-color 0.5s ease, border-color 0.5s ease; background: var(--surface); border-color: var(--border);')"
         @click.self="closeFormModal"
       >
-        <div class="flex items-center justify-between px-4 sm:px-6 py-4 bg-white dark:bg-gray-900">
+        <div class="flex items-center justify-between px-4 sm:px-6 py-4"
+          :style="modalVerificacaoConferido === true
+            ? 'background: color-mix(in srgb, var(--ok) 15%, var(--surface));'
+            : (modalVerificacaoConferido === false
+              ? 'background: color-mix(in srgb, var(--danger) 13%, var(--surface));'
+              : 'background: var(--surface);')">
           <div>
             <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white" x-text="formModalTitle"></h3>
             <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400" x-text="formModalSubtitle" x-show="formModalSubtitle"></p>
@@ -1429,6 +1440,7 @@
           formModalSubtitle: '',
           formModalMode: null,
           formModalId: null,
+          modalVerificacaoConferido: null,
           handleCreateKey(event) {
             if (!event || event.defaultPrevented) return;
             if (event.ctrlKey || event.metaKey || event.altKey) return;
@@ -1468,6 +1480,7 @@
             this.$watch('formModalOpen', (open) => {
               document.documentElement.classList.toggle('overflow-hidden', open);
               document.body.classList.toggle('overflow-hidden', open);
+              if (!open) this.modalVerificacaoConferido = null;
             });
             this.$watch('bulkImportModalOpen', (open) => {
               document.documentElement.classList.toggle('overflow-hidden', open);
@@ -2108,7 +2121,9 @@
             this.reportLoading = true;
             this.relatorioErrors = {};
             this.relatorioGlobalError = null;
-            const formData = new FormData(event.target);
+            const formData = new FormData(event?.target);
+            // Garante token CSRF correto independente do @csrf no form
+            formData.set('_token', this.csrf());
             const cdprojeto = this.normalizeRelatorioLookupValue(formData.get('cdprojeto'));
             const cdlocal = this.normalizeRelatorioLookupValue(formData.get('cdlocal'));
 

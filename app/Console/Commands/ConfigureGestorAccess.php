@@ -17,8 +17,9 @@ class ConfigureGestorAccess extends Command
 
         foreach ($gestores as $nome) {
             $func = DB::table('funcionarios')
+                ->select('CDMATRFUNCIONARIO', 'NMFUNCIONARIO')
                 ->whereRaw('UPPER(NMFUNCIONARIO) LIKE ?', ['%' . strtoupper($nome) . '%'])
-                ->first('CDMATRFUNCIONARIO', 'NMFUNCIONARIO');
+                ->first();
 
             if (!$func) {
                 $this->warn("✗ {$nome}: não encontrado");

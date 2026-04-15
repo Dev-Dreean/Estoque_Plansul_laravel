@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Funcionario;
 use App\Models\ObjetoPatr;
 use App\Models\Patrimonio;
@@ -522,6 +523,10 @@ class TermoResponsabilidadeController extends Controller
 
     private function salvarArquivosPorFuncionarioEmLote(Collection $documentos, array $dadosDocumento, string $origem): array
     {
+        if (!$this->podeUsarConversaoPdfWord()) {
+            return $this->salvarArquivosPdfViaHtmlPorFuncionarioEmLote($documentos, $dadosDocumento, $origem);
+        }
+
         $loginGerador = trim((string) (Auth::user()?->NMLOGIN ?? 'sistema'));
         $nomesVisiveisUsados = [];
         $arquivosTemporarios = [];
@@ -610,6 +615,61 @@ class TermoResponsabilidadeController extends Controller
         return $arquivosSalvos;
     }
 
+    private function salvarArquivosPdfViaHtmlPorFuncionarioEmLote(Collection $documentos, array $dadosDocumento, string $origem): array
+    {
+        $loginGerador = trim((string) (Auth::user()?->NMLOGIN ?? 'sistema'));
+        $nomesVisiveisUsados = [];
+        $arquivosSalvos = [];
+
+        foreach ($documentos as $documento) {
+            $matricula = preg_replace('/[^A-Za-z0-9_-]/', '_', (string) ($documento['matricula'] ?? 'sem_matricula'));
+            $nomeInterno = $this->normalizarTrechoNomeArquivo((string) ($documento['nome'] ?? $matricula));
+            $nomeVisivel = $this->formatarNomeResponsavelParaTitulo((string) ($documento['nome'] ?? $matricula));
+            $cdProjeto = preg_replace('/[^A-Za-z0-9_-]/', '_', (string) ($dadosDocumento['projeto']->CDPROJETO ?? 'sem_projeto'));
+            $timestamp = now()->format('d-m-Y_His_u');
+
+            $nomeArquivo = $this->garantirNomeArquivoUnico('Termo de ' . $nomeVisivel . '.pdf', $nomesVisiveisUsados, (string) ($documento['matricula'] ?? ''));
+            $nomeArquivoInterno = 'termo_responsabilidade_' . $nomeInterno . '_' . $matricula . '_' . $timestamp . '.pdf';
+            $caminhoArquivo = 'termos_responsabilidade/' . $cdProjeto . '/' . $matricula . '/' . $nomeArquivoInterno;
+
+            Storage::disk('local')->put($caminhoArquivo, $this->gerarPdfBinarioViaHtml($documento, $dadosDocumento));
+
+            DB::transaction(function () use ($documento, $dadosDocumento, $nomeArquivo, $caminhoArquivo, $origem, $loginGerador) {
+                $arquivo = TermoResponsabilidadeArquivo::create([
+                    'cdprojeto' => (string) ($dadosDocumento['projeto']->CDPROJETO ?? ''),
+                    'cdmatrfuncionario' => (string) ($documento['matricula'] ?? ''),
+                    'nome_arquivo' => $nomeArquivo,
+                    'caminho_arquivo' => $caminhoArquivo,
+                    'total_itens' => count($documento['itens'] ?? []),
+                    'origem' => $origem,
+                    'gerado_por' => $loginGerador,
+                    'gerado_em' => now(),
+                ]);
+
+                $itens = collect($documento['itens'] ?? [])
+                    ->pluck('patrimonio_id')
+                    ->filter()
+                    ->map(fn ($id) => [
+                        'termo_responsabilidade_arquivo_id' => $arquivo->id,
+                        'nuseqpatr' => (int) $id,
+                    ])
+                    ->values()
+                    ->all();
+
+                if ($itens !== []) {
+                    TermoResponsabilidadeArquivoItem::insert($itens);
+                }
+            });
+
+            $arquivosSalvos[] = [
+                'nome_arquivo' => $nomeArquivo,
+                'caminho_arquivo' => $caminhoArquivo,
+            ];
+        }
+
+        return $arquivosSalvos;
+    }
+
     private function converterDocxParaPdfEmLote(array $arquivosTemporarios): void
     {
         if ($arquivosTemporarios === []) {
@@ -631,7 +691,7 @@ class TermoResponsabilidadeController extends Controller
             file_put_contents($caminhoManifesto, implode(PHP_EOL, $linhasManifesto));
 
             $process = new Process([
-                'cscript.exe',
+                $this->resolverExecutavelCscript(),
                 '//NoLogo',
                 $caminhoScript,
                 $caminhoManifesto,
@@ -689,7 +749,7 @@ class TermoResponsabilidadeController extends Controller
         @unlink($tempBase);
 
         $template = new TemplateProcessor($dadosDocumento['templateReferencia']);
-        $template->setValue('employee_name', $this->sanitizeText((string) ($documento['nome'] ?? 'NAO INFORMADO')));
+        $template->setValue('employee_name', $this->sanitizeText((string) ($documento['nome'] ?? 'NÃO INFORMADO')));
         $template->setValue('employee_matricula', $this->sanitizeText((string) ($documento['matricula'] ?? 'S/N')));
         $template->setValue('date_extenso', $this->sanitizeText((string) ($dadosDocumento['dataExtenso'] ?? '')));
         $template->setValue('date_short', $this->sanitizeText((string) ($dadosDocumento['dataCurta'] ?? '')));
@@ -737,7 +797,7 @@ class TermoResponsabilidadeController extends Controller
                 usleep(250000);
 
                 $process = new Process([
-                    'cscript.exe',
+                    $this->resolverExecutavelCscript(),
                     '//NoLogo',
                     $caminhoScript,
                     $caminhoDocx,
@@ -819,6 +879,54 @@ VBS;
         file_put_contents($caminhoScript, $script);
 
         return $caminhoScript;
+    }
+
+    private function podeUsarConversaoPdfWord(): bool
+    {
+        if (PHP_OS_FAMILY !== 'Windows') {
+            return false;
+        }
+
+        try {
+            $this->resolverExecutavelCscript();
+
+            return true;
+        } catch (\RuntimeException) {
+            return false;
+        }
+    }
+
+    private function resolverExecutavelCscript(): string
+    {
+        $windir = getenv('WINDIR');
+        if (is_string($windir) && $windir !== '') {
+            $caminho = $windir . DIRECTORY_SEPARATOR . 'System32' . DIRECTORY_SEPARATOR . 'cscript.exe';
+            if (is_file($caminho)) {
+                return $caminho;
+            }
+        }
+
+        $output = @shell_exec('where cscript 2>NUL');
+        $linhas = preg_split('/\r\n|\r|\n/', trim((string) $output)) ?: [];
+
+        foreach ($linhas as $linha) {
+            $caminho = trim($linha);
+            if ($caminho !== '' && is_file($caminho)) {
+                return $caminho;
+            }
+        }
+
+        throw new \RuntimeException('O executável cscript.exe não está disponível neste ambiente.');
+    }
+
+    private function gerarPdfBinarioViaHtml(array $documento, array $dadosDocumento): string
+    {
+        $pdf = Pdf::loadView('termos.responsabilidade-pdf', [
+            'documento' => $documento,
+            'dadosDocumento' => $dadosDocumento,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->output();
     }
 
     private function criarScriptTemporarioConversaoPdfLote(): string
@@ -921,9 +1029,36 @@ VBS;
 
         $xml = preg_replace('/<w:color\\b[^>]*w:val=\"FF0000\"[^>]*\\/>/i', '<w:color w:val="000000"/>', $xml) ?? $xml;
         $xml = preg_replace('/<w:color\\b[^>]*w:val=\"ff0000\"[^>]*\\/>/i', '<w:color w:val="000000"/>', $xml) ?? $xml;
+        $xml = $this->aplicarMargemEstreitaAoDocumento($xml);
 
         $zip->addFromString('word/document.xml', $xml);
         $zip->close();
+    }
+
+    private function aplicarMargemEstreitaAoDocumento(string $xml): string
+    {
+        return preg_replace_callback('/<w:pgMar\b[^>]*\/>/i', function (array $matches) {
+            $tag = $matches[0];
+            $margens = [
+                'top' => '720',
+                'right' => '720',
+                'bottom' => '720',
+                'left' => '720',
+                'header' => '360',
+                'footer' => '360',
+                'gutter' => '0',
+            ];
+
+            foreach ($margens as $atributo => $valor) {
+                if (preg_match('/w:' . $atributo . '="[^"]*"/i', $tag)) {
+                    $tag = preg_replace('/w:' . $atributo . '="[^"]*"/i', 'w:' . $atributo . '="' . $valor . '"', $tag) ?? $tag;
+                } else {
+                    $tag = rtrim(substr($tag, 0, -2)) . ' w:' . $atributo . '="' . $valor . '"/>';
+                }
+            }
+
+            return $tag;
+        }, $xml) ?? $xml;
     }
 
     private function buscarArquivoSalvoPorPatrimonio(int $patrimonioId): ?TermoResponsabilidadeArquivo
@@ -976,14 +1111,14 @@ VBS;
 
         $diretorio = dirname($caminhoReal);
         if (!is_dir($diretorio) && !mkdir($diretorio, 0777, true) && !is_dir($diretorio)) {
-            throw new \RuntimeException('Nao foi possivel preparar a pasta temporaria do lote.');
+            throw new \RuntimeException('Não foi possível preparar a pasta temporária do lote.');
         }
 
         $zip = new \ZipArchive();
         $resultado = $zip->open($caminhoReal, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
 
         if ($resultado !== true) {
-            throw new \RuntimeException('Nao foi possivel criar o arquivo ZIP do lote.');
+            throw new \RuntimeException('Não foi possível criar o arquivo ZIP do lote.');
         }
 
         $arquivosAdicionados = 0;
@@ -1365,7 +1500,3 @@ VBS;
         throw new \RuntimeException('O compactador RAR n?o est? dispon?vel no servidor.');
     }
 }
-
-
-
-

@@ -180,6 +180,8 @@ class TermoDocxController extends Controller
             $tempFile = tempnam(sys_get_temp_dir(), 'termo_') . '.docx';
             $template->saveAs($tempFile);
 
+            $this->applyNarrowMargins($tempFile);
+            $this->normalizeDocumentLayout($tempFile);
             // Aplicar negrito aos valores preenchidos
             $this->applyBoldFormatting($tempFile);
             $this->appendSendPhotoNotice($tempFile);
@@ -455,6 +457,131 @@ class TermoDocxController extends Controller
         // O negrito será aplicado via processamento pós-geração.
 
         return $text;
+    }
+
+    protected function applyNarrowMargins(string $filePath): void
+    {
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== true) {
+            return;
+        }
+
+        $xml = $zip->getFromName('word/document.xml');
+        if (!is_string($xml) || $xml === '') {
+            $zip->close();
+            return;
+        }
+
+        $xml = preg_replace_callback('/<w:pgMar\b[^>]*\/>/i', function (array $matches) {
+            $tag = $matches[0];
+            $margins = [
+                'top' => '720',
+                'right' => '720',
+                'bottom' => '720',
+                'left' => '720',
+                'header' => '360',
+                'footer' => '360',
+                'gutter' => '0',
+            ];
+
+            foreach ($margins as $attribute => $value) {
+                if (preg_match('/w:' . $attribute . '="[^"]*"/i', $tag)) {
+                    $tag = preg_replace('/w:' . $attribute . '="[^"]*"/i', 'w:' . $attribute . '="' . $value . '"', $tag) ?? $tag;
+                } else {
+                    $tag = rtrim(substr($tag, 0, -2)) . ' w:' . $attribute . '="' . $value . '"/>';
+                }
+            }
+
+            return $tag;
+        }, $xml) ?? $xml;
+
+        $zip->addFromString('word/document.xml', $xml);
+        $zip->close();
+    }
+
+    protected function normalizeDocumentLayout(string $filePath): void
+    {
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== true) {
+            return;
+        }
+
+        $xml = $zip->getFromName('word/document.xml');
+        if (!is_string($xml) || $xml === '') {
+            $zip->close();
+            return;
+        }
+
+        $xml = preg_replace_callback('/<w:tbl>(.*?)<\/w:tbl>/is', function (array $matches) {
+            $tableXml = $matches[0];
+
+            if (preg_match('/<w:tblPr\b[^>]*>.*?<w:jc\b[^>]*w:val="center"[^>]*\/>.*?<\/w:tblPr>/is', $tableXml)) {
+                return $tableXml;
+            }
+
+            return preg_replace(
+                '/<w:tblPr\b([^>]*)>/i',
+                '<w:tblPr$1><w:jc w:val="center"/>',
+                $tableXml,
+                1
+            ) ?? $tableXml;
+        }, $xml) ?? $xml;
+
+        $paragraphsToCenter = [
+            'assinatura do empregado',
+            'assinatura do gestor',
+            'Matrícula',
+            'responsável pelo recebimento',
+            'Atesto que o equipamento foi devolvido em',
+        ];
+
+        foreach ($paragraphsToCenter as $needle) {
+            $xml = $this->forceParagraphAlignment($xml, $needle, 'center');
+        }
+
+        $zip->addFromString('word/document.xml', $xml);
+        $zip->close();
+    }
+
+    private function forceParagraphAlignment(string $xml, string $needle, string $alignment): string
+    {
+        return preg_replace_callback('/<w:p\b[^>]*>.*?<\/w:p>/is', function (array $matches) use ($needle, $alignment) {
+            $paragraphXml = $matches[0];
+            $plainText = html_entity_decode(strip_tags($paragraphXml), ENT_QUOTES | ENT_XML1, 'UTF-8');
+
+            if (!str_contains($plainText, $needle)) {
+                return $paragraphXml;
+            }
+
+            if (preg_match('/<w:pPr\b[^>]*>.*?<\/w:pPr>/is', $paragraphXml, $pPrMatch)) {
+                $updatedProperties = $pPrMatch[0];
+
+                if (preg_match('/<w:jc\b[^>]*\/>/i', $updatedProperties)) {
+                    $updatedProperties = preg_replace(
+                        '/<w:jc\b[^>]*w:val="[^"]*"[^>]*\/>/i',
+                        '<w:jc w:val="' . $alignment . '"/>',
+                        $updatedProperties,
+                        1
+                    ) ?? $updatedProperties;
+                } else {
+                    $updatedProperties = preg_replace(
+                        '/<w:pPr\b([^>]*)>/i',
+                        '<w:pPr$1><w:jc w:val="' . $alignment . '"/>',
+                        $updatedProperties,
+                        1
+                    ) ?? $updatedProperties;
+                }
+
+                return str_replace($pPrMatch[0], $updatedProperties, $paragraphXml);
+            }
+
+            return preg_replace(
+                '/<w:p\b([^>]*)>/i',
+                '<w:p$1><w:pPr><w:jc w:val="' . $alignment . '"/></w:pPr>',
+                $paragraphXml,
+                1
+            ) ?? $paragraphXml;
+        }, $xml) ?? $xml;
     }
 
     /**

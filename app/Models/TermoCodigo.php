@@ -39,7 +39,7 @@ class TermoCodigo extends Model
 
             return self::$cachedHasTituloColumn = !empty($colunaExiste);
         } catch (\Throwable $e) {
-            Log::warning('Nao foi possivel verificar a coluna titulo em termo_codigos.', [
+            Log::warning('Não foi possível verificar a coluna titulo em termo_codigos.', [
                 'erro' => $e->getMessage(),
             ]);
 

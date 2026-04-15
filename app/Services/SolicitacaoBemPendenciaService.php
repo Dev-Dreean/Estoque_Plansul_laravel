@@ -10,12 +10,9 @@ use Illuminate\Support\Facades\Schema;
 
 class SolicitacaoBemPendenciaService
 {
-    private const FLOW_BRUNO_MATRICULAS = ['11829'];
-    private const FLOW_BRUNO_LOGINS = ['BRUNO'];
-    private const FLOW_TIAGO_MATRICULAS = ['185895'];
-    private const FLOW_TIAGO_LOGINS = ['TIAGOP'];
-    private const FLOW_BEATRIZ_MATRICULAS = ['182687'];
-    private const FLOW_BEATRIZ_LOGINS = ['BEA.SC'];
+    public function __construct(private readonly SolicitacaoBemFlowService $solicitacaoBemFlowService)
+    {
+    }
 
     /**
      * @return array<int, array<string, mixed>>
@@ -46,7 +43,7 @@ class SolicitacaoBemPendenciaService
      */
     public function describeForUser(User $user, SolicitacaoBem $solicitacao): ?array
     {
-        if ($solicitacao->status === SolicitacaoBem::STATUS_PENDENTE && $this->canConfirmSolicitacao($user)) {
+        if ($solicitacao->status === SolicitacaoBem::STATUS_PENDENTE && $this->canConfirmSolicitacao($user, $solicitacao)) {
             return $this->makeNotification(
                 $solicitacao,
                 'confirmar_solicitacao',
@@ -80,13 +77,26 @@ class SolicitacaoBemPendenciaService
         }
 
         if ($solicitacao->status === SolicitacaoBem::STATUS_LIBERACAO
-            && $solicitacao->isAwaitingRequesterDecision()
-            && $this->canAuthorizeRelease($user)) {
+            && $solicitacao->isAwaitingTheoAuthorization()
+            && $this->canAuthorizeTheoRelease($user)) {
+            return $this->makeNotification(
+                $solicitacao,
+                'autorizar_liberacao',
+                'Solicitação #' . $solicitacao->id . ' aguardando sua ação',
+                'As cotações já foram registradas e a solicitação aguarda sua autorização.',
+                'Autorizar liberação',
+                90
+            );
+        }
+
+        if ($solicitacao->status === SolicitacaoBem::STATUS_LIBERACAO
+            && $solicitacao->isAwaitingBrunoRelease()
+            && $this->canFinalizeRelease($user)) {
             return $this->makeNotification(
                 $solicitacao,
                 'liberar_envio',
                 'Solicitação #' . $solicitacao->id . ' aguardando sua ação',
-                'A cotação já foi registrada e está aguardando sua liberação final.',
+                'Theo já autorizou a solicitação e agora falta a liberação final do envio.',
                 'Liberar envio',
                 90
             );
@@ -124,9 +134,14 @@ class SolicitacaoBemPendenciaService
 
     private function applyRelevantScope(Builder $query, User $user): void
     {
-        $query->where(function (Builder $builder) use ($user) {
+        $supportsTheoReleaseAuthorization = SolicitacaoBem::supportsTheoReleaseAuthorization();
+
+        $query->where(function (Builder $builder) use ($user, $supportsTheoReleaseAuthorization) {
             if ($this->canConfirmSolicitacao($user)) {
-                $builder->orWhere('status', SolicitacaoBem::STATUS_PENDENTE);
+                $builder->orWhere(function (Builder $stage) use ($user) {
+                    $stage->where('status', SolicitacaoBem::STATUS_PENDENTE);
+                    $this->solicitacaoBemFlowService->applyPendingScopeForUser($stage, $user);
+                });
             }
 
             if ($this->canRegisterMeasures($user)) {
@@ -143,11 +158,24 @@ class SolicitacaoBemPendenciaService
                 });
             }
 
-            if ($this->canAuthorizeRelease($user)) {
+            if ($supportsTheoReleaseAuthorization && $this->canAuthorizeTheoRelease($user)) {
                 $builder->orWhere(function (Builder $stage) {
                     $stage->where('status', SolicitacaoBem::STATUS_LIBERACAO)
                         ->whereNotNull('quote_options_payload')
-                        ->whereNull('quote_approved_at');
+                        ->whereNull('release_authorized_at');
+                });
+            }
+
+            if ($this->canFinalizeRelease($user)) {
+                $builder->orWhere(function (Builder $stage) use ($supportsTheoReleaseAuthorization) {
+                    $stage->where('status', SolicitacaoBem::STATUS_LIBERACAO)
+                        ->whereNotNull('quote_options_payload');
+
+                    if ($supportsTheoReleaseAuthorization) {
+                        $stage->whereNotNull('release_authorized_at');
+                    }
+
+                    $stage->whereNull('quote_approved_at');
                 });
             }
 
@@ -267,14 +295,9 @@ class SolicitacaoBemPendenciaService
         return $matricula !== '' && $matricula === trim((string) ($solicitacao->solicitante_matricula ?? ''));
     }
 
-    private function canConfirmSolicitacao(User $user): bool
+    private function canConfirmSolicitacao(User $user, ?SolicitacaoBem $solicitacao = null): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
-
-        return $user->temAcessoTela(User::TELA_SOLICITACOES_TRIAGEM_INICIAL)
-            && ($this->isTiagoFlowOperator($user) || $this->isBeatrizFlowOperator($user));
+        return $this->solicitacaoBemFlowService->canConfirmSolicitacao($user, $solicitacao);
     }
 
     private function canRegisterMeasures(User $user): bool
@@ -297,7 +320,17 @@ class SolicitacaoBemPendenciaService
             && $this->isBeatrizFlowOperator($user);
     }
 
-    private function canAuthorizeRelease(User $user): bool
+    private function canAuthorizeTheoRelease(User $user): bool
+    {
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $user->temAcessoTela(User::TELA_SOLICITACOES_AUTORIZACAO_LIBERACAO)
+            && $this->isTheoFlowOperator($user);
+    }
+
+    private function canFinalizeRelease(User $user): bool
     {
         if ($user->isAdmin()) {
             return true;
@@ -319,17 +352,22 @@ class SolicitacaoBemPendenciaService
 
     private function isTiagoFlowOperator(User $user): bool
     {
-        return $this->isFlowOperator($user, self::FLOW_TIAGO_MATRICULAS, self::FLOW_TIAGO_LOGINS);
+        return $this->solicitacaoBemFlowService->isTiagoFlowOperator($user);
     }
 
     private function isBeatrizFlowOperator(User $user): bool
     {
-        return $this->isFlowOperator($user, self::FLOW_BEATRIZ_MATRICULAS, self::FLOW_BEATRIZ_LOGINS);
+        return $this->solicitacaoBemFlowService->isBeatrizFlowOperator($user);
     }
 
     private function isBrunoFlowOperator(User $user): bool
     {
-        return $this->isFlowOperator($user, self::FLOW_BRUNO_MATRICULAS, self::FLOW_BRUNO_LOGINS);
+        return $this->solicitacaoBemFlowService->isBrunoFlowOperator($user);
+    }
+
+    private function isTheoFlowOperator(User $user): bool
+    {
+        return $this->solicitacaoBemFlowService->isTheoFlowOperator($user);
     }
 
     /**

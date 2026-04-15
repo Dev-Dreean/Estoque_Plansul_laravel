@@ -26,7 +26,7 @@ const persistThemePreference = async (theme) => {
             method: 'POST',
             credentials: 'same-origin',
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': token,
                 'X-Requested-With': 'XMLHttpRequest',
@@ -34,7 +34,7 @@ const persistThemePreference = async (theme) => {
             body: JSON.stringify({ theme }),
         });
     } catch (error) {
-        console.error('Falha ao salvar a preferencia de tema.', error);
+        console.error('Falha ao salvar a preferência de tema.', error);
     }
 };
 
@@ -87,14 +87,24 @@ window.themeManager = (() => {
 
 window.createImportantNotificationsState = (config = {}) => ({
     notificationsEndpoint: config.endpoint || '',
-    importantNotifications: Array.isArray(config.items) ? config.items : [],
+    importantNotifications: [],
     importantNotificationsCount: Number(config.totalCount || 0),
     notificationsOpen: false,
     mobileNotificationsOpen: false,
     notificationsLoading: false,
+    notificationsSpotlightDesktop: false,
+    notificationsSpotlightMobile: false,
+    notificationsSpotlightTimeout: null,
     initImportantNotifications() {
+        this.importantNotifications = this.normalizeImportantNotifications(config.items);
+        this.importantNotificationsCount = Number(config.totalCount || 0);
+
         window.addEventListener('important-notifications:refresh', () => {
             this.refreshImportantNotifications();
+        });
+
+        window.addEventListener('important-notifications:spotlight', () => {
+            this.runImportantNotificationsSpotlight();
         });
 
         window.addEventListener('resize', () => {
@@ -139,7 +149,7 @@ window.createImportantNotificationsState = (config = {}) => ({
         try {
             const response = await fetch(this.notificationsEndpoint, {
                 headers: {
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
                 },
                 credentials: 'same-origin',
@@ -150,7 +160,7 @@ window.createImportantNotificationsState = (config = {}) => ({
             }
 
             const payload = await response.json();
-            this.importantNotifications = Array.isArray(payload.items) ? payload.items : [];
+            this.importantNotifications = this.normalizeImportantNotifications(payload.items);
             this.importantNotificationsCount = Number(payload.total_count || 0);
         } catch (error) {
             console.error('Falha ao atualizar as notificações importantes.', error);
@@ -168,16 +178,67 @@ window.createImportantNotificationsState = (config = {}) => ({
     formatImportantNotificationsCount() {
         return this.importantNotificationsCount > 99 ? '99+' : String(this.importantNotificationsCount);
     },
+    normalizeImportantNotifications(items = []) {
+        if (!Array.isArray(items)) {
+            return [];
+        }
+
+        return items.map((item) => {
+            const normalizedItem = item && typeof item === 'object' ? { ...item } : {};
+            normalizedItem.tone_class = normalizedItem.tone_class || this.importantNotificationToneClass(normalizedItem);
+
+            return normalizedItem;
+        });
+    },
+    importantNotificationToneClass(item = {}) {
+        const provider = String(item.provider || '').toLowerCase();
+        const modulo = String(item.modulo || '').toLowerCase();
+
+        if (provider === 'solicitacoes' || modulo.includes('solicita')) {
+            return 'important-notification-item--solicitacoes';
+        }
+
+        if (provider === 'removidos_pendentes' || modulo.includes('removido')) {
+            return 'important-notification-item--removidos';
+        }
+
+        return 'important-notification-item--default';
+    },
+    runImportantNotificationsSpotlight() {
+        const isMobile = window.innerWidth < 640;
+        this.notificationsOpen = !isMobile;
+        this.mobileNotificationsOpen = isMobile;
+        this.notificationsSpotlightDesktop = !isMobile;
+        this.notificationsSpotlightMobile = isMobile;
+        this.syncImportantNotificationsScrollLock();
+        this.refreshImportantNotifications();
+
+        const bell = isMobile ? this.$refs.importantBellMobile : this.$refs.importantBellDesktop;
+        if (bell) {
+            bell.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            window.setTimeout(() => bell.focus({ preventScroll: true }), 220);
+        }
+
+        if (this.notificationsSpotlightTimeout) {
+            window.clearTimeout(this.notificationsSpotlightTimeout);
+        }
+
+        this.notificationsSpotlightTimeout = window.setTimeout(() => {
+            this.notificationsSpotlightDesktop = false;
+            this.notificationsSpotlightMobile = false;
+        }, 4200);
+    },
 });
 
 window.createSystemNewsState = (config = {}) => ({
     systemNewsEndpoint: config.endpoint || '',
     systemNewsItems: Array.isArray(config.items) ? config.items : [],
     unseenSystemNewsKeys: Array.isArray(config.unseenKeys) ? config.unseenKeys : [],
+    systemNewsSessionKey: typeof config.sessionKey === 'string' ? config.sessionKey : '',
     systemNewsOpen: false,
     systemNewsSubmitting: false,
     initSystemNews() {
-        if (config.shouldAutoOpen && this.unseenSystemNewsKeys.length > 0) {
+        if (this.shouldAutoOpenSystemNews()) {
             requestAnimationFrame(() => {
                 this.systemNewsOpen = true;
                 this.syncSystemNewsScrollLock();
@@ -200,6 +261,106 @@ window.createSystemNewsState = (config = {}) => ({
     hasUnseenSystemNews(key) {
         return this.unseenSystemNewsKeys.includes(key);
     },
+    shouldAutoOpenSystemNews() {
+        if (!config.shouldAutoOpen || this.unseenSystemNewsKeys.length === 0) {
+            return false;
+        }
+
+        return this.deferredSystemNewsSignature() !== this.currentSystemNewsSignature();
+    },
+    currentSystemNewsSignature() {
+        const sortedKeys = [...this.unseenSystemNewsKeys]
+            .map((key) => String(key || '').trim())
+            .filter((key) => key !== '')
+            .sort();
+
+        return `${this.systemNewsSessionKey}|${sortedKeys.join(',')}`;
+    },
+    deferredSystemNewsSignature() {
+        try {
+            return window.localStorage.getItem('system-news:deferred-signature') || '';
+        } catch (error) {
+            return '';
+        }
+    },
+    rememberSystemNewsLater() {
+        const signature = this.currentSystemNewsSignature();
+        if (signature) {
+            try {
+                window.localStorage.setItem('system-news:deferred-signature', signature);
+            } catch (error) {
+                console.error('Falha ao salvar o lembrete da novidade.', error);
+            }
+        }
+
+        this.closeSystemNews();
+    },
+    clearDeferredSystemNewsSession() {
+        try {
+            window.localStorage.removeItem('system-news:deferred-signature');
+        } catch (error) {
+            console.error('Falha ao limpar o lembrete da novidade.', error);
+        }
+    },
+    async persistSeenSystemNews(keys = []) {
+        const pendingKeys = keys.filter((key) => this.unseenSystemNewsKeys.includes(key));
+        if (pendingKeys.length === 0) {
+            return true;
+        }
+
+        if (!this.systemNewsEndpoint) {
+            this.unseenSystemNewsKeys = this.unseenSystemNewsKeys.filter((key) => !pendingKeys.includes(key));
+            this.systemNewsItems = this.systemNewsItems.map((item) => ({
+                ...item,
+                is_unseen: pendingKeys.includes(item.key) ? false : item.is_unseen,
+            }));
+
+            return true;
+        }
+
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const response = await fetch(this.systemNewsEndpoint, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token || '',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({
+                keys: pendingKeys,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Falha ao registrar novidades (${response.status}).`);
+        }
+
+        this.unseenSystemNewsKeys = this.unseenSystemNewsKeys.filter((key) => !pendingKeys.includes(key));
+        this.systemNewsItems = this.systemNewsItems.map((item) => ({
+            ...item,
+            is_unseen: pendingKeys.includes(item.key) ? false : item.is_unseen,
+        }));
+        this.clearDeferredSystemNewsSession();
+
+        return true;
+    },
+    async previewSystemNews(item = {}) {
+        this.closeSystemNews();
+
+        try {
+            if (item.key) {
+                await this.persistSeenSystemNews([item.key]);
+            }
+        } catch (error) {
+            console.error('Falha ao registrar a novidade visualizada.', error);
+        }
+
+        if ((item.tutorial_target || '') === 'important_notifications_bell') {
+            window.dispatchEvent(new CustomEvent('important-notifications:spotlight'));
+        }
+    },
     async markSystemNewsAsSeen() {
         if (this.systemNewsSubmitting) {
             return;
@@ -213,30 +374,7 @@ window.createSystemNewsState = (config = {}) => ({
         this.systemNewsSubmitting = true;
 
         try {
-            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            const response = await fetch(this.systemNewsEndpoint, {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': token || '',
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: JSON.stringify({
-                    keys: this.unseenSystemNewsKeys,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`Falha ao registrar novidades (${response.status}).`);
-            }
-
-            this.unseenSystemNewsKeys = [];
-            this.systemNewsItems = this.systemNewsItems.map((item) => ({
-                ...item,
-                is_unseen: false,
-            }));
+            await this.persistSeenSystemNews([...this.unseenSystemNewsKeys]);
             this.closeSystemNews();
         } catch (error) {
             console.error('Falha ao registrar as novidades do sistema.', error);

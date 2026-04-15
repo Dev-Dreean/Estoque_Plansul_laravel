@@ -97,6 +97,8 @@
                             type="button"
                             @click="toggleImportantNotifications()"
                             class="important-bell-button"
+                            :class="{ 'important-bell-button--spotlight': notificationsSpotlightDesktop }"
+                            x-ref="importantBellDesktop"
                             :aria-expanded="notificationsOpen.toString()"
                             title="Pendências importantes"
                         >
@@ -134,7 +136,12 @@
                                     </template>
 
                                     <template x-for="item in importantNotifications" :key="item.item_key">
-                                        <button type="button" class="important-notification-item" @click="handleImportantNotificationSelect(item.url)">
+                                        <button
+                                            type="button"
+                                            class="important-notification-item"
+                                            :class="item.tone_class || importantNotificationToneClass(item)"
+                                            @click="handleImportantNotificationSelect(item.url)"
+                                        >
                                             <div class="important-notification-item__module" x-text="item.modulo"></div>
                                             <div class="important-notification-item__title" x-text="item.titulo"></div>
                                             <div class="important-notification-item__description" x-text="item.descricao"></div>
@@ -213,6 +220,8 @@
                         type="button"
                         @click="toggleImportantNotifications()"
                         class="relative inline-flex items-center justify-center p-2 rounded-md text-soft hover:text-base-color hover:bg-surface-alt focus:outline-none focus:bg-surface-alt transition duration-150 ease-in-out"
+                        :class="{ 'important-bell-button--spotlight': notificationsSpotlightMobile }"
+                        x-ref="importantBellMobile"
                         :aria-expanded="mobileNotificationsOpen.toString()"
                     >
                         <span class="sr-only">Abrir pendências importantes</span>
@@ -340,7 +349,12 @@
                 </template>
 
                 <template x-for="item in importantNotifications" :key="'mobile-' + item.item_key">
-                    <button type="button" class="important-notification-item" @click="handleImportantNotificationSelect(item.url)">
+                    <button
+                        type="button"
+                        class="important-notification-item"
+                        :class="item.tone_class || importantNotificationToneClass(item)"
+                        @click="handleImportantNotificationSelect(item.url)"
+                    >
                         <div class="important-notification-item__module" x-text="item.modulo"></div>
                         <div class="important-notification-item__title" x-text="item.titulo"></div>
                         <div class="important-notification-item__description" x-text="item.descricao"></div>

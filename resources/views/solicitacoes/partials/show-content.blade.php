@@ -47,10 +47,20 @@
     $canCancelAction = (bool) ($canCancelAction ?? false);
     $canReturnAction = (bool) ($canReturnAction ?? false);
     $canRecriarCancelada = (bool) ($canRecriarCancelada ?? false);
+    $flowService = app(\App\Services\SolicitacaoBemFlowService::class);
+    $origemPedidoLabel = $flowService->originLabel($solicitacao);
+    $responsavelTriagemInicial = $flowService->initialTriageLabel($solicitacao);
     $hasQuoteData = method_exists($solicitacao, 'hasQuoteData') ? $solicitacao->hasQuoteData() : false;
     $hasShipmentData = method_exists($solicitacao, 'hasShipmentData') ? $solicitacao->hasShipmentData() : (trim((string) ($solicitacao->tracking_code ?? '')) !== '' || trim((string) ($solicitacao->invoice_number ?? '')) !== '');
+    $awaitingTheoAuthorization = method_exists($solicitacao, 'isAwaitingTheoAuthorization') ? $solicitacao->isAwaitingTheoAuthorization() : false;
     $awaitingRequesterDecision = method_exists($solicitacao, 'isAwaitingRequesterDecision') ? $solicitacao->isAwaitingRequesterDecision() : false;
     $readyToShip = method_exists($solicitacao, 'isReadyToShip') ? $solicitacao->isReadyToShip() : false;
+    $canTheoReleaseAction = (bool) (($authUser?->isAdmin() ?? false)
+        || (($authUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_AUTORIZACAO_LIBERACAO) ?? false)
+            && $flowService->isTheoFlowOperator($authUser)));
+    $canBrunoReleaseAction = (bool) (($authUser?->isAdmin() ?? false)
+        || (($authUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_LIBERACAO_ENVIO) ?? false)
+            && $flowService->isBrunoFlowOperator($authUser)));
     $statusBadgeAtual = $solicitacao->status;
     $quoteOptions = method_exists($solicitacao, 'quoteOptions') ? $solicitacao->quoteOptions() : [];
     $trackingTypeOptions = \App\Models\SolicitacaoBem::trackingTypeOptions();
@@ -87,7 +97,8 @@
     $showConfirmActionButton = $solicitacao->status === 'PENDENTE' && $canConfirmAction;
     $showForwardActionButton = $solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && !$solicitacao->hasLogisticsData() && $canForwardAction;
     $showQuoteActionButton = $solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $solicitacao->hasLogisticsData() && $canQuoteAction;
-    $showReleaseActionButton = $solicitacao->status === 'LIBERACAO' && $awaitingRequesterDecision && $canReleaseAction;
+    $showTheoAuthorizeActionButton = $solicitacao->status === 'LIBERACAO' && $awaitingTheoAuthorization && $canTheoReleaseAction;
+    $showReleaseActionButton = $solicitacao->status === 'LIBERACAO' && $awaitingRequesterDecision && $canBrunoReleaseAction;
     $showSendActionButton = $solicitacao->status === 'CONFIRMADO' && !$hasShipmentData && (!$hasQuoteData || $readyToShip) && $canSendAction;
     $showReceiveActionButton = $solicitacao->status === 'CONFIRMADO' && $hasShipmentData && $canMarkReceived;
     $showNotReceivedActionButton = $solicitacao->status === 'CONFIRMADO' && $hasShipmentData && $canMarkNotReceived;
@@ -99,6 +110,7 @@
     $canManagePanel = $showConfirmActionButton
         || $showForwardActionButton
         || $showQuoteActionButton
+        || $showTheoAuthorizeActionButton
         || $showReleaseActionButton
         || $showSendActionButton
         || $showReceiveActionButton
@@ -121,6 +133,7 @@
                 showForwardModal: false,
                 showApproveModal: false,
                 showSendModal: false,
+                showTheoAuthorizeModal: false,
                 showQuoteApproveModal: false,
                 showQuoteRejectModal: false,
                 showNotSentModal: false,
@@ -137,6 +150,7 @@
                     this.showForwardModal = false;
                     this.showApproveModal = false;
                     this.showSendModal = false;
+                    this.showTheoAuthorizeModal = false;
                     this.showQuoteApproveModal = false;
                     this.showQuoteRejectModal = false;
                     this.showNotSentModal = false;
@@ -194,6 +208,12 @@
                             <button type="button" @click="showApproveModal = true" data-notification-action-target="registrar_cotacoes" class="sol-flow-action sol-flow-action--release">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                 Registrar Cotação
+                            </button>
+                        @endif
+                        @if($showTheoAuthorizeActionButton)
+                            <button type="button" @click="showTheoAuthorizeModal = true" data-notification-action-target="autorizar_liberacao" class="sol-flow-action sol-flow-action--release">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                Autorizar Liberação
                             </button>
                         @endif
                         @if($showReleaseActionButton)
@@ -484,6 +504,7 @@
                     ['label' => 'Item', 'value' => $primeiroItemDescricao ?: '-'],
                     ['label' => 'Projeto', 'value' => $projetoLabel !== '' ? $projetoLabel : '-'],
                     ['label' => 'Local', 'value' => $solicitacao->local_destino ?: '-'],
+                    ['label' => 'Origem do pedido', 'value' => $origemPedidoLabel],
                 ];
                 $detalhesPessoa = $mesmoSolicitanteRecebedor
                     ? [['label' => 'Pessoa', 'value' => $solicitanteNomeCurto]]
@@ -539,6 +560,7 @@
                         $histAnalise ? 'Separando' : 'Pendente',
                         $histAnalise,
                         array_merge($detalhesBase, $detalhesPessoa, [
+                            ['label' => 'Triagem inicial', 'value' => $responsavelTriagemInicial],
                             ['label' => 'Próxima', 'value' => 'Tiago registra as medidas e o peso.'],
                             ['label' => 'Matrícula', 'value' => $recebedorMatriculaCard !== '' ? $recebedorMatriculaCard : '-'],
                         ]),
@@ -577,6 +599,12 @@
                                 'value' => $solicitacao->logistics_volume_count !== null
                                     ? $solicitacao->logistics_volume_count . ' volume(s)'
                                     : 'Aguardando quantidade',
+                            ],
+                            [
+                                'label' => 'Patrimônio',
+                                'value' => trim((string) ($solicitacao->logistics_asset_number ?? '')) !== ''
+                                    ? $solicitacao->logistics_asset_number
+                                    : 'Aguardando patrimônio',
                             ],
                             [
                                 'label' => 'Próxima',
@@ -638,7 +666,7 @@
                         )
                         : $montarCardEtapa(
                             'Envio',
-                            'Bruno liberou o envio',
+                            'Liberação final concluída',
                             'Aguardando envio',
                             $histCotacaoAprovada,
                             array_merge($detalhesBase, [
@@ -820,6 +848,23 @@
                 if ($etapaRecebimentoConcluida) {
                     $adicionarEtapa('recebido', $cardRecebimento);
                 }
+
+                $ordemCardsFluxo = [
+                    'Solicitado' => 10,
+                    'Separando' => 20,
+                    'Em Liberação' => 30,
+                    'Envio' => 40,
+                    'Recebido' => 50,
+                    'Cancelado' => 90,
+                    'Retornado' => 100,
+                ];
+
+                usort($cardsFluxo, function (array $cardA, array $cardB) use ($ordemCardsFluxo) {
+                    $ordemA = $ordemCardsFluxo[$cardA['secao'] ?? ''] ?? 999;
+                    $ordemB = $ordemCardsFluxo[$cardB['secao'] ?? ''] ?? 999;
+
+                    return $ordemA <=> $ordemB;
+                });
             @endphp
 
             <div class="mb-3 bg-[color:var(--solicitacao-modal-bg,#fcfdff)] dark:bg-slate-900/90 shadow-sm rounded-xl border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 overflow-hidden">
@@ -952,6 +997,7 @@
                                     <div class="text-base font-bold text-gray-900 dark:text-gray-100">{{ $solicitacao->local_destino ?? '-' }}</div>
                                     <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">UF: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->uf ?? '-' }}</span></div>
                                     <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Setor: <span class="text-gray-900 dark:text-gray-100">{{ $solicitacao->setor ?? 'Setor não informado' }}</span></div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Origem do pedido: <span class="text-gray-900 dark:text-gray-100">{{ $origemPedidoLabel }}</span></div>
                                 </div>
 
                                 <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
@@ -1004,6 +1050,7 @@
                                             <div>A x L x C: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->logistics_height_cm ? number_format((float) $solicitacao->logistics_height_cm, 2, ',', '.') : '-' }} x {{ $solicitacao->logistics_width_cm ? number_format((float) $solicitacao->logistics_width_cm, 2, ',', '.') : '-' }} x {{ $solicitacao->logistics_length_cm ? number_format((float) $solicitacao->logistics_length_cm, 2, ',', '.') : '-' }} cm</span></div>
                                             <div>Peso: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->logistics_weight_kg ? number_format((float) $solicitacao->logistics_weight_kg, 3, ',', '.') . ' kg' : '-' }}</span></div>
                                             <div>Volumes: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->logistics_volume_count ?: '-' }}</span></div>
+                                            <div>Patrimônio: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->logistics_asset_number ?: '-' }}</span></div>
                                             <div>Registrado em: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ optional($solicitacao->logistics_registered_at)->format('d/m/Y H:i') ?: '-' }}</span></div>
                                             @if($solicitacao->logistics_notes)
                                                 <div class="pt-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 whitespace-pre-line">{{ $solicitacao->logistics_notes }}</div>
@@ -1015,7 +1062,7 @@
                                         <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Beatriz · Cotação</div>
                                         <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300">
                                             <div>Cotações registradas: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $quoteOptionsCount > 0 ? $quoteOptionsCount : '-' }}</span></div>
-                                            <div>Status: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $awaitingRequesterDecision ? 'Aguardando liberação do Bruno' : (($readyToShip || $hasShipmentData) ? 'Liberadas pelo Bruno' : ($solicitacao->quote_registered_at ? 'Registradas' : '-')) }}</span></div>
+                                            <div>Status: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $awaitingTheoAuthorization ? 'Aguardando autorização do Theo' : ($awaitingRequesterDecision ? 'Aguardando liberação final do Bruno' : (($readyToShip || $hasShipmentData) ? 'Liberadas para envio' : ($solicitacao->quote_registered_at ? 'Registradas' : '-'))) }}</span></div>
                                             @if($quoteOptionsCount > 0)
                                                 <div class="pt-2 border-t border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 space-y-2">
                                                     @foreach($quoteOptions as $quoteIndex => $quoteOption)
@@ -1042,7 +1089,8 @@
                                     <div class="rounded-lg border border-[color:var(--solicitacao-modal-border,#d6dde6)] dark:border-slate-700 bg-[color:var(--solicitacao-modal-input-bg,#f7f9fc)] dark:bg-slate-900/60 p-3">
                                         <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Em liberação / Envio</div>
                                         <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300">
-                                            <div>Liberação do Bruno: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Pendente' }}</span></div>
+                                            <div>Autorização do Theo: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ optional($solicitacao->release_authorized_at)->format('d/m/Y H:i') ?: 'Pendente' }}</span></div>
+                                            <div>Liberação final do Bruno: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ optional($solicitacao->quote_approved_at)->format('d/m/Y H:i') ?: 'Pendente' }}</span></div>
                                             <div>Cotação aprovada: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $selectedQuote['transporter'] ?? ($solicitacao->quote_transporter ?: '-') }}</span></div>
                                             <div>Tipo de rastreio: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $selectedTrackingTypeLabel }}</span></div>
                                             <div>Rastreio: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $solicitacao->tracking_code ?: '-' }}</span></div>
@@ -1182,6 +1230,12 @@
                                             class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
                                             placeholder="Ex: 3 volumes" />
                                     </div>
+                                    <div class="col-span-2">
+                                        <label for="logistics_asset_number" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número do patrimônio</label>
+                                        <input type="text" id="logistics_asset_number" name="logistics_asset_number"
+                                            class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs h-9 px-3"
+                                            placeholder="Informe o patrimônio definido para envio" />
+                                    </div>
                                 </div>
 
                                 <div>
@@ -1240,6 +1294,10 @@
                                     <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
                                         <div class="text-[10px] uppercase tracking-wider text-slate-400">Volumes</div>
                                         <div class="mt-1 font-semibold text-slate-900 dark:text-slate-100">{{ $solicitacao->logistics_volume_count ?: '-' }}</div>
+                                    </div>
+                                    <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+                                        <div class="text-[10px] uppercase tracking-wider text-slate-400">Patrimônio</div>
+                                        <div class="mt-1 font-semibold text-slate-900 dark:text-slate-100">{{ $solicitacao->logistics_asset_number ?: '-' }}</div>
                                     </div>
                                     <div class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-900 dark:border-blue-800/70 dark:bg-blue-950/30 dark:text-blue-100 md:col-span-2">
                                         <div class="flex items-center justify-between gap-3">
@@ -1375,6 +1433,41 @@
                         </div>
                     </div>
 
+                    <!-- MODAL: Autorizar Liberação -->
+                    <div x-show="showTheoAuthorizeModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden">
+                            <div class="bg-violet-600 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 class="text-sm font-bold">Autorizar Liberação</h3>
+                                <button @click="showTheoAuthorizeModal = false" class="text-white/70 hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <form method="POST" action="{{ route('solicitacoes-bens.authorize-release', $solicitacao->id) }}" class="p-6 space-y-4" data-modal-form @submit="closeActionModals()">
+                                @csrf
+                                @method('POST')
+
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Depois das cotações, esta autorização libera a solicitação para a etapa final do Bruno.</p>
+                                <div>
+                                    <label for="release_authorization_notes" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observação da autorização</label>
+                                    <textarea id="release_authorization_notes" name="release_authorization_notes" rows="3"
+                                        class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
+                                        placeholder="Opcional: observações da autorização do Theo..."></textarea>
+                                </div>
+
+                                <div class="flex gap-2 pt-4">
+                                    <button type="button" @click="showTheoAuthorizeModal = false" class="flex-1 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">
+                                        Voltar
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition">
+                                        Autorizar Liberação
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
                     <!-- MODAL: Liberar Envio -->
                     <div x-show="showQuoteApproveModal" x-transition class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50" style="display:none;">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-5xl w-full mx-4 overflow-hidden">
@@ -1390,7 +1483,7 @@
                                 @csrf
                                 @method('POST')
 
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Selecione a cotação aprovada pelo Bruno para liberar a etapa de envio.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Selecione a cotação aprovada pelo Bruno para concluir a liberação final e seguir para o envio.</p>
                                 <div class="grid gap-3 lg:grid-cols-3">
                                     @foreach($quoteOptions as $quoteIndex => $quoteOption)
                                         <label class="block cursor-pointer">
@@ -1418,7 +1511,7 @@
                                     <label for="quote_approval_notes" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observação da liberação</label>
                                     <textarea id="quote_approval_notes" name="quote_approval_notes" rows="3"
                                         class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 text-xs p-2"
-                                        placeholder="Opcional: observações da liberação do envio..."></textarea>
+                                        placeholder="Opcional: observações da liberação final do Bruno..."></textarea>
                                 </div>
 
                                 <div class="flex gap-2 pt-4">

@@ -175,12 +175,7 @@ class MenuController extends Controller
 
                 $visivel = $user ? $user->telaVisivel((int) $codigo) : false;
                 $temPermissao = $user ? $user->temAcessoTela((int) $codigo) : false;
-                $temCodigo = $user
-                    ? $user->acessos()
-                        ->where('NUSEQTELA', (string) $codigo)
-                        ->where('INACESSO', 'S')
-                        ->exists()
-                    : false;
+                $temCodigo = $user ? $user->temCodigoTela((string) $codigo) : false;
 
                 $status = 'bloqueada';
                 $mensagem = 'Faça login para solicitar liberação.';

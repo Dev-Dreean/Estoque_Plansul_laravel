@@ -28,7 +28,7 @@
             </a>
             <a href="{{ route('patrimonios.index') }}"
                class="inline-flex items-center justify-center px-4 py-2 rounded-md bg-white text-gray-700 text-sm font-semibold border border-base hover:bg-gray-50">
-                Controle de Patrimonio
+                Controle de Patrimônio
             </a>
             <button type="button"
                     onclick="history.back()"

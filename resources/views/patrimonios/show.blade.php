@@ -21,7 +21,7 @@
                     {{-- Exibir form em modo read-only --}}
                     <div class="space-y-6">
                         {{-- Identificação --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <x-input-label for="NUPATRIMONIO" value="Número do Patrimônio" />
                                 <input type="text" id="NUPATRIMONIO" value="{{ $patrimonio->NUPATRIMONIO }}" readonly 
@@ -58,6 +58,11 @@
                             <div>
                                 <x-input-label for="NOMEUSER" value="Responsável (Nome)" />
                                 <input type="text" id="NOMEUSER" value="{{ $patrimonio->funcionario?->NMFUNCIONARIO ?? '-' }}" readonly 
+                                    class="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100">
+                            </div>
+                            <div>
+                                <x-input-label for="NUMMESA" value="Número da Mesa" />
+                                <input type="text" id="NUMMESA" value="{{ $patrimonio->NUMMESA ?? '-' }}" readonly 
                                     class="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-gray-100">
                             </div>
                         </div>

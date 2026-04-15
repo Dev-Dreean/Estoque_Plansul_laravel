@@ -3,7 +3,6 @@
 namespace App\Helpers;
 
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use App\Models\User;
 
 class MenuHelper
@@ -72,14 +71,10 @@ class MenuHelper
             return array_keys($telasConfig);
         }
 
-        $telasComAcesso = [];
-        foreach (array_keys($telasConfig) as $codigo) {
-            if ($user->temAcessoTela((string) $codigo)) {
-                $telasComAcesso[] = (string) $codigo;
-            }
-        }
-
-        return $telasComAcesso;
+        return array_values(array_filter(
+            array_map('strval', $user->telasComAcesso()),
+            fn (string $codigo) => array_key_exists($codigo, $telasConfig)
+        ));
     }
 
     /**

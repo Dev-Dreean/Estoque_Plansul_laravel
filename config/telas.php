@@ -81,4 +81,12 @@ return [
         'cor' => 'green',
         'ordem' => 10,
     ],
+    '1011' => [
+        'nome' => 'Colaboradores',
+        'descricao' => 'Gestão e sincronização de colaboradores',
+        'route' => 'colaboradores.index',
+        'icone' => 'fa-user-group',
+        'cor' => 'teal',
+        'ordem' => 11,
+    ],
 ];

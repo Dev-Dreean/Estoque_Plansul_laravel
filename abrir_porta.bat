@@ -1,6 +1,14 @@
 @echo off
-REM Script para abrir porta 8000 no Firewall (execute como ADMIN)
-REM Click direito > Executar como administrador
+chcp 65001 >nul
+REM Script para abrir porta 8000 no Firewall
+REM Autoeleva para administrador quando necessario
+
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+	echo Solicitando permissao de administrador...
+	powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process cmd -ArgumentList '/c \"%~f0\"' -Verb RunAs"
+	exit /b 0
+)
 
 echo.
 echo ========================================
@@ -12,11 +20,11 @@ REM Remover regra anterior se existir
 netsh advfirewall firewall delete rule name="Laravel Port 8000" >nul 2>&1
 
 REM Criar nova regra
-netsh advfirewall firewall add rule name="Laravel Port 8000" dir=in action=allow protocol=tcp localport=8000 profile=any
+netsh advfirewall firewall add rule name="Laravel Port 8000" dir=in action=allow protocol=tcp localport=8000 profile=private,public
 
 echo.
 echo ========================================
-echo ✅ Porta 8000 aberta com sucesso!
+echo Porta 8000 aberta com sucesso!
 echo ========================================
 echo.
 echo Agora execute no PowerShell:

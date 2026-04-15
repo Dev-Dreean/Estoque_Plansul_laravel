@@ -50,6 +50,7 @@ class Patrimonio extends Model
         'NUMOF',
         'CODOBJETO',
         'NMPLANTA',
+        'NUMMESA',
         'PESO',
         'TAMANHO',
         'VOLTAGEM',
@@ -398,32 +399,38 @@ class Patrimonio extends Model
         // 4) UF armazenada no patrimônio (fallback final)
         $placeholders = implode(',', array_fill(0, count($ufs), '?'));
         $effectiveUfSql = "COALESCE(
-            (SELECT UPPER(TRIM(t.UF))
-             FROM tabfant t
-             WHERE t.CDPROJETO = patr.CDPROJETO
-               AND t.UF IS NOT NULL AND TRIM(t.UF) != ''
-             LIMIT 1),
-
             (SELECT UPPER(TRIM(t2.UF))
              FROM locais_projeto l2
              JOIN tabfant t2 ON t2.id = l2.tabfant_id
              WHERE l2.cdlocal = patr.CDLOCAL
-               AND (patr.CDPROJETO IS NULL OR TRIM(patr.CDPROJETO) = '' OR t2.CDPROJETO = patr.CDPROJETO)
                AND t2.UF IS NOT NULL AND TRIM(t2.UF) != ''
+             ORDER BY CASE
+                WHEN patr.CDPROJETO IS NOT NULL AND TRIM(patr.CDPROJETO) != '' AND t2.CDPROJETO = patr.CDPROJETO THEN 0
+                ELSE 1
+             END, l2.id
              LIMIT 1),
 
             (SELECT UPPER(TRIM(l3.UF))
              FROM locais_projeto l3
              LEFT JOIN tabfant t3 ON t3.id = l3.tabfant_id
              WHERE l3.cdlocal = patr.CDLOCAL
-               AND (patr.CDPROJETO IS NULL OR TRIM(patr.CDPROJETO) = '' OR t3.CDPROJETO = patr.CDPROJETO OR t3.CDPROJETO IS NULL)
                AND l3.UF IS NOT NULL AND TRIM(l3.UF) != ''
+             ORDER BY CASE
+                WHEN patr.CDPROJETO IS NOT NULL AND TRIM(patr.CDPROJETO) != '' AND t3.CDPROJETO = patr.CDPROJETO THEN 0
+                WHEN t3.CDPROJETO IS NULL THEN 1
+                ELSE 2
+             END, l3.id
              LIMIT 1),
 
-            NULLIF(UPPER(TRIM(patr.UF)), '')
+            NULLIF(UPPER(TRIM(patr.UF)), ''),
+
+            (SELECT UPPER(TRIM(t.UF))
+             FROM tabfant t
+             WHERE t.CDPROJETO = patr.CDPROJETO
+               AND t.UF IS NOT NULL AND TRIM(t.UF) != ''
+             LIMIT 1)
         )";
 
         return $query->whereRaw("{$effectiveUfSql} IN ({$placeholders})", $ufs);
     }
 }
-

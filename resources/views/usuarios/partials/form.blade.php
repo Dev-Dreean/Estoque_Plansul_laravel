@@ -23,8 +23,8 @@
     $telaObrigatoria = 1000;
     $telasCombinadasIds = [1000, 1006];
     $telasPrincipaisIds = [1001, 1007];
-    $telasSolicitacoesIds = [1010, 1011, 1012, 1013, 1014, 1015, 1016, 1017, 1018, 1019, 1020];
-    $ordemSolicitacoes = [1010, 1013, 1019, 1012, 1020, 1014, 1015, 1011, 1018, 1017, 1016];
+    $telasSolicitacoesIds = [1010, 1011, 1012, 1013, 1014, 1015, 1016, 1017, 1018, 1019, 1020, 1021];
+    $ordemSolicitacoes = [1010, 1013, 1019, 1012, 1021, 1020, 1014, 1015, 1011, 1018, 1017, 1016];
     $telasDisponiveis = collect($telasDisponiveis ?? []);
 
     $telaPatrimonio = $telasDisponiveis->firstWhere('NUSEQTELA', $telaObrigatoria);
@@ -43,7 +43,7 @@
     $telasSolicitacoesBase = $telasSolicitacoes->filter(fn ($tela) => in_array((int) $tela->NUSEQTELA, [1013], true))->values();
     $telasSolicitacoesTriagem = $telasSolicitacoes->filter(fn ($tela) => in_array((int) $tela->NUSEQTELA, [1019, 1015], true))->values();
     $telasSolicitacoesOperacao = $telasSolicitacoes->filter(fn ($tela) => in_array((int) $tela->NUSEQTELA, [1012, 1014], true))->values();
-    $telasSolicitacoesLiberacao = $telasSolicitacoes->filter(fn ($tela) => in_array((int) $tela->NUSEQTELA, [1020], true))->values();
+    $telasSolicitacoesLiberacao = $telasSolicitacoes->filter(fn ($tela) => in_array((int) $tela->NUSEQTELA, [1021, 1020], true))->values();
     $telasSolicitacoesVisibilidade = $telasSolicitacoes->filter(fn ($tela) => in_array((int) $tela->NUSEQTELA, [1011, 1018, 1017, 1016], true))->values();
 
     $rotulosSolicitacoes = [
@@ -57,10 +57,41 @@
         1017 => ['titulo' => 'Gerenciar visibilidade', 'descricao' => 'Permite liberar ou remover visualização manual de solicitações.'],
         1018 => ['titulo' => 'Visualização restrita', 'descricao' => 'Mostra apenas solicitações vinculadas ao usuário ou ao fluxo dele.'],
         1019 => ['titulo' => 'Triagem inicial', 'descricao' => 'Confirma o pedido inicial e move a solicitação para Em Análise.'],
-        1020 => ['titulo' => 'Liberação final', 'descricao' => 'Permite concluir a etapa de Liberação antes do envio.'],
+        1020 => ['titulo' => 'Liberação final do Bruno', 'descricao' => 'Permite concluir a etapa final de liberação antes do envio.'],
+        1021 => ['titulo' => 'Autorização de liberação do Theo', 'descricao' => 'Permite autorizar a solicitação após as cotações e antes da liberação final do Bruno.'],
     ];
 
-    $descreverTelaSolicitacao = function ($tela) use ($rotulosSolicitacoes) {
+    $formatarMetaTela = function (int $codigo, ?string $sistema = null): string {
+        $meta = 'Referência interna: ' . $codigo;
+        if (!empty($sistema)) {
+            $meta .= ' | Sistema: ' . $sistema;
+        }
+
+        return $meta;
+    };
+
+    $rotulosTelasGerais = [
+        1000 => ['titulo' => 'Controle de Patrimônio', 'descricao' => 'Acesso base ao módulo principal de patrimônio.'],
+        1001 => ['titulo' => 'Gráficos e indicadores', 'descricao' => 'Visualiza painéis e indicadores do sistema.'],
+        1006 => ['titulo' => 'Relatórios', 'descricao' => 'Permite consultar e emitir relatórios.'],
+        1007 => ['titulo' => 'Histórico principal', 'descricao' => 'Consulta movimentações e históricos gerais.'],
+    ];
+
+    $descreverTelaGeral = function ($tela) use ($rotulosTelasGerais, $formatarMetaTela) {
+        $codigo = (int) $tela->NUSEQTELA;
+        $rotulo = $rotulosTelasGerais[$codigo] ?? [
+            'titulo' => $tela->DETELA,
+            'descricao' => 'Libera acesso a esta area do sistema.',
+        ];
+
+        return [
+            'titulo' => $rotulo['titulo'],
+            'descricao' => $rotulo['descricao'],
+            'meta' => $formatarMetaTela($codigo, $tela->NMSISTEMA ?? null),
+        ];
+    };
+
+    $descreverTelaSolicitacao = function ($tela) use ($rotulosSolicitacoes, $formatarMetaTela) {
         $codigo = (int) $tela->NUSEQTELA;
         $rotulo = $rotulosSolicitacoes[$codigo] ?? [
             'titulo' => $tela->DETELA,
@@ -70,6 +101,7 @@
         if (!empty($tela->NMSISTEMA)) {
             $meta .= ' | Sistema: ' . $tela->NMSISTEMA;
         }
+        $meta = $formatarMetaTela($codigo, $tela->NMSISTEMA ?? null);
         return [
             'titulo' => $rotulo['titulo'],
             'descricao' => $rotulo['descricao'],
@@ -103,6 +135,13 @@
     if (in_array($telaObrigatoria, $telasSelecionadas, true) && !in_array(1006, $telasSelecionadas, true)) {
         $telasSelecionadas[] = 1006;
     }
+
+    $papeisNotificacaoDisponiveis = $papeisNotificacaoDisponiveis ?? [];
+    $papeisNotificacaoSelecionados = collect(old('notificacao_papeis', $papeisNotificacaoSelecionados ?? []))
+        ->map(fn ($papel) => trim((string) $papel))
+        ->filter()
+        ->values()
+        ->all();
 
     $isEditing = isset($usuario);
 @endphp
@@ -216,6 +255,21 @@
                             <span x-show="perfil === 'ADM'">Acesso total ao sistema, independente das permissões de tela.</span>
                         </div>
                     </div>
+                </div>
+
+                {{-- Linha 3: E-mail --}}
+                <div>
+                    <x-input-label for="email" value="E-mail" />
+                    <x-text-input
+                        id="email"
+                        name="email"
+                        type="email"
+                        class="mt-1 block w-full dark:bg-gray-900 dark:text-gray-100 dark:border-gray-600"
+                        :value="old('email', $usuario->email ?? '')"
+                        placeholder="usuario@plansul.com.br"
+                        autocomplete="email" />
+                    <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Opcional — o próprio usuário poderá preencher no primeiro acesso.</p>
+                    <x-input-error :messages="$errors->get('email')" class="mt-2" />
                 </div>
             </div>
         </div>
@@ -354,13 +408,18 @@
                     @if($telaPatrimonio)
                     @php
                         $selecionada = in_array($telaObrigatoria, $telasSelecionadas, true);
+                        $dadosPatrimonio = $descreverTelaGeral((object) [
+                            'NUSEQTELA' => $telaObrigatoria,
+                            'DETELA' => $telaPatrimonio->DETELA ?? 'Controle de Patrimônio',
+                            'NMSISTEMA' => $telaPatrimonio->NMSISTEMA ?? null,
+                        ]);
                         $nomePatrimonio = $telaPatrimonio->DETELA ?? 'Controle de Patrimônio';
                     @endphp
                     <x-permission-checkbox
                         :checked="$selecionada"
                         :disabled="true"
                         value="{{ $telaObrigatoria }}"
-                        title="{{ $nomePatrimonio }}"
+                        title="{{ $dadosPatrimonio['titulo'] }}"
                         subtitle="Acesso base obrigatório para o módulo de patrimônio."
                         meta="Códigos: 1000 e 1006 | Obrigatória" />
                     <input type="hidden" name="telas[]" value="1006">
@@ -369,14 +428,15 @@
                     @foreach($telasPrincipais as $tela)
                     @php
                         $selecionada = in_array((int) $tela->NUSEQTELA, $telasSelecionadas, true);
+                        $dadosTela = $descreverTelaGeral($tela);
                         $meta = 'Código: ' . $tela->NUSEQTELA . (!empty($tela->NMSISTEMA) ? ' | ' . $tela->NMSISTEMA : '');
                     @endphp
                     <x-permission-checkbox
                         :checked="$selecionada"
                         value="{{ $tela->NUSEQTELA }}"
-                        title="{{ $tela->DETELA }}"
+                        title="{{ $dadosTela['titulo'] }}"
                         subtitle="Libera acesso a esta área do sistema."
-                        meta="{{ $meta }}" />
+                        meta="{{ $dadosTela['meta'] }}" />
                     @endforeach
                 </div>
 
@@ -399,14 +459,15 @@
                     @foreach($telasEspeciais as $tela)
                     @php
                         $selecionada = in_array((int) $tela->NUSEQTELA, $telasSelecionadas, true);
+                        $dadosTela = $descreverTelaGeral($tela);
                         $meta = 'Código: ' . $tela->NUSEQTELA . (!empty($tela->NMSISTEMA) ? ' | ' . $tela->NMSISTEMA : '');
                     @endphp
                     <x-permission-checkbox
                         :checked="$selecionada"
                         value="{{ $tela->NUSEQTELA }}"
-                        title="{{ $tela->DETELA }}"
+                        title="{{ $dadosTela['titulo'] }}"
                         subtitle="Permissão administrativa ou operacional."
-                        meta="{{ $meta }}" />
+                        meta="{{ $dadosTela['meta'] }}" />
                     @endforeach
                 </div>
             </div>
@@ -435,7 +496,7 @@
             </div>
             <div class="rounded-lg border border-fuchsia-200 dark:border-fuchsia-800 bg-fuchsia-50 dark:bg-fuchsia-900/20 p-3">
                 <div class="text-xs font-bold text-fuchsia-800 dark:text-fuchsia-300 uppercase tracking-wide">Liberação</div>
-                <p class="mt-1 text-[11px] text-fuchsia-700 dark:text-fuchsia-400 leading-relaxed">Conclui a etapa de liberação final.</p>
+                <p class="mt-1 text-[11px] text-fuchsia-700 dark:text-fuchsia-400 leading-relaxed">Controla a autorização do Theo e a liberação final do Bruno.</p>
             </div>
         </div>
 
@@ -458,6 +519,11 @@
                 class="rounded-md border border-fuchsia-200 dark:border-fuchsia-700 bg-fuchsia-50 dark:bg-fuchsia-900/30 px-3 py-1.5 text-xs font-medium text-fuchsia-700 dark:text-fuchsia-300 transition hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/50">
                 Liberação
             </button>
+        </div>
+
+        <div class="mb-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-5 py-4 shadow-sm">
+            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">Como ler esta tela</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">O nome e a descrição mostram a ação da permissão. O número fica apenas como referência interna para suporte.</p>
         </div>
 
         {{-- Passo 1: Chave de acesso --}}
@@ -589,9 +655,9 @@
                 <div class="border-b border-fuchsia-100 dark:border-fuchsia-800/30 bg-fuchsia-50/50 dark:bg-fuchsia-900/10 px-6 py-4">
                     <div class="flex items-center gap-2">
                         <span class="flex h-6 w-6 items-center justify-center rounded-full bg-fuchsia-100 dark:bg-fuchsia-900/40 text-xs font-bold text-fuchsia-700 dark:text-fuchsia-300">5</span>
-                        <h3 class="text-sm font-semibold text-fuchsia-900 dark:text-fuchsia-200">Liberação final</h3>
+                        <h3 class="text-sm font-semibold text-fuchsia-900 dark:text-fuchsia-200">Autorização e liberação</h3>
                     </div>
-                    <p class="mt-1 ml-8 text-xs text-fuchsia-700 dark:text-fuchsia-400">Quem conclui a etapa de Liberação antes do envio.</p>
+                    <p class="mt-1 ml-8 text-xs text-fuchsia-700 dark:text-fuchsia-400">Quem autoriza a solicitação após as cotações e quem faz a liberação final antes do envio.</p>
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -728,6 +794,59 @@
     @endif
 
     {{-- ═══════════════════ RODAPÉ: AÇÕES ═══════════════════ --}}
+    @if($canGrantTelas)
+    <div x-show="activeTab === 'notificacoes'" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0">
+        <div class="rounded-2xl border border-orange-200 dark:border-orange-900/40 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+            <div class="border-b border-orange-100 dark:border-orange-900/30 bg-gradient-to-r from-sky-50 via-white to-orange-50 dark:from-sky-950/20 dark:via-gray-800 dark:to-orange-950/20 px-6 py-5">
+                <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Notificações por etapa</h3>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                            Defina em quais etapas do fluxo este usuário deve receber os e-mails automáticos de Solicitações de Bens.
+                        </p>
+                    </div>
+                    <a href="{{ route('usuarios.notificacoes.solicitacoes') }}"
+                       class="inline-flex items-center justify-center rounded-lg border border-orange-200 dark:border-orange-800 px-3 py-2 text-xs font-semibold text-orange-700 dark:text-orange-300 transition hover:bg-orange-50 dark:hover:bg-orange-900/20">
+                        Ver visão geral
+                    </a>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <div class="rounded-xl border border-sky-200 dark:border-sky-900/40 bg-sky-50/70 dark:bg-sky-950/20 px-4 py-3">
+                    <p class="text-sm font-semibold text-sky-900 dark:text-sky-200">Regra da abertura</p>
+                    <p class="mt-1 text-xs text-sky-800 dark:text-sky-300">
+                        Quando uma solicitação é criada, o sistema avisa todos os responsáveis operacionais marcados nas etapas abaixo e também mantém o solicitante informado.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                    @foreach($papeisNotificacaoDisponiveis as $papel => $dadosPapel)
+                    <label class="flex items-start gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/30 p-4 transition hover:border-orange-300 dark:hover:border-orange-700">
+                        <input type="checkbox"
+                               name="notificacao_papeis[]"
+                               value="{{ $papel }}"
+                               class="mt-1 h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                               {{ in_array($papel, $papeisNotificacaoSelecionados, true) ? 'checked' : '' }}>
+                        <div class="min-w-0">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $dadosPapel['titulo'] }}</p>
+                                @if(in_array($papel, ['triagem', 'medicao', 'cotacao', 'liberacao'], true))
+                                <span class="inline-flex items-center rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-orange-700 dark:text-orange-300">
+                                    Entra na criação
+                                </span>
+                                @endif
+                            </div>
+                            <p class="mt-1 text-xs leading-relaxed text-gray-600 dark:text-gray-400">{{ $dadosPapel['descricao'] }}</p>
+                        </div>
+                    </label>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <div class="flex items-center justify-between gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-4 shadow-sm">
         <a href="{{ route('usuarios.index') }}"
            class="text-sm font-medium text-gray-500 dark:text-gray-400 transition hover:text-gray-700 dark:hover:text-gray-200">
@@ -871,7 +990,7 @@
                 aplicarPerfilLiberacao() {
                     this.setTela(this.solicitacoesPrincipal, true);
                     this.limparPermissoesSolicitacoes();
-                    [1011, 1016, 1020].forEach((codigo) => this.setTela(codigo, true));
+                    [1011, 1016, 1020, 1021].forEach((codigo) => this.setTela(codigo, true));
                 },
 
                 marcarTodas() {

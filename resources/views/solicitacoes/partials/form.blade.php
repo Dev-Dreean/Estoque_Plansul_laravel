@@ -8,6 +8,11 @@
     $recebedorDisplayOld = $recebedorMatriculaOld !== ''
         ? trim($recebedorMatriculaOld . ' - ' . ($defaultNome ?? ''))
         : (string) ($defaultNome ?? '');
+    $origemPedidoOptions = [
+        \App\Models\LocalProjeto::FLUXO_RESPONSAVEL_PADRAO => 'Padrão',
+        \App\Models\LocalProjeto::FLUXO_RESPONSAVEL_TI => 'Estoque da TI',
+    ];
+    $origemPedidoOld = (string) old('fluxo_responsavel', \App\Models\LocalProjeto::FLUXO_RESPONSAVEL_PADRAO);
 @endphp
 
 <div class="{{ $containerClass }}">
@@ -98,7 +103,7 @@
                                 <div class="relative" @click.away="showLocalDrop=false">
                                     <input id="localDestinoSearch" type="text" x-model="localDestinoSearch"
                                         @focus="abrirDropdownLocal()"
-                                        @input="filtrarLocais(); localSelecionado = String($el.value || '').trim()"
+                                        @input="filtrarLocais(); localSelecionado = ''; localNomeSelecionado = ''"
                                         @keydown.down.prevent="localIndex = Math.min(localIndex+1, locaisFiltrados.length-1)"
                                         @keydown.up.prevent="localIndex = Math.max(localIndex-1, 0)"
                                         @keydown.enter.prevent="selecionarLocal(locaisFiltrados[localIndex])"
@@ -107,7 +112,8 @@
                                         :class="projetoSelecionado ? 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200' : 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-500 cursor-not-allowed'"
                                         placeholder="Selecione o projeto primeiro..."
                                         required />
-                                    <input type="hidden" id="local_destino" name="local_destino" :value="String(localSelecionado || localDestinoSearch || '').trim()" />
+                                    <input type="hidden" id="local_projeto_id" name="local_projeto_id" :value="String(localSelecionado || '').trim()" />
+                                    <input type="hidden" id="local_destino" name="local_destino" :value="String(localNomeSelecionado || '').trim()" />
                                     <button type="button" x-show="localDestinoSearch && projetoSelecionado" @click="limparLocal()" class="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" tabindex="-1">×</button>
                                     <div x-show="showLocalDrop" x-transition class="absolute z-[999] top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg overflow-hidden text-xs">
                                         <div style="max-height: 180px; overflow-y: auto;">
@@ -121,15 +127,30 @@
                                             <button type="button" @click="selecionarLocal(loc); showLocalDrop=false"
                                                 :class="{'bg-indigo-100 dark:bg-gray-700': localIndex === i, 'hover:bg-gray-50 dark:hover:bg-gray-700': localIndex !== i}"
                                                 class="w-full text-left px-3 py-2 border-b border-gray-100 dark:border-gray-700 last:border-0 transition">
-                                                <span class="text-indigo-600 dark:text-indigo-400 font-mono text-xs" x-text="loc.cdlocal"></span>
-                                                <span class="text-gray-700 dark:text-gray-300 ml-2" x-text="loc.delocal"></span>
+                                                <div>
+                                                    <span class="text-indigo-600 dark:text-indigo-400 font-mono text-xs" x-text="loc.cdlocal"></span>
+                                                    <span class="text-gray-700 dark:text-gray-300 ml-2" x-text="loc.delocal"></span>
+                                                </div>
+                                                <div class="mt-1 text-[10px] text-gray-500 dark:text-gray-400" x-text="`${loc.tipo_local_label || 'Padrão'} • Fluxo ${loc.fluxo_responsavel_label || 'Padrão'}`"></div>
                                             </button>
                                         </template>
                                         </div>
                                     </div>
                                 </div>
-                                <x-input-error :messages="$errors->get('local_destino')" class="mt-1" />
+                                <x-input-error :messages="array_merge($errors->get('local_projeto_id'), $errors->get('local_destino'))" class="mt-1" />
                             </div>
+                        </div>
+
+                        <div>
+                            <label for="fluxo_responsavel" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Origem do pedido (informativo)</label>
+                            <select id="fluxo_responsavel" name="fluxo_responsavel" disabled
+                                class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500">
+                                @foreach($origemPedidoOptions as $origemPedidoValue => $origemPedidoLabel)
+                                    <option value="{{ $origemPedidoValue }}" @selected($origemPedidoOld === $origemPedidoValue)>{{ $origemPedidoLabel }}</option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">O fluxo é definido automaticamente pelo local selecionado. Quando o local estiver classificado para TI, a solicitação seguirá pelo fluxo da TI; nos demais casos, o fluxo padrão será mantido.</p>
+                            <x-input-error :messages="$errors->get('fluxo_responsavel')" class="mt-1" />
                         </div>
 
                         <!-- Observação -->

@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\DB;
-use App\Models\TermoCodigo;
 use App\Models\Patrimonio;
-use Illuminate\Support\Facades\Log;
+use App\Models\TermoCodigo;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class CodigoService
 {
@@ -22,7 +23,7 @@ class CodigoService
                 ->first();
 
             if ($reusable) {
-                return [(int)$reusable->codigo, true];
+                return [(int) $reusable->codigo, true];
             }
 
             $tentativas = 0;
@@ -31,12 +32,14 @@ class CodigoService
                 $maxRegistrado = (int) TermoCodigo::max('codigo');
                 $maxUsado = (int) Patrimonio::max('NMPLANTA');
                 $proximo = max($maxRegistrado, $maxUsado) + 1;
+
                 try {
                     $registro = TermoCodigo::create([
                         'codigo' => $proximo,
-                        'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA'
+                        'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
                     ]);
-                    return [(int)$registro->codigo, false];
+
+                    return [(int) $registro->codigo, false];
                 } catch (\Throwable $e) {
                     Log::warning('Colisão ao criar código termo, tentando outro', ['erro' => $e->getMessage()]);
                     if ($tentativas > 5) {
@@ -55,44 +58,17 @@ class CodigoService
         $numero = $codigo;
 
         return DB::transaction(function () use ($numero, $ids) {
-            $jaUsado = Patrimonio::where('NMPLANTA', $numero)->exists();
-            if ($jaUsado) {
-                return ['updated' => [], 'already_used' => true, 'code' => $numero];
-            }
-
-            try {
-                TermoCodigo::firstOrCreate([
-                    'codigo' => $numero
-                ], [
-                    'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA'
-                ]);
-
-                $dadosAtualizacao = [
-                    'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
-                ];
-
-                if (TermoCodigo::hasTituloColumn()) {
-                    $dadosAtualizacao['titulo'] = null;
-                }
-
-                TermoCodigo::query()
-                    ->where('codigo', $numero)
-                    ->update($dadosAtualizacao);
-            } catch (\Throwable $e) {
-                Log::warning('Nao foi possivel atualizar os metadados do termo durante a atribuicao.', [
-                    'codigo' => $numero,
-                    'erro' => $e->getMessage(),
-                ]);
-            }
+            $this->garantirMetadadosTermo($numero);
 
             $idsLimpos = collect($ids)->filter()->unique()->values();
             if ($idsLimpos->isEmpty()) {
                 return ['updated' => [], 'already_used' => false, 'code' => $numero];
             }
 
-            Patrimonio::whereIn('NUSEQPATR', $idsLimpos)
-                ->whereNull('NMPLANTA')
-                ->update(['NMPLANTA' => $numero]);
+            $queryAtualizacao = Patrimonio::whereIn('NUSEQPATR', $idsLimpos);
+            $this->aplicarFiltroPatrimoniosAtivosParaTermo($queryAtualizacao);
+
+            $queryAtualizacao->update(['NMPLANTA' => $numero]);
 
             $atualizados = Patrimonio::whereIn('NUSEQPATR', $idsLimpos)
                 ->where('NMPLANTA', $numero)
@@ -102,5 +78,55 @@ class CodigoService
             return ['updated' => $atualizados, 'already_used' => false, 'code' => $numero];
         });
     }
-}
 
+    private function garantirMetadadosTermo(int $codigo): void
+    {
+        try {
+            $registro = TermoCodigo::firstOrCreate(
+                ['codigo' => $codigo],
+                ['created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA']
+            );
+
+            if (blank($registro->created_by)) {
+                $registro->forceFill([
+                    'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
+                ])->save();
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Não foi possível atualizar os metadados do termo durante a atribuição.', [
+                'codigo' => $codigo,
+                'erro' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function aplicarFiltroPatrimoniosAtivosParaTermo($query): void
+    {
+        try {
+            if (Schema::hasColumn('patr', 'CDSITUACAO')) {
+                $query->where(function ($q) {
+                    $q->whereNull('CDSITUACAO')
+                        ->orWhere('CDSITUACAO', '<>', 2);
+                });
+            }
+        } catch (\Exception $e) {
+        }
+
+        try {
+            if (Schema::hasColumn('patr', 'SITUACAO')) {
+                $query->where(function ($q) {
+                    $q->whereNull('SITUACAO')
+                        ->orWhereRaw("UPPER(TRIM(SITUACAO)) NOT LIKE '%BAIXA%'");
+                });
+            }
+        } catch (\Exception $e) {
+        }
+
+        try {
+            if (Schema::hasColumn('patr', 'DTBAIXA')) {
+                $query->whereNull('DTBAIXA');
+            }
+        } catch (\Exception $e) {
+        }
+    }
+}

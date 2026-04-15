@@ -328,8 +328,9 @@
 
                   $linhaResponsavel = $formatarPessoaPatrimonio($responsavel, $item->CDMATRFUNCIONARIO ?? null);
                   $linhaGerente = $formatarPessoaPatrimonio($gerente, $item->CDMATRGERENTE ?? null);
+                  $linhaMesa = trim((string) ($item->NUMMESA ?? ''));
                 @endphp
-                @if($linhaResponsavel || $linhaGerente)
+                @if($linhaResponsavel || $linhaGerente || $linhaMesa)
                   <div class="min-w-[150px] xl:min-w-[180px] 2xl:min-w-[220px] space-y-0.5">
                     <div class="block truncate max-w-[150px] xl:max-w-[180px] 2xl:max-w-[230px] 3xl:max-w-[270px]" title="{{ $linhaResponsavel ?: 'Responsável não informado' }}">
                       <span class="block font-mono text-[10px] xl:text-xs 2xl:text-sm 3xl:text-base leading-tight text-amber-700 dark:text-amber-400">
@@ -341,6 +342,13 @@
                         {{ $linhaGerente ?: '—' }}
                       </span>
                     </div>
+                    @if($linhaMesa !== '')
+                      <div class="block truncate max-w-[150px] xl:max-w-[180px] 2xl:max-w-[230px] 3xl:max-w-[270px]" title="Mesa {{ $linhaMesa }}">
+                        <span class="block font-mono text-[10px] xl:text-xs 2xl:text-sm 3xl:text-base leading-tight text-fuchsia-700 dark:text-fuchsia-400">
+                          Mesa {{ $linhaMesa }}
+                        </span>
+                      </div>
+                    @endif
                   </div>
                 @else
                   <span class="text-gray-400 text-[10px]">—</span>

@@ -15,8 +15,10 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    private const EMAIL_CORPORATIVO_REGEX = '/@plansul(?:[.-][a-z0-9-]+)+$/i';
+
     /**
-     * Exibir formulário de perfil do usuário.
+     * Exibir formulario de perfil do usuario.
      */
     public function edit(Request $request): View
     {
@@ -26,24 +28,33 @@ class ProfileController extends Controller
     }
 
     /**
-     * Atualizar informações de perfil do usuário.
+     * Atualizar informacoes de perfil do usuario.
      */
     public function update(Request $request): RedirectResponse
     {
-        // Implementação básica de atualização de perfil
+        $user = $request->user();
+
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255'],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:200',
+                'regex:' . self::EMAIL_CORPORATIVO_REGEX,
+                Rule::unique('usuario', 'email')->ignore($user->NUSEQUSUARIO, 'NUSEQUSUARIO'),
+            ],
+        ], [
+            'email.regex' => $this->mensagemDominiosEmailCorporativo(),
         ]);
 
-        $user = $request->user();
-        $user->update($request->only(['name', 'email']));
+        $user->email = strtolower(trim((string) $request->input('email')));
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
-     * Excluir conta do usuário.
+     * Excluir conta do usuario.
      */
     public function destroy(Request $request): RedirectResponse
     {
@@ -62,14 +73,17 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
-    public function showCompletionForm()
+
+    public function showCompletionForm(): View
     {
         /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
         $needsIdentity = $user?->needsIdentityUpdate() ?? false;
+
         return view('profile.complete', [
             'needsUf' => $user?->needsUf() ?? false,
+            'needsEmail' => $user?->needsEmail() ?? false,
             'needsName' => $user?->shouldRequestName() ?? false,
             'needsMatricula' => $user?->shouldRequestMatricula() ?? false,
             'needsIdentity' => $needsIdentity,
@@ -78,23 +92,34 @@ class ProfileController extends Controller
     }
 
     /**
-     * Salva as informações de perfil que faltam.
+     * Salva as informacoes de perfil que faltam.
      */
-    public function storeCompletionForm(Request $request)
+    public function storeCompletionForm(Request $request): RedirectResponse
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
         $needsUf = $user?->needsUf() ?? false;
+        $needsEmail = $user?->needsEmail() ?? false;
         $needsName = $user?->shouldRequestName() ?? false;
         $needsMatricula = $user?->shouldRequestMatricula() ?? false;
+        $changingPassword = $user && ($user->must_change_password ?? false);
 
         $rules = [];
 
-        $changingPassword = $user && ($user->must_change_password ?? false);
-
         if ($needsUf) {
             $rules['UF'] = ['required', 'string', 'size:2'];
+        }
+
+        if ($needsEmail) {
+            $rules['email'] = [
+                'required',
+                'string',
+                'email',
+                'max:200',
+                'regex:' . self::EMAIL_CORPORATIVO_REGEX,
+                Rule::unique('usuario', 'email')->ignore($user->NUSEQUSUARIO, 'NUSEQUSUARIO'),
+            ];
         }
 
         if ($needsMatricula) {
@@ -122,7 +147,8 @@ class ProfileController extends Controller
         }
 
         $validated = $request->validate($rules, [
-            'password.regex' => 'A senha deve conter ao menos: 1 letra maiúscula, 1 letra minúscula, 1 número e 1 caractere especial.',
+            'email.regex' => $this->mensagemDominiosEmailCorporativo(),
+            'password.regex' => 'A senha deve conter ao menos: 1 letra maiuscula, 1 letra minuscula, 1 numero e 1 caractere especial.',
         ]);
 
         $oldMatricula = trim((string) ($user->CDMATRFUNCIONARIO ?? ''));
@@ -134,9 +160,10 @@ class ProfileController extends Controller
         $nomeFromFuncionario = null;
 
         if ($newMatricula !== '') {
-            $func = Funcionario::where('CDMATRFUNCIONARIO', $newMatricula)->first(['NMFUNCIONARIO']);
-            if ($func?->NMFUNCIONARIO) {
-                $nomeFromFuncionario = $this->sanitizeNome((string) $func->NMFUNCIONARIO);
+            $funcionario = Funcionario::where('CDMATRFUNCIONARIO', $newMatricula)->first(['NMFUNCIONARIO']);
+
+            if ($funcionario?->NMFUNCIONARIO) {
+                $nomeFromFuncionario = $this->sanitizeNome((string) $funcionario->NMFUNCIONARIO);
             }
         }
 
@@ -147,7 +174,11 @@ class ProfileController extends Controller
         }
 
         if ($needsUf) {
-            $user->UF = strtoupper($validated['UF']);
+            $user->UF = strtoupper((string) $validated['UF']);
+        }
+
+        if ($needsEmail && isset($validated['email'])) {
+            $user->email = strtolower(trim((string) $validated['email']));
         }
 
         if ($needsMatricula && $newMatricula !== '') {
@@ -159,15 +190,11 @@ class ProfileController extends Controller
         }
 
         if ($changingPassword) {
-            // Ajustar campo de senha (coluna SENHA)
             $user->SENHA = $validated['password'];
             $user->must_change_password = false;
-            $user->password_policy_version = 1; // marca que cumpre a política atual
-        } else {
-            // Mesmo sem troca de senha, se ainda não marcou a versão da política, marcar para não ficar em loop no middleware
-            if (($user->password_policy_version ?? 0) < 1) {
-                $user->password_policy_version = 1;
-            }
+            $user->password_policy_version = 1;
+        } elseif (($user->password_policy_version ?? 0) < 1) {
+            $user->password_policy_version = 1;
         }
 
         if (($user->needs_identity_update ?? false)) {
@@ -187,18 +214,25 @@ class ProfileController extends Controller
     {
         $nome = preg_replace('/[^\p{L}\s]/u', ' ', $nome);
         $nome = preg_replace('/\s+/u', ' ', $nome);
-        return trim($nome);
+
+        return trim((string) $nome);
+    }
+
+    private function mensagemDominiosEmailCorporativo(): string
+    {
+        return 'Informe um e-mail corporativo cujo dominio comece com @plansul. Depois disso, qualquer final valido e aceito, como .com, .com.br, .net ou .org.';
     }
 
     private function migrateAcessosMatricula(string $from, string $to): void
     {
         $from = trim($from);
         $to = trim($to);
+
         if ($from === '' || $to === '' || $from === $to) {
             return;
         }
 
-        DB::transaction(function () use ($from, $to) {
+        DB::transaction(function () use ($from, $to): void {
             $rows = AcessoUsuario::query()
                 ->where('CDMATRFUNCIONARIO', $from)
                 ->get(['NUSEQTELA', 'INACESSO']);
@@ -221,5 +255,3 @@ class ProfileController extends Controller
         });
     }
 }
-
-

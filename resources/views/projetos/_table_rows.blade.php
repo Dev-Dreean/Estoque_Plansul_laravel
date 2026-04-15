@@ -9,6 +9,16 @@
     <td class="px-4 py-2 font-mono text-gray-900 dark:text-gray-100">{{ $local['cdlocal'] }}</td>
     <td class="px-4 py-2 font-medium text-gray-900 dark:text-gray-100">{{ $local['delocal'] }}</td>
     <td class="px-4 py-2">
+        <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold {{ ($local['tipo_local'] ?? 'PADRAO') === 'ESTOQUE_TI' ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300' : (($local['tipo_local'] ?? 'PADRAO') === 'TI_EM_USO' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200') }}">
+            {{ $local['tipo_local_label'] ?? 'Padrão' }}
+        </span>
+    </td>
+    <td class="px-4 py-2">
+        <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold {{ ($local['fluxo_responsavel'] ?? 'PADRAO') === 'TI' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' }}">
+            {{ $local['fluxo_responsavel_label'] ?? 'Padrão' }}
+        </span>
+    </td>
+    <td class="px-4 py-2">
         <div class="leading-tight">
             <div class="text-gray-900 dark:text-gray-100">{{ $local['projeto_nome'] ?? '-' }}</div>
             <div class="text-xs text-gray-500 dark:text-gray-400">Cód: {{ $local['projeto_codigo'] ?? '-' }}</div>
@@ -34,6 +44,6 @@
 </tr>
 @empty
 <tr>
-    <td colspan="5" class="px-4 py-3 text-center text-sm">Nenhum local encontrado.</td>
+    <td colspan="7" class="px-4 py-3 text-center text-sm">Nenhum local encontrado.</td>
 </tr>
 @endforelse

@@ -347,6 +347,7 @@ class CadastroTelaController extends Controller
             ['codigo' => 1018, 'nome' => 'Solicitações - Visualização Restrita', 'rota' => '/solicitacoes-bens'],
             ['codigo' => 1019, 'nome' => 'Solicitações - Triagem Inicial', 'rota' => '/solicitacoes-bens'],
             ['codigo' => 1020, 'nome' => 'Solicitações - Liberação de Envio', 'rota' => '/solicitacoes-bens'],
+            ['codigo' => 1021, 'nome' => 'Solicitações - Autorização de Liberação', 'rota' => '/solicitacoes-bens'],
         ];
     }
 

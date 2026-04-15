@@ -1,6 +1,37 @@
 <x-app-layout>
+  @php
+    $deslocamentoDashboard = $deslocamentoDashboard ?? [
+      'ano_selecionado' => now()->year,
+      'anos_disponiveis' => [now()->year],
+      'resumo' => ['total_envios' => 0, 'custo_total' => 0, 'ticket_medio' => 0, 'total_projetos' => 0],
+      'mensal' => ['labels' => [], 'values' => [], 'rows' => []],
+      'projetos' => ['labels' => [], 'values' => [], 'rows' => []],
+    ];
+    $deslocamentoResumo = $deslocamentoDashboard['resumo'] ?? [];
+    $deslocamentoMensal = $deslocamentoDashboard['mensal'] ?? ['labels' => [], 'values' => [], 'rows' => []];
+    $deslocamentoProjetos = $deslocamentoDashboard['projetos'] ?? ['labels' => [], 'values' => [], 'rows' => []];
+  @endphp
   <div class="py-12">
     <div class="w-full sm:px-6 lg:px-8">
+
+      {{-- Seletor de aba do dashboard --}}
+      <div class="mb-6 flex items-center gap-2">
+        <button id="tabPatrimonio"
+          onclick="switchTab('patrimonio')"
+          class="dashboard-tab inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 bg-plansul-blue text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-plansul-blue focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Patrimônios
+        </button>
+        <button id="tabDeslocamento"
+          onclick="switchTab('deslocamento')"
+          class="dashboard-tab inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:border-plansul-blue dark:hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-plansul-blue focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Custos de Deslocamento
+        </button>
+      </div>
+
+      {{-- Seção: Patrimônios --}}
+      <div id="secaoPatrimonio">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         <div class="lg:col-span-1 space-y-6">
@@ -144,6 +175,164 @@
         </div>
 
       </div>
+      </div>{{-- /secaoPatrimonio --}}
+
+      {{-- Seção: Custos de Deslocamento --}}
+      <div id="secaoDeslocamento" style="display:none">
+      <div class="mt-0 space-y-6">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+          <div class="p-6 text-gray-900 dark:text-gray-100">
+            <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+              <div>
+                <p class="text-xs uppercase tracking-widest font-semibold text-gray-500 dark:text-gray-400 mb-2">Custos de Deslocamento</p>
+                <h3 class="font-bold text-3xl text-gray-900 dark:text-white">Envios para projetos</h3>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Painel consolidado com base em solicitações enviadas para projeto, com cotação aprovada e envio confirmado.</p>
+              </div>
+
+              <form method="GET" action="{{ route('dashboard') }}" class="flex flex-col gap-2 sm:flex-row sm:items-end">
+                <div>
+                  <label for="frete_year" class="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-2">Ano de análise</label>
+                  <select id="frete_year" name="frete_year" class="block w-full h-10 min-w-40 rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-indigo-500">
+                    @foreach(($deslocamentoDashboard['anos_disponiveis'] ?? []) as $anoDisponivel)
+                      <option value="{{ $anoDisponivel }}" @selected((int) $anoDisponivel === (int) ($deslocamentoDashboard['ano_selecionado'] ?? now()->year))>{{ $anoDisponivel }}</option>
+                    @endforeach
+                  </select>
+                </div>
+                <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-plansul-blue px-4 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                  Atualizar painel
+                </button>
+              </form>
+            </div>
+
+            <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/60">
+                <p class="text-xs uppercase tracking-wide font-semibold text-gray-600 dark:text-gray-400 mb-2">Custo total</p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">R$ {{ number_format((float) ($deslocamentoResumo['custo_total'] ?? 0), 2, ',', '.') }}</p>
+              </div>
+              <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/60">
+                <p class="text-xs uppercase tracking-wide font-semibold text-gray-600 dark:text-gray-400 mb-2">Envios confirmados</p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ number_format((int) ($deslocamentoResumo['total_envios'] ?? 0), 0, ',', '.') }}</p>
+              </div>
+              <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/60">
+                <p class="text-xs uppercase tracking-wide font-semibold text-gray-600 dark:text-gray-400 mb-2">Ticket médio</p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">R$ {{ number_format((float) ($deslocamentoResumo['ticket_medio'] ?? 0), 2, ',', '.') }}</p>
+              </div>
+              <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/60">
+                <p class="text-xs uppercase tracking-wide font-semibold text-gray-600 dark:text-gray-400 mb-2">Projetos com custo</p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ number_format((int) ($deslocamentoResumo['total_projetos'] ?? 0), 0, ',', '.') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6 text-gray-900 dark:text-gray-100">
+              <div class="mb-4">
+                <p class="text-xs uppercase tracking-widest font-semibold text-gray-500 dark:text-gray-400 mb-2">Custo Mensal</p>
+                <h4 class="text-2xl font-bold text-gray-900 dark:text-white">Evolução ao longo de {{ $deslocamentoDashboard['ano_selecionado'] ?? now()->year }}</h4>
+              </div>
+              @if(collect($deslocamentoMensal['values'] ?? [])->sum() > 0)
+                <canvas id="deslocamentoMensalChart" class="max-h-96"
+                  data-labels='@json($deslocamentoMensal['labels'] ?? [])'
+                  data-values='@json($deslocamentoMensal['values'] ?? [])'></canvas>
+              @else
+                <p class="rounded-lg border border-dashed border-gray-300 p-6 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400">Nenhum envio com custo registrado para o ano selecionado.</p>
+              @endif
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6 text-gray-900 dark:text-gray-100">
+              <div class="mb-4">
+                <p class="text-xs uppercase tracking-widest font-semibold text-gray-500 dark:text-gray-400 mb-2">Custo por Projeto</p>
+                <h4 class="text-2xl font-bold text-gray-900 dark:text-white">Top projetos com maior gasto</h4>
+              </div>
+              @if(!empty($deslocamentoProjetos['labels'] ?? []))
+                <canvas id="deslocamentoProjetosChart" class="max-h-[30rem]"
+                  data-labels='@json($deslocamentoProjetos['labels'] ?? [])'
+                  data-values='@json($deslocamentoProjetos['values'] ?? [])'></canvas>
+              @else
+                <p class="rounded-lg border border-dashed border-gray-300 p-6 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400">Ainda não há projetos com custo de deslocamento consolidado.</p>
+              @endif
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6 text-gray-900 dark:text-gray-100">
+              <div class="mb-4">
+                <p class="text-xs uppercase tracking-widest font-semibold text-gray-500 dark:text-gray-400 mb-2">Resumo Mensal</p>
+                <h4 class="text-xl font-bold text-gray-900 dark:text-white">Totais por mês</h4>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+                  <thead>
+                    <tr>
+                      <th class="px-3 py-2 text-left font-semibold text-gray-600 dark:text-gray-300">Mês</th>
+                      <th class="px-3 py-2 text-right font-semibold text-gray-600 dark:text-gray-300">Envios</th>
+                      <th class="px-3 py-2 text-right font-semibold text-gray-600 dark:text-gray-300">Custo</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    @foreach(($deslocamentoMensal['rows'] ?? []) as $linhaMensal)
+                      <tr>
+                        <td class="px-3 py-2 text-gray-700 dark:text-gray-200">{{ $linhaMensal['label'] }}</td>
+                        <td class="px-3 py-2 text-right text-gray-700 dark:text-gray-200">{{ number_format((int) ($linhaMensal['envios'] ?? 0), 0, ',', '.') }}</td>
+                        <td class="px-3 py-2 text-right font-semibold text-gray-900 dark:text-white">R$ {{ number_format((float) ($linhaMensal['custo_total'] ?? 0), 2, ',', '.') }}</td>
+                      </tr>
+                    @endforeach
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="xl:col-span-2 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6 text-gray-900 dark:text-gray-100">
+              <div class="mb-4">
+                <p class="text-xs uppercase tracking-widest font-semibold text-gray-500 dark:text-gray-400 mb-2">Detalhamento por Projeto</p>
+                <h4 class="text-xl font-bold text-gray-900 dark:text-white">Custos consolidados do ano</h4>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+                  <thead>
+                    <tr>
+                      <th class="px-3 py-2 text-left font-semibold text-gray-600 dark:text-gray-300">Projeto</th>
+                      <th class="px-3 py-2 text-right font-semibold text-gray-600 dark:text-gray-300">Envios</th>
+                      <th class="px-3 py-2 text-right font-semibold text-gray-600 dark:text-gray-300">Custo total</th>
+                      <th class="px-3 py-2 text-right font-semibold text-gray-600 dark:text-gray-300">Ticket médio</th>
+                      <th class="px-3 py-2 text-right font-semibold text-gray-600 dark:text-gray-300">Último envio</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    @forelse(($deslocamentoProjetos['rows'] ?? []) as $linhaProjeto)
+                      <tr>
+                        <td class="px-3 py-3 text-gray-700 dark:text-gray-200">
+                          <div class="font-semibold text-gray-900 dark:text-white">{{ $linhaProjeto['projeto_nome'] }}</div>
+                          @if(!empty($linhaProjeto['projeto_codigo']))
+                            <div class="text-xs text-gray-500 dark:text-gray-400">Código {{ $linhaProjeto['projeto_codigo'] }}</div>
+                          @endif
+                        </td>
+                        <td class="px-3 py-3 text-right text-gray-700 dark:text-gray-200">{{ number_format((int) ($linhaProjeto['total_envios'] ?? 0), 0, ',', '.') }}</td>
+                        <td class="px-3 py-3 text-right font-semibold text-gray-900 dark:text-white">R$ {{ number_format((float) ($linhaProjeto['custo_total'] ?? 0), 2, ',', '.') }}</td>
+                        <td class="px-3 py-3 text-right text-gray-700 dark:text-gray-200">R$ {{ number_format((float) ($linhaProjeto['ticket_medio'] ?? 0), 2, ',', '.') }}</td>
+                        <td class="px-3 py-3 text-right text-gray-700 dark:text-gray-200">{{ !empty($linhaProjeto['ultimo_envio']) ? \Carbon\Carbon::parse($linhaProjeto['ultimo_envio'])->format('d/m/Y') : '—' }}</td>
+                      </tr>
+                    @empty
+                      <tr>
+                        <td colspan="5" class="px-3 py-6 text-center text-gray-500 dark:text-gray-400">Nenhum projeto com custo de deslocamento encontrado no período.</td>
+                      </tr>
+                    @endforelse
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>{{-- /secaoDeslocamento --}}
     </div>
   </div>
 
@@ -528,6 +717,192 @@
       setActive(statusButtons, defaultStatusBtn, statusButtonStyle);
 
       updateData();
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const formatCurrency = (value) => Number(value || 0).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+
+      const createCurrencyChart = (canvasId, options = {}) => {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+
+        let labels = [];
+        let values = [];
+
+        try {
+          labels = JSON.parse(canvas.getAttribute('data-labels') || '[]');
+          values = JSON.parse(canvas.getAttribute('data-values') || '[]');
+        } catch (error) {
+          console.error('Falha ao carregar dados do gráfico de deslocamento.', error);
+          return;
+        }
+
+        if (!labels.length || !values.length) {
+          return;
+        }
+
+        const ctx = canvas.getContext('2d');
+        const dark = document.documentElement.classList.contains('dark');
+        const horizontal = options.indexAxis === 'y';
+
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: options.label || 'Custo',
+              data: values,
+              backgroundColor: options.backgroundColor || 'rgba(249, 115, 22, 0.78)',
+              borderColor: options.borderColor || 'rgba(249, 115, 22, 1)',
+              borderWidth: 1,
+              borderRadius: 6,
+            }]
+          },
+          options: {
+            indexAxis: options.indexAxis || 'x',
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: !horizontal,
+                ticks: {
+                  color: dark ? '#cbd5e1' : '#6b7280',
+                  callback: horizontal ? undefined : (value) => formatCurrency(value),
+                },
+                grid: {
+                  color: dark ? 'rgba(71, 85, 105, 0.35)' : 'rgba(203, 213, 225, 0.6)',
+                }
+              },
+              x: {
+                beginAtZero: horizontal,
+                ticks: {
+                  color: dark ? '#cbd5e1' : '#6b7280',
+                  callback: horizontal ? (value) => formatCurrency(value) : undefined,
+                },
+                grid: {
+                  display: horizontal,
+                  color: dark ? 'rgba(71, 85, 105, 0.2)' : 'rgba(203, 213, 225, 0.4)',
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                callbacks: {
+                  label: (context) => formatCurrency(context.parsed.x ?? context.parsed.y ?? 0),
+                }
+              }
+            }
+          }
+        });
+      };
+
+      // Os gráficos de deslocamento são inicializados de forma lazy em switchTab()
+      // para evitar renderização com canvas oculto (tamanho zero).
+    });
+
+    // Switch de abas do dashboard
+    let deslocamentoChartsInit = false;
+
+    function switchTab(tab) {
+      const secaoPatrimonio   = document.getElementById('secaoPatrimonio');
+      const secaoDeslocamento = document.getElementById('secaoDeslocamento');
+      const btnPatrimonio     = document.getElementById('tabPatrimonio');
+      const btnDeslocamento   = document.getElementById('tabDeslocamento');
+
+      const activeClasses   = ['bg-plansul-blue', 'text-white', 'shadow-sm', 'border-transparent'];
+      const inactiveClasses = ['bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300', 'border', 'border-gray-300', 'dark:border-gray-600'];
+
+      if (tab === 'patrimonio') {
+        secaoPatrimonio.style.display   = '';
+        secaoDeslocamento.style.display = 'none';
+        activeClasses.forEach(c => btnPatrimonio.classList.add(c));
+        inactiveClasses.forEach(c => btnPatrimonio.classList.remove(c));
+        inactiveClasses.forEach(c => btnDeslocamento.classList.add(c));
+        activeClasses.forEach(c => btnDeslocamento.classList.remove(c));
+      } else {
+        secaoPatrimonio.style.display   = 'none';
+        secaoDeslocamento.style.display = '';
+        activeClasses.forEach(c => btnDeslocamento.classList.add(c));
+        inactiveClasses.forEach(c => btnDeslocamento.classList.remove(c));
+        inactiveClasses.forEach(c => btnPatrimonio.classList.add(c));
+        activeClasses.forEach(c => btnPatrimonio.classList.remove(c));
+
+        // Inicializa gráficos de deslocamento apenas na primeira vez que a aba abre
+        if (!deslocamentoChartsInit) {
+          deslocamentoChartsInit = true;
+          const formatCurrencyLazy = (value) => Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          const createCurrencyChartLazy = (canvasId, options = {}) => {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            let labels = [], values = [];
+            try {
+              labels = JSON.parse(canvas.getAttribute('data-labels') || '[]');
+              values = JSON.parse(canvas.getAttribute('data-values') || '[]');
+            } catch (e) { return; }
+            if (!labels.length || !values.length) return;
+            const ctx = canvas.getContext('2d');
+            const dark = document.documentElement.classList.contains('dark');
+            const horizontal = options.indexAxis === 'y';
+            new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels,
+                datasets: [{
+                  label: options.label || 'Custo',
+                  data: values,
+                  backgroundColor: options.backgroundColor || 'rgba(249, 115, 22, 0.78)',
+                  borderColor: options.borderColor || 'rgba(249, 115, 22, 1)',
+                  borderWidth: 1,
+                  borderRadius: 6,
+                }]
+              },
+              options: {
+                indexAxis: options.indexAxis || 'x',
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    beginAtZero: !horizontal,
+                    ticks: { color: dark ? '#cbd5e1' : '#6b7280', callback: horizontal ? undefined : (v) => formatCurrencyLazy(v) },
+                    grid: { color: dark ? 'rgba(71,85,105,0.35)' : 'rgba(203,213,225,0.6)' }
+                  },
+                  x: {
+                    beginAtZero: horizontal,
+                    ticks: { color: dark ? '#cbd5e1' : '#6b7280', callback: horizontal ? (v) => formatCurrencyLazy(v) : undefined },
+                    grid: { display: horizontal, color: dark ? 'rgba(71,85,105,0.2)' : 'rgba(203,213,225,0.4)' }
+                  }
+                },
+                plugins: {
+                  legend: { display: false },
+                  tooltip: { callbacks: { label: (ctx) => formatCurrencyLazy(ctx.parsed.x ?? ctx.parsed.y ?? 0) } }
+                }
+              }
+            });
+          };
+          createCurrencyChartLazy('deslocamentoMensalChart', {
+            label: 'Custo mensal de deslocamento',
+            backgroundColor: 'rgba(59, 130, 246, 0.78)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+          });
+          createCurrencyChartLazy('deslocamentoProjetosChart', {
+            label: 'Custo por projeto',
+            backgroundColor: 'rgba(16, 185, 129, 0.78)',
+            borderColor: 'rgba(16, 185, 129, 1)',
+            indexAxis: 'y',
+          });
+        }
+      }
+    }
+
+    // Se a URL tem ?frete_year=, abrir aba de deslocamento automaticamente
+    document.addEventListener('DOMContentLoaded', function () {
+      if (new URLSearchParams(window.location.search).has('frete_year')) {
+        switchTab('deslocamento');
+      }
     });
   </script>
   @endpush

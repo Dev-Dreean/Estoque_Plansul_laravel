@@ -217,9 +217,14 @@
                                 </template>
                             </div>
                         </div>
-                        <a href="{{ route('usuarios.create') }}" class="bg-plansul-blue hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded">
-                            Criar Novo Usuário
-                        </a>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('usuarios.notificacoes.solicitacoes') }}" class="rounded border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700 transition hover:bg-orange-100">
+                                Notificações do fluxo
+                            </a>
+                            <a href="{{ route('usuarios.create') }}" class="bg-plansul-blue hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded">
+                                Criar Novo Usuário
+                            </a>
+                        </div>
                     </div>
 
                     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">

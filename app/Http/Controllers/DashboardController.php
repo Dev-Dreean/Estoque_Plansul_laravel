@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Patrimonio;
+use App\Models\SolicitacaoBem;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,7 @@ class DashboardController extends Controller
         $statusMode = $this->resolveStatusMode($request);
         $cadastroBase = Patrimonio::query();
         $this->applyStatusMode($cadastroBase, $statusMode);
+        $deslocamentoDashboard = $this->buildDeslocamentoDashboardData($request);
 
         $cadastrosHoje = (clone $cadastroBase)->whereDate('DTOPERACAO', Carbon::today())->count();
         $verificadosStats = null;
@@ -67,6 +69,7 @@ class DashboardController extends Controller
             'cadastrosSemanaData' => $cadastrosSemanaData,
             'verificadosStats' => $verificadosStats,
             'statusMode' => $statusMode,
+            'deslocamentoDashboard' => $deslocamentoDashboard,
         ]);
     }
 
@@ -232,6 +235,123 @@ class DashboardController extends Controller
             'period' => 'all',
             'status_mode' => $statusMode,
         ]);
+    }
+
+    private function buildDeslocamentoDashboardData(Request $request): array
+    {
+        $baseQuery = DB::table('solicitacoes_bens as sb')
+            ->leftJoin('tabfant as tf', 'tf.id', '=', 'sb.projeto_id')
+            ->where('sb.destination_type', SolicitacaoBem::DESTINATION_PROJETO)
+            ->whereNotNull('sb.shipped_at')
+            ->whereNotNull('sb.quote_amount');
+
+        $anosDisponiveis = (clone $baseQuery)
+            ->selectRaw('YEAR(sb.shipped_at) as ano')
+            ->distinct()
+            ->orderByDesc('ano')
+            ->pluck('ano')
+            ->filter(static fn ($ano) => $ano !== null)
+            ->map(static fn ($ano) => (int) $ano)
+            ->values()
+            ->all();
+
+        if ($anosDisponiveis === []) {
+            $anosDisponiveis = [(int) now()->year];
+        }
+
+        $anoSolicitado = (int) $request->query('frete_year', $anosDisponiveis[0]);
+        $anoSelecionado = in_array($anoSolicitado, $anosDisponiveis, true)
+            ? $anoSolicitado
+            : $anosDisponiveis[0];
+
+        $queryAno = (clone $baseQuery)->whereYear('sb.shipped_at', $anoSelecionado);
+
+        $resumo = (clone $queryAno)
+            ->selectRaw('COUNT(*) as total_envios')
+            ->selectRaw('COALESCE(SUM(sb.quote_amount), 0) as custo_total')
+            ->selectRaw('COALESCE(AVG(sb.quote_amount), 0) as ticket_medio')
+            ->selectRaw('COUNT(DISTINCT sb.projeto_id) as total_projetos')
+            ->first();
+
+        $dadosMensais = (clone $queryAno)
+            ->selectRaw('MONTH(sb.shipped_at) as mes')
+            ->selectRaw('COUNT(*) as total_envios')
+            ->selectRaw('COALESCE(SUM(sb.quote_amount), 0) as custo_total')
+            ->groupByRaw('MONTH(sb.shipped_at)')
+            ->orderByRaw('MONTH(sb.shipped_at)')
+            ->get()
+            ->keyBy(static fn ($row) => (int) $row->mes);
+
+        $mensalResumo = [];
+        $mensalLabels = [];
+        $mensalValores = [];
+
+        for ($mes = 1; $mes <= 12; $mes++) {
+            $linha = $dadosMensais->get($mes);
+            $label = sprintf('%02d/%d', $mes, $anoSelecionado);
+            $envios = (int) ($linha->total_envios ?? 0);
+            $custo = (float) ($linha->custo_total ?? 0);
+
+            $mensalLabels[] = $label;
+            $mensalValores[] = round($custo, 2);
+            $mensalResumo[] = [
+                'label' => $label,
+                'envios' => $envios,
+                'custo_total' => $custo,
+            ];
+        }
+
+        $nomeProjetoExpr = "COALESCE(NULLIF(TRIM(tf.NOMEPROJETO), ''), NULLIF(TRIM(sb.local_destino), ''), CONCAT('Projeto #', sb.projeto_id), 'Projeto não informado')";
+        $codigoProjetoExpr = "NULLIF(TRIM(tf.CDPROJETO), '')";
+
+        $projetosResumo = (clone $queryAno)
+            ->selectRaw('sb.projeto_id')
+            ->selectRaw("{$nomeProjetoExpr} as projeto_nome")
+            ->selectRaw("{$codigoProjetoExpr} as projeto_codigo")
+            ->selectRaw('COUNT(*) as total_envios')
+            ->selectRaw('COALESCE(SUM(sb.quote_amount), 0) as custo_total')
+            ->selectRaw('COALESCE(AVG(sb.quote_amount), 0) as ticket_medio')
+            ->selectRaw('MAX(sb.shipped_at) as ultimo_envio')
+            ->groupBy('sb.projeto_id')
+            ->groupByRaw($nomeProjetoExpr)
+            ->groupByRaw($codigoProjetoExpr)
+            ->orderByDesc('custo_total')
+            ->get()
+            ->map(static function ($row) {
+                return [
+                    'projeto_id' => $row->projeto_id,
+                    'projeto_nome' => (string) $row->projeto_nome,
+                    'projeto_codigo' => $row->projeto_codigo ? (string) $row->projeto_codigo : null,
+                    'total_envios' => (int) $row->total_envios,
+                    'custo_total' => (float) $row->custo_total,
+                    'ticket_medio' => (float) $row->ticket_medio,
+                    'ultimo_envio' => $row->ultimo_envio,
+                ];
+            })
+            ->values();
+
+        $projetosChart = $projetosResumo->take(10);
+
+        return [
+            'ano_selecionado' => $anoSelecionado,
+            'anos_disponiveis' => $anosDisponiveis,
+            'resumo' => [
+                'total_envios' => (int) ($resumo->total_envios ?? 0),
+                'custo_total' => (float) ($resumo->custo_total ?? 0),
+                'ticket_medio' => (float) ($resumo->ticket_medio ?? 0),
+                'total_projetos' => (int) ($resumo->total_projetos ?? 0),
+            ],
+            'mensal' => [
+                'labels' => $mensalLabels,
+                'values' => $mensalValores,
+                'rows' => $mensalResumo,
+            ],
+            'projetos' => [
+                'labels' => $projetosChart->pluck('projeto_nome')->all(),
+                'values' => $projetosChart->pluck('custo_total')->map(static fn ($valor) => round((float) $valor, 2))->all(),
+                'rows' => $projetosResumo->all(),
+            ],
+        ];
     }
 
     private function resolveStatusMode(Request $request): string

@@ -67,7 +67,11 @@ Route::get('/debug-acessos', function () {
 
     /** @var \App\Models\User $user */
     $user = Auth::user();
-    
+
+    if (!app()->environment('local') && !$user->isAdmin()) {
+        abort(404);
+    }
+
     $debug = [
         'usuario' => [
             'nome' => $user->NOMEUSER,
@@ -199,6 +203,17 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     // Nova rota: pesquisa de funcionários
     Route::get('/api/funcionarios/pesquisar', [\App\Http\Controllers\FuncionarioController::class, 'pesquisar'])->name('api.funcionarios.pesquisar');
 
+    // API auxiliar: verificar matrícula (usado no formulário de Gestão de Colaboradores)
+    Route::get('/api/funcionarios/verificar-matricula', [\App\Http\Controllers\GestaoColaboradoresController::class, 'verificarMatricula'])->name('api.funcionarios.verificarMatricula');
+
+    // Gestão de Colaboradores (T:1011)
+    Route::get('/colaboradores', [\App\Http\Controllers\GestaoColaboradoresController::class, 'index'])->name('colaboradores.index')->middleware('tela.access:1011');
+    Route::post('/colaboradores', [\App\Http\Controllers\GestaoColaboradoresController::class, 'store'])->name('colaboradores.store')->middleware('tela.access:1011');
+    Route::post('/colaboradores/sincronizar', [\App\Http\Controllers\GestaoColaboradoresController::class, 'sincronizar'])->name('colaboradores.sincronizar')->middleware('tela.access:1011');
+    Route::post('/colaboradores/criar-login', [\App\Http\Controllers\GestaoColaboradoresController::class, 'criarLogin'])->name('colaboradores.criarLogin')->middleware('tela.access:1011');
+    Route::delete('/colaboradores/login/{usuario}', [\App\Http\Controllers\GestaoColaboradoresController::class, 'removerLogin'])->name('colaboradores.removerLogin')->middleware('tela.access:1011');
+    Route::post('/colaboradores/{matricula}/permissoes', [\App\Http\Controllers\GestaoColaboradoresController::class, 'atualizarPermissoes'])->name('colaboradores.atualizarPermissoes')->middleware('tela.access:1011');
+
     // API de cadastradores (usuários que cadastraram patrimônios)
     Route::get('/api/cadastradores/pesquisar', [PatrimonioController::class, 'pesquisarCadastradores'])->name('api.cadastradores.pesquisar');
     Route::get('/api/cadastradores/nomes', [PatrimonioController::class, 'buscarNomesCadastradores'])->name('api.cadastradores.nomes');
@@ -274,6 +289,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
         [SolicitacaoBemController::class, 'send'])->name('solicitacoes-bens.send');
     Route::post('/solicitacoes-bens/{solicitacao}/quote-approve',
         [SolicitacaoBemController::class, 'approveQuote'])->name('solicitacoes-bens.quote-approve');
+    Route::post('/solicitacoes-bens/{solicitacao}/authorize-release',
+        [SolicitacaoBemController::class, 'authorizeRelease'])->name('solicitacoes-bens.authorize-release');
     Route::post('/solicitacoes-bens/{solicitacao}/quote-reject',
         [SolicitacaoBemController::class, 'rejectQuote'])->name('solicitacoes-bens.quote-reject');
     Route::post('/solicitacoes-bens/{solicitacao}/not-sent',

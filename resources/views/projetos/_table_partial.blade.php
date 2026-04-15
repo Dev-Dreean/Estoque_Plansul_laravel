@@ -50,6 +50,16 @@
                     </a>
                 </th>
                 <th scope="col" class="px-4 py-2">
+                    <a href="{{ request()->fullUrlWithQuery(['sort' => 'tipo_local_label', 'direction' => $nextDir('tipo_local_label'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">
+                        Tipo <span class="text-[10px]">{{ $sortMark('tipo_local_label') }}</span>
+                    </a>
+                </th>
+                <th scope="col" class="px-4 py-2">
+                    <a href="{{ request()->fullUrlWithQuery(['sort' => 'fluxo_responsavel_label', 'direction' => $nextDir('fluxo_responsavel_label'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">
+                        Fluxo <span class="text-[10px]">{{ $sortMark('fluxo_responsavel_label') }}</span>
+                    </a>
+                </th>
+                <th scope="col" class="px-4 py-2">
                     <a href="{{ request()->fullUrlWithQuery(['sort' => 'projeto_nome', 'direction' => $nextDir('projeto_nome'), 'page' => 1]) }}" class="inline-flex items-center gap-1 hover:text-indigo-600">
                         Projeto Associado <span class="text-[10px]">{{ $sortMark('projeto_nome') }}</span>
                     </a>

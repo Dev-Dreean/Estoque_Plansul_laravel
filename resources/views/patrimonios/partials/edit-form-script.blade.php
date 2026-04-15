@@ -50,6 +50,7 @@
       'DEHISTORICO': 'Observações',
       'NUMOF': 'Número OC',
       'NMPLANTA': 'Planta',
+      'NUMMESA': 'Número da Mesa',
       'PESO': 'Peso',
       'TAMANHO': 'Dimensões',
       'CDMATRGERENTE': 'Matrícula Gerente Responsável',

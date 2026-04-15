@@ -155,11 +155,11 @@
                     return match ($normalizeStatus($status)) {
                         'CRIADO' => 'SOLICITADO',
                         'AGUARDANDO_CONFIRMACAO' => 'SEPARANDO',
-                        'LIBERACAO' => 'EM LIBERACAO',
+                        'LIBERACAO' => 'EM LIBERAÇÃO',
                         'CONFIRMADO' => 'ENVIO',
                         'ENVIADO' => 'ENVIO',
                         'NAO_ENVIADO' => 'CANCELADO',
-                        'NAO_RECEBIDO' => 'NAO RECEBIDO',
+                        'NAO_RECEBIDO' => 'NÃO RECEBIDO',
                         default => $normalizeStatus($status) !== '' ? $normalizeStatus($status) : '-',
                     };
                 };

@@ -4,11 +4,14 @@
 @endphp
 
 @php
-  // Carregar o nome do projeto
+  // Carregar o nome do projeto resolvido para o patrimônio
+  $cdProjetoOriginal = $patrimonio->projeto_correto ?? $patrimonio->CDPROJETO ?? null;
   $nomeProjetoOriginal = '';
-  if ($patrimonio->CDPROJETO) {
+  if ($patrimonio->relationLoaded('local') && $patrimonio->local && $patrimonio->local->relationLoaded('projeto') && $patrimonio->local->projeto) {
+    $nomeProjetoOriginal = $patrimonio->local->projeto->NMFANTASIA ?? $patrimonio->local->projeto->NOMEPROJETO ?? '';
+  } elseif ($cdProjetoOriginal) {
     try {
-      $projeto = App\Models\Tabfant::where('CDPROJETO', $patrimonio->CDPROJETO)->first();
+      $projeto = App\Models\Tabfant::where('CDPROJETO', $cdProjetoOriginal)->first();
       // Tentar NMFANTASIA primeiro, depois NOMEPROJETO
       $nomeProjetoOriginal = $projeto?->NMFANTASIA ?? $projeto?->NOMEPROJETO ?? '';
     } catch (\Exception $e) {
@@ -78,7 +81,7 @@
     'NUPATRIMONIO' => $patrimonio->NUPATRIMONIO ?? '',
     'NUSEQOBJ' => $patrimonio->CODOBJETO ?? '',
     'DEPATRIMONIO' => $patrimonio->DEPATRIMONIO ?? '',
-    'CDPROJETO' => $patrimonio->CDPROJETO ?? '',
+    'CDPROJETO' => $cdProjetoOriginal ?? '',
     'NMPROJETOORIGINAL' => $nomeProjetoOriginal,
     'CDLOCAL' => $patrimonio->CDLOCAL ?? '',
     'DENOMELOCAL' => $nomeLocalOriginal,
@@ -95,6 +98,7 @@
     'DEHISTORICO' => $patrimonio->DEHISTORICO ?? '',
     'NUMOF' => $patrimonio->NUMOF ?? '',
     'NMPLANTA' => $patrimonio->NMPLANTA ?? '',
+    'NUMMESA' => $patrimonio->NUMMESA ?? '',
     'PESO' => $patrimonio->PESO ?? '',
     'TAMANHO' => $patrimonio->TAMANHO ?? '',
     'VOLTAGEM' => $patrimonio->VOLTAGEM ?? '',

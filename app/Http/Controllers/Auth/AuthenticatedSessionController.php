@@ -25,34 +25,32 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request)
     {
         $request->authenticate();
-
         $request->session()->regenerate();
 
-        // If the user must complete profile or change password, redirect them first.
         $user = $request->user();
         $needsPassword = $user && ($user->must_change_password ?? false);
-        $needsProfile = $user && ($user->needsUf() || $user->needsIdentityUpdate());
+        $needsProfile = $user && ($user->needsUf() || $user->needsIdentityUpdate() || $user->needsEmail());
+
         if ($needsPassword || $needsProfile) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Você deve completar seu perfil antes de continuar',
-                    'redirect' => route('profile.completion.create')
+                    'message' => 'Você deve completar seu perfil antes de continuar.',
+                    'redirect' => route('profile.completion.create'),
                 ], 403);
             }
+
             return redirect()->route('profile.completion.create');
         }
 
-        // Se for requisição AJAX, retornar JSON
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Login realizado com sucesso',
-                'redirect' => route('patrimonios.index')
+                'message' => 'Login realizado com sucesso.',
+                'redirect' => route('patrimonios.index'),
             ]);
         }
 
-        // Se foi fornecido um redirecionamento específico, usar esse
         if ($request->has('redirect_to')) {
             return redirect()->route($request->input('redirect_to'));
         }
@@ -68,10 +66,8 @@ class AuthenticatedSessionController extends Controller
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect()->route('menu.index');
     }
 }
-

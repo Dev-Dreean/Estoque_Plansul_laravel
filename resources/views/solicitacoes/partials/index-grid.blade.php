@@ -12,18 +12,15 @@
     ];
 
     $currentUser = auth()->user();
+    $flowService = app(\App\Services\SolicitacaoBemFlowService::class);
     $currentUserId = $currentUser?->getAuthIdentifier();
     $currentUserMatricula = trim((string) ($currentUser?->CDMATRFUNCIONARIO ?? ''));
-    $currentUserLogin = mb_strtoupper(trim((string) ($currentUser?->NMLOGIN ?? '')), 'UTF-8');
     $isAdminUser = $currentUser?->isAdmin() ?? false;
-    $isTiagoFlow = in_array($currentUserMatricula, ['185895'], true) || in_array($currentUserLogin, ['TIAGOP'], true);
-    $isBeatrizFlow = in_array($currentUserMatricula, ['182687'], true) || in_array($currentUserLogin, ['BEA.SC'], true);
-    $isBrunoFlow = in_array($currentUserMatricula, ['11829'], true) || in_array($currentUserLogin, ['BRUNO'], true);
-    $canConfirmFlow = $isAdminUser || (($currentUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_TRIAGEM_INICIAL) ?? false) && ($isTiagoFlow || $isBeatrizFlow));
-    $canRegisterMeasures = $isAdminUser || (($currentUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_ATUALIZAR) ?? false) && $isTiagoFlow);
-    $canRegisterQuote = $isAdminUser || (($currentUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_ATUALIZAR) ?? false) && $isBeatrizFlow);
-    $canReleaseFlow = $isAdminUser || (($currentUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_LIBERACAO_ENVIO) ?? false) && $isBrunoFlow);
-    $canSendFlow = $isAdminUser || (($currentUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_APROVAR) ?? false) && ($isTiagoFlow || $isBeatrizFlow));
+    $canRegisterMeasures = $isAdminUser || (($currentUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_ATUALIZAR) ?? false) && $flowService->isTiagoFlowOperator($currentUser));
+    $canRegisterQuote = $isAdminUser || (($currentUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_ATUALIZAR) ?? false) && $flowService->isBeatrizFlowOperator($currentUser));
+    $canTheoReleaseFlow = $isAdminUser || (($currentUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_AUTORIZACAO_LIBERACAO) ?? false) && $flowService->isTheoFlowOperator($currentUser));
+    $canBrunoReleaseFlow = $isAdminUser || (($currentUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_LIBERACAO_ENVIO) ?? false) && $flowService->isBrunoFlowOperator($currentUser));
+    $canSendFlow = $isAdminUser || (($currentUser?->temAcessoTela((string) \App\Models\User::TELA_SOLICITACOES_APROVAR) ?? false) && ($flowService->isTiagoFlowOperator($currentUser) || $flowService->isBeatrizFlowOperator($currentUser)));
 
     $shortPersonName = function (?string $nome): string {
         $nome = trim((string) $nome);
@@ -82,16 +79,21 @@
                     $hasLogisticsData = method_exists($solicitacao, 'hasLogisticsData') ? $solicitacao->hasLogisticsData() : false;
                     $hasQuoteData = method_exists($solicitacao, 'hasQuoteData') ? $solicitacao->hasQuoteData() : false;
                     $hasShipmentData = method_exists($solicitacao, 'hasShipmentData') ? $solicitacao->hasShipmentData() : (trim((string) ($solicitacao->tracking_code ?? '')) !== '' || trim((string) ($solicitacao->invoice_number ?? '')) !== '');
+                    $awaitingTheoAuthorization = method_exists($solicitacao, 'isAwaitingTheoAuthorization') ? $solicitacao->isAwaitingTheoAuthorization() : false;
                     $awaitingRequesterDecision = method_exists($solicitacao, 'isAwaitingRequesterDecision') ? $solicitacao->isAwaitingRequesterDecision() : false;
                     $readyToShip = method_exists($solicitacao, 'isReadyToShip') ? $solicitacao->isReadyToShip() : false;
+                    $origemPedidoLabel = $flowService->originLabel($solicitacao);
+                    $currentUserCanConfirmThis = $flowService->canConfirmSolicitacao($currentUser, $solicitacao);
                     $statusVisual = $solicitacao->status === 'NAO_ENVIADO'
                         ? 'CANCELADO'
                         : $solicitacao->status;
                     $motivoStatus = trim((string) ($solicitacao->justificativa_cancelamento ?? ''));
                     $statusAuxiliar = match (true) {
+                        $solicitacao->status === 'PENDENTE' => 'Aguardando triagem de ' . $flowService->initialTriageLabel($solicitacao),
                         $solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && !$hasLogisticsData => 'Aguardando medidas e peso',
                         $solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $hasLogisticsData => 'Aguardando cotações da Beatriz',
-                        $solicitacao->status === 'LIBERACAO' => 'Aguardando liberação do Bruno',
+                        $solicitacao->status === 'LIBERACAO' && $awaitingTheoAuthorization => 'Aguardando autorização do Theo',
+                        $solicitacao->status === 'LIBERACAO' => 'Aguardando liberação final do Bruno',
                         $solicitacao->status === 'CONFIRMADO' && !$hasShipmentData => 'Aguardando envio',
                         $solicitacao->status === 'CONFIRMADO' && $hasShipmentData => 'Enviado, aguardando recebimento',
                         default => '',
@@ -108,13 +110,15 @@
                     }
 
                     $currentUserPendingLabel = null;
-                    if ($solicitacao->status === 'PENDENTE' && $canConfirmFlow) {
+                    if ($solicitacao->status === 'PENDENTE' && $currentUserCanConfirmThis) {
                         $currentUserPendingLabel = 'Aprovar solicitação';
                     } elseif ($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && !$hasLogisticsData && $canRegisterMeasures) {
                         $currentUserPendingLabel = 'Registrar medidas e peso';
                     } elseif ($solicitacao->status === 'AGUARDANDO_CONFIRMACAO' && $hasLogisticsData && $canRegisterQuote) {
                         $currentUserPendingLabel = 'Cadastrar cotações';
-                    } elseif ($solicitacao->status === 'LIBERACAO' && $canReleaseFlow && $hasQuoteData && $awaitingRequesterDecision) {
+                    } elseif ($solicitacao->status === 'LIBERACAO' && $canTheoReleaseFlow && $hasQuoteData && $awaitingTheoAuthorization) {
+                        $currentUserPendingLabel = 'Autorizar liberação';
+                    } elseif ($solicitacao->status === 'LIBERACAO' && $canBrunoReleaseFlow && $hasQuoteData && $awaitingRequesterDecision) {
                         $currentUserPendingLabel = 'Liberar envio';
                     } elseif ($solicitacao->status === 'CONFIRMADO' && !$hasShipmentData && $canSendFlow && (!$hasQuoteData || !empty($solicitacao->quote_approved_at) || $readyToShip)) {
                         $currentUserPendingLabel = 'Registrar envio';
@@ -143,7 +147,10 @@
                         <div class="text-gray-900 dark:text-gray-100">{{ $shortPersonName($solicitacao->solicitante_nome ?? '-') }}</div>
                         <div class="text-xs text-gray-500">{{ $solicitacao->solicitante_matricula ?? '-' }}</div>
                     </td>
-                    <td class="px-4 py-2">{{ $formatDisplay($solicitacao->local_destino ?? '-') }}</td>
+                    <td class="px-4 py-2">
+                        <div>{{ $formatDisplay($solicitacao->local_destino ?? '-') }}</div>
+                        <div class="text-xs text-gray-500">Origem do pedido: {{ $origemPedidoLabel }}</div>
+                    </td>
                     <td class="px-4 py-2">{{ $solicitacao->uf ?? '-' }}</td>
                     <td class="px-4 py-2">
                         <x-status-badge :status="$statusVisual" :color-map="$statusColors" />

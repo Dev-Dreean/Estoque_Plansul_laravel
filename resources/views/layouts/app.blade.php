@@ -103,6 +103,7 @@
       items: @js($systemNewsPayload['items'] ?? []),
       unseenKeys: @js($systemNewsPayload['unseen_keys'] ?? []),
       shouldAutoOpen: @js($systemNewsPayload['should_auto_open'] ?? false),
+      sessionKey: @js(session()->getId()),
     })
   }"
   x-init="persistTheme(); initSystemNews()"
@@ -238,7 +239,12 @@
     <div
       x-cloak
       x-show="systemNewsOpen"
-      x-transition.opacity
+      x-transition:enter="system-news-overlay-enter"
+      x-transition:enter-start="system-news-overlay-enter-start"
+      x-transition:enter-end="system-news-overlay-enter-end"
+      x-transition:leave="system-news-overlay-leave"
+      x-transition:leave-start="system-news-overlay-leave-start"
+      x-transition:leave-end="system-news-overlay-leave-end"
       class="system-news-overlay"
       @click="closeSystemNews()"
     ></div>
@@ -246,58 +252,65 @@
     <section
       x-cloak
       x-show="systemNewsOpen"
-      x-transition
+      x-transition:enter="system-news-dialog-enter"
+      x-transition:enter-start="system-news-dialog-enter-start"
+      x-transition:enter-end="system-news-dialog-enter-end"
+      x-transition:leave="system-news-dialog-leave"
+      x-transition:leave-start="system-news-dialog-leave-start"
+      x-transition:leave-end="system-news-dialog-leave-end"
       class="system-news-dialog"
+      :class="{ 'system-news-dialog--presenting': systemNewsOpen }"
       role="dialog"
       aria-modal="true"
       aria-labelledby="system-news-title"
     >
       <div class="system-news-header">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <span class="system-news-header-chip">Novidades do sistema</span>
-            <h2 id="system-news-title" class="system-news-title">Tem novidade importante para você</h2>
-            <p class="system-news-subtitle">
-              Sempre que uma entrega relevante entrar no sistema, ela aparecerá aqui com explicação completa para facilitar a adoção por todos os usuários.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-500 transition hover:text-slate-900"
-            @click="closeSystemNews()"
-            aria-label="Fechar novidades"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-            </svg>
-          </button>
+        <div>
+          <span class="system-news-header-chip system-news-stage system-news-stage--1">Novidade do sistema</span>
+          <h2 id="system-news-title" class="system-news-title system-news-stage system-news-stage--2">Novas atualizações!</h2>
         </div>
       </div>
 
       <div class="system-news-body">
         <template x-if="systemNewsItems.length === 0">
-          <div class="system-news-card">
+          <div class="system-news-card system-news-stage system-news-stage--4">
             <p class="system-news-card-summary">Nenhuma novidade do sistema está disponível no momento.</p>
           </div>
         </template>
 
         <template x-for="item in systemNewsItems" :key="item.key">
-          <article class="system-news-card" :class="{ 'system-news-card--new': hasUnseenSystemNews(item.key) }">
-            <div class="system-news-card-top">
+          <article class="system-news-card system-news-stage system-news-stage--4" :class="{ 'system-news-card--new': hasUnseenSystemNews(item.key) }">
+            <div class="system-news-card-top system-news-stage system-news-stage--5">
               <span class="system-news-badge" :class="{ 'system-news-badge--new': hasUnseenSystemNews(item.key) }" x-text="hasUnseenSystemNews(item.key) ? 'Novo' : 'Já visualizado'"></span>
               <span class="system-news-date" x-text="item.released_at_label"></span>
             </div>
 
-            <h3 class="system-news-card-title" x-text="item.title"></h3>
-            <p class="system-news-card-summary" x-text="item.summary"></p>
+            <h3 class="system-news-card-title system-news-stage system-news-stage--6" x-text="item.title"></h3>
+            <p class="system-news-card-summary system-news-stage system-news-stage--7" x-html="item.summary_html || item.summary"></p>
 
-            <template x-if="item.highlight">
-              <div class="system-news-highlight" x-text="item.highlight"></div>
-            </template>
+            <div class="system-news-preview system-news-stage system-news-stage--8">
+              <div class="system-news-preview__icon" aria-hidden="true">
+                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.857 17H9.143m9.714 0H20l-1.286-1.286A2 2 0 0118.143 14.3V11a6.143 6.143 0 10-12.286 0v3.3a2 2 0 01-.571 1.414L4 17h1.143m13.714 0a2.857 2.857 0 11-5.714 0m5.714 0H8.857m0 0a2.857 2.857 0 005.714 0" />
+                </svg>
+              </div>
+              <div class="system-news-preview__copy">
+                <div class="system-news-preview__title">Novo ícone no topo da tela</div>
+                <div class="system-news-preview__text">Clique para ver onde ele está e abrir as pendências.</div>
+              </div>
+
+              <template x-if="item.tutorial_label">
+                <button
+                  type="button"
+                  class="system-news-preview__action"
+                  @click="previewSystemNews(item)"
+                  x-text="item.tutorial_label"
+                ></button>
+              </template>
+            </div>
 
             <template x-if="Array.isArray(item.details) && item.details.length > 0">
-              <ul class="system-news-list">
+              <ul class="system-news-list system-news-stage system-news-stage--9">
                 <template x-for="detail in item.details" :key="detail">
                   <li class="system-news-list-item">
                     <span class="system-news-list-bullet" aria-hidden="true"></span>
@@ -308,7 +321,7 @@
             </template>
 
             <template x-if="item.cta_label && item.cta_url">
-              <a class="system-news-cta" :href="item.cta_url" x-text="item.cta_label"></a>
+              <a class="system-news-cta system-news-stage system-news-stage--9" :href="item.cta_url" x-text="item.cta_label"></a>
             </template>
           </article>
         </template>
@@ -317,19 +330,19 @@
       <div class="system-news-footer">
         <button
           type="button"
-          class="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
-          @click="closeSystemNews()"
+          class="system-news-stage system-news-stage--10 inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
+          @click="rememberSystemNewsLater()"
         >
           Lembrar depois
         </button>
 
         <button
           type="button"
-          class="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          class="system-news-stage system-news-stage--11 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           @click="markSystemNewsAsSeen()"
           :disabled="systemNewsSubmitting"
         >
-          <span x-text="systemNewsSubmitting ? 'Registrando novidades...' : 'Marcar novidades como visualizadas'"></span>
+          <span x-text="systemNewsSubmitting ? 'Salvando...' : 'Entendi'"></span>
         </button>
       </div>
     </section>

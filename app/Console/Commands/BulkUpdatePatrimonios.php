@@ -25,7 +25,7 @@ class BulkUpdatePatrimonios extends Command
         $delimiter = $this->option('delimiter');
 
         if (!file_exists($filePath)) {
-            $this->error("Arquivo nao encontrado: {$filePath}");
+            $this->error("Arquivo não encontrado: {$filePath}");
             return 1;
         }
 
@@ -56,7 +56,7 @@ class BulkUpdatePatrimonios extends Command
 
             if (empty($nuseqpatr) && empty($nupatrimonio)) {
                 $errors++;
-                $this->warn("Linha {$processed}: NUSEQPATR ou NUPATRIMONIO obrigatorio.");
+                $this->warn("Linha {$processed}: NUSEQPATR ou NUPATRIMONIO obrigatório.");
                 continue;
             }
 
@@ -69,7 +69,7 @@ class BulkUpdatePatrimonios extends Command
 
             if (!$patrimonio) {
                 $errors++;
-                $this->warn("Linha {$processed}: patrimonio nao encontrado.");
+                $this->warn("Linha {$processed}: patrimônio não encontrado.");
                 continue;
             }
 
@@ -124,7 +124,7 @@ class BulkUpdatePatrimonios extends Command
         $this->line("Erros: {$errors}");
 
         if ($dryRun) {
-            $this->warn('Dry-run ativo: nenhuma alteracao foi salva.');
+            $this->warn('Dry-run ativo: nenhuma alteração foi salva.');
         }
 
         return $errors > 0 ? 1 : 0;
@@ -319,7 +319,7 @@ class BulkUpdatePatrimonios extends Command
         if (isset($updates['CDLOCAL'])) {
             $local = LocalProjeto::with('projeto')->where('cdlocal', $updates['CDLOCAL'])->first();
             if (!$local) {
-                return 'CDLOCAL nao existe.';
+                return 'CDLOCAL não existe.';
             }
         }
 
@@ -327,13 +327,13 @@ class BulkUpdatePatrimonios extends Command
         if (isset($updates['CDPROJETO'])) {
             $projeto = Tabfant::where('CDPROJETO', $updates['CDPROJETO'])->first();
             if (!$projeto) {
-                return 'CDPROJETO nao existe.';
+                return 'CDPROJETO não existe.';
             }
         }
 
         if ($local && $projeto) {
             if ((int) $local->tabfant_id !== (int) $projeto->id) {
-                return 'CDLOCAL nao pertence ao CDPROJETO informado.';
+                return 'CDLOCAL não pertence ao CDPROJETO informado.';
             }
         }
 

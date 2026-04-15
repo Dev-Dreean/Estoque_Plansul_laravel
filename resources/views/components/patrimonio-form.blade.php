@@ -35,12 +35,19 @@
   data-nomes-iniciais='@json($nomesIniciais)'>
 
   {{-- GRUPO 1: 4 Inputs lado a lado - Botão Gerar, Número Patrimonio, OC, Descrição e Código do Objeto --}}
+  @unless($patrimonio)
+    {{-- Em criação, confirmar automaticamente --}}
+    <input type="hidden" name="FLCONFERIDO" value="S" />
+  @endunless
   @if($patrimonio)
-    @php
+  @php
       $usuarioAtual = auth()->user()?->NMLOGIN ?? auth()->user()?->NOMEUSER ?? 'SISTEMA';
       $usuarioAtual = trim((string) $usuarioAtual) !== '' ? (string) $usuarioAtual : 'SISTEMA';
-      $ultimaUsuario = $ultimaVerificacao?->USUARIO ?? null;
-    @endphp
+      $ultimaUsuario = $ultimaVerificacao?->USUARIO
+          ?? (($patrimonio->FLCONFERIDO === 'S' || $patrimonio->FLCONFERIDO === '1')
+              ? ($patrimonio->USUARIO ?? 'via importação')
+              : null);
+  @endphp
 
     <div
       x-data="{
@@ -63,7 +70,7 @@
             .catch(e => console.warn('Não foi possível carregar dados de verificação', e));
         }
       "
-      x-effect="formData.FLCONFERIDO = conferido ? 'S' : 'N'"
+      x-effect="formData.FLCONFERIDO = conferido ? 'S' : 'N'; window.dispatchEvent(new CustomEvent('patrimonio-verificacao', {detail: {conferido: conferido}}))"
       class="rounded-md border-l-4 px-2 py-1.5 sm:px-3 sm:py-2 shadow-sm"
       :style="conferido
         ? 'border-color: var(--ok); border-left-color: var(--ok); background: color-mix(in srgb, var(--ok) 18%, var(--surface));'
@@ -88,7 +95,7 @@
             <div class="text-xs sm:text-sm lg:text-base font-semibold tracking-wide" :style="conferido ? 'color: var(--ok);' : 'color: var(--danger);'">
               <template x-if="conferido">
                 <span>
-                  PATRIMÔNIO VERIFICADO POR <span class="font-mono font-semibold text-emerald-200" x-text="ultimaUsuario || '-'"></span>
+                  PATRIMÔNIO VERIFICADO POR <span class="font-mono font-bold" style="color: color-mix(in srgb, var(--ok) 90%, #000);" x-text="ultimaUsuario || '-'"></span>
                 </span>
               </template>
               <template x-if="!conferido">
@@ -98,18 +105,27 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-end gap-1.5 flex-shrink-0">
-          <template x-if="!conferido">
-            <span class="text-xs sm:text-sm text-[var(--text-soft)]">
-              Clique em <span class="font-semibold">Atualizar Patrimonio</span> para salvar.
-            </span>
-          </template>
+        <div class="flex items-center justify-end gap-2 flex-shrink-0">
+          {{-- Botão: Marcar como verificado (visível quando NÃO verificado) --}}
           <button
+            x-show="!conferido"
             type="button"
-            class="px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm font-semibold border border-[var(--border)] bg-[var(--surface)] hover:opacity-90"
-            @click="pendingAction = conferido ? 'unverify' : 'verify'; confirmOpen = true"
+            class="px-4 py-2 text-sm font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2 shadow-sm transition-all"
+            @click="pendingAction = 'verify'; confirmOpen = true"
           >
-            <span x-text="conferido ? 'Desmarcar verificação' : 'Marcar como verificado'"></span>
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            Marcar como verificado
+          </button>
+          {{-- Botão: Desmarcar verificação (visível quando verificado) --}}
+          <button
+            x-show="conferido"
+            type="button"
+            class="px-3 py-1.5 text-xs font-semibold rounded flex items-center gap-1.5 transition-all border hover:opacity-75"
+            style="border-color: color-mix(in srgb, var(--danger) 60%, transparent); color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, var(--surface));"
+            @click="pendingAction = 'unverify'; confirmOpen = true"
+          >
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            Desmarcar verificação
           </button>
         </div>
       </div>
@@ -121,7 +137,7 @@
           <p class="text-muted mb-6">
             <span x-show="pendingAction === 'verify'" class="block">Deseja marcar este patrimônio como <strong>verificado</strong>?</span>
             <span x-show="pendingAction === 'unverify'" class="block">Deseja marcar este patrimônio como <strong>não verificado</strong>?</span>
-            Esta alteração será aplicada ao clicar em <strong>Atualizar Patrimonio</strong>.
+            Esta alteração será aplicada ao clicar em <strong>Atualizar Patrimônio</strong>.
           </p>
 
           <div class="flex gap-3 justify-end">
@@ -150,10 +166,10 @@
     </div>
   @endif
 
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
     {{-- Número do Patrimônio (Dropdown com patrimônios do usuário) --}}
     <div>
-      <label for="patSearch" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nº Patrimonio (Selecione ou Gere) *</label>
+      <label for="patSearch" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nº Patrimônio (Selecione ou Gere) *</label>
       <div class="flex items-stretch gap-2">
         {{-- Botão para gerar novo número --}}
         <button
@@ -299,8 +315,8 @@
   </div>
 
   {{-- GRUPO 3: Observação, Peso, Dimensões e Voltagem --}}
-  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-    <div class="md:col-span-2">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+    <div class="lg:col-span-2">
       <label for="DEHISTORICO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
       <textarea
         id="DEHISTORICO"
@@ -525,7 +541,7 @@
   </div>
 
   {{-- GRUPO 6: Matrícula do Responsável, Data da OC e Data de Baixa --}}
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
     <div class="relative" @click.away="showUserDropdown=false">
       <label for="matricula_busca" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Matrícula do Responsável *</label>
       <div class="relative">
@@ -627,8 +643,21 @@
     </div>
 
     <div>
+      <label for="NUMMESA" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número da Mesa</label>
+      <input x-model="formData.NUMMESA"
+        id="NUMMESA"
+        name="NUMMESA"
+        type="text"
+        maxlength="30"
+        tabindex="18"
+        class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Use um identificador único para patrimônios em uso.</p>
+      <x-input-error class="mt-2" :messages="$errors->get('NUMMESA')" />
+    </div>
+
+    <div>
       <label for="DTAQUISICAO" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Data da OC</label>
-      <input x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" @keydown.tab.prevent="focusNext($event.target)" tabindex="18" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
+      <input x-model="formData.DTAQUISICAO" id="DTAQUISICAO" name="DTAQUISICAO" type="date" @keydown.tab.prevent="focusNext($event.target)" tabindex="19" class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
     </div>
 
     <div>
@@ -638,7 +667,7 @@
         name="DTBAIXA"
         type="date"
         @keydown.tab.prevent="focusNext($event.target)"
-        tabindex="19"
+        tabindex="20"
         class="block w-full h-8 text-xs border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500" />
       <x-input-error class="mt-2" :messages="$errors->get('DTBAIXA')" />
     </div>
@@ -971,9 +1000,10 @@
         DEPATRIMONIO: (config.old?.DEPATRIMONIO ?? config.patrimonio?.DEPATRIMONIO) || '',
         DEHISTORICO: (config.old?.DEHISTORICO ?? config.patrimonio?.DEHISTORICO) || '',
         // Fonte de verdade: manter CDPROJETO gravado no patrimonio
-        CDPROJETO: (config.old?.CDPROJETO ?? config.patrimonio?.CDPROJETO ?? config.patrimonio?.projeto_correto) || '',
+        CDPROJETO: (config.old?.CDPROJETO ?? config.patrimonio?.projeto_correto ?? config.patrimonio?.CDPROJETO) || '',
         CDLOCAL: (config.old?.CDLOCAL ?? config.patrimonio?.CDLOCAL) || '',
         NMPLANTA: (config.old?.NMPLANTA ?? config.patrimonio?.NMPLANTA) || '',
+        NUMMESA: (config.old?.NUMMESA ?? config.patrimonio?.NUMMESA) || '',
         MARCA: (config.old?.MARCA ?? config.patrimonio?.MARCA) || '',
         MODELO: (config.old?.MODELO ?? config.patrimonio?.MODELO) || '',
         SITUACAO: normalizeSituacaoValue(config.old?.SITUACAO ?? config.patrimonio?.SITUACAO) || 'EM USO',
@@ -1039,7 +1069,7 @@
 
       // Autocomplete Projetos (Novo - Seleção de Projeto Primário)
       projetoSearch: (config.nomesIniciais?.nomeProjeto)
-        ? `${config.patrimonio?.CDPROJETO ?? ''} - ${config.nomesIniciais.nomeProjeto}`.trim().replace(/^\s*-\s*/, '')
+        ? `${config.patrimonio?.projeto_correto ?? config.patrimonio?.CDPROJETO ?? ''} - ${config.nomesIniciais.nomeProjeto}`.trim().replace(/^\s*-\s*/, '')
         : '',
       projetosDisponiveisList: [],
       loadingProjetos: false,
@@ -1861,6 +1891,8 @@
         // Limpar a seleção de local anterior para forçar nova busca
         this.formData.CDLOCAL = '';
         this.codigoLocalDigitado = '';
+        this.codigoLocalSelecionado = '';
+        this.localSelecionadoId = null;
         this.localNome = '';
         this.nomeLocalBusca = '';
         this.locaisEncontrados = [];
@@ -1944,7 +1976,10 @@
         // Limpar dependências
         this.formData.CDLOCAL = '';
         this.codigoLocalDigitado = '';
+        this.codigoLocalSelecionado = '';
+        this.localSelecionadoId = null;
         this.localNome = '';
+        this.nomeLocalBusca = '';
         this.locaisEncontrados = [];
         this.codigosLocaisFiltrados = [];
       },
@@ -3123,6 +3158,7 @@
           MODELO: this.formData.MODELO,
           SITUACAO: document.getElementById('SITUACAO')?.value || 'EM USO',
           NMPLANTA: this.formData.NMPLANTA,
+          NUMMESA: this.formData.NUMMESA,
           CDMATRFUNCIONARIO: this.formData.CDMATRFUNCIONARIO,
           CDMATRGERENTE: this.formData.CDMATRGERENTE,
           DTAQUISICAO: this.formData.DTAQUISICAO,
@@ -3463,6 +3499,7 @@
             this.formData.MARCA = this.estadoTemporario.MARCA || '';
             this.formData.MODELO = this.estadoTemporario.MODELO || '';
             this.formData.NMPLANTA = this.estadoTemporario.NMPLANTA || '';
+            this.formData.NUMMESA = this.estadoTemporario.NUMMESA || '';
             this.formData.CDMATRFUNCIONARIO = this.estadoTemporario.CDMATRFUNCIONARIO || '';
             this.formData.CDMATRGERENTE = this.estadoTemporario.CDMATRGERENTE || '';
             this.formData.DTAQUISICAO = this.estadoTemporario.DTAQUISICAO || '';
@@ -4001,8 +4038,9 @@
           '#MODELO', // 12. Modelo
           '#SITUACAO', // 13. Situação
           '#matricula_busca', // 14. Matrícula Responsável
-          '#DTAQUISICAO', // 15. Data de Aquisição
-          '#DTBAIXA', // 16. Data de Baixa
+          '#NUMMESA', // 15. Número da mesa
+          '#DTAQUISICAO', // 16. Data de Aquisição
+          '#DTBAIXA', // 17. Data de Baixa
         ];
 
         const currentId = currentElement.id;
@@ -4096,6 +4134,7 @@
           DEOBJETO: this.formData.DEOBJETO,
           CDPROJETO: this.formData.CDPROJETO,
           CDLOCAL: this.formData.CDLOCAL,
+          NUMMESA: this.formData.NUMMESA,
           CDMATRFUNCIONARIO: this.formData.CDMATRFUNCIONARIO,
           CDMATRGERENTE: this.formData.CDMATRGERENTE,
           SITUACAO: this.formData.SITUACAO,

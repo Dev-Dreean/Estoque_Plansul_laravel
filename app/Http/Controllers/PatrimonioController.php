@@ -286,19 +286,9 @@ class PatrimonioController extends Controller
 
 
 
-            // Detectar nome da coluna PK (NUSEQOBJ local vs NUSEQOBJETO servidor)
-
-            $pkColumn = $this->detectarPKObjetoPatr();
-
-
-
             // Buscar todos os códigos
 
-            $codigos = ObjetoPatr::select([$pkColumn . ' as CODOBJETO', 'DEOBJETO as DESCRICAO'])
-
-                ->get()
-
-                ->toArray();
+            $codigos = \App\Services\SearchCacheService::getCodigos();
 
 
 
@@ -399,7 +389,7 @@ class PatrimonioController extends Controller
 
 
 
-            Log::info('Próximo número de Patrimonio gerado', [
+            Log::info('Próximo número de Patrimônio gerado', [
 
                 'ultimo' => $ultimoNumero,
 
@@ -419,13 +409,13 @@ class PatrimonioController extends Controller
 
         } catch (\Throwable $e) {
 
-            Log::error('Erro ao gerar próximo número de Patrimonio: ' . $e->getMessage());
+            Log::error('Erro ao gerar próximo número de Patrimônio: ' . $e->getMessage());
 
             return response()->json([
 
                 'success' => false,
 
-                'message' => 'Erro ao gerar número de Patrimonio'
+                'message' => 'Erro ao gerar número de Patrimônio'
 
             ], 500);
 
@@ -780,6 +770,7 @@ class PatrimonioController extends Controller
                 'CDLOCAL' => 'nullable|integer',
 
                 'NMPLANTA' => 'nullable|integer',
+                'NUMMESA' => 'nullable|string|max:30',
 
                 'MARCA' => 'nullable|string|max:30',
 
@@ -800,6 +791,8 @@ class PatrimonioController extends Controller
 
 
             $this->validarVinculosResponsabilidade($validated);
+            $validated['NUMMESA'] = $this->normalizarNumeroMesa($validated['NUMMESA'] ?? null);
+            $this->validarNumeroMesaEmUso($validated);
 
             // Regra especial para almoxarifado central (999915) e em transito (2002)
 
@@ -839,7 +832,7 @@ class PatrimonioController extends Controller
 
                 throw ValidationException::withMessages([
 
-                    'NUPATRIMONIO' => "Já existe um Patrimonio com o número $nupatrimonio! não é permitido criar duplicatas."
+                    'NUPATRIMONIO' => "Já existe um Patrimônio com o número $nupatrimonio! Não é permitido criar duplicatas."
 
                 ]);
 
@@ -932,6 +925,7 @@ class PatrimonioController extends Controller
             'CDLOCAL' => $validated['CDLOCAL'] ?? null,
 
             'NMPLANTA' => $validated['NMPLANTA'] ?? null,
+            'NUMMESA' => $validated['NUMMESA'] ?? null,
 
             'MARCA' => $validated['MARCA'] ?? null,
 
@@ -961,7 +955,7 @@ class PatrimonioController extends Controller
 
         return redirect()->route('patrimonios.index')
 
-            ->with('success', 'Patrimonio cadastrado com sucesso!');
+            ->with('success', 'Patrimônio cadastrado com sucesso!');
 
     }
 
@@ -1602,7 +1596,7 @@ class PatrimonioController extends Controller
 
             return redirect()->route('patrimonios.index')
 
-                ->with('error', 'Você não tem permissão para excluir este Patrimonio.');
+                ->with('error', 'Você não tem permissão para excluir este Patrimônio.');
 
         }
 
@@ -1630,7 +1624,7 @@ class PatrimonioController extends Controller
 
         
 
-        \Illuminate\Support\Facades\Log::info('[DESTROY] Patrimonio deletado com sucesso', [
+        \Illuminate\Support\Facades\Log::info('[DESTROY] Patrimônio deletado com sucesso', [
 
             'NUSEQPATR' => $patrimonio->NUSEQPATR,
 
@@ -1640,7 +1634,7 @@ class PatrimonioController extends Controller
 
         if (request()->expectsJson()) {
 
-            return response()->json(['message' => 'Patrimonio deletado com sucesso!'], 204)
+            return response()->json(['message' => 'Patrimônio deletado com sucesso!'], 204)
 
                 ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
 
@@ -1648,7 +1642,7 @@ class PatrimonioController extends Controller
 
         
 
-        return redirect()->route('patrimonios.index')->with('success', 'Patrimonio deletado com sucesso!');
+        return redirect()->route('patrimonios.index')->with('success', 'Patrimônio deletado com sucesso!');
 
     }
 
@@ -1692,13 +1686,13 @@ class PatrimonioController extends Controller
 
             if (!$patrimonio) {
 
-                \Illuminate\Support\Facades\Log::warning('[DELETE] Patrimonio não encontrado', ['id' => $id]);
+                \Illuminate\Support\Facades\Log::warning('[DELETE] Patrimônio não encontrado', ['id' => $id]);
 
                 return response()->json([
 
                     'success' => false,
 
-                    'message' => 'Patrimonio não encontrado'
+                    'message' => 'Patrimônio não encontrado'
 
                 ], 200);
 
@@ -1744,7 +1738,7 @@ class PatrimonioController extends Controller
 
             
 
-            \Illuminate\Support\Facades\Log::info('[DELETE] Patrimonio deletado!', [
+            \Illuminate\Support\Facades\Log::info('[DELETE] Patrimônio deletado!', [
 
                 'resultado' => $deleted,
 
@@ -1758,7 +1752,7 @@ class PatrimonioController extends Controller
 
                 'success' => true,
 
-                'message' => 'Patrimonio deletado com sucesso!',
+                'message' => 'Patrimônio deletado com sucesso!',
 
                 'patrimonio' => $dadosPatrimonio
 
@@ -1782,7 +1776,7 @@ class PatrimonioController extends Controller
 
                 'success' => false,
 
-                'message' => 'Você não tem permissão para deletar este Patrimonio.',
+                'message' => 'Você não tem permissão para deletar este Patrimônio.',
 
             ], 403);
 
@@ -2013,11 +2007,16 @@ class PatrimonioController extends Controller
 
 
 
+            $usuarioVerificacao = $ultimaVerificacao?->USUARIO
+                ?? (($patrimonio->FLCONFERIDO === 'S')
+                    ? ($patrimonio->USUARIO ?? 'via importação')
+                    : null);
+
             return response()->json([
 
                 'conferido' => $patrimonio->FLCONFERIDO ?? 'N',
 
-                'usuario' => $ultimaVerificacao?->USUARIO ?? null,
+                'usuario' => $usuarioVerificacao,
 
             ]);
 
@@ -2055,7 +2054,7 @@ class PatrimonioController extends Controller
                     $this->attachLocalCorreto($patrimonio);
                     Cache::put($cacheKey, $patrimonio, $ttl);
                 } else {
-                    return response()->json(['success' => false, 'error' => 'Patrimonio não encontrado'], 404);
+                    return response()->json(['success' => false, 'error' => 'Patrimônio não encontrado'], 404);
                 }
             }
 
@@ -2064,7 +2063,7 @@ class PatrimonioController extends Controller
             }
 
             if (!$patrimonio) {
-                return response()->json(['success' => false, 'error' => 'Patrimonio não encontrado'], 404);
+                return response()->json(['success' => false, 'error' => 'Patrimônio não encontrado'], 404);
             }
 
             // TODOS os usuários autenticados podem ver patrimonio (sem restrição de supervisão)
@@ -2110,7 +2109,7 @@ class PatrimonioController extends Controller
 
         if ($ids->isEmpty()) {
 
-            return response()->json(['error' => 'Nenhum patrimonio selecionado.'], 422);
+            return response()->json(['error' => 'Nenhum patrimônio selecionado.'], 422);
 
         }
 
@@ -2261,13 +2260,13 @@ class PatrimonioController extends Controller
             ->values();
 
         if ($ids->isEmpty()) {
-            return response()->json(['error' => 'Nenhum patrimonio selecionado.'], 422);
+            return response()->json(['error' => 'Nenhum patrimônio selecionado.'], 422);
         }
 
         /** @var User|null $user */
         $user = Auth::user();
         if ($user && ($user->PERFIL ?? null) === User::PERFIL_CONSULTOR) {
-            return response()->json(['error' => 'Voce nao tem permissao para alterar patrimonios.'], 403);
+            return response()->json(['error' => 'Você não tem permissão para alterar patrimônios.'], 403);
         }
 
         $isAdmin = $user && $user->isAdmin();
@@ -2276,7 +2275,7 @@ class PatrimonioController extends Controller
 
         $patrimonios = Patrimonio::whereIn('NUSEQPATR', $ids)->get();
         if ($patrimonios->isEmpty()) {
-            return response()->json(['error' => 'Patrimonios nao encontrados.'], 404);
+            return response()->json(['error' => 'Patrimônios não encontrados.'], 404);
         }
 
         $unauthorized = [];
@@ -2298,7 +2297,7 @@ class PatrimonioController extends Controller
 
         if (!empty($unauthorized)) {
             return response()->json([
-                'error' => 'Voce nao tem permissao para alterar todos os itens selecionados.',
+                'error' => 'Você não tem permissão para alterar todos os itens selecionados.',
                 'ids_negados' => $unauthorized,
             ], 403);
         }
@@ -2383,7 +2382,7 @@ class PatrimonioController extends Controller
 
         if ($ids->isEmpty()) {
 
-            return response()->json(['error' => 'Nenhum patrimonio selecionado.'], 422);
+            return response()->json(['error' => 'Nenhum patrimônio selecionado.'], 422);
 
         }
 
@@ -2504,11 +2503,7 @@ class PatrimonioController extends Controller
 
 
 
-            $patrimonios = Patrimonio::select(['NUSEQPATR', 'NUPATRIMONIO', 'DEPATRIMONIO', 'SITUACAO'])
-
-                ->get()
-
-                ->toArray();
+            $patrimonios = \App\Services\SearchCacheService::getPatrimonios();
 
 
 
@@ -2573,12 +2568,14 @@ class PatrimonioController extends Controller
     {
 
         $termo = trim((string) $request->input('q', ''));
+        $projetos = \App\Services\SearchCacheService::getProjetos();
 
 
 
         // Buscar todos os projetos (excluindo código 0 - "não se aplica")
 
-        $projetos = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
+        if (false) {
+            $projetos = Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
 
             ->where('CDPROJETO', '!=', 0)  // Excluir código 0
 
@@ -2589,6 +2586,7 @@ class PatrimonioController extends Controller
             ->get()
 
             ->toArray();
+        }
 
 
 
@@ -3671,6 +3669,7 @@ class PatrimonioController extends Controller
     {
 
         $query = Patrimonio::query();
+        $this->aplicarFiltroPatrimoniosAtivosParaTermo($query);
 
 
 
@@ -3688,19 +3687,15 @@ class PatrimonioController extends Controller
 
 
 
-        if ($status === 'disponivel') {
-
-            // Patrimonios sem código de termo (campo integer => apenas null significa "sem")
-
-            $query->whereNull('NMPLANTA');
-
-        } elseif ($status === 'indisponivel') {
+        if ($status === 'indisponivel') {
 
             // Patrimonios com código de termo
 
             $query->whereNotNull('NMPLANTA');
 
         }
+
+        // Sem filtro adicional para a aba de disponíveis.
 
         // Se status for vazio ou 'todos', não aplica filtro de status
 
@@ -3936,7 +3931,7 @@ class PatrimonioController extends Controller
                 ->whereIn('codigo', $codigos->all())
                 ->get($colunas);
         } catch (\Throwable $e) {
-            Log::warning('Nao foi possivel carregar os metadados dos termos para a tela de atribuicao.', [
+            Log::warning('Não foi possível carregar os metadados dos termos para a tela de atribuição.', [
                 'erro' => $e->getMessage(),
             ]);
 
@@ -3973,6 +3968,36 @@ class PatrimonioController extends Controller
         };
     }
 
+    private function aplicarFiltroPatrimoniosAtivosParaTermo($query): void
+    {
+        try {
+            if (Schema::hasColumn('patr', 'CDSITUACAO')) {
+                $query->where(function ($q) {
+                    $q->whereNull('CDSITUACAO')
+                        ->orWhere('CDSITUACAO', '<>', 2);
+                });
+            }
+        } catch (\Exception $e) {
+        }
+
+        try {
+            if (Schema::hasColumn('patr', 'SITUACAO')) {
+                $query->where(function ($q) {
+                    $q->whereNull('SITUACAO')
+                        ->orWhereRaw("UPPER(TRIM(SITUACAO)) NOT LIKE '%BAIXA%'");
+                });
+            }
+        } catch (\Exception $e) {
+        }
+
+        try {
+            if (Schema::hasColumn('patr', 'DTBAIXA')) {
+                $query->whereNull('DTBAIXA');
+            }
+        } catch (\Exception $e) {
+        }
+    }
+
 
 
     /**
@@ -4000,18 +4025,17 @@ class PatrimonioController extends Controller
         $status = $request->get('status', 'disponivel');
 
         Log::info('[atribuirCodigos] Filtro Status: ' . $status);
+        $this->aplicarFiltroPatrimoniosAtivosParaTermo($query);
 
 
 
-        if ($status === 'disponivel') {
-
-            $query->whereNull('NMPLANTA');
-
-        } elseif ($status === 'indisponivel') {
+        if ($status === 'indisponivel') {
 
             $query->whereNotNull('NMPLANTA');
 
         }
+
+        // Sem filtro adicional para a aba de disponíveis.
 
 
 
@@ -4051,7 +4075,21 @@ class PatrimonioController extends Controller
 
             Log::info('[atribuirCodigos] Filtro Termo: ' . $request->filtro_termo);
 
-            $query->where('NMPLANTA', $request->filtro_termo);
+            $filtroTermo = trim((string) $request->filtro_termo);
+
+            $query->where(function ($subQuery) use ($filtroTermo) {
+                $subQuery->where('NMPLANTA', $filtroTermo);
+
+                if (TermoCodigo::hasTituloColumn()) {
+                    $codigosComTitulo = TermoCodigo::query()
+                        ->where('titulo', 'like', '%' . $filtroTermo . '%')
+                        ->pluck('codigo');
+
+                    if ($codigosComTitulo->isNotEmpty()) {
+                        $subQuery->orWhereIn('NMPLANTA', $codigosComTitulo->all());
+                    }
+                }
+            });
 
         }
 
@@ -4244,7 +4282,7 @@ class PatrimonioController extends Controller
                             'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA')
                         ]);
                     } catch (\Throwable $e) {
-                        Log::warning('Nao foi possivel registrar o codigo de termo gerado no fluxo legado.', [
+                        Log::warning('Não foi possível registrar o código de termo gerado no fluxo legado.', [
                             'codigo' => $codigoTermo,
                             'erro' => $e->getMessage(),
                         ]);
@@ -4289,7 +4327,7 @@ class PatrimonioController extends Controller
                             'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA')
                         ]);
                     } catch (\Throwable $e) {
-                        Log::warning('Nao foi possivel registrar o novo codigo de termo no fluxo legado.', [
+                        Log::warning('Não foi possível registrar o novo código de termo no fluxo legado.', [
                             'codigo' => $codigoTermo,
                             'erro' => $e->getMessage(),
                         ]);
@@ -4303,8 +4341,6 @@ class PatrimonioController extends Controller
 
             // Verificar quais Patrimonios já estão atribuídos
 
-            $codigoJaEmUso = Patrimonio::where('NMPLANTA', $codigoTermo)->exists();
-
             $jaAtribuidos = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)
 
                 ->whereNotNull('NMPLANTA')
@@ -4315,34 +4351,27 @@ class PatrimonioController extends Controller
 
             // Atualizar apenas os Patrimonios disponíveis
 
-            $updated = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds)
+            $queryAtualizacao = Patrimonio::whereIn('NUSEQPATR', $patrimoniosIds);
+            $this->aplicarFiltroPatrimoniosAtivosParaTermo($queryAtualizacao);
 
-                ->whereNull('NMPLANTA')
+            $updated = $queryAtualizacao->update(['NMPLANTA' => $codigoTermo]);
 
-                ->update(['NMPLANTA' => $codigoTermo]);
-
-            if ($updated > 0 && !$codigoJaEmUso) {
+            if ($updated > 0) {
 
                 try {
-                    TermoCodigo::firstOrCreate([
+                    $registroTermo = TermoCodigo::firstOrCreate([
                         'codigo' => $codigoTermo
                     ], [
                         'created_by' => (Auth::user()->NMLOGIN ?? 'SISTEMA')
                     ]);
 
-                    $dadosAtualizacao = [
-                        'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
-                    ];
-
-                    if (TermoCodigo::hasTituloColumn()) {
-                        $dadosAtualizacao['titulo'] = null;
+                    if (blank($registroTermo->created_by)) {
+                        $registroTermo->forceFill([
+                            'created_by' => Auth::user()->NMLOGIN ?? 'SISTEMA',
+                        ])->save();
                     }
-
-                    TermoCodigo::query()
-                        ->where('codigo', $codigoTermo)
-                        ->update($dadosAtualizacao);
                 } catch (\Throwable $e) {
-                    Log::warning('Nao foi possivel sincronizar os metadados do termo no fluxo legado.', [
+                    Log::warning('Não foi possível sincronizar os metadados do termo no fluxo legado.', [
                         'codigo' => $codigoTermo,
                         'erro' => $e->getMessage(),
                     ]);
@@ -4616,7 +4645,7 @@ class PatrimonioController extends Controller
 
                 return redirect()->route('patrimonios.atribuir')
 
-                    ->with('warning', 'Nenhum Patrimonio foi desatribuído. Verifique se os Patrimonios selecionados possuem código de termo.');
+                    ->with('warning', 'Nenhum Patrimônio foi desatribuído. Verifique se os Patrimônios selecionados possuem código de termo.');
 
             }
 
@@ -5295,6 +5324,10 @@ class PatrimonioController extends Controller
 
                 ->orderBy('NUPATRIMONIO', 'asc');
 
+            $query = Patrimonio::with(['funcionario'])
+                ->orderBy('NUPATRIMONIO', 'asc');
+            $this->aplicarFiltroPatrimoniosAtivosParaTermo($query);
+
 
 
             // Nota: Removido filtro de segurança que restringia Patrimônios
@@ -5474,6 +5507,7 @@ class PatrimonioController extends Controller
             'CDLOCALINTERNO' => 'nullable|integer',
 
             'NMPLANTA' => 'nullable|integer',
+            'NUMMESA' => 'nullable|string|max:30',
 
             'MARCA' => 'nullable|string|max:30',
 
@@ -5509,11 +5543,11 @@ class PatrimonioController extends Controller
             $isSameLegacy = $patrimonio && (string) $patrimonio->CDMATRFUNCIONARIO === (string) $cdMat;
             if (!$exists && !$isSameLegacy) {
                 throw ValidationException::withMessages([
-                    'CDMATRFUNCIONARIO' => 'Matricula do responsavel nao encontrada no sistema.',
+                    'CDMATRFUNCIONARIO' => 'Matrícula do responsável não encontrada no sistema.',
                 ]);
             }
             if (!$exists && $isSameLegacy) {
-                Log::warning('Matricula responsavel legado nao encontrada em funcionarios; mantendo valor existente.', [
+                Log::warning('Matrícula responsável legado não encontrada em funcionários; mantendo valor existente.', [
                     'CDMATRFUNCIONARIO' => $cdMat,
                     'NUSEQPATR' => $patrimonio?->NUSEQPATR,
                     'NUPATRIMONIO' => $patrimonio?->NUPATRIMONIO,
@@ -5527,11 +5561,11 @@ class PatrimonioController extends Controller
             $isSameLegacyGerente = $patrimonio && (string) $patrimonio->CDMATRGERENTE === (string) $cdMatGerente;
             if (!$existsGerente && !$isSameLegacyGerente) {
                 throw ValidationException::withMessages([
-                    'CDMATRGERENTE' => 'Matricula do gerente responsavel nao encontrada no sistema.',
+                    'CDMATRGERENTE' => 'Matrícula do gerente responsável não encontrada no sistema.',
                 ]);
             }
             if (!$existsGerente && $isSameLegacyGerente) {
-                Log::warning('Matricula gerente legado nao encontrada em funcionarios; mantendo valor existente.', [
+                Log::warning('Matrícula gerente legado não encontrada em funcionários; mantendo valor existente.', [
                     'CDMATRGERENTE' => $cdMatGerente,
                     'NUSEQPATR' => $patrimonio?->NUSEQPATR,
                     'NUPATRIMONIO' => $patrimonio?->NUPATRIMONIO,
@@ -5540,6 +5574,8 @@ class PatrimonioController extends Controller
         }
 
         $this->validarVinculosResponsabilidade($data);
+        $data['NUMMESA'] = $this->normalizarNumeroMesa($data['NUMMESA'] ?? null);
+        $this->validarNumeroMesaEmUso($data, $patrimonio);
 
         Log::info('[VALIDATE] Dados após validação inicial', [
 
@@ -5726,7 +5762,7 @@ class PatrimonioController extends Controller
 
             throw ValidationException::withMessages([
 
-                'CDMATRFUNCIONARIO' => 'Informe a matricula do responsavel para vincular o gerente.',
+                'CDMATRFUNCIONARIO' => 'Informe a matrícula do responsável para vincular o gerente.',
 
             ]);
 
@@ -5736,13 +5772,91 @@ class PatrimonioController extends Controller
 
         throw ValidationException::withMessages([
 
-            'CDMATRGERENTE' => 'Informe a matricula do gerente responsavel junto com o responsavel do patrimonio.',
+            'CDMATRGERENTE' => 'Informe a matrícula do gerente responsável junto com o responsável do patrimônio.',
 
         ]);
 
     }
 
 
+
+    private function normalizarNumeroMesa(mixed $value): ?string
+
+    {
+
+        if ($value === null) {
+
+            return null;
+
+        }
+
+
+
+        $numeroMesa = trim((string) $value);
+
+        if ($numeroMesa === '') {
+
+            return null;
+
+        }
+
+
+
+        return mb_strtoupper(preg_replace('/\s+/u', ' ', $numeroMesa) ?: $numeroMesa, 'UTF-8');
+
+    }
+
+    private function validarNumeroMesaEmUso(array $data, ?Patrimonio $patrimonio = null): void
+
+    {
+
+        $numeroMesa = $this->normalizarNumeroMesa($data['NUMMESA'] ?? null);
+
+        if ($numeroMesa === null) {
+
+            return;
+
+        }
+
+
+
+        $situacao = mb_strtoupper(trim((string) ($data['SITUACAO'] ?? '')), 'UTF-8');
+
+        if ($situacao !== 'EM USO') {
+
+            return;
+
+        }
+
+
+
+        $query = Patrimonio::query()
+            ->whereRaw('UPPER(TRIM(COALESCE(NUMMESA, \'\'))) = ?', [$numeroMesa])
+            ->whereRaw('UPPER(TRIM(COALESCE(SITUACAO, \'\'))) = ?', ['EM USO']);
+
+        if ($patrimonio) {
+
+            $query->where('NUSEQPATR', '!=', $patrimonio->NUSEQPATR);
+
+        }
+
+
+
+        if (!$query->exists()) {
+
+            return;
+
+        }
+
+
+
+        throw ValidationException::withMessages([
+
+            'NUMMESA' => 'O número da mesa informado já está vinculado a outro patrimônio em uso.',
+
+        ]);
+
+    }
 
     private function normalizeConferidoFlag(mixed $value): ?string
 
@@ -5900,7 +6014,7 @@ class PatrimonioController extends Controller
 
             if ($patrimonios->isEmpty()) {
 
-                return response()->json(['message' => 'Nenhum Patrimonio elegível para desatribuir', 'updated_ids' => []], 200);
+                return response()->json(['message' => 'Nenhum Patrimônio elegível para desatribuir', 'updated_ids' => []], 200);
 
             }
 

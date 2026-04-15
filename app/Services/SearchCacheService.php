@@ -23,6 +23,9 @@ class SearchCacheService
         return Cache::remember(self::CACHE_PROJETOS, self::CACHE_TTL, function () {
             return \App\Models\Tabfant::select(['CDPROJETO', 'NOMEPROJETO'])
                 ->where('CDPROJETO', '!=', 0)
+                ->whereNotNull('CDPROJETO')
+                ->whereNotNull('NOMEPROJETO')
+                ->distinct()
                 ->orderByRaw('CAST(CDPROJETO AS UNSIGNED) ASC')
                 ->get()
                 ->toArray();
@@ -39,7 +42,11 @@ class SearchCacheService
         }
 
         return Cache::remember(self::CACHE_CODIGOS, self::CACHE_TTL, function () {
-            return \App\Models\ObjetoPatr::select(['NUSEQOBJETO as CODOBJETO', 'DEOBJETO as DESCRICAO'])
+            $model = new \App\Models\ObjetoPatr();
+            $primaryKey = $model->getKeyName();
+
+            return $model->newQuery()
+                ->select([$primaryKey . ' as CODOBJETO', 'DEOBJETO as DESCRICAO'])
                 ->get()
                 ->toArray();
         });

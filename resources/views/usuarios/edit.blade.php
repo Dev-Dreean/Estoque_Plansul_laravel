@@ -60,6 +60,11 @@
                         :class="activeTab === 'solicitacoes' ? 'accent-text accent-border' : 'text-muted border-transparent hover:text-[var(--text)]'">
                         Solicitações de Bens
                     </button>
+                    <button type="button" @click="activeTab = 'notificacoes'"
+                        class="px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors duration-150"
+                        :class="activeTab === 'notificacoes' ? 'accent-text accent-border' : 'text-muted border-transparent hover:text-[var(--text)]'">
+                        Notificações
+                    </button>
                     @endif
                 </div>
             </div>

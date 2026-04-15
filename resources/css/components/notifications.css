@@ -8,6 +8,12 @@
         color: var(--text);
     }
 
+    .important-bell-button--spotlight {
+        color: #ea580c;
+        box-shadow: 0 0 0 5px rgba(249, 115, 22, 0.14), 0 18px 34px rgba(249, 115, 22, 0.24);
+        animation: important-bell-pulse 1.25s ease-in-out 3;
+    }
+
     .important-bell-count {
         @apply absolute -right-1 -top-1 inline-flex min-w-[1.35rem] items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white shadow-sm;
     }
@@ -77,16 +83,106 @@
         @apply mb-3 w-full rounded-2xl border px-4 py-3 text-left transition last:mb-0;
         border-color: var(--border);
         background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+        --notification-accent: var(--accent);
+        --notification-accent-soft: rgba(99, 102, 241, 0.12);
+        --notification-ring: rgba(99, 102, 241, 0.14);
+        --notification-glow: rgba(99, 102, 241, 0.08);
+        box-shadow: inset 4px 0 0 transparent;
     }
 
     .important-notification-item:hover {
-        border-color: var(--accent);
+        border-color: var(--notification-accent);
         transform: translateY(-1px);
+        box-shadow: inset 4px 0 0 var(--notification-accent), 0 14px 28px var(--notification-glow);
+    }
+
+    .important-notification-item--default {
+        --notification-accent: var(--accent);
+        --notification-accent-soft: rgba(99, 102, 241, 0.12);
+        --notification-ring: rgba(99, 102, 241, 0.14);
+        --notification-glow: rgba(99, 102, 241, 0.1);
+    }
+
+    .important-notification-item--solicitacoes {
+        border-color: rgba(79, 70, 229, 0.38);
+        background:
+            linear-gradient(90deg, rgba(79, 70, 229, 0.16) 0, rgba(79, 70, 229, 0.16) 10px, transparent 10px),
+            linear-gradient(180deg, rgba(224, 231, 255, 0.95) 0%, rgba(238, 242, 255, 0.82) 48%, rgba(255, 255, 255, 1) 100%);
+        --notification-accent: #4f46e5;
+        --notification-accent-soft: rgba(79, 70, 229, 0.18);
+        --notification-ring: rgba(79, 70, 229, 0.22);
+        --notification-glow: rgba(79, 70, 229, 0.18);
+        box-shadow: inset 4px 0 0 #4f46e5;
+    }
+
+    .important-notification-item--solicitacoes .important-notification-item__module,
+    .important-notification-item--solicitacoes .important-notification-item__action {
+        background: rgba(79, 70, 229, 0.16);
+        color: #4338ca;
+        box-shadow: inset 0 0 0 1px rgba(79, 70, 229, 0.18);
+    }
+
+    .important-notification-item--removidos {
+        border-color: rgba(234, 88, 12, 0.58);
+        background:
+            linear-gradient(90deg, rgba(234, 88, 12, 0.3) 0, rgba(234, 88, 12, 0.3) 14px, transparent 14px),
+            linear-gradient(180deg, rgba(255, 221, 190, 0.98) 0%, rgba(255, 237, 213, 0.94) 38%, rgba(255, 247, 237, 0.92) 62%, rgba(255, 255, 255, 1) 100%);
+        --notification-accent: #ea580c;
+        --notification-accent-soft: rgba(234, 88, 12, 0.22);
+        --notification-ring: rgba(234, 88, 12, 0.28);
+        --notification-glow: rgba(234, 88, 12, 0.2);
+        box-shadow: inset 4px 0 0 #ea580c, 0 12px 24px rgba(234, 88, 12, 0.08);
+    }
+
+    .important-notification-item--removidos .important-notification-item__module,
+    .important-notification-item--removidos .important-notification-item__action {
+        background: rgba(234, 88, 12, 0.16);
+        color: #c2410c;
+        box-shadow: inset 0 0 0 1px rgba(234, 88, 12, 0.2);
+    }
+
+    .dark .important-notification-item--solicitacoes {
+        border-color: rgba(129, 140, 248, 0.46);
+        background:
+            linear-gradient(90deg, rgba(129, 140, 248, 0.34) 0, rgba(129, 140, 248, 0.34) 10px, transparent 10px),
+            linear-gradient(180deg, rgba(49, 46, 129, 0.54) 0%, rgba(30, 41, 59, 0.94) 100%);
+        --notification-accent: #a5b4fc;
+        --notification-accent-soft: rgba(165, 180, 252, 0.22);
+        --notification-ring: rgba(165, 180, 252, 0.22);
+        --notification-glow: rgba(79, 70, 229, 0.24);
+        box-shadow: inset 4px 0 0 #818cf8;
+    }
+
+    .dark .important-notification-item--solicitacoes .important-notification-item__module,
+    .dark .important-notification-item--solicitacoes .important-notification-item__action {
+        background: rgba(129, 140, 248, 0.2);
+        color: #e0e7ff;
+        box-shadow: inset 0 0 0 1px rgba(165, 180, 252, 0.24);
+    }
+
+    .dark .important-notification-item--removidos {
+        border-color: rgba(251, 146, 60, 0.42);
+        background:
+            linear-gradient(90deg, rgba(251, 146, 60, 0.42) 0, rgba(251, 146, 60, 0.42) 14px, transparent 14px),
+            linear-gradient(180deg, rgba(124, 45, 18, 0.72) 0%, rgba(67, 20, 7, 0.58) 40%, rgba(30, 41, 59, 0.96) 100%);
+        --notification-accent: #fb923c;
+        --notification-accent-soft: rgba(251, 146, 60, 0.24);
+        --notification-ring: rgba(251, 146, 60, 0.28);
+        --notification-glow: rgba(251, 146, 60, 0.22);
+        box-shadow: inset 4px 0 0 #fb923c, 0 12px 24px rgba(251, 146, 60, 0.12);
+    }
+
+    .dark .important-notification-item--removidos .important-notification-item__module,
+    .dark .important-notification-item--removidos .important-notification-item__action {
+        background: rgba(251, 146, 60, 0.18);
+        color: #fed7aa;
+        box-shadow: inset 0 0 0 1px rgba(251, 146, 60, 0.24);
     }
 
     .important-notification-item__module {
-        @apply mb-1 text-[11px] font-semibold uppercase tracking-[0.12em];
-        color: var(--accent);
+        @apply mb-2 inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em];
+        background: var(--notification-accent-soft);
+        color: var(--notification-accent);
     }
 
     .important-notification-item__title {
@@ -106,8 +202,9 @@
 
     .important-notification-item__action {
         @apply rounded-full px-2.5 py-1 font-semibold;
-        background: rgba(99, 102, 241, 0.12);
-        color: var(--accent);
+        background: var(--notification-accent-soft);
+        color: var(--notification-accent);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--notification-accent) 12%, transparent);
     }
 
     .important-notifications-empty {
@@ -148,5 +245,16 @@
 
     100% {
         background: transparent;
+    }
+}
+
+@keyframes important-bell-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.08);
     }
 }

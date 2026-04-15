@@ -3,16 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\SolicitacaoBem;
+use App\Models\LocalProjeto;
 use App\Models\Tabfant;
 use App\Models\User;
+use App\Services\SolicitacaoBemEmailService;
+use App\Services\SolicitacaoBemFlowService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class SolicitacaoEmailController extends Controller
 {
+    public function __construct(
+        private readonly SolicitacaoBemEmailService $solicitacaoBemEmailService,
+        private readonly SolicitacaoBemFlowService $solicitacaoBemFlowService,
+    )
+    {
+    }
+
     public function store(Request $request): JsonResponse
     {
         $payload = $request->all();
@@ -72,6 +81,14 @@ class SolicitacaoEmailController extends Controller
 
         $projetoValue = $parsed['projeto'] ?? $this->extractProjetoFromSubject($subject);
         $projetoId = $this->resolveProjetoId($projetoValue);
+        $localProjeto = LocalProjeto::resolveForProjeto(
+            $projetoId,
+            null,
+            $localDestino
+        );
+        if ($localProjeto) {
+            $localDestino = $this->cleanValue($localProjeto->delocal, 150);
+        }
 
         $user = $this->resolveUser($from['email'] ?? null, $solicitanteMatricula);
         $solicitanteId = null;
@@ -142,6 +159,7 @@ class SolicitacaoEmailController extends Controller
             $emailOrigem,
             $emailAssunto,
             $projetoId,
+            $localProjeto,
             $uf,
             $setor,
             $localDestino,
@@ -156,9 +174,11 @@ class SolicitacaoEmailController extends Controller
                 'email_origem' => $emailOrigem,
                 'email_assunto' => $emailAssunto,
                 'projeto_id' => $projetoId,
+                'local_projeto_id' => $localProjeto?->id,
                 'uf' => $uf,
                 'setor' => $setor,
                 'local_destino' => $localDestino,
+                'fluxo_responsavel' => $this->solicitacaoBemFlowService->normalizeFlow($localProjeto?->fluxo_responsavel_normalizado),
                 'observacao' => $observacao,
                 'status' => SolicitacaoBem::STATUS_PENDENTE,
             ]);
@@ -167,7 +187,7 @@ class SolicitacaoEmailController extends Controller
         });
 
         if ($solicitacao) {
-            $this->sendConfirmacaoEmail($solicitacao);
+            $this->solicitacaoBemEmailService->agendarConfirmacaoCriacao($solicitacao);
         }
 
         return response()->json([
@@ -796,37 +816,4 @@ class SolicitacaoEmailController extends Controller
         return $value !== '' && ctype_digit($value);
     }
 
-    private function sendConfirmacaoEmail(SolicitacaoBem $solicitacao): void
-    {
-        $to = trim((string) config('solicitacoes_bens.email_to'));
-        if ($to === '') {
-            return;
-        }
-
-        $subject = 'Solicitação de bens recebida #' . $solicitacao->id;
-        $body = implode("\n", [
-            'Uma nova solicitação de bens foi registrada.',
-            'Número: ' . $solicitacao->id,
-            'Solicitante: ' . ($solicitacao->solicitante_nome ?? '-'),
-            'Matrícula: ' . ($solicitacao->solicitante_matricula ?? '-'),
-            'Setor: ' . ($solicitacao->setor ?? '-'),
-            'UF: ' . ($solicitacao->uf ?? '-'),
-            'Local destino: ' . ($solicitacao->local_destino ?? '-'),
-            'Status: ' . ($solicitacao->status ?? '-'),
-        ]);
-
-        try {
-            Mail::raw($body, function ($message) use ($to, $subject) {
-                $message->to($to)->subject($subject);
-            });
-
-            $solicitacao->email_confirmacao_enviado_em = now();
-            $solicitacao->save();
-        } catch (\Throwable $e) {
-            Log::warning('Falha ao enviar e-mail de solicitação de bens', [
-                'solicitacao_id' => $solicitacao->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
 }

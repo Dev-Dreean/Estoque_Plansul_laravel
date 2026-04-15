@@ -5,34 +5,21 @@ namespace App\Services;
 use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class SystemNewsService
 {
+    private const PAYLOAD_CACHE_TTL_SECONDS = 60;
+
     public function payloadForUser(User $user): array
     {
-        $items = $this->activeItems();
-        $seenKeys = $this->seenKeysForUser($user);
-
-        $payloadItems = array_map(function (array $item) use ($seenKeys): array {
-            $item['is_unseen'] = !in_array($item['key'], $seenKeys, true);
-
-            return $item;
-        }, $items);
-
-        $unseenKeys = array_values(array_map(
-            fn (array $item): string => $item['key'],
-            array_filter($payloadItems, fn (array $item): bool => $item['is_unseen'])
-        ));
-
-        return [
-            'items' => $payloadItems,
-            'unseen_keys' => $unseenKeys,
-            'unseen_count' => count($unseenKeys),
-            'should_auto_open' => count($unseenKeys) > 0,
-            'generated_at' => now()->toIso8601String(),
-        ];
+        return Cache::remember(
+            $this->payloadCacheKey($user),
+            now()->addSeconds(self::PAYLOAD_CACHE_TTL_SECONDS),
+            fn () => $this->buildPayloadForUser($user)
+        );
     }
 
     public function markAsSeen(User $user, array $keys): void
@@ -61,6 +48,13 @@ class SystemNewsService
             ['usuario_id', 'novidade_key'],
             ['visualizado_em', 'updated_at']
         );
+
+        $this->forgetUserPayload($user);
+    }
+
+    public function forgetUserPayload(User $user): void
+    {
+        Cache::forget($this->payloadCacheKey($user));
     }
 
     /**
@@ -131,10 +125,13 @@ class SystemNewsService
             'key' => $key,
             'title' => trim((string) ($item['title'] ?? 'Novidade do sistema')),
             'summary' => trim((string) ($item['summary'] ?? '')),
+            'summary_html' => trim((string) ($item['summary_html'] ?? ($item['summary'] ?? ''))),
             'highlight' => trim((string) ($item['highlight'] ?? '')),
             'details' => $details,
             'cta_label' => trim((string) ($item['cta_label'] ?? '')),
             'cta_url' => trim((string) ($item['cta_url'] ?? '')),
+            'tutorial_label' => trim((string) ($item['tutorial_label'] ?? '')),
+            'tutorial_target' => trim((string) ($item['tutorial_target'] ?? '')),
             'released_at' => $releasedAt->toIso8601String(),
             'released_at_label' => $releasedAt->format('d/m/Y'),
         ];
@@ -160,5 +157,38 @@ class SystemNewsService
     private function isEnabled(): bool
     {
         return (bool) config('novidades.enabled', true);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildPayloadForUser(User $user): array
+    {
+        $items = $this->activeItems();
+        $seenKeys = $this->seenKeysForUser($user);
+
+        $payloadItems = array_map(function (array $item) use ($seenKeys): array {
+            $item['is_unseen'] = !in_array($item['key'], $seenKeys, true);
+
+            return $item;
+        }, $items);
+
+        $unseenKeys = array_values(array_map(
+            fn (array $item): string => $item['key'],
+            array_filter($payloadItems, fn (array $item): bool => $item['is_unseen'])
+        ));
+
+        return [
+            'items' => $payloadItems,
+            'unseen_keys' => $unseenKeys,
+            'unseen_count' => count($unseenKeys),
+            'should_auto_open' => count($unseenKeys) > 0,
+            'generated_at' => now()->toIso8601String(),
+        ];
+    }
+
+    private function payloadCacheKey(User $user): string
+    {
+        return 'system_news_payload:' . $user->getAuthIdentifier();
     }
 }

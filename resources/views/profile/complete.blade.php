@@ -1,6 +1,6 @@
 {{-- resources/views/profile/complete.blade.php --}}
 
-<x-app-layout>
+<x-app-layout :hide-navigation="true" :hide-admin-tabs="true" :hide-footer="true">
   <x-slot name="header">
     <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
       {{ __('Completar Cadastro') }}
@@ -15,6 +15,7 @@
           @php
             $user = Auth::user();
             $needsUf = $needsUf ?? ($user?->needsUf() ?? false);
+            $needsEmail = $needsEmail ?? ($user?->needsEmail() ?? false);
             $needsName = $needsName ?? ($user?->shouldRequestName() ?? false);
             $needsMatricula = $needsMatricula ?? ($user?->shouldRequestMatricula() ?? false);
             $needsIdentity = $needsIdentity ?? ($user?->needsIdentityUpdate() ?? false);
@@ -84,6 +85,15 @@
               <x-input-label for="UF" :value="__('UF (Estado)')" />
               <x-text-input id="UF" class="block mt-1 w-full uppercase tracking-wider" type="text" name="UF" :value="old('UF')" required maxlength="2" autocomplete="one-time-code" inputmode="text" data-lpignore="true" />
               <x-input-error :messages="$errors->get('UF')" class="mt-2" />
+            </div>
+            @endif
+
+            @if($needsEmail)
+            <div class="mt-4">
+              <x-input-label for="email" value="E-mail *" />
+              <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email')" required autocomplete="email" placeholder="seu@plansul.com.br" />
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Usado para receber notificações do sistema.</p>
+              <x-input-error :messages="$errors->get('email')" class="mt-2" />
             </div>
             @endif
 

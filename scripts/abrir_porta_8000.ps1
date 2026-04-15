@@ -1,5 +1,20 @@
 # Script para abrir porta 8000 no Firewall do Windows
-# Execute como ADMINISTRADOR
+# Autoeleva para ADMINISTRADOR quando necessário
+
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+
+if (-not $isAdmin) {
+    Write-Host "Solicitando elevação para administrador..." -ForegroundColor Yellow
+
+    $argumentos = @(
+        '-NoProfile'
+        '-ExecutionPolicy', 'Bypass'
+        '-File', ('"{0}"' -f $PSCommandPath)
+    ) -join ' '
+
+    Start-Process -FilePath 'powershell.exe' -Verb RunAs -ArgumentList $argumentos
+    exit 0
+}
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Abrindo porta 8000 no Firewall..." -ForegroundColor Yellow
@@ -14,15 +29,6 @@ $ipv4 = (Get-NetIPAddress -AddressFamily IPv4 |
     Sort-Object InterfaceMetric |
     Select-Object -First 1 -ExpandProperty IPAddress)
 
-# Verificar se está rodando como admin
-$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-
-if (-not $isAdmin) {
-    Write-Host "`n❌ ERRO: Este script precisa ser executado como ADMINISTRADOR!" -ForegroundColor Red
-    Write-Host "Clique com botão direito em PowerShell e escolha 'Executar como administrador'" -ForegroundColor Yellow
-    exit 1
-}
-
 # Remover regra anterior se existir (para evitar duplicatas)
 Write-Host "`n🗑️  Removendo regra anterior (se existir)..." -ForegroundColor Gray
 Remove-NetFirewallRule -DisplayName "Laravel Port 8000" -ErrorAction SilentlyContinue
@@ -36,7 +42,8 @@ New-NetFirewallRule `
     -Action Allow `
     -Protocol TCP `
     -LocalPort 8000 `
-    -Profile Any `
+    -Profile Private,Public `
+    -EdgeTraversalPolicy Allow `
     -Enabled True
 
 if (Test-Path 'C:\PHP\php.exe') {
@@ -45,7 +52,8 @@ if (Test-Path 'C:\PHP\php.exe') {
         -Direction Inbound `
         -Action Allow `
         -Program 'C:\PHP\php.exe' `
-        -Profile Any `
+        -Profile Private,Public `
+        -EdgeTraversalPolicy Allow `
         -Enabled True | Out-Null
 }
 
