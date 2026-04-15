@@ -37,6 +37,12 @@ class AppServiceProvider extends ServiceProvider
         // ADICIONE ESTA LINHA
         Schema::defaultStringLength(191);
 
+        // 🔧 Hotfix: MySQL 5.6 no KingHost não tem "generation_expression"
+        // Isso evita errors ao acessar information_schema
+        if (app()->environment('production')) {
+            \Illuminate\Support\Facades\DB::statement("SET SESSION sql_mode=''");
+        }
+
         Paginator::defaultView('custom.pagination-pt');
         Paginator::defaultSimpleView('custom.pagination-pt');
 
