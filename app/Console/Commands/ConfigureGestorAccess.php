@@ -12,13 +12,14 @@ class ConfigureGestorAccess extends Command
 
     public function handle()
     {
-        $gestores = ['TIAGO', 'BEATRIZ', 'BRUNO'];
-        $this->info('Configurando acesso à tela de Colaboradores...');
+        // IDs dos gestores (encontrados via query do banco)
+        $gestores = [185895, 182687, 11829]; // Tiago Pacheco, Beatriz Patricia, Bruno de Azevedo
+        $this->info('Configurando acesso à tela de Colaboradores (1011)...');
 
-        foreach ($gestores as $nome) {
+        foreach ($gestores as $matricula) {
             $func = DB::table('funcionarios')
                 ->select('CDMATRFUNCIONARIO', 'NMFUNCIONARIO')
-                ->whereRaw('UPPER(NMFUNCIONARIO) LIKE ?', ['%' . strtoupper($nome) . '%'])
+                ->where('CDMATRFUNCIONARIO', $matricula)
                 ->first();
 
             if (!$func) {
