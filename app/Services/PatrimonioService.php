@@ -665,50 +665,12 @@ class PatrimonioService
      */
     protected function anexarLocaisCorretos(Collection $patrimonios): void
     {
-        if ($patrimonios->isEmpty()) {
-            return;
-        }
-
-        $cache = [];
-        foreach ($patrimonios as $patrimonio) {
-            if (!$patrimonio instanceof Patrimonio) {
-                continue;
-            }
-
-            $cacheKey = (string) ($patrimonio->CDLOCAL ?? '') . '|' . (string) ($patrimonio->CDPROJETO ?? '');
-            if (!array_key_exists($cacheKey, $cache)) {
-                $cache[$cacheKey] = $this->resolverLocalCorreto($patrimonio);
-            }
-
-            if ($cache[$cacheKey]) {
-                $patrimonio->setRelation('local', $cache[$cacheKey]);
-            }
-        }
+        app(PatrimonioLocalResolver::class)->attachMany($patrimonios);
     }
 
     protected function resolverLocalCorreto(Patrimonio $patrimonio): ?LocalProjeto
     {
-        $cdlocal = $patrimonio->CDLOCAL;
-        if ($cdlocal === null || $cdlocal === '') {
-            return null;
-        }
-
-        $query = LocalProjeto::with('projeto')->where('cdlocal', $cdlocal);
-        if (!empty($patrimonio->CDPROJETO)) {
-            $query->whereHas('projeto', function ($q) use ($patrimonio) {
-                $q->where('CDPROJETO', $patrimonio->CDPROJETO);
-            });
-        }
-
-        $local = $query->orderBy('id')->first();
-        if (!$local) {
-            $local = LocalProjeto::with('projeto')
-                ->where('cdlocal', $cdlocal)
-                ->orderBy('id')
-                ->first();
-        }
-
-        return $local;
+        return app(PatrimonioLocalResolver::class)->resolve($patrimonio);
     }
 
     /**

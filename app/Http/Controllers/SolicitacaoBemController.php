@@ -120,6 +120,11 @@ class SolicitacaoBemController extends Controller
             $direction = 'desc';
         }
 
+        $hasScopedFilters = !empty($statusVisualFilters)
+            || $request->filled('status')
+            || $request->filled('uf')
+            || !empty($searchTerms);
+
         $query->where('status', '!=', SolicitacaoBem::STATUS_ARQUIVADO);
         $query->withCount('itens');
 
@@ -127,7 +132,12 @@ class SolicitacaoBemController extends Controller
             $query->with(['ultimoHistoricoStatus.usuario']);
         }
 
-        $this->applyCurrentUserPendingPriority($query, $user);
+        // Em produção, ordenar toda a base por múltiplas regras dinâmicas derruba a listagem
+        // para perfis com visão global. Mantemos a priorização quando a consulta já está
+        // naturalmente reduzida por escopo do usuário ou por filtros aplicados.
+        if (!$this->canViewAllSolicitacoes($user) || $hasScopedFilters) {
+            $this->applyCurrentUserPendingPriority($query, $user);
+        }
 
         $solicitacoes = $query
             ->orderBy($sortableColumns[$sort], $direction)

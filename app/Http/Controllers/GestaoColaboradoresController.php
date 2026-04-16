@@ -510,4 +510,210 @@ class GestaoColaboradoresController extends Controller
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
+
+    /**
+     * 🔄 Sincroniza projetos e locais do KingHost.
+     */
+    public function sincronizarProjetos(Request $request)
+    {
+        set_time_limit(0);
+
+        // Snapshot dos IDs existentes ANTES da sync
+        $antesProjetosIds = DB::table('tabfant')->pluck('id')->flip()->all();
+        $antesLocaisIds = DB::table('locais_projeto')->pluck('id')->flip()->all();
+
+        $novosProjetos = [];
+        $novosLocais = [];
+        $projetosAtualizados = 0;
+        $locaisAtualizados = 0;
+        $erros = 0;
+
+        try {
+            // --- Sincronizar PROJETOS (tabfant) ---
+            $sshCmdProjetos = 'ssh -o BatchMode=yes -o ConnectTimeout=30 plansul@ftp.plansul.info '
+                . '"mysql -h mysql07-farm10.kinghost.net -u plansul004_add2 -p\'A33673170a\' plansul04 '
+                . '-e \'SELECT id, CDPROJETO, NOMEPROJETO FROM tabfant;\'" 2>&1';
+
+            $outputProjetos = shell_exec($sshCmdProjetos);
+
+            if (empty($outputProjetos) || str_contains((string) $outputProjetos, 'ERROR')) {
+                Log::error('❌ [SYNC PROJETOS] Falha SSH ao buscar projetos', ['output' => substr((string) $outputProjetos, 0, 300)]);
+                return response()->json([
+                    'sucesso' => false,
+                    'mensagem' => 'Falha ao conectar ao KingHost. Verifique a conexão SSH e tente novamente.',
+                ], 500);
+            }
+
+            $lines = array_filter(explode("\n", trim($outputProjetos)));
+            $header = null;
+            $projetosKinghost = [];
+
+            foreach ($lines as $line) {
+                if ($header === null) {
+                    $header = explode("\t", $line);
+                    continue;
+                }
+                $values = explode("\t", $line);
+                if (count($values) < 3) {
+                    continue;
+                }
+                $projetosKinghost[] = [
+                    'id'            => trim($values[0]),
+                    'CDPROJETO'     => trim($values[1]),
+                    'NOMEPROJETO'   => trim($values[2] ?? ''),
+                ];
+            }
+
+            // Classificar NOVOS vs ATUALIZADOS ANTES do upsert
+            foreach ($projetosKinghost as $proj) {
+                if (!isset($antesProjetosIds[$proj['id']])) {
+                    $novosProjetos[] = $proj;
+                } else {
+                    $projetosAtualizados++;
+                }
+            }
+
+            // Upsert em batches
+            foreach (array_chunk($projetosKinghost, 500) as $batch) {
+                try {
+                    DB::table('tabfant')->upsert(
+                        $batch,
+                        ['id'],
+                        ['CDPROJETO', 'NOMEPROJETO']
+                    );
+                } catch (\Exception $e) {
+                    $erros++;
+                    Log::warning('⚠️ [SYNC PROJETOS] Erro no batch upsert: ' . $e->getMessage());
+                }
+            }
+
+            // --- Sincronizar LOCAIS (locais_projeto) ---
+            $sshCmdLocais = 'ssh -o BatchMode=yes -o ConnectTimeout=30 plansul@ftp.plansul.info '
+                . '"mysql -h mysql07-farm10.kinghost.net -u plansul004_add2 -p\'A33673170a\' plansul04 '
+                . '-e \'SELECT id, cdlocal, delocal, tabfant_id, fluxo_responsavel FROM locais_projeto;\'" 2>&1';
+
+            $outputLocais = shell_exec($sshCmdLocais);
+
+            if (empty($outputLocais) || str_contains((string) $outputLocais, 'ERROR')) {
+                Log::error('❌ [SYNC LOCAIS] Falha SSH ao buscar locais', ['output' => substr((string) $outputLocais, 0, 300)]);
+                return response()->json([
+                    'sucesso' => false,
+                    'mensagem' => 'Falha ao sincronizar locais. Verifique a conexão SSH e tente novamente.',
+                ], 500);
+            }
+
+            $lines = array_filter(explode("\n", trim($outputLocais)));
+            $header = null;
+            $locaisKinghost = [];
+
+            foreach ($lines as $line) {
+                if ($header === null) {
+                    $header = explode("\t", $line);
+                    continue;
+                }
+                $values = explode("\t", $line);
+                if (count($values) < 5) {
+                    continue;
+                }
+                $locaisKinghost[] = [
+                    'id'                    => trim($values[0]),
+                    'cdlocal'               => trim($values[1]),
+                    'delocal'               => trim($values[2] ?? ''),
+                    'tabfant_id'            => trim($values[3]),
+                    'fluxo_responsavel'     => trim($values[4] ?? ''),
+                ];
+            }
+
+            // Classificar NOVOS vs ATUALIZADOS ANTES do upsert
+            foreach ($locaisKinghost as $local) {
+                if (!isset($antesLocaisIds[$local['id']])) {
+                    $novosLocais[] = $local;
+                } else {
+                    $locaisAtualizados++;
+                }
+            }
+
+            // Upsert em batches
+            foreach (array_chunk($locaisKinghost, 500) as $batch) {
+                try {
+                    DB::table('locais_projeto')->upsert(
+                        $batch,
+                        ['id'],
+                        ['cdlocal', 'delocal', 'tabfant_id', 'fluxo_responsavel']
+                    );
+                } catch (\Exception $e) {
+                    $erros++;
+                    Log::warning('⚠️ [SYNC LOCAIS] Erro no batch upsert: ' . $e->getMessage());
+                }
+            }
+
+            Log::info('✅ [SYNC PROJETOS/LOCAIS] Sincronização concluída', [
+                'projetos_novos'     => count($novosProjetos),
+                'projetos_atualizados' => $projetosAtualizados,
+                'locais_novos'       => count($novosLocais),
+                'locais_atualizados' => $locaisAtualizados,
+                'erros'              => $erros,
+                'por'                => Auth::user()?->NOMEUSER,
+            ]);
+
+            // --- Gerar XLSX com resumo simples e listas ---
+            $fileName = 'sync_projetos_' . now()->format('Y-m-d_His') . '.xlsx';
+            $path = storage_path('app/' . $fileName);
+
+            // Preparar rows sem índices (usar array associativo para cada linha)
+            $rows = [];
+
+            // RESUMO SIMPLES
+            $rows[] = [
+                'Métrica' => 'Projetos',
+                'Antes' => $projetosAtualizados,
+                'Novos' => count($novosProjetos),
+                'Total Final' => $projetosAtualizados + count($novosProjetos),
+            ];
+            $rows[] = [
+                'Métrica' => 'Locais',
+                'Antes' => $locaisAtualizados,
+                'Novos' => count($novosLocais),
+                'Total Final' => $locaisAtualizados + count($novosLocais),
+            ];
+            $rows[] = [];
+
+            // PROJETOS ADICIONADOS
+            if (!empty($novosProjetos)) {
+                foreach ($novosProjetos as $p) {
+                    $rows[] = [
+                        'ID' => $p['id'],
+                        'Código' => $p['CDPROJETO'],
+                        'Nome' => $p['NOMEPROJETO'],
+                    ];
+                }
+            }
+            $rows[] = [];
+
+            // LOCAIS ADICIONADOS
+            if (!empty($novosLocais)) {
+                foreach ($novosLocais as $l) {
+                    $rows[] = [
+                        'ID' => $l['id'],
+                        'Código' => $l['cdlocal'],
+                        'Nome' => $l['delocal'],
+                        'Projeto' => $l['tabfant_id'],
+                    ];
+                }
+            }
+
+            SimpleExcelWriter::create($path)->addRows($rows);
+
+            return response()->download($path, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])->deleteFileAfterSend(true);
+
+        } catch (\Exception $e) {
+            Log::error('❌ [SYNC PROJETOS/LOCAIS] Erro geral', ['erro' => $e->getMessage()]);
+            return response()->json([
+                'sucesso'   => false,
+                'mensagem'  => 'Erro ao sincronizar: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

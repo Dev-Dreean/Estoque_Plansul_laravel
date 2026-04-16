@@ -23,23 +23,6 @@ return [
             'released_at' => '2026-04-15 00:00:00',
             'active' => true,
         ],
-        [
-            'key' => '2026-04-07-fluxo-estoque-ti-e-acesso-solicitante',
-            'title' => 'Pedidos do estoque da TI com controle próprio',
-            'summary' => 'As solicitações do estoque da TI agora passam pela triagem inicial do Bruno, seguem para medição e cotação e, depois disso, precisam da autorização do Theo antes da liberação final do Bruno.',
-            'summary_html' => 'As solicitações do <span class="system-news-inline-highlight system-news-inline-highlight--solicitacoes">estoque da TI</span> agora passam pela <span class="system-news-inline-highlight">triagem inicial do Bruno</span>, seguem para medição e cotação e, depois disso, precisam da <span class="system-news-inline-highlight">autorização do Theo</span> antes da liberação final do Bruno.',
-            'highlight' => 'Ao abrir uma solicitação, use "Origem do pedido: Estoque da TI" para registrar saídas desse estoque. Depois das cotações, o sistema volta a solicitar autorização do Theo antes de liberar o envio.',
-            'details' => [
-                'Use a origem "Estoque da TI" quando o item sair do estoque controlado pela equipe de TI.',
-                'Nesse fluxo, a validação inicial de disponibilidade fica com Bruno.',
-                'Depois da triagem inicial, medição e cotação, o pedido passa por autorização do Theo e só então segue para a liberação final do Bruno.',
-            ],
-            'tutorial_label' => '',
-            'tutorial_target' => '',
-            'cta_label' => '',
-            'cta_url' => '',
-            'released_at' => '2026-04-07 00:00:00',
-            'active' => true,
-        ],
+
     ],
 ];

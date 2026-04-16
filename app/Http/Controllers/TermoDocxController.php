@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\LocalProjeto;
 use App\Models\Tabfant;
+use App\Services\PatrimonioLocalResolver;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,6 +46,7 @@ class TermoDocxController extends Controller
         try {
             $patrimonio = Patrimonio::with(['funcionario', 'local.projeto'])
                 ->findOrFail($id);
+            app(PatrimonioLocalResolver::class)->attach($patrimonio);
 
             // Autorizar acesso
             $this->authorize('view', $patrimonio);
@@ -99,6 +101,7 @@ class TermoDocxController extends Controller
                 ->whereIn('NUSEQPATR', $validated['ids'])
                 ->orderBy('CDMATRFUNCIONARIO')
                 ->get();
+            app(PatrimonioLocalResolver::class)->attachMany($items);
 
             if ($items->isEmpty()) {
                 abort(404, 'Nenhum patrimônio encontrado');
@@ -302,6 +305,20 @@ class TermoDocxController extends Controller
         $cdLocal = trim((string) ($patrimonio->CDLOCAL ?? ''));
         if ($cdLocal === '') {
             return null;
+        }
+
+        app(PatrimonioLocalResolver::class)->attach($patrimonio);
+        $localRelacionamento = $patrimonio->getRelation('local');
+        if ($localRelacionamento) {
+            $ufLocal = strtoupper(trim((string) ($localRelacionamento->UF ?? '')));
+            if ($ufLocal !== '') {
+                return $ufLocal;
+            }
+
+            $ufProjetoLocal = strtoupper(trim((string) ($localRelacionamento->projeto->UF ?? '')));
+            if ($ufProjetoLocal !== '') {
+                return $ufProjetoLocal;
+            }
         }
 
         $query = LocalProjeto::query();

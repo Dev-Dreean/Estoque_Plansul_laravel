@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class SolicitacaoBem extends Model
 {
@@ -343,7 +343,20 @@ class SolicitacaoBem extends Model
         $key = $connection . '|' . $instance->getTable() . '|' . $column;
 
         if (!array_key_exists($key, self::$cachedColumnSupport)) {
-            self::$cachedColumnSupport[$key] = Schema::connection($connection)->hasColumn($instance->getTable(), $column);
+            // A KingHost usa um MySQL antigo que quebra em Schema::hasColumn().
+            // Esta checagem direta evita o uso de metadados incompatíveis.
+            $table = $instance->getTable();
+            $database = DB::connection($connection)->getDatabaseName();
+
+            $row = DB::connection($connection)->table('information_schema.COLUMNS')
+                ->selectRaw('1')
+                ->where('TABLE_SCHEMA', $database)
+                ->where('TABLE_NAME', $table)
+                ->where('COLUMN_NAME', $column)
+                ->limit(1)
+                ->first();
+
+            self::$cachedColumnSupport[$key] = $row !== null;
         }
 
         return self::$cachedColumnSupport[$key];

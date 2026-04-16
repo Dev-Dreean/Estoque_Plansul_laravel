@@ -9,6 +9,7 @@ use App\Models\Patrimonio;
 use App\Models\Tabfant;
 use App\Models\TermoResponsabilidadeArquivo;
 use App\Models\TermoResponsabilidadeArquivoItem;
+use App\Services\PatrimonioLocalResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -137,6 +138,8 @@ class TermoResponsabilidadeController extends Controller
             return back()->with('error', 'Patrim?nio n?o encontrado para gerar o termo.');
         }
 
+        app(PatrimonioLocalResolver::class)->attach($patrimonio);
+
         $this->authorize('view', $patrimonio);
 
         try {
@@ -202,13 +205,14 @@ class TermoResponsabilidadeController extends Controller
 
     private function buscarPatrimoniosPorProjeto(string $cdProjeto): Collection
     {
-        return Patrimonio::query()
+        $patrimonios = Patrimonio::query()
             ->select([
                 'NUSEQPATR',
                 'NUPATRIMONIO',
                 'DEPATRIMONIO',
                 'CDMATRFUNCIONARIO',
                 'CDPROJETO',
+                'CDLOCAL',
                 'CODOBJETO',
                 'MARCA',
                 'MODELO',
@@ -222,6 +226,10 @@ class TermoResponsabilidadeController extends Controller
             ->orderBy('CDMATRFUNCIONARIO')
             ->orderBy('NUPATRIMONIO')
             ->get();
+
+        app(PatrimonioLocalResolver::class)->attachMany($patrimonios);
+
+        return $patrimonios;
     }
 
     private function gerarPdfPorColecao(Collection $patrimonios, Tabfant $projeto, string $nomeArquivoDownload, array $contextoLog, string $origem): Response|RedirectResponse

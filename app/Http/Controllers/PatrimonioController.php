@@ -42,6 +42,8 @@ use App\Models\TermoCodigo;
 
 use App\Services\CodigoService;
 
+use App\Services\PatrimonioLocalResolver;
+
 use App\Services\PatrimonioService;
 
 use Illuminate\Validation\ValidationException;
@@ -3814,6 +3816,7 @@ class PatrimonioController extends Controller
 
 
         $patrimonios = $query->paginate($perPage);
+        app(PatrimonioLocalResolver::class)->attachMany($patrimonios->getCollection());
 
 
 
@@ -4106,6 +4109,7 @@ class PatrimonioController extends Controller
         if ($perPage > 200) $perPage = 200;
 
         $patrimonios = $query->paginate($perPage);
+        app(PatrimonioLocalResolver::class)->attachMany($patrimonios->getCollection());
 
 
 
@@ -5324,7 +5328,7 @@ class PatrimonioController extends Controller
 
                 ->orderBy('NUPATRIMONIO', 'asc');
 
-            $query = Patrimonio::with(['funcionario'])
+            $query = Patrimonio::with(['funcionario', 'projeto'])
                 ->orderBy('NUPATRIMONIO', 'asc');
             $this->aplicarFiltroPatrimoniosAtivosParaTermo($query);
 
@@ -5347,6 +5351,8 @@ class PatrimonioController extends Controller
                 ->take($perPage)
 
                 ->get();
+
+            app(PatrimonioLocalResolver::class)->attachMany($patrimonios);
 
 
 
@@ -5430,11 +5436,11 @@ class PatrimonioController extends Controller
 
                             // Adiciona projeto associado se existir
 
-                            'projeto' => $p->local ? [
+                            'projeto' => $p->projeto ? [
 
-                                'CDPROJETO' => $p->local->CDPROJETO ?? null,
+                                'CDPROJETO' => $p->projeto->CDPROJETO ?? null,
 
-                                'NOMEPROJETO' => $p->local->NOMEPROJETO ?? null
+                                'NOMEPROJETO' => $p->projeto->NOMEPROJETO ?? null
 
                             ] : null,
 
@@ -6985,26 +6991,7 @@ class PatrimonioController extends Controller
      */
     private function attachLocalCorreto(Patrimonio $patrimonio): void
     {
-        $cdlocal = $patrimonio->CDLOCAL;
-        if ($cdlocal === null || $cdlocal === '') {
-            return;
-        }
-
-        $query = LocalProjeto::with('projeto')->where('cdlocal', $cdlocal);
-        if (!empty($patrimonio->CDPROJETO)) {
-            $query->whereHas('projeto', function ($q) use ($patrimonio) {
-                $q->where('CDPROJETO', $patrimonio->CDPROJETO);
-            });
-        }
-
-        $local = $query->first();
-        if (!$local) {
-            $local = LocalProjeto::with('projeto')->where('cdlocal', $cdlocal)->first();
-        }
-
-        if ($local) {
-            $patrimonio->setRelation('local', $local);
-        }
+        app(PatrimonioLocalResolver::class)->attach($patrimonio);
     }
 
 

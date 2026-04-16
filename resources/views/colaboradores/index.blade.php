@@ -81,6 +81,19 @@
                         </button>
 
                         <button
+                            @click="sincronizarProjetos()"
+                            :disabled="sincronizandoProjetos"
+                            class="rounded inline-flex flex-col items-center justify-center px-4 py-1.5 bg-amber-600 hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-600 text-white transition disabled:opacity-60 disabled:cursor-not-allowed min-w-[140px]"
+                        >
+                            <span class="flex items-center gap-1.5 font-bold text-sm leading-snug">
+                                <svg x-show="!sincronizandoProjetos" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0114.93-4.93M20 15a9 9 0 01-14.93 4.93"/></svg>
+                                <svg x-show="sincronizandoProjetos" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                <span x-text="sincronizandoProjetos ? 'Sincronizando…' : 'Projetos'"></span>
+                            </span>
+                            <span class="text-[11px] text-amber-200 leading-tight">Atualizar projetos</span>
+                        </button>
+
+                        <button
                             @click="mostraModalAdicionar = true"
                             class="rounded inline-flex flex-col items-center justify-center px-4 py-1.5 bg-plansul-blue hover:bg-opacity-90 text-white transition min-w-[140px]"
                         >
@@ -307,6 +320,7 @@
 
             // Sync
             sincronizando: false,
+            sincronizandoProjetos: false,
 
             // Modal: Adicionar
             mostraModalAdicionar: false,
@@ -476,6 +490,38 @@
                     setTimeout(() => window.location.reload(), 2000);
                 } catch(e) { this.mostrarToast(e.message ?? 'Erro na sincronização.', 'erro'); }
                 finally { this.sincronizando = false; }
+            },
+
+            async sincronizarProjetos() {
+                if (this.sincronizandoProjetos) return;
+                this.sincronizandoProjetos = true;
+                try {
+                    const csrf = document.querySelector('meta[name="csrf-token"]').content;
+                    const resp = await fetch('{{ route('colaboradores.sincronizar-projetos') }}', {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/json' },
+                    });
+                    if (!resp.ok) { 
+                        const j = await resp.json().catch(()=>({ mensagem: 'Erro ao sincronizar' })); 
+                        throw new Error(j.mensagem ?? 'Erro ao sincronizar projetos.'); 
+                    }
+                    const blob = await resp.blob();
+                    const disposition = resp.headers.get('Content-Disposition') ?? '';
+                    let fileName = 'sync_projetos.xlsx';
+                    const match = disposition.match(/filename[^;=\n]*=(['"]?)([^'";\n]+)\1/);
+                    if (match) fileName = match[2];
+                    const a = document.createElement('a'); 
+                    a.href = URL.createObjectURL(blob); 
+                    a.download = fileName; 
+                    a.click(); 
+                    URL.revokeObjectURL(a.href);
+                    this.mostrarToast('Sincronização concluída! Relatório baixado.', 'sucesso');
+                } catch(e) { 
+                    this.mostrarToast(e.message ?? 'Erro na sincronização de projetos.', 'erro'); 
+                }
+                finally { 
+                    this.sincronizandoProjetos = false; 
+                }
             },
 
             // ── Remover ─────────────────────────────────────

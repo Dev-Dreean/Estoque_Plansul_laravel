@@ -210,6 +210,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::get('/colaboradores', [\App\Http\Controllers\GestaoColaboradoresController::class, 'index'])->name('colaboradores.index')->middleware('tela.access:1011');
     Route::post('/colaboradores', [\App\Http\Controllers\GestaoColaboradoresController::class, 'store'])->name('colaboradores.store')->middleware('tela.access:1011');
     Route::post('/colaboradores/sincronizar', [\App\Http\Controllers\GestaoColaboradoresController::class, 'sincronizar'])->name('colaboradores.sincronizar')->middleware('tela.access:1011');
+    Route::post('/colaboradores/sincronizar-projetos', [\App\Http\Controllers\GestaoColaboradoresController::class, 'sincronizarProjetos'])->name('colaboradores.sincronizar-projetos')->middleware('tela.access:1011');
     Route::post('/colaboradores/criar-login', [\App\Http\Controllers\GestaoColaboradoresController::class, 'criarLogin'])->name('colaboradores.criarLogin')->middleware('tela.access:1011');
     Route::delete('/colaboradores/login/{usuario}', [\App\Http\Controllers\GestaoColaboradoresController::class, 'removerLogin'])->name('colaboradores.removerLogin')->middleware('tela.access:1011');
     Route::post('/colaboradores/{matricula}/permissoes', [\App\Http\Controllers\GestaoColaboradoresController::class, 'atualizarPermissoes'])->name('colaboradores.atualizarPermissoes')->middleware('tela.access:1011');
