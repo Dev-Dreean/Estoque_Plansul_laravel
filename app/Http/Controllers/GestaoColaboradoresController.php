@@ -404,7 +404,7 @@ class GestaoColaboradoresController extends Controller
             . '"mysql -h mysql07-farm10.kinghost.net -u plansul004_add2 -p\'A33673170a\' plansul04 '
             . '-e \'SELECT CDMATRFUNCIONARIO, NMFUNCIONARIO, DTADMISSAO, CDCARGO, CODFIL, UFPROJ FROM funcionarios;\'" 2>&1';
 
-        $output = shell_exec($sshCmd);
+        $output = \shell_exec($sshCmd);
 
         if (empty($output) || str_contains((string) $output, 'ERROR')) {
             Log::error('❌ [SYNC COLABS] Falha SSH', ['output' => substr((string) $output, 0, 300)]);
@@ -534,7 +534,7 @@ class GestaoColaboradoresController extends Controller
                 . '"mysql -h mysql07-farm10.kinghost.net -u plansul004_add2 -p\'A33673170a\' plansul04 '
                 . '-e \'SELECT id, CDPROJETO, NOMEPROJETO FROM tabfant;\'" 2>&1';
 
-            $outputProjetos = shell_exec($sshCmdProjetos);
+            $outputProjetos = \shell_exec($sshCmdProjetos);
 
             if (empty($outputProjetos) || str_contains((string) $outputProjetos, 'ERROR')) {
                 Log::error('❌ [SYNC PROJETOS] Falha SSH ao buscar projetos', ['output' => substr((string) $outputProjetos, 0, 300)]);
@@ -592,7 +592,7 @@ class GestaoColaboradoresController extends Controller
                 . '"mysql -h mysql07-farm10.kinghost.net -u plansul004_add2 -p\'A33673170a\' plansul04 '
                 . '-e \'SELECT id, cdlocal, delocal, tabfant_id, fluxo_responsavel FROM locais_projeto;\'" 2>&1';
 
-            $outputLocais = shell_exec($sshCmdLocais);
+            $outputLocais = \shell_exec($sshCmdLocais);
 
             if (empty($outputLocais) || str_contains((string) $outputLocais, 'ERROR')) {
                 Log::error('❌ [SYNC LOCAIS] Falha SSH ao buscar locais', ['output' => substr((string) $outputLocais, 0, 300)]);
