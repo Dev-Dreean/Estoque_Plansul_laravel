@@ -425,6 +425,8 @@ class GestaoColaboradoresController extends Controller
             'UFPROJ'            => trim((string) ($row['UFPROJ'] ?? '')),
         ], $funcionariosKinghost);
 
+        $funcionariosKinghost = $this->complementarFuncionariosComFonteLegacy($funcionariosKinghost);
+
         // --- Upsert em lote (muito mais rápido que individual) ---
         $limpos = array_values(array_filter(
             $funcionariosKinghost,
@@ -669,6 +671,65 @@ class GestaoColaboradoresController extends Controller
             ->all();
     }
 
+    protected function complementarFuncionariosComFonteLegacy(array $funcionarios): array
+    {
+        try {
+            $legacyRows = DB::connection($this->configurarConexaoFuncionariosLegacy())
+                ->table('funcionarios')
+                ->select(['matricula', 'nome', 'dtadmissao', 'cargo', 'estado'])
+                ->get()
+                ->map(fn ($row) => (array) $row)
+                ->all();
+        } catch (\Throwable $e) {
+            Log::warning('⚠️ [SYNC COLABS] Fonte legacy plansul104 indisponível', ['erro' => $e->getMessage()]);
+            return $funcionarios;
+        }
+
+        $porMatricula = [];
+
+        foreach ($funcionarios as $funcionario) {
+            $matricula = $funcionario['CDMATRFUNCIONARIO'] ?? '';
+            if ($matricula === '') {
+                continue;
+            }
+
+            $porMatricula[$matricula] = $funcionario;
+        }
+
+        foreach ($legacyRows as $legacy) {
+            $matricula = trim((string) ($legacy['matricula'] ?? ''));
+
+            if ($matricula === '') {
+                continue;
+            }
+
+            $legacyMapeado = [
+                'CDMATRFUNCIONARIO' => $matricula,
+                'NMFUNCIONARIO'     => trim((string) ($legacy['nome'] ?? '')),
+                'DTADMISSAO'        => !empty($legacy['dtadmissao']) ? (string) $legacy['dtadmissao'] : null,
+                'CDCARGO'           => trim((string) ($legacy['cargo'] ?? '')),
+                'CODFIL'            => '',
+                'UFPROJ'            => trim((string) ($legacy['estado'] ?? '')),
+            ];
+
+            if (!isset($porMatricula[$matricula])) {
+                $porMatricula[$matricula] = $legacyMapeado;
+                continue;
+            }
+
+            foreach (['NMFUNCIONARIO', 'DTADMISSAO', 'CDCARGO', 'UFPROJ'] as $campo) {
+                $valorAtual = $porMatricula[$matricula][$campo] ?? null;
+                $valorLegacy = $legacyMapeado[$campo] ?? null;
+
+                if (($valorAtual === null || $valorAtual === '') && ($valorLegacy !== null && $valorLegacy !== '')) {
+                    $porMatricula[$matricula][$campo] = $valorLegacy;
+                }
+            }
+        }
+
+        return array_values($porMatricula);
+    }
+
     protected function configurarConexaoKinghost(): string
     {
         $connectionName = 'kinghost_sync';
@@ -684,6 +745,36 @@ class GestaoColaboradoresController extends Controller
                 'unix_socket' => env('DB_SOCKET_KINGHOST', ''),
                 'charset' => env('DB_CHARSET_KINGHOST', 'utf8mb4'),
                 'collation' => env('DB_COLLATION_KINGHOST', 'utf8mb4_unicode_ci'),
+                'prefix' => '',
+                'prefix_indexes' => true,
+                'strict' => false,
+                'engine' => null,
+                'options' => extension_loaded('pdo_mysql') ? array_filter([
+                    \PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                ]) : [],
+            ],
+        ]);
+
+        DB::purge($connectionName);
+
+        return $connectionName;
+    }
+
+    protected function configurarConexaoFuncionariosLegacy(): string
+    {
+        $connectionName = 'kinghost_funcionarios_legacy';
+
+        config([
+            "database.connections.{$connectionName}" => [
+                'driver' => 'mysql',
+                'host' => env('FUNCIONARIOS_SOURCE_HOST', 'mysql.plansul2.kinghost.net'),
+                'port' => env('FUNCIONARIOS_SOURCE_PORT', '3306'),
+                'database' => env('FUNCIONARIOS_SOURCE_DB', 'plansul104'),
+                'username' => env('FUNCIONARIOS_SOURCE_USER', 'plansul104'),
+                'password' => env('FUNCIONARIOS_SOURCE_PASS', 'plansul104'),
+                'unix_socket' => '',
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
                 'prefix' => '',
                 'prefix_indexes' => true,
                 'strict' => false,
