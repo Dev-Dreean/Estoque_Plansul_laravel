@@ -187,6 +187,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureProfileIsComplete::class])
     Route::post('/patrimonios/atribuir-codigo', [PatrimonioController::class, 'atribuirCodigo'])->name('patrimonios.atribuirCodigo');
     Route::post('/patrimonios/desatribuir-codigo', [PatrimonioController::class, 'desatribuirCodigo'])->name('patrimonios.desatribuirCodigo');
     Route::post('/patrimonios/filtrar', [PatrimonioController::class, 'ajaxFilter'])->name('patrimonios.ajax-filter');
+    Route::post('/patrimonios/colunas/ordem', [PatrimonioController::class, 'updateColumnsOrder'])->name('patrimonios.columns-order');
     Route::post('/patrimonios/bulk-situacao', [PatrimonioController::class, 'bulkSituacao'])->name('patrimonios.bulk-situacao');
     Route::post('/patrimonios/bulk-verificar', [PatrimonioController::class, 'bulkVerificar'])->name('patrimonios.bulk-verificar');
     Route::post('/patrimonios/bulk-delete', [PatrimonioController::class, 'bulkDelete'])->name('patrimonios.bulk-delete');

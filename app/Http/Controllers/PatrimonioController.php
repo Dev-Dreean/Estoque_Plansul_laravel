@@ -598,6 +598,65 @@ class PatrimonioController extends Controller
         return $this->index($request);
     }
 
+    public function updateColumnsOrder(Request $request): JsonResponse
+    {
+        $payload = $request->validate([
+            'columns' => ['required', 'array', 'min:1'],
+            'columns.*' => ['required', 'string'],
+        ]);
+
+        /** @var User $currentUser */
+        $currentUser = Auth::user();
+        $allowedColumns = $this->getPatrimonioGridColumns();
+
+        $requestedColumns = array_values(array_unique(array_filter(
+            $payload['columns'],
+            static fn (string $column): bool => in_array($column, $allowedColumns, true)
+        )));
+
+        if (empty($requestedColumns)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nenhuma coluna válida foi enviada.',
+            ], 422);
+        }
+
+        $normalizedOrder = array_values(array_unique(array_merge($requestedColumns, $allowedColumns)));
+        $currentUser->patrimonio_columns_order = $normalizedOrder;
+        $currentUser->save();
+
+        Log::info('✅ [PATRIMONIO] Ordem de colunas atualizada', [
+            'usuario' => $currentUser->NMLOGIN,
+            'ordem' => $normalizedOrder,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ordem das colunas salva com sucesso.',
+            'columns' => $normalizedOrder,
+        ]);
+    }
+
+    private function getPatrimonioGridColumns(): array
+    {
+        return [
+            'nupatrimonio',
+            'conferido',
+            'numof',
+            'codobjeto',
+            'projeto',
+            'local',
+            'descricao',
+            'marca',
+            'modelo',
+            'situacao',
+            'dtaquisicao',
+            'dtoperacao',
+            'responsavel',
+            'cadastrador',
+        ];
+    }
+
 
 
     /**
@@ -793,8 +852,12 @@ class PatrimonioController extends Controller
 
 
             $this->validarVinculosResponsabilidade($validated);
-            $validated['NUMMESA'] = $this->normalizarNumeroMesa($validated['NUMMESA'] ?? null);
-            $this->validarNumeroMesaEmUso($validated);
+            if ($this->supportsNumeroMesa()) {
+                $validated['NUMMESA'] = $this->normalizarNumeroMesa($validated['NUMMESA'] ?? null);
+                $this->validarNumeroMesaEmUso($validated);
+            } else {
+                unset($validated['NUMMESA']);
+            }
 
             // Regra especial para almoxarifado central (999915) e em transito (2002)
 
@@ -927,7 +990,6 @@ class PatrimonioController extends Controller
             'CDLOCAL' => $validated['CDLOCAL'] ?? null,
 
             'NMPLANTA' => $validated['NMPLANTA'] ?? null,
-            'NUMMESA' => $validated['NUMMESA'] ?? null,
 
             'MARCA' => $validated['MARCA'] ?? null,
 
@@ -948,6 +1010,10 @@ class PatrimonioController extends Controller
             'DTOPERACAO' => now(),
 
         ];
+
+        if ($this->supportsNumeroMesa()) {
+            $dadosPatrimonio['NUMMESA'] = $validated['NUMMESA'] ?? null;
+        }
 
 
 
@@ -5580,8 +5646,12 @@ class PatrimonioController extends Controller
         }
 
         $this->validarVinculosResponsabilidade($data);
-        $data['NUMMESA'] = $this->normalizarNumeroMesa($data['NUMMESA'] ?? null);
-        $this->validarNumeroMesaEmUso($data, $patrimonio);
+        if ($this->supportsNumeroMesa()) {
+            $data['NUMMESA'] = $this->normalizarNumeroMesa($data['NUMMESA'] ?? null);
+            $this->validarNumeroMesaEmUso($data, $patrimonio);
+        } else {
+            unset($data['NUMMESA']);
+        }
 
         Log::info('[VALIDATE] Dados após validação inicial', [
 
@@ -5816,6 +5886,12 @@ class PatrimonioController extends Controller
 
     {
 
+        if (!$this->supportsNumeroMesa()) {
+
+            return;
+
+        }
+
         $numeroMesa = $this->normalizarNumeroMesa($data['NUMMESA'] ?? null);
 
         if ($numeroMesa === null) {
@@ -5861,6 +5937,26 @@ class PatrimonioController extends Controller
             'NUMMESA' => 'O número da mesa informado já está vinculado a outro patrimônio em uso.',
 
         ]);
+
+    }
+
+    private function supportsNumeroMesa(): bool
+
+    {
+
+        static $supportsNumeroMesa = null;
+
+
+
+        if ($supportsNumeroMesa === null) {
+
+            $supportsNumeroMesa = Schema::hasColumn('patr', 'NUMMESA');
+
+        }
+
+
+
+        return $supportsNumeroMesa;
 
     }
 

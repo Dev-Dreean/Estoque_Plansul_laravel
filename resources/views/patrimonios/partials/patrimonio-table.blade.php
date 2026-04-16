@@ -1,5 +1,6 @@
 @php
   $isConsultor = auth()->user()?->PERFIL === \App\Models\User::PERFIL_CONSULTOR;
+  $usuarioAtual = auth()->user();
 
   // Mantemos todas as colunas principais, exceto Cód. Termo e Nº Série que foram solicitados para sair
   $mapBeforeDescricao = [
@@ -16,13 +17,26 @@
     'CADASTRADOR' => 'cadastrador',
   ];
 
-  $columns = array_merge(
+  $defaultColumns = array_merge(
     ['nupatrimonio', 'conferido'],
     array_values($mapBeforeDescricao),
-    ['modelo', 'marca'],
-    ['descricao', 'situacao'],
+    ['descricao', 'marca', 'modelo'],
+    ['situacao'],
     array_values($mapAfterDescricao)
   );
+
+  $savedColumnsOrder = is_array($usuarioAtual?->patrimonio_columns_order)
+    ? $usuarioAtual->patrimonio_columns_order
+    : [];
+
+  $normalizedSavedOrder = array_values(array_filter(
+    $savedColumnsOrder,
+    static fn ($column) => in_array($column, $defaultColumns, true)
+  ));
+
+  $columns = empty($normalizedSavedOrder)
+    ? $defaultColumns
+    : array_values(array_unique(array_merge($normalizedSavedOrder, $defaultColumns)));
 @endphp
 
 <x-patrimonio-table

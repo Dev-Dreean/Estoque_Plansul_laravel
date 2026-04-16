@@ -56,12 +56,14 @@ class User extends Authenticatable
         'password_policy_version',
         'needs_identity_update',
         'theme',
+        'patrimonio_columns_order',
     ];
 
     protected $casts = [
         'must_change_password' => 'boolean',
         'password_policy_version' => 'integer',
         'needs_identity_update' => 'boolean',
+        'patrimonio_columns_order' => 'array',
     ];
 
     protected $hidden = [

@@ -718,11 +718,14 @@
         const bulkEndpoint = "{{ route('patrimonios.bulk-situacao') }}";
         const bulkVerifyEndpoint = "{{ route('patrimonios.bulk-verificar') }}";
         const filterEndpoint = "{{ route('patrimonios.ajax-filter') }}";
+        const columnOrderEndpoint = "{{ route('patrimonios.columns-order') }}";
         const csrf = document.querySelector('meta[name=\"csrf-token\"]')?.content || '';
         const selectedIds = new Set();
         const selectedMeta = new Map();
         let pendingSituacao = null;
         let pendingConferido = null;
+        let draggedColumnKey = null;
+        let suppressSortClickUntil = 0;
         const logTags = (label = 'tags') => {
           const tags = Array.from(document.querySelectorAll('#patrimonios-tags [data-ajax-tag-remove]')).map(t => t.textContent.trim());
           console.log('[PATRI] ' + label, tags);
@@ -931,6 +934,223 @@
           updateBulkBar();
         };
 
+                        const getColumnHeaders = () => {
+                          if (!tableContent) return [];
+                          return Array.from(tableContent.querySelectorAll('thead [data-column-key]'));
+                        };
+
+                        const getColumnOrderFromDom = () => getColumnHeaders()
+                          .map((header) => header.dataset.columnKey)
+                          .filter(Boolean);
+
+                        const buildNormalizedColumnOrder = (order) => {
+                          const available = getColumnOrderFromDom();
+                          const incoming = Array.isArray(order) ? order : [];
+                          const filtered = incoming.filter((column) => available.includes(column));
+                          return Array.from(new Set([...filtered, ...available]));
+                        };
+
+                        const moveColumnBefore = (order, source, target) => {
+                          const next = [...order];
+                          const fromIndex = next.indexOf(source);
+                          const toIndex = next.indexOf(target);
+                          if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
+                            return next;
+                          }
+
+                          next.splice(fromIndex, 1);
+                          const insertionIndex = next.indexOf(target);
+                          next.splice(insertionIndex, 0, source);
+                          return next;
+                        };
+
+                        const reorderColumnsInRow = (row, orderedKeys) => {
+                          const children = Array.from(row.children);
+                          if (children.length === 0) return;
+
+                          const leading = [];
+                          const trailing = [];
+
+                          while (children.length > 0 && !children[0].dataset?.columnKey) {
+                            leading.push(children.shift());
+                          }
+
+                          while (children.length > 0 && !children[children.length - 1].dataset?.columnKey) {
+                            trailing.unshift(children.pop());
+                          }
+
+                          const byKey = new Map(children.map((cell) => [cell.dataset.columnKey, cell]));
+                          const orderedCells = orderedKeys
+                            .map((key) => byKey.get(key))
+                            .filter(Boolean);
+
+                          row.replaceChildren(...leading, ...orderedCells, ...trailing);
+                        };
+
+                        const applyColumnOrderToTable = (order) => {
+                          if (!tableContent) return;
+                          const normalizedOrder = buildNormalizedColumnOrder(order);
+                          if (normalizedOrder.length === 0) return;
+
+                          tableContent.querySelectorAll('thead tr, tbody tr').forEach((row) => {
+                            reorderColumnsInRow(row, normalizedOrder);
+                          });
+                        };
+
+                        const persistColumnOrder = async (order) => {
+                          try {
+                            const response = await fetch(columnOrderEndpoint, {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': csrf,
+                              },
+                              body: JSON.stringify({ columns: order }),
+                            });
+
+                            if (!response.ok) {
+                              const payload = await response.json().catch(() => ({}));
+                              throw new Error(payload.message || 'Não foi possível salvar a ordem das colunas.');
+                            }
+                          } catch (error) {
+                            console.error('[PATRI] Falha ao salvar ordem das colunas', error);
+                            alert(error.message || 'Falha ao salvar a ordem das colunas.');
+                          }
+                        };
+
+                        const bindColumnDragAndDrop = () => {
+                          const headers = getColumnHeaders();
+                          let ghostElement = null;
+                          let lastDropTarget = null;
+                          let originalOrder = null;
+
+                          headers.forEach((header) => {
+                            if (header.dataset.dragBound === '1') return;
+                            header.dataset.dragBound = '1';
+
+                            header.addEventListener('dragstart', (event) => {
+                              draggedColumnKey = header.dataset.columnKey || null;
+                              originalOrder = getColumnOrderFromDom();
+                              header.classList.add('opacity-30', 'blur-sm');
+                              
+                              // Criar ghost image
+                              ghostElement = header.cloneNode(true);
+                              ghostElement.classList.add('pointer-events-none', 'fixed', 'z-50', 'opacity-90', 
+                                'border-2', 'border-indigo-500', 'dark:border-indigo-400',
+                                'rounded-lg', 'bg-white', 'dark:bg-gray-800',
+                                'shadow-2xl', 'transition-shadow', 'duration-200',
+                                'cursor-grabbing');
+                              ghostElement.style.width = header.offsetWidth + 'px';
+                              ghostElement.style.height = header.offsetHeight + 'px';
+                              ghostElement.style.top = '-1000px';
+                              ghostElement.style.left = '-1000px';
+                              document.body.appendChild(ghostElement);
+
+                              // Atualizar posição do ghost com o mouse
+                              const handleMouseMove = (e) => {
+                                if (ghostElement) {
+                                  ghostElement.style.left = (e.clientX - ghostElement.offsetWidth / 2) + 'px';
+                                  ghostElement.style.top = (e.clientY - ghostElement.offsetHeight / 2) + 'px';
+                                }
+                              };
+                              document.addEventListener('mousemove', handleMouseMove, { capture: true });
+                              event.dataTransfer.setDragImage(ghostElement, 0, 0);
+
+                              if (event.dataTransfer) {
+                                event.dataTransfer.effectAllowed = 'move';
+                                event.dataTransfer.setData('text/plain', draggedColumnKey || '');
+                              }
+
+                              // Cleanup na finalização
+                              const cleanup = () => {
+                                document.removeEventListener('mousemove', handleMouseMove, { capture: true });
+                              };
+                              document.addEventListener('dragend', cleanup, { once: true });
+                            });
+
+                            header.addEventListener('dragover', (event) => {
+                              event.preventDefault();
+                              if (!draggedColumnKey) return;
+                              
+                              const targetColumnKey = header.dataset.columnKey || null;
+                              if (targetColumnKey === draggedColumnKey) return;
+
+                              // Remover efeito visual do alvo anterior
+                              if (lastDropTarget && lastDropTarget !== header) {
+                                lastDropTarget.classList.remove('ring-2', 'ring-indigo-500', 'dark:ring-indigo-400');
+                              }
+
+                              // Adicionar destaque do alvo atual
+                              header.classList.add('ring-2', 'ring-indigo-500', 'dark:ring-indigo-400');
+                              header.style.transition = 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                              lastDropTarget = header;
+
+                              // PREVIEW: Aplicar reordenação visual em tempo real
+                              const previewOrder = moveColumnBefore(originalOrder, draggedColumnKey, targetColumnKey);
+                              applyColumnOrderToTable(previewOrder);
+                              
+                              if (event.dataTransfer) {
+                                event.dataTransfer.dropEffect = 'move';
+                              }
+                            });
+
+                            header.addEventListener('dragleave', () => {
+                              if (header === lastDropTarget) {
+                                header.classList.remove('ring-2', 'ring-indigo-500', 'dark:ring-indigo-400');
+                                header.style.transition = '';
+                                lastDropTarget = null;
+                              }
+                            });
+
+                            header.addEventListener('drop', (event) => {
+                              event.preventDefault();
+                              const targetColumnKey = header.dataset.columnKey || null;
+                              const sourceColumnKey = draggedColumnKey;
+
+                              headers.forEach((item) => {
+                                item.classList.remove('ring-2', 'ring-indigo-500', 'dark:ring-indigo-400');
+                                item.style.transition = '';
+                              });
+                              lastDropTarget = null;
+
+                              if (!sourceColumnKey || !targetColumnKey || sourceColumnKey === targetColumnKey) {
+                                // Reverter para ordem original se não moveu nada
+                                applyColumnOrderToTable(originalOrder);
+                                return;
+                              }
+
+                              // Ordem já está aplicada visualmente, só persistir no backend
+                              const finalOrder = getColumnOrderFromDom();
+                              suppressSortClickUntil = Date.now() + 250;
+                              persistColumnOrder(finalOrder);
+                            });
+
+                            header.addEventListener('dragend', () => {
+                              header.classList.remove('opacity-30', 'blur-sm');
+                              headers.forEach((item) => {
+                                item.classList.remove('ring-2', 'ring-indigo-500', 'dark:ring-indigo-400');
+                                item.style.transition = '';
+                              });
+                              
+                              // Se o drag foi cancelado, reverter à ordem original
+                              if (draggedColumnKey && originalOrder) {
+                                applyColumnOrderToTable(originalOrder);
+                              }
+                              
+                              // Remover ghost element
+                              if (ghostElement) {
+                                ghostElement.remove();
+                                ghostElement = null;
+                              }
+                              
+                              draggedColumnKey = null;
+                              lastDropTarget = null;
+                              originalOrder = null;
+                            });
+                          });
+                        };
+
         const refreshHeaderCheckbox = () => {};
 
                         const clearSelection = () => {
@@ -1137,7 +1357,8 @@
           }
           
           logTags('after-swap');
-            bindCheckboxes();
+          bindCheckboxes();
+          bindColumnDragAndDrop();
         };
 
                 const buildParamsFromForm = () => {
@@ -1246,6 +1467,10 @@
 
           const sortLink = e.target.closest('[data-ajax-sort]');
           if (sortLink) {
+            if (Date.now() < suppressSortClickUntil) {
+              e.preventDefault();
+              return;
+            }
             e.preventDefault();
             const href = sortLink.getAttribute('href');
             if (href) {
@@ -1287,6 +1512,7 @@
         stripQueryFromUrl();
         loadSelection();
         bindCheckboxes();
+        bindColumnDragAndDrop();
         bulkApply?.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
