@@ -1,29 +1,26 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasColumn('usuario', 'patrimonio_columns_order')) {
-            Schema::table('usuario', function (Blueprint $table) {
-                $table->json('patrimonio_columns_order')
-                    ->nullable()
-                    ->after('theme')
-                    ->comment('Ordem personalizada de colunas no grid de patrimônios por usuário');
-            });
+        // Usar SQL raw para compatibilidade com MySQL antigo do KingHost
+        $result = DB::select("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'usuario' AND COLUMN_NAME = 'patrimonio_columns_order'");
+        
+        if (empty($result)) {
+            DB::statement('ALTER TABLE usuario ADD COLUMN patrimonio_columns_order JSON NULL COMMENT "Ordem personalizada de colunas no grid de patrimônios por usuário" AFTER theme');
         }
     }
 
     public function down(): void
     {
-        if (Schema::hasColumn('usuario', 'patrimonio_columns_order')) {
-            Schema::table('usuario', function (Blueprint $table) {
-                $table->dropColumn('patrimonio_columns_order');
-            });
+        $result = DB::select("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'usuario' AND COLUMN_NAME = 'patrimonio_columns_order'");
+        
+        if (!empty($result)) {
+            DB::statement('ALTER TABLE usuario DROP COLUMN patrimonio_columns_order');
         }
     }
 };
