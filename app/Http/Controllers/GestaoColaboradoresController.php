@@ -399,45 +399,31 @@ class GestaoColaboradoresController extends Controller
         $atualizados = 0;
         $erros      = 0;
 
-        // --- Conectar ao KingHost via SSH e buscar funcionários ---
-        $sshCmd = 'ssh -o BatchMode=yes -o ConnectTimeout=30 plansul@ftp.plansul.info '
-            . '"mysql -h mysql07-farm10.kinghost.net -u plansul004_add2 -p\'A33673170a\' plansul04 '
-            . '-e \'SELECT CDMATRFUNCIONARIO, NMFUNCIONARIO, DTADMISSAO, CDCARGO, CODFIL, UFPROJ FROM funcionarios;\'" 2>&1';
-
-        $output = '';
-        \exec($sshCmd, $output, $returnCode);
-
-        if (empty($output) || (is_array($output) && in_array('ERROR', $output))) {
-            Log::error('❌ [SYNC COLABS] Falha SSH', ['output' => is_array($output) ? $output[0] ?? '' : $output]);
+        try {
+            $funcionariosKinghost = $this->buscarLinhasKinghost('funcionarios', [
+                'CDMATRFUNCIONARIO',
+                'NMFUNCIONARIO',
+                'DTADMISSAO',
+                'CDCARGO',
+                'CODFIL',
+                'UFPROJ',
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('❌ [SYNC COLABS] Falha ao consultar banco KingHost', ['erro' => $e->getMessage()]);
             return response()->json([
                 'sucesso' => false,
-                'mensagem' => 'Falha ao conectar ao KingHost. Verifique a conexão SSH e tente novamente.',
+                'mensagem' => 'Falha ao consultar o banco KingHost. Verifique a conexão e tente novamente.',
             ], 500);
         }
 
-        $output = is_array($output) ? implode("\n", $output) : $output;
-        $lines  = array_filter(explode("\n", trim($output)));
-        $header = null;
-        $funcionariosKinghost = [];
-
-        foreach ($lines as $line) {
-            if ($header === null) {
-                $header = explode("\t", $line);
-                continue;
-            }
-            $values = explode("\t", $line);
-            if (count($values) < 2) {
-                continue;
-            }
-            $funcionariosKinghost[] = [
-                'CDMATRFUNCIONARIO' => trim($values[0]),
-                'NMFUNCIONARIO'     => trim($values[1] ?? ''),
-                'DTADMISSAO'        => trim($values[2] ?? '') ?: null,
-                'CDCARGO'           => trim($values[3] ?? ''),
-                'CODFIL'            => trim($values[4] ?? ''),
-                'UFPROJ'            => trim($values[5] ?? ''),
-            ];
-        }
+        $funcionariosKinghost = array_map(fn ($row) => [
+            'CDMATRFUNCIONARIO' => trim((string) ($row['CDMATRFUNCIONARIO'] ?? '')),
+            'NMFUNCIONARIO'     => trim((string) ($row['NMFUNCIONARIO'] ?? '')),
+            'DTADMISSAO'        => !empty($row['DTADMISSAO']) ? (string) $row['DTADMISSAO'] : null,
+            'CDCARGO'           => trim((string) ($row['CDCARGO'] ?? '')),
+            'CODFIL'            => trim((string) ($row['CODFIL'] ?? '')),
+            'UFPROJ'            => trim((string) ($row['UFPROJ'] ?? '')),
+        ], $funcionariosKinghost);
 
         // --- Upsert em lote (muito mais rápido que individual) ---
         $limpos = array_values(array_filter(
@@ -531,42 +517,15 @@ class GestaoColaboradoresController extends Controller
         $erros = 0;
 
         try {
-            // --- Sincronizar PROJETOS (tabfant) ---
-            $sshCmdProjetos = 'ssh -o BatchMode=yes -o ConnectTimeout=30 plansul@ftp.plansul.info '
-                . '"mysql -h mysql07-farm10.kinghost.net -u plansul004_add2 -p\'A33673170a\' plansul04 '
-                . '-e \'SELECT id, CDPROJETO, NOMEPROJETO FROM tabfant;\'" 2>&1';
-
-            $outputProjetos = '';
-            \exec($sshCmdProjetos, $outputProjetos, $returnCode);
-            $outputProjetos = is_array($outputProjetos) ? implode("\n", $outputProjetos) : $outputProjetos;
-
-            if (empty($outputProjetos) || str_contains((string) $outputProjetos, 'ERROR')) {
-                Log::error('❌ [SYNC PROJETOS] Falha SSH ao buscar projetos', ['output' => substr((string) $outputProjetos, 0, 300)]);
-                return response()->json([
-                    'sucesso' => false,
-                    'mensagem' => 'Falha ao conectar ao KingHost. Verifique a conexão SSH e tente novamente.',
-                ], 500);
-            }
-
-            $lines = array_filter(explode("\n", trim($outputProjetos)));
-            $header = null;
-            $projetosKinghost = [];
-
-            foreach ($lines as $line) {
-                if ($header === null) {
-                    $header = explode("\t", $line);
-                    continue;
-                }
-                $values = explode("\t", $line);
-                if (count($values) < 3) {
-                    continue;
-                }
-                $projetosKinghost[] = [
-                    'id'            => trim($values[0]),
-                    'CDPROJETO'     => trim($values[1]),
-                    'NOMEPROJETO'   => trim($values[2] ?? ''),
-                ];
-            }
+            $projetosKinghost = array_map(fn ($row) => [
+                'id'          => (string) ($row['id'] ?? ''),
+                'CDPROJETO'   => trim((string) ($row['CDPROJETO'] ?? '')),
+                'NOMEPROJETO' => trim((string) ($row['NOMEPROJETO'] ?? '')),
+            ], $this->buscarLinhasKinghost('tabfant', [
+                'id',
+                'CDPROJETO',
+                'NOMEPROJETO',
+            ]));
 
             // Classificar NOVOS vs ATUALIZADOS ANTES do upsert
             foreach ($projetosKinghost as $proj) {
@@ -591,44 +550,19 @@ class GestaoColaboradoresController extends Controller
                 }
             }
 
-            // --- Sincronizar LOCAIS (locais_projeto) ---
-            $sshCmdLocais = 'ssh -o BatchMode=yes -o ConnectTimeout=30 plansul@ftp.plansul.info '
-                . '"mysql -h mysql07-farm10.kinghost.net -u plansul004_add2 -p\'A33673170a\' plansul04 '
-                . '-e \'SELECT id, cdlocal, delocal, tabfant_id, fluxo_responsavel FROM locais_projeto;\'" 2>&1';
-
-            $outputLocais = '';
-            \exec($sshCmdLocais, $outputLocais, $returnCode);
-            $outputLocais = is_array($outputLocais) ? implode("\n", $outputLocais) : $outputLocais;
-
-            if (empty($outputLocais) || str_contains((string) $outputLocais, 'ERROR')) {
-                Log::error('❌ [SYNC LOCAIS] Falha SSH ao buscar locais', ['output' => substr((string) $outputLocais, 0, 300)]);
-                return response()->json([
-                    'sucesso' => false,
-                    'mensagem' => 'Falha ao sincronizar locais. Verifique a conexão SSH e tente novamente.',
-                ], 500);
-            }
-
-            $lines = array_filter(explode("\n", trim($outputLocais)));
-            $header = null;
-            $locaisKinghost = [];
-
-            foreach ($lines as $line) {
-                if ($header === null) {
-                    $header = explode("\t", $line);
-                    continue;
-                }
-                $values = explode("\t", $line);
-                if (count($values) < 5) {
-                    continue;
-                }
-                $locaisKinghost[] = [
-                    'id'                    => trim($values[0]),
-                    'cdlocal'               => trim($values[1]),
-                    'delocal'               => trim($values[2] ?? ''),
-                    'tabfant_id'            => trim($values[3]),
-                    'fluxo_responsavel'     => trim($values[4] ?? ''),
-                ];
-            }
+            $locaisKinghost = array_map(fn ($row) => [
+                'id'                => (string) ($row['id'] ?? ''),
+                'cdlocal'           => trim((string) ($row['cdlocal'] ?? '')),
+                'delocal'           => trim((string) ($row['delocal'] ?? '')),
+                'tabfant_id'        => (string) ($row['tabfant_id'] ?? ''),
+                'fluxo_responsavel' => trim((string) ($row['fluxo_responsavel'] ?? '')),
+            ], $this->buscarLinhasKinghost('locais_projeto', [
+                'id',
+                'cdlocal',
+                'delocal',
+                'tabfant_id',
+                'fluxo_responsavel',
+            ]));
 
             // Classificar NOVOS vs ATUALIZADOS ANTES do upsert
             foreach ($locaisKinghost as $local) {
@@ -721,5 +655,47 @@ class GestaoColaboradoresController extends Controller
                 'mensagem'  => 'Erro ao sincronizar: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    protected function buscarLinhasKinghost(string $tabela, array $colunas): array
+    {
+        $connectionName = $this->configurarConexaoKinghost();
+
+        return DB::connection($connectionName)
+            ->table($tabela)
+            ->select($colunas)
+            ->get()
+            ->map(fn ($row) => (array) $row)
+            ->all();
+    }
+
+    protected function configurarConexaoKinghost(): string
+    {
+        $connectionName = 'kinghost_sync';
+
+        config([
+            "database.connections.{$connectionName}" => [
+                'driver' => 'mysql',
+                'host' => env('DB_HOST_KINGHOST', 'mysql07-farm10.kinghost.net'),
+                'port' => env('DB_PORT_KINGHOST', '3306'),
+                'database' => env('DB_DATABASE_KINGHOST', 'plansul04'),
+                'username' => env('DB_USERNAME_KINGHOST', 'plansul004_add2'),
+                'password' => env('DB_PASSWORD_KINGHOST', 'A33673170a'),
+                'unix_socket' => env('DB_SOCKET_KINGHOST', ''),
+                'charset' => env('DB_CHARSET_KINGHOST', 'utf8mb4'),
+                'collation' => env('DB_COLLATION_KINGHOST', 'utf8mb4_unicode_ci'),
+                'prefix' => '',
+                'prefix_indexes' => true,
+                'strict' => false,
+                'engine' => null,
+                'options' => extension_loaded('pdo_mysql') ? array_filter([
+                    \PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                ]) : [],
+            ],
+        ]);
+
+        DB::purge($connectionName);
+
+        return $connectionName;
     }
 }
