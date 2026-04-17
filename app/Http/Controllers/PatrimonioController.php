@@ -114,164 +114,6 @@ class PatrimonioController extends Controller
 
         }
 
-
-
-        // Aplicar filtros do formulário (Nº Patrimonio, Projeto, Descrição, Situação, Modelo, Cód. Termo, Responsável)
-
-        if ($request->filled('nupatrimonio')) {
-
-            $val = trim((string)$request->input('nupatrimonio'));
-
-            if ($val !== '') {
-
-                // aceitar busca exata por número (garantir inteiro quando for numérico)
-
-                if (is_numeric($val)) {
-
-                    $intVal = (int) $val;
-
-                    Log::info('[Filtro] nupatrimonio aplicado (int)', ['val' => $intVal]);
-
-                    $query->where('NUPATRIMONIO', $intVal);
-
-                } else {
-
-                    // se o usuário digitou algo que não é número, usar LIKE por segurança
-
-                    Log::info('[Filtro] nupatrimonio aplicado (like)', ['val' => $val]);
-
-                    $query->whereRaw('LOWER(NUPATRIMONIO) LIKE ?', ['%' . mb_strtolower($val) . '%']);
-
-                }
-
-            }
-
-        }
-
-
-
-        if ($request->filled('cdprojeto')) {
-
-            $val = trim((string)$request->input('cdprojeto'));
-
-            if ($val !== '') {
-
-                // alguns registros guardam CDPROJETO no próprio patr, outros via relação local
-
-                $query->where(function($q) use ($val) {
-
-                    $q->where('CDPROJETO', $val)
-
-                      ->orWhereHas('local.projeto', function($q2) use ($val) {
-
-                          $q2->where('CDPROJETO', $val);
-
-                      });
-
-                });
-
-            }
-
-        }
-
-
-
-        if ($request->filled('descricao')) {
-
-            $val = trim((string)$request->input('descricao'));
-
-            if ($val !== '') {
-
-                $like = '%' . mb_strtolower($val) . '%';
-
-                $query->whereRaw('LOWER(DEPATRIMONIO) LIKE ?', [$like]);
-
-            }
-
-        }
-
-
-
-        if ($request->filled('situacao')) {
-
-            $val = trim((string)$request->input('situacao'));
-
-            if ($val !== '') {
-
-                $query->where('SITUACAO', $val);
-
-            }
-
-        }
-
-
-
-        if ($request->filled('modelo')) {
-
-            $val = trim((string)$request->input('modelo'));
-
-            if ($val !== '') {
-
-                $query->whereRaw('LOWER(MODELO) LIKE ?', ['%' . mb_strtolower($val) . '%']);
-
-            }
-
-        }
-
-
-
-        if ($request->filled('nmplanta')) {
-
-            $val = trim((string)$request->input('nmplanta'));
-
-            if ($val !== '') {
-
-                $query->where('NMPLANTA', $val);
-
-            }
-
-        }
-
-
-
-        if ($request->filled('matr_responsavel')) {
-
-            $val = trim((string)$request->input('matr_responsavel'));
-
-            if ($val !== '') {
-
-                if (is_numeric($val)) {
-
-                    $query->where('CDMATRFUNCIONARIO', $val);
-
-                } else {
-
-                    // procurar usuário por login ou nome e usar matrícula
-
-                    $usuarioFiltro = User::where('NMLOGIN', $val)->orWhereRaw('LOWER(NOMEUSER) LIKE ?', ['%' . mb_strtolower($val) . '%'])->first();
-
-                    if ($usuarioFiltro) {
-
-                        $query->where('CDMATRFUNCIONARIO', $usuarioFiltro->CDMATRFUNCIONARIO);
-
-                    } else {
-
-                        // fallback: pesquisar por trecho no NOME do funcionário via relação 'funcionario' se existir
-
-                        $query->whereHas('funcionario', function($q) use ($val) {
-
-                            $q->whereRaw('LOWER(NOMEFUNCIONARIO) LIKE ?', ['%' . mb_strtolower($val) . '%']);
-
-                        });
-
-                    }
-
-                }
-
-            }
-
-        }
-
     }
 
 
@@ -798,152 +640,32 @@ class PatrimonioController extends Controller
 
         $isModal = $request->boolean('modal');
         $validated = [];
-        $localSelecionado = null;
 
         try {
-            // 1) Validar os campos conforme o formulário (nomes em MAIÚSCULO)
+            // 1) Validação unificada via validatePatrimonio() — mesmo caminho do update().
+            //    Inclui: verificação manual de matrículas (com fallback legado), criação de
+            //    ObjetoPatr se necessário, resolução projeto/local, normalização de NUMMESA
+            //    e vínculo responsável/gerente. Remove a divergência entre store/update.
+            $validated = $this->validatePatrimonio($request, null);
 
-            $validated = $request->validate([
-
-                // O Nº Patrimonio pode se repetir entre tipos; removido UNIQUE
-
-                'NUPATRIMONIO' => 'required|integer',
-
-                'NUSEQOBJ' => 'nullable|integer',
-
-                'FLCONFERIDO' => 'nullable|string|in:S,N,1,0',
-
-                'DEOBJETO' => 'nullable|string|max:350', // obrigatória apenas quando código for novo
-
-                'SITUACAO' => 'required|string|in:EM USO,CONSERTO,BAIXA,A DISPOSICAO,À DISPOSIÇÃO,A DISPOSIÇÃO,DISPONIVEL',
-
-                'CDMATRFUNCIONARIO' => 'nullable|integer|exists:funcionarios,CDMATRFUNCIONARIO',
-                'CDMATRGERENTE' => 'nullable|integer|exists:funcionarios,CDMATRFUNCIONARIO',
-
-                'NUMOF' => 'nullable|integer',
-
-                'DEHISTORICO' => 'nullable|string|max:300',
-
-                'CDPROJETO' => 'nullable|integer',
-
-                // O Local deve ser o código numérico (cdlocal) do LocalProjeto dentro do projeto
-
-                'CDLOCAL' => 'nullable|integer',
-
-                'NMPLANTA' => 'nullable|integer',
-                'NUMMESA' => 'nullable|string|max:30',
-
-                'MARCA' => 'nullable|string|max:30',
-
-                'MODELO' => 'nullable|string|max:30',
-
-                'DTAQUISICAO' => 'nullable|date',
-
-                'DTBAIXA' => 'nullable|date',
-
-                'PESO' => 'nullable|numeric|min:0',
-
-                'TAMANHO' => 'nullable|string|max:100',
-
-                'VOLTAGEM' => 'nullable|string|max:20',
-
-            ]);
-
-
-
-            $this->validarVinculosResponsabilidade($validated);
-            if ($this->supportsNumeroMesa()) {
-                $validated['NUMMESA'] = $this->normalizarNumeroMesa($validated['NUMMESA'] ?? null);
-                $this->validarNumeroMesaEmUso($validated);
-            } else {
-                unset($validated['NUMMESA']);
-            }
-
-            // Regra especial para almoxarifado central (999915) e em transito (2002)
-
+            // 2) Regras exclusivas de criação
             $this->enforceAlmoxRulesOnCreate($validated['CDLOCAL'] ?? null);
 
-            //  VALIDACAO CRITICA: Local deve pertencer ao projeto selecionado
-
-            $localSelecionado = $this->validateLocalBelongsToProjeto(
-                $validated['CDPROJETO'] ?? null,
-                $validated['CDLOCAL'] ?? null,
-                'criacao de patrimonio'
-            );
-
-            // Garantir que vamos persistir sempre o código do local (cdlocal) e o projeto correto do local escolhido
-
-            if ($localSelecionado) {
-
-                $validated['CDLOCAL'] = (int) $localSelecionado->cdlocal;
-
-                if ($localSelecionado->projeto) {
-
-                    $validated['CDPROJETO'] = (int) $localSelecionado->projeto->CDPROJETO;
-
-                }
-
-            }
-
-
-
-            //     VERIFICAR DUPLICATAS: Impedir criar Patrimonio com N° que já existe
-
             $nupatrimonio = (int) $validated['NUPATRIMONIO'];
-
             $jaExiste = Patrimonio::where('NUPATRIMONIO', $nupatrimonio)->exists();
-
             if ($jaExiste) {
-
                 throw ValidationException::withMessages([
-
-                    'NUPATRIMONIO' => "Já existe um Patrimônio com o número $nupatrimonio! Não é permitido criar duplicatas."
-
+                    'NUPATRIMONIO' => "Já existe um Patrimônio com o número $nupatrimonio! Não é permitido criar duplicatas.",
                 ]);
-
             }
-
-
-
-            // 2) Garantir existência do ObjetoPatr (tabela objetopatr)
-
-            //    O Model ObjetoPatr usa PK 'NUSEQOBJ'.
-            //    ✅ SUPORTE NULL: Permite patrimonios sem objeto definido
-
-            $codigoInput = $validated['NUSEQOBJ'] ?? null;
-            $codigo = $codigoInput !== null ? (int) $codigoInput : null;
-            $objeto = null;
-
-            if ($codigo !== null) {
-                $objeto = ObjetoPatr::find($codigo);
-
-                if (!$objeto) {
-                    // Se for novo código, exigir DEOBJETO
-
-                    $request->validate([
-                        'DEOBJETO' => 'required|string|max:350',
-                    ], [
-                        'DEOBJETO.required' => 'Informe a descrição do novo código.',
-                    ]);
-
-                    $objeto = ObjetoPatr::create([
-                        'NUSEQOBJ' => $codigo,
-                        // NUSEQTIPOPATR pode ser opcional aqui; ajustar se sua regra exigir
-
-                        'DEOBJETO' => $request->input('DEOBJETO'),
-                    ]);
-                }
-            }
-
-
 
         } catch (ValidationException $e) {
+            Log::warning('⚠️ [STORE] Falha de validação', [
+                'NUPATRIMONIO' => $request->input('NUPATRIMONIO'),
+                'errors' => $e->errors(),
+                'request_all' => $request->all(),
+            ]);
             if ($isModal) {
-                Log::warning('⚠️ [UPDATE] Falha de validação no patrimonio', [
-                    'NUSEQPATR' => $patrimonio->NUSEQPATR ?? null,
-                    'NUPATRIMONIO' => $patrimonio->NUPATRIMONIO ?? null,
-                    'errors' => $e->errors(),
-                ]);
                 $request->flash();
                 $errors = new \Illuminate\Support\MessageBag($e->errors());
                 $projetos = Tabfant::select('CDPROJETO', 'NOMEPROJETO')->distinct()->orderBy('NOMEPROJETO')->get();
@@ -958,71 +680,53 @@ class PatrimonioController extends Controller
             throw $e;
         }
 
-        // 3) Criar o Patrimonio associando o código recém-verificado/criado
-
+        // 3) Criar o Patrimônio — validatePatrimonio() já mapeou NUSEQOBJ→CODOBJETO,
+        //    DEOBJETO→DEPATRIMONIO, normalizou FLCONFERIDO e resolveu CDLOCAL/CDPROJETO.
         $usuarioCriador = Auth::user()->NMLOGIN ?? Auth::user()->NOMEUSER ?? 'SISTEMA';
 
         $dadosPatrimonio = [
-
             'NUPATRIMONIO' => $nupatrimonio,
-
-            'CODOBJETO' => $codigo, // campo da tabela patr (pode ser NULL)
-
-            // Usaremos a descrição do objeto como DEPATRIMONIO para manter compatibilidade atual do front
-            // ✅ SUPORTE NULL: DEPATRIMONIO pode ser NULL quando não há objeto definido
-
-            'DEPATRIMONIO' => $objeto ? $objeto->DEOBJETO : $request->input('DEOBJETO'),
-
-            'SITUACAO' => $validated['SITUACAO'],
-
-            'FLCONFERIDO' => $this->normalizeConferidoFlag($validated['FLCONFERIDO'] ?? null) ?? 'S',
-
+            'CODOBJETO'    => $validated['CODOBJETO'] ?? null,
+            'DEPATRIMONIO' => $validated['DEPATRIMONIO'] ?? null,
+            'SITUACAO'     => $validated['SITUACAO'],
+            'FLCONFERIDO'  => $validated['FLCONFERIDO'] ?? 'S',
             'CDMATRFUNCIONARIO' => isset($validated['CDMATRFUNCIONARIO']) ? (int) $validated['CDMATRFUNCIONARIO'] : null,
-
-            'CDMATRGERENTE' => isset($validated['CDMATRGERENTE']) ? (int) $validated['CDMATRGERENTE'] : null,
-
-            'NUMOF' => $validated['NUMOF'] ?? null,
-
-            'DEHISTORICO' => $validated['DEHISTORICO'] ?? null,
-
-            'CDPROJETO' => $validated['CDPROJETO'] ?? null,
-
-            'CDLOCAL' => $validated['CDLOCAL'] ?? null,
-
-            'NMPLANTA' => $validated['NMPLANTA'] ?? null,
-
-            'MARCA' => $validated['MARCA'] ?? null,
-
-            'MODELO' => $validated['MODELO'] ?? null,
-
-            'DTAQUISICAO' => $validated['DTAQUISICAO'] ?? null,
-
-            'DTBAIXA' => $validated['DTBAIXA'] ?? null,
-
-            'PESO' => $validated['PESO'] ?? null,
-
-            'TAMANHO' => $validated['TAMANHO'] ?? null,
-
-            'VOLTAGEM' => $validated['VOLTAGEM'] ?? null,
-
-            'USUARIO' => $usuarioCriador,
-
-            'DTOPERACAO' => now(),
-
+            'CDMATRGERENTE'     => isset($validated['CDMATRGERENTE']) ? (int) $validated['CDMATRGERENTE'] : null,
+            'NUMOF'        => $validated['NUMOF'] ?? null,
+            'DEHISTORICO'  => $validated['DEHISTORICO'] ?? null,
+            'CDPROJETO'    => $validated['CDPROJETO'] ?? null,
+            'CDLOCAL'      => $validated['CDLOCAL'] ?? null,
+            'NMPLANTA'     => $validated['NMPLANTA'] ?? null,
+            'MARCA'        => $validated['MARCA'] ?? null,
+            'MODELO'       => $validated['MODELO'] ?? null,
+            'DTAQUISICAO'  => $validated['DTAQUISICAO'] ?? null,
+            'DTBAIXA'      => $validated['DTBAIXA'] ?? null,
+            'PESO'         => $validated['PESO'] ?? null,
+            'TAMANHO'      => $validated['TAMANHO'] ?? null,
+            'VOLTAGEM'     => $validated['VOLTAGEM'] ?? null,
+            'USUARIO'      => $usuarioCriador,
+            'DTOPERACAO'   => now(),
         ];
 
-        if ($this->supportsNumeroMesa()) {
-            $dadosPatrimonio['NUMMESA'] = $validated['NUMMESA'] ?? null;
+        if (array_key_exists('NUMMESA', $validated)) {
+            $dadosPatrimonio['NUMMESA'] = $validated['NUMMESA'];
         }
-
-
 
         Patrimonio::create($dadosPatrimonio);
 
+        Log::info('✅ [STORE] Patrimônio criado com sucesso', [
+            'NUPATRIMONIO' => $nupatrimonio,
+            'usuario' => $usuarioCriador,
+        ]);
 
+        if ($isModal) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Patrimônio cadastrado com sucesso!',
+            ]);
+        }
 
         return redirect()->route('patrimonios.index')
-
             ->with('success', 'Patrimônio cadastrado com sucesso!');
 
     }
@@ -5546,6 +5250,27 @@ class PatrimonioController extends Controller
 
         ]);
 
+        // Normalização compatível com KingHost e com formulários antigos:
+        // alguns fluxos ainda enviam códigos no formato "8 - SEDE" ou
+        // "123 - Nome do Local". Primeiro extraímos o número e, no caso do
+        // local, também tentamos resolver pelo nome quando houver projeto.
+        $normalizedInput = $request->all();
+        $normalizedInput['NUPATRIMONIO'] = $this->normalizarCodigoLegado($normalizedInput['NUPATRIMONIO'] ?? null);
+        $normalizedInput['NUMOF'] = $this->normalizarCodigoLegado($normalizedInput['NUMOF'] ?? null);
+        $normalizedInput['NUSEQOBJ'] = $this->normalizarCodigoLegado($normalizedInput['NUSEQOBJ'] ?? null);
+        $normalizedInput['CODOBJETO'] = $this->normalizarCodigoLegado($normalizedInput['CODOBJETO'] ?? null);
+        $normalizedInput['CDPROJETO'] = $this->normalizarCodigoLegado($normalizedInput['CDPROJETO'] ?? null);
+        $normalizedInput['CDLOCAL'] = $this->resolverCdLocalLegado(
+            $normalizedInput['CDLOCAL'] ?? null,
+            $normalizedInput['CDPROJETO'] ?? null
+        );
+        $normalizedInput['CDLOCALINTERNO'] = $this->normalizarCodigoLegado($normalizedInput['CDLOCALINTERNO'] ?? null);
+        $normalizedInput['CDMATRFUNCIONARIO'] = $this->normalizarCodigoLegado($normalizedInput['CDMATRFUNCIONARIO'] ?? null);
+        $normalizedInput['CDMATRGERENTE'] = $this->normalizarCodigoLegado($normalizedInput['CDMATRGERENTE'] ?? null);
+        $normalizedInput['NMPLANTA'] = $this->normalizarCodigoLegado($normalizedInput['NMPLANTA'] ?? null);
+
+        $request->merge($normalizedInput);
+
 
 
         // 1) Validar campos básicos; aceitar tanto o fluxo novo (NUSEQOBJ/DEOBJETO)
@@ -5648,7 +5373,6 @@ class PatrimonioController extends Controller
         $this->validarVinculosResponsabilidade($data);
         if ($this->supportsNumeroMesa()) {
             $data['NUMMESA'] = $this->normalizarNumeroMesa($data['NUMMESA'] ?? null);
-            $this->validarNumeroMesaEmUso($data, $patrimonio);
         } else {
             unset($data['NUMMESA']);
         }
@@ -5825,8 +5549,7 @@ class PatrimonioController extends Controller
 
 
 
-        if (($matriculaResponsavel === '' && $matriculaGerente === '')
-            || ($matriculaResponsavel !== '' && $matriculaGerente !== '')) {
+        if ($matriculaGerente === '') {
 
             return;
 
@@ -5844,13 +5567,7 @@ class PatrimonioController extends Controller
 
         }
 
-
-
-        throw ValidationException::withMessages([
-
-            'CDMATRGERENTE' => 'Informe a matrícula do gerente responsável junto com o responsável do patrimônio.',
-
-        ]);
+        // Ambos preenchidos — OK
 
     }
 
@@ -5880,6 +5597,66 @@ class PatrimonioController extends Controller
 
         return mb_strtoupper(preg_replace('/\s+/u', ' ', $numeroMesa) ?: $numeroMesa, 'UTF-8');
 
+    }
+
+    /**
+     * Normaliza códigos legados que podem vir como "123 - Nome" ou apenas texto numérico.
+     */
+    private function normalizarCodigoLegado(mixed $value): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $raw = trim((string) $value);
+        if ($raw === '') {
+            return null;
+        }
+
+        if (is_numeric($raw)) {
+            return (int) $raw;
+        }
+
+        if (preg_match('/^\s*(\d+)/', $raw, $matches)) {
+            return (int) $matches[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolve CDLOCAL legado, aceitando código numérico, ID ou nome do local.
+     */
+    private function resolverCdLocalLegado(mixed $rawCdLocal, mixed $rawCdProjeto): ?int
+    {
+        if ($rawCdLocal === null) {
+            return null;
+        }
+
+        $raw = trim((string) $rawCdLocal);
+        if ($raw === '') {
+            return null;
+        }
+
+        if (is_numeric($raw)) {
+            return (int) $raw;
+        }
+
+        $cdProjeto = $this->normalizarCodigoLegado($rawCdProjeto);
+        if ($cdProjeto === null) {
+            throw ValidationException::withMessages([
+                'CDLOCAL' => 'Selecione um local físico válido para o projeto informado.',
+            ]);
+        }
+
+        $local = LocalProjeto::resolveForProjeto($cdProjeto, null, $raw);
+        if ($local) {
+            return (int) $local->cdlocal;
+        }
+
+        throw ValidationException::withMessages([
+            'CDLOCAL' => 'Selecione um local físico válido para o projeto informado.',
+        ]);
     }
 
     private function validarNumeroMesaEmUso(array $data, ?Patrimonio $patrimonio = null): void
@@ -5950,7 +5727,25 @@ class PatrimonioController extends Controller
 
         if ($supportsNumeroMesa === null) {
 
-            $supportsNumeroMesa = Schema::hasColumn('patr', 'NUMMESA');
+            try {
+                $supportsNumeroMesa = Schema::hasColumn('patr', 'NUMMESA');
+            } catch (\Throwable $e) {
+                // Fallback compatível com MySQL legado (KingHost) quando o introspector falha.
+                try {
+                    $columns = DB::select("SHOW COLUMNS FROM patr LIKE 'NUMMESA'");
+                    $supportsNumeroMesa = !empty($columns);
+                    Log::warning('⚠️ [NUMMESA] Fallback de detecção de coluna aplicado.', [
+                        'supports_num_mesa' => $supportsNumeroMesa,
+                        'erro_original' => $e->getMessage(),
+                    ]);
+                } catch (\Throwable $fallbackError) {
+                    Log::error('❌ [NUMMESA] Falha ao detectar suporte da coluna NUMMESA.', [
+                        'erro_original' => $e->getMessage(),
+                        'erro_fallback' => $fallbackError->getMessage(),
+                    ]);
+                    $supportsNumeroMesa = false;
+                }
+            }
 
         }
 

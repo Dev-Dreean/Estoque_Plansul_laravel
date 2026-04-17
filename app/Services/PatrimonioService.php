@@ -385,28 +385,11 @@ class PatrimonioService
         if ($request->filled('cdprojeto')) {
             $val = trim((string) $request->input('cdprojeto'));
             if ($val !== '') {
-                // Otimização: buscar locais do projeto uma única vez e evitar subqueries pesadas por linha
-                $locaisProjeto = collect();
-                try {
-                    $projeto = \App\Models\Tabfant::where('CDPROJETO', $val)->first(['id']);
-                    if ($projeto) {
-                        $locaisProjeto = \App\Models\LocalProjeto::where('tabfant_id', $projeto->id)
-                            ->pluck('cdlocal');
-                    }
-                } catch (\Throwable $e) {
-                    // Loga mas não quebra a busca; cai no fallback apenas por CDPROJETO
-                    Log::warning('Falha ao buscar locais do projeto para filtro', [
-                        'cdprojeto' => $val,
-                        'erro' => $e->getMessage(),
-                    ]);
-                }
-
-                $query->where(function ($q) use ($val, $locaisProjeto) {
-                    $q->where('CDPROJETO', $val);
-                    if ($locaisProjeto->isNotEmpty()) {
-                        $q->orWhereIn('CDLOCAL', $locaisProjeto->all());
-                    }
-                });
+                // CDLOCAL não é globalmente único entre projetos.
+                // Filtrar por locais do projeto apenas pelo código do local causa falso positivo
+                // quando projetos diferentes reutilizam o mesmo CDLOCAL (ex.: local 1).
+                // Aqui o filtro precisa ser estritamente pelo projeto armazenado no patrimônio.
+                $query->where('CDPROJETO', $val);
             }
         }
 
@@ -463,9 +446,13 @@ class PatrimonioService
         }
 
         if ($request->filled('num_mesa')) {
+            if (!$this->supportsNumeroMesa()) {
+                Log::debug('[PatrimonioService] Filtro num_mesa ignorado porque a coluna NUMMESA não existe no ambiente atual.');
+            } else {
             $val = trim((string) $request->input('num_mesa'));
             if ($val !== '') {
                 $query->whereRaw('UPPER(TRIM(COALESCE(NUMMESA, \'\'))) = ?', [mb_strtoupper($val, 'UTF-8')]);
+            }
             }
         }
 
@@ -554,7 +541,6 @@ class PatrimonioService
             'numof' => 'NUMOF',
             'codobjeto' => 'CODOBJETO',
             'nmplanta' => 'NMPLANTA',
-            'num_mesa' => 'NUMMESA',
             'nuserie' => 'NUSERIE',
             'projeto' => 'CDPROJETO',
             'local' => 'CDLOCAL',
@@ -569,6 +555,10 @@ class PatrimonioService
             'gerente' => 'CDMATRGERENTE',
             'cadastrador' => 'USUARIO',
         ];
+
+        if ($this->supportsNumeroMesa()) {
+            $sortableMap['num_mesa'] = 'NUMMESA';
+        }
 
         $sortKey = $request->input('sort');
         $sortDirection = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
@@ -599,6 +589,34 @@ class PatrimonioService
 
         // Ordem padrao secundaria para consistencia
         $query->orderBy('DTAQUISICAO', 'asc');
+    }
+
+    private function supportsNumeroMesa(): bool
+    {
+        static $supportsNumeroMesa = null;
+
+        if ($supportsNumeroMesa === null) {
+            try {
+                $supportsNumeroMesa = Schema::hasColumn('patr', 'NUMMESA');
+            } catch (\Throwable $e) {
+                try {
+                    $columns = DB::select("SHOW COLUMNS FROM patr LIKE 'NUMMESA'");
+                    $supportsNumeroMesa = !empty($columns);
+                    Log::warning('⚠️ [PatrimonioService][NUMMESA] Fallback de detecção de coluna aplicado.', [
+                        'supports_num_mesa' => $supportsNumeroMesa,
+                        'erro_original' => $e->getMessage(),
+                    ]);
+                } catch (\Throwable $fallbackError) {
+                    Log::error('❌ [PatrimonioService][NUMMESA] Falha ao detectar suporte da coluna NUMMESA.', [
+                        'erro_original' => $e->getMessage(),
+                        'erro_fallback' => $fallbackError->getMessage(),
+                    ]);
+                    $supportsNumeroMesa = false;
+                }
+            }
+        }
+
+        return $supportsNumeroMesa;
     }
 
     protected function detectarColunasVisiveis(array $items, bool $showEmpty): array

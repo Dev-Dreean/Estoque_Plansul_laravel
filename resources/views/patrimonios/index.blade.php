@@ -2320,6 +2320,15 @@
                 }
                 return;
               }
+              if (!resp.ok) {
+                const body = await resp.text().catch(() => '');
+                console.error('[PATRI] Erro HTTP ao salvar patrimônio', {
+                  status: resp.status,
+                  body: body?.slice?.(0, 1200) || body,
+                });
+                alert(`Falha ao salvar patrimônio (HTTP ${resp.status}).`);
+                return;
+              }
               if (contentType.includes('application/json')) {
                 const data = await resp.json().catch(() => ({}));
                 if (data.redirect) {

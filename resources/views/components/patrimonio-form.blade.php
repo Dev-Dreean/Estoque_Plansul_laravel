@@ -28,7 +28,7 @@
 @endif
 
 <div x-data="patrimonioForm($el)"
-  x-init="init(); if (patSearch && !isPersistedEditMode) { $nextTick(() => buscarPatrimonio()); }"
+  x-init="init(); if (patSearch && !isEditMode()) { $nextTick(() => buscarPatrimonio()); }"
   @keydown.enter.prevent="handleEnter($event)" class="space-y-3 text-sm"
   data-patrimonio='@json($patrimonio)'
   data-old='@json(old())'
@@ -196,7 +196,7 @@
             @input.debounce.300ms="(function(){ const t=String(patSearch||'').trim(); if(t.length>0){ showPatDropdown=true; buscarPatrimonios(); } else { showPatDropdown=false; patrimoniosLista=[]; highlightedPatIndex=-1; } })()"
             @keydown.down.prevent="(function(){ highlightedPatIndex = Math.min(highlightedPatIndex+1, patrimoniosLista.length-1); })()"
             @keydown.up.prevent="(function(){ highlightedPatIndex = Math.max(highlightedPatIndex-1, -1); })()"
-          @keydown.enter.prevent="(function(){ if(highlightedPatIndex>=0 && patrimoniosLista[highlightedPatIndex]){ selectPatrimonio(patrimoniosLista[highlightedPatIndex]); buscarPatrimonio(); } })()"
+          @keydown.enter.prevent="(function(){ if(highlightedPatIndex>=0 && patrimoniosLista[highlightedPatIndex]){ selectPatrimonio(patrimoniosLista[highlightedPatIndex]); } })()"
           @keydown.escape.prevent="showPatDropdown=false"
           type="text"
           inputmode="numeric"
@@ -223,7 +223,7 @@
               <div class="p-2 text-gray-500 text-center" x-text="String(patSearch || '').trim()==='' ? 'Digite para buscar ou clique no campo' : 'Nenhum patrimônio encontrado'"></div>
             </template>
             <template x-for="(p,i) in (patrimoniosLista || [])" :key="p.NUSEQPATR || p.NUPATRIMONIO || i">
-              <div @click="selectPatrimonio(p); buscarPatrimonio();" @mouseover="highlightedPatIndex=i" :class="['px-3 py-1.5 cursor-pointer border-b border-gray-200 dark:border-gray-700 last:border-0', highlightedPatIndex===i ? 'bg-indigo-500 dark:bg-indigo-600 text-white' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
+              <div @click="selectPatrimonio(p);" @mouseover="highlightedPatIndex=i" :class="['px-3 py-1.5 cursor-pointer border-b border-gray-200 dark:border-gray-700 last:border-0', highlightedPatIndex===i ? 'bg-indigo-500 dark:bg-indigo-600 text-white' : 'hover:bg-indigo-50 dark:hover:bg-gray-700']">
                 <div class="flex justify-between items-center gap-2">
                   <span class="font-semibold text-indigo-600 dark:text-indigo-400" :class="highlightedPatIndex===i ? 'text-white' : ''" x-text="p.NUPATRIMONIO"></span>
                   <span class="text-gray-700 dark:text-gray-300 flex-grow text-xs" :class="highlightedPatIndex===i ? 'text-white' : ''" x-text="' - ' + (p.DEPATRIMONIO || p.descricao || '—')"></span>
@@ -434,7 +434,7 @@
                 ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 text-gray-600 cursor-not-allowed'
                 : 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 text-gray-700'
             ]" />
-          <input type="hidden" name="CDLOCAL" :value="(codigoLocalSelecionado || String(codigoLocalDigitado || '').trim() || formData.CDLOCAL)" />
+          <input type="hidden" name="CDLOCAL" :value="valorCdLocalParaSubmit()" />
 
           {{-- Botão Lupa e Limpar --}}
           <div class="absolute inset-y-0 right-0 flex items-center pr-6 gap-2">
@@ -2145,6 +2145,20 @@
           this.localNome = '';
           this.codigoLocalSelecionado = '';
         }
+      },
+
+      valorCdLocalParaSubmit() {
+        const digitado = String(this.codigoLocalDigitado || '').trim();
+        if (this.codigoLocalSelecionado && /^\d+$/.test(this.codigoLocalSelecionado)) {
+          return String(this.codigoLocalSelecionado);
+        }
+        if (/^\d+$/.test(digitado)) {
+          return digitado;
+        }
+        if (/^\d+$/.test(String(this.formData.CDLOCAL || '').trim())) {
+          return String(this.formData.CDLOCAL).trim();
+        }
+        return '';
       },
 
       async validarCodigoLocalNoBlur() {
